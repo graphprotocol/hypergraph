@@ -1,0 +1,14 @@
+{
+  "name": "graph-framework",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "ts:check": "tsc --noEmit",
+    "lint": "echo 'No linting configured'"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.1"
+  }
+}

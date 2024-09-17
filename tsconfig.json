@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noEmitOnError": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "types": [],
+    "jsx": "react-jsx",
+
+    "baseUrl": ".",
+    "paths": {},
+    "noEmit": true
+  },
+  "exclude": ["node_modules", "dist"]
+}
