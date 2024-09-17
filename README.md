@@ -6,13 +6,25 @@
 
 ```sh
 pnpm install
+docker-compose up
+```
+
+```sh
+# in another tab
+cd apps/server
+cp .env.example .env
+pnpm prisma migrate dev
 ```
 
 ### Development
 
 ```sh
+docker-compose up
 # in another tab
 cd apps/events
+pnpm dev
+# in another tab
+cd apps/server
 pnpm dev
 ```
 

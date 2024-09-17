@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String             @id @default(uuid())
+  username           String             @unique
+  registrationRecord String
+  sessions           Session[]
+  loginAttempt       LoginAttempt?
+  createdAt          DateTime           @default(now())
+  documents          UsersOnDocuments[]
+  userLocker         UserLocker[]
+}
+
+model UserLocker {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  clock      Int
+  ciphertext String
+  nonce      String
+  commitment String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, clock])
+}
+
+model Session {
+  token      String   @id
+  sessionKey String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model LoginAttempt {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  serverLoginState String
+  createdAt        DateTime @default(now())
+}
+
+model UsersOnDocuments {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  document   Document @relation(fields: [documentId], references: [id])
+  documentId String
+  isAdmin    Boolean
+
+  @@id([userId, documentId])
+}
+
+model DocumentInvitation {
+  id         String   @id @default(uuid())
+  document   Document @relation(fields: [documentId], references: [id])
+  documentId String
+  token      String   @unique
+  createdAt  DateTime @default(now())
+  ciphertext String
+}
+
+model Document {
+  id                  String               @id
+  nameCiphertext      String
+  nameNonce           String
+  nameCommitment      String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  users               UsersOnDocuments[]
+  documentInvitations DocumentInvitation[]
+  activeSnapshot      Snapshot?            @relation(name: "activeSnapshot", fields: [activeSnapshotId], references: [id])
+  activeSnapshotId    String?              @unique
+  snapshots           Snapshot[]
+}
+
+model Snapshot {
+  id                         String    @id
+  latestVersion              Int
+  data                       String
+  ciphertextHash             String
+  document                   Document  @relation(fields: [documentId], references: [id])
+  documentId                 String
+  updates                    Update[]
+  activeSnapshotDocument     Document? @relation("activeSnapshot")
+  createdAt                  DateTime  @default(now())
+  clocks                     Json
+  parentSnapshotUpdateClocks Json
+  parentSnapshotProof        String
+}
+
+model Update {
+  id         String   @unique // composed out of snapshotId, pubKey, clock
+  version    Int
+  data       String
+  snapshot   Snapshot @relation(fields: [snapshotId], references: [id])
+  snapshotId String
+  clock      Int
+  pubKey     String
+
+  @@unique([snapshotId, version])
+  @@unique([snapshotId, pubKey, clock]) // matches the id
+  @@index([id, version])
+}
