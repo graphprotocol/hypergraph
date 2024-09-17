@@ -9,34 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAddRowCallback, useTable } from "tinybase/ui-react";
 
-export function Page() {
-  const events = [
-    {
-      id: 1,
-      name: "Tech Conference 2023",
-      date: "2023-09-15",
-      location: "San Francisco, CA",
-      description:
-        "Join us for the biggest tech conference of the year, featuring keynote speakers from leading tech companies.",
-    },
-    {
-      id: 2,
-      name: "Music Festival",
-      date: "2023-10-01",
-      location: "Austin, TX",
-      description:
-        "A three-day music extravaganza featuring top artists from around the world.",
-    },
-    {
-      id: 3,
-      name: "Food & Wine Expo",
-      date: "2023-11-05",
-      location: "New York, NY",
-      description:
-        "Explore culinary delights and fine wines from renowned chefs and vintners.",
-    },
-  ];
+export function EventsPage() {
+  const events = useTable("events");
+
+  const addEvent = useAddRowCallback("events", () => ({
+    name: "New Event",
+    date: "2023-12-31",
+    location: "New York, NY",
+    description: "A new event",
+  }));
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -72,15 +55,25 @@ export function Page() {
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none mb-8">
               Upcoming Events
             </h1>
+            <Button
+              onClick={() => {
+                addEvent();
+              }}
+            >
+              Add Event
+            </Button>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => (
-                <Card key={event.id}>
+              {Object.entries(events).map(([id, event]) => (
+                <Card key={id}>
                   <CardHeader>
                     <CardTitle>{event.name}</CardTitle>
                     <CardDescription>
                       <div className="flex items-center mt-2">
                         <CalendarDays className="mr-2 h-4 w-4" />
-                        {new Date(event.date).toLocaleDateString()}
+                        {
+                          // @ts-expect-error tinybase types issue
+                          new Date(event.date).toLocaleDateString()
+                        }
                       </div>
                       <div className="flex items-center mt-2">
                         <MapPin className="mr-2 h-4 w-4" />
