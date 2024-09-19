@@ -3,7 +3,13 @@ import sodium, { KeyPair } from "libsodium-wrappers";
 import { useState } from "react";
 import { useYjsSync } from "secsync-react-yjs";
 import { createStore } from "tinybase";
-import { Provider, useCreateStore } from "tinybase/ui-react";
+import { createLocalPersister } from "tinybase/persisters/persister-browser";
+import { createYjsPersister } from "tinybase/persisters/persister-yjs";
+import {
+  Provider,
+  useCreatePersister,
+  useCreateStore,
+} from "tinybase/ui-react";
 import { Inspector } from "tinybase/ui-react-inspector";
 import * as Yjs from "yjs";
 import { EventsPage } from "./components/events-page";
@@ -21,19 +27,35 @@ export function App() {
     return createStore();
   });
 
+  useCreatePersister(
+    store,
+    (store) =>
+      createLocalPersister(store, "events", (error) => {
+        console.log("LocalPersister Error:", error);
+      }),
+    [],
+    async (persister) => {
+      await persister.startAutoLoad();
+      await persister.startAutoSave();
+    }
+  );
+
+  useCreatePersister(
+    store,
+    (store) =>
+      createYjsPersister(store, yDoc, undefined, (error) => {
+        console.log("YjsPersister Error:", error);
+      }),
+    [],
+    async (persister) => {
+      await persister.startAutoLoad();
+      await persister.startAutoSave();
+    }
+  );
+
   const [yDoc] = useState(() => {
     return new Yjs.Doc();
   });
-
-  // useEffect(() => {
-  //   const persister = createYjsPersister(store, yDoc);
-
-  //   const run = async () => {
-  //     await persister.startAutoLoad();
-  //     await persister.startAutoSave();
-  //   };
-  //   run();
-  // }, []);
 
   const [authorKeyPair] = useState<KeyPair>(() => {
     return sodium.crypto_sign_keypair();
@@ -78,14 +100,6 @@ export function App() {
     <Provider store={store}>
       <>
         <p>{hello()}</p>
-        {/* <Button
-          onClick={() => {
-            console.log("clicked");
-            store.setValues({ employees: 3, open: true });
-          }}
-        >
-          Click me
-        </Button> */}
         <EventsPage yDoc={yDoc} />
       </>
       <Inspector />

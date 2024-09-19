@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useY } from "react-yjs";
+import { useAddRowCallback, useStore, useTable } from "tinybase/ui-react";
 import * as Yjs from "yjs";
 
 type Props = {
@@ -17,18 +17,16 @@ type Props = {
 };
 
 export function EventsPage(props: Props) {
-  const addEvent = () => {
-    const yEvent = new Yjs.Map();
-    const id = Math.random().toString();
-    yEvent.set("id", id);
-    yEvent.set("name", "New Event");
-    yEvent.set("date", "2023-12-31");
-    yEvent.set("location", "New York, NY");
-    yEvent.set("description", "A new event");
-    props.yDoc.getMap("events").set(id, yEvent);
-  };
+  const addEvent = useAddRowCallback("events", () => ({
+    name: "New Event",
+    date: "2023-12-31",
+    location: "New York, NY",
+    description: "A new event",
+  }));
 
-  const events = useY(props.yDoc.getMap("events"));
+  const store = useStore();
+
+  const events = useTable("events");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -97,7 +95,7 @@ export function EventsPage(props: Props) {
                     <Button>Register Now</Button>
                     <Button
                       onClick={() => {
-                        props.yDoc.getMap("events").delete(id);
+                        store?.delRow("events", id);
                       }}
                     >
                       Delete
