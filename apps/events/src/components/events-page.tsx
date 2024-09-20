@@ -14,9 +14,10 @@ import * as Yjs from "yjs";
 
 type Props = {
   yDoc: Yjs.Doc;
+  spaceId: string;
 };
 
-export function EventsPage(props: Props) {
+export function EventsPage({ spaceId }: Props) {
   const addEvent = useAddRowCallback("events", () => ({
     name: "New Event",
     date: "2023-12-31",
@@ -25,20 +26,20 @@ export function EventsPage(props: Props) {
   }));
 
   const store = useStore();
-
   const events = useTable("events");
 
   return (
     <main className="flex-1">
-      <section className="w-full py-12 md:py-24 lg:py-32">
+      <section className="w-full py-12 md:py-24">
         <div className="container px-4 md:px-6">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none mb-8">
-            Upcoming Events
+            Space {spaceId.substring(0, 1).toUpperCase()} Upcoming Events
           </h1>
           <Button
             onClick={() => {
               addEvent();
             }}
+            className="mb-8"
           >
             Add Event
           </Button>
@@ -64,7 +65,7 @@ export function EventsPage(props: Props) {
                 <CardContent>
                   <p>{event.description}</p>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex gap-2">
                   <Button>Register Now</Button>
                   <Button
                     onClick={() => {

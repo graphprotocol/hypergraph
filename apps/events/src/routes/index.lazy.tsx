@@ -9,7 +9,6 @@ export function Index() {
   return (
     <>
       <p>{hello()}</p>
-      <hr />
     </>
   );
 }

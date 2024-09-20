@@ -27,13 +27,14 @@ export const Route = createRootRoute({
             </Link>
             <Link
               to="/space/$spaceId"
-              params={{ spaceId: "cde" }}
+              params={{ spaceId: "bcd" }}
               className="text-sm font-medium hover:underline underline-offset-4"
             >
               Space B
             </Link>
           </nav>
         </header>
+        <hr />
 
         <Outlet />
         <TanStackRouterDevtools />

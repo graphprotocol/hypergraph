@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import sodium, { KeyPair } from "libsodium-wrappers";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useYjsSync } from "secsync-react-yjs";
 import { createStore } from "tinybase";
 import { createLocalPersister } from "tinybase/persisters/persister-browser";
@@ -17,17 +17,17 @@ import { EventsPage } from "../../components/events-page";
 const websocketEndpoint = "ws://localhost:3030";
 
 export const Route = createLazyFileRoute("/space/$spaceId")({
-  component: Space,
+  component: SpaceWithKey,
 });
 
-export function Space() {
-  useEffect(() => {
-    console.log("Space mounted");
-    return () => {
-      console.log("Space unmounted");
-    };
-  }, []);
+function SpaceWithKey() {
+  const { spaceId } = Route.useParams();
+  // ensuring the Space component is unmounted and remounted when the spaceId changes
+  // this is needed since secsync and possibly tinybase don't handle the spaceId change well
+  return <Space key={spaceId} />;
+}
 
+export function Space() {
   const { spaceId } = Route.useParams();
   const spaceKey = sodium.from_base64(
     "Wzrx2kLy6kd3FBqcNOOwaYQ2S1My9zofdX49CL-k_ko"
@@ -65,6 +65,7 @@ export function Space() {
   );
 
   const [yDoc] = useState(() => {
+    console.log("create new Ydoc");
     return new Yjs.Doc();
   });
 
@@ -110,7 +111,7 @@ export function Space() {
   return (
     <Provider store={store}>
       <>
-        <EventsPage yDoc={yDoc} />
+        <EventsPage yDoc={yDoc} spaceId={spaceId} />
       </>
       <Inspector />
     </Provider>
