@@ -35,7 +35,18 @@ export function Space() {
 
   const store = useCreateStore(() => {
     // Create the TinyBase Store and initialize the Store's data
-    return createStore();
+    return createStore()
+      .setValuesSchema({
+        spaceId: { type: "string" },
+      })
+      .setTablesSchema({
+        events: {
+          name: { type: "string" },
+          date: { type: "string" },
+          location: { type: "string" },
+          description: { type: "string" },
+        },
+      });
   });
 
   const [yDoc] = useState(() => {
