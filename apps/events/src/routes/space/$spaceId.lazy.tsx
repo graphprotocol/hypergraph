@@ -38,6 +38,14 @@ export function Space() {
     return createStore();
   });
 
+  const [yDoc] = useState(() => {
+    console.log("Creating new Yjs.Doc");
+    const newYDoc = new Yjs.Doc();
+    const map = newYDoc.getMap("space");
+    map.set("id", spaceId);
+    return newYDoc;
+  });
+
   useCreatePersister(
     store,
     (store) =>
@@ -54,7 +62,7 @@ export function Space() {
   useCreatePersister(
     store,
     (store) =>
-      createYjsPersister(store, yDoc, undefined, (error) => {
+      createYjsPersister(store, yDoc, "space", (error) => {
         console.log("YjsPersister Error:", error);
       }),
     [],
@@ -63,11 +71,6 @@ export function Space() {
       await persister.startAutoSave();
     }
   );
-
-  const [yDoc] = useState(() => {
-    console.log("create new Ydoc");
-    return new Yjs.Doc();
-  });
 
   const [authorKeyPair] = useState<KeyPair>(() => {
     return sodium.crypto_sign_keypair();
