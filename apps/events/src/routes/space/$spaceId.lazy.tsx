@@ -1,9 +1,10 @@
+import { deserialize } from "@/lib/deserialize";
+import { serialize } from "@/lib/serialize";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import sodium, { KeyPair } from "libsodium-wrappers";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useYjsSync } from "secsync-react-yjs";
 import { createStore } from "tinybase";
-import { createLocalPersister } from "tinybase/persisters/persister-browser";
 import { createYjsPersister } from "tinybase/persisters/persister-yjs";
 import {
   Provider,
@@ -45,22 +46,39 @@ export function Space() {
     });
   });
 
-  const [yDoc] = useState(() => {
-    return new Yjs.Doc();
+  const [{ yDoc, pendingChanges }] = useState(() => {
+    console.log("create new yDoc");
+    const yDoc = new Yjs.Doc();
+
+    // load full document
+    const serializedDoc = localStorage.getItem(`space:state:${spaceId}`);
+    if (serializedDoc) {
+      console.log("load serializedDoc", serializedDoc);
+      Yjs.applyUpdateV2(yDoc, deserialize(serializedDoc));
+    }
+
+    // loads the pendingChanges from localStorage
+    const pendingChanges = localStorage.getItem(`space:pending:${spaceId}`);
+
+    return {
+      yDoc,
+      pendingChanges: pendingChanges ? deserialize(pendingChanges) : [],
+    };
   });
 
-  useCreatePersister(
-    store,
-    (store) =>
-      createLocalPersister(store, `space:${spaceId}`, (error) => {
-        console.log("LocalPersister Error:", error);
-      }),
-    [],
-    async (persister) => {
-      await persister.startAutoLoad();
-      await persister.startAutoSave();
-    }
-  );
+  // update the document in localStorage after every change (could be debounced)
+  useEffect(() => {
+    const onUpdate = () => {
+      console.log("persist to localstorage");
+      const fullYDoc = Yjs.encodeStateAsUpdateV2(yDoc);
+      localStorage.setItem(`space:state:${spaceId}`, serialize(fullYDoc));
+    };
+    yDoc.on("updateV2", onUpdate);
+
+    return () => {
+      yDoc.off("updateV2", onUpdate);
+    };
+  }, []);
 
   useCreatePersister(
     store,
@@ -71,8 +89,8 @@ export function Space() {
     [],
     async (persister) => {
       // must be called before startAutoLoad to avoid a loading error in case the document is empty
-      await persister.startAutoSave();
       await persister.startAutoLoad();
+      await persister.startAutoSave();
     }
   );
 
@@ -82,14 +100,11 @@ export function Space() {
 
   useYjsSync({
     yDoc,
-    // pendingChanges: initialData.pendingChanges,
-    // // callback to store the pending changes in
-    // onPendingChangesUpdated: (allChanges) => {
-    //   getDocumentStorage().documentPendingChangesStorage.set(
-    //     documentId,
-    //     serialize(allChanges)
-    //   );
-    // },
+    pendingChanges,
+    // callback to store the pending changes in
+    onPendingChangesUpdated: (allChanges) => {
+      localStorage.setItem(`space:pending:${spaceId}`, serialize(allChanges));
+    },
     documentId: spaceId,
     signatureKeyPair: authorKeyPair,
     websocketEndpoint,
