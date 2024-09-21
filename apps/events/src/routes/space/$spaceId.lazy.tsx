@@ -35,26 +35,18 @@ export function Space() {
 
   const store = useCreateStore(() => {
     // Create the TinyBase Store and initialize the Store's data
-    return createStore()
-      .setValuesSchema({
-        spaceId: { type: "string" },
-      })
-      .setTablesSchema({
-        events: {
-          name: { type: "string" },
-          date: { type: "string" },
-          location: { type: "string" },
-          description: { type: "string" },
-        },
-      });
+    return createStore().setTablesSchema({
+      events: {
+        name: { type: "string" },
+        date: { type: "string" },
+        location: { type: "string" },
+        description: { type: "string" },
+      },
+    });
   });
 
   const [yDoc] = useState(() => {
-    console.log("Creating new Yjs.Doc");
-    const newYDoc = new Yjs.Doc();
-    const map = newYDoc.getMap("space");
-    map.set("id", spaceId);
-    return newYDoc;
+    return new Yjs.Doc();
   });
 
   useCreatePersister(
@@ -78,8 +70,9 @@ export function Space() {
       }),
     [],
     async (persister) => {
-      await persister.startAutoLoad();
+      // must be called before startAutoLoad to avoid a loading error in case the document is empty
       await persister.startAutoSave();
+      await persister.startAutoLoad();
     }
   );
 

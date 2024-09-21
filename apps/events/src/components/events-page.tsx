@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { counter } from "@/lib/counter";
 import { useAddRowCallback, useStore, useTable } from "tinybase/ui-react";
 import * as Yjs from "yjs";
 
@@ -19,7 +20,7 @@ type Props = {
 
 export function EventsPage({ spaceId }: Props) {
   const addEvent = useAddRowCallback("events", () => ({
-    name: "New Event",
+    name: "New Event " + counter(),
     date: "2023-12-31",
     location: "New York, NY",
     description: "A new event",
