@@ -85,6 +85,8 @@ field: {
 }
 ```
 
+- Altering a schema can lead to data loss. This is super scary! https://tinybase.org/guides/schemas/using-schemas/
+
 ## How to send a wallet an invite?
 
 - XMTP? https://docs.xmtp.org/

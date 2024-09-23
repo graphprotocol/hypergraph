@@ -14,6 +14,7 @@ One other downside is that there is no out of the Box JavaScript version:
   - https://github.com/openmls/openmls
   - https://github.com/openmls/openmls/issues/487
 - AWS implementation has wasm support, but didn't see JS bindings: https://github.com/awslabs/mls-rs
+- XMTP implementation: https://github.com/xmtp/libxmtp/tree/main/bindings_wasm/src
 
 Implementations: https://github.com/mlswg/mls-implementations/blob/main/implementation_list.md
 Spec: https://datatracker.ietf.org/doc/rfc9420/
