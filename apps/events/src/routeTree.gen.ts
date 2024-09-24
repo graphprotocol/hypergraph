@@ -13,25 +13,29 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as IndexImport } from './routes/index'
+import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
 
 // Create Virtual Routes
 
-const IndexLazyImport = createFileRoute('/')()
-const SpaceSpaceIdLazyImport = createFileRoute('/space/$spaceId')()
+const LoginLazyImport = createFileRoute('/login')()
 
 // Create/Update Routes
 
-const IndexLazyRoute = IndexLazyImport.update({
+const LoginLazyRoute = LoginLazyImport.update({
+  path: '/login',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
+
+const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any)
 
-const SpaceSpaceIdLazyRoute = SpaceSpaceIdLazyImport.update({
+const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
   path: '/space/$spaceId',
   getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/space/$spaceId.lazy').then((d) => d.Route),
-)
+} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -41,14 +45,21 @@ declare module '@tanstack/react-router' {
       id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginLazyImport
       parentRoute: typeof rootRoute
     }
     '/space/$spaceId': {
       id: '/space/$spaceId'
       path: '/space/$spaceId'
       fullPath: '/space/$spaceId'
-      preLoaderRoute: typeof SpaceSpaceIdLazyImport
+      preLoaderRoute: typeof SpaceSpaceIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -57,38 +68,43 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexLazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdLazyRoute
+  '/': typeof IndexRoute
+  '/login': typeof LoginLazyRoute
+  '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexLazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdLazyRoute
+  '/': typeof IndexRoute
+  '/login': typeof LoginLazyRoute
+  '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexLazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdLazyRoute
+  '/': typeof IndexRoute
+  '/login': typeof LoginLazyRoute
+  '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/space/$spaceId'
+  fullPaths: '/' | '/login' | '/space/$spaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/space/$spaceId'
-  id: '__root__' | '/' | '/space/$spaceId'
+  to: '/' | '/login' | '/space/$spaceId'
+  id: '__root__' | '/' | '/login' | '/space/$spaceId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexLazyRoute: typeof IndexLazyRoute
-  SpaceSpaceIdLazyRoute: typeof SpaceSpaceIdLazyRoute
+  IndexRoute: typeof IndexRoute
+  LoginLazyRoute: typeof LoginLazyRoute
+  SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexLazyRoute: IndexLazyRoute,
-  SpaceSpaceIdLazyRoute: SpaceSpaceIdLazyRoute,
+  IndexRoute: IndexRoute,
+  LoginLazyRoute: LoginLazyRoute,
+  SpaceSpaceIdRoute: SpaceSpaceIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -104,14 +120,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/login",
         "/space/$spaceId"
       ]
     },
     "/": {
-      "filePath": "index.lazy.tsx"
+      "filePath": "index.tsx"
+    },
+    "/login": {
+      "filePath": "login.lazy.tsx"
     },
     "/space/$spaceId": {
-      "filePath": "space/$spaceId.lazy.tsx"
+      "filePath": "space/$spaceId.tsx"
     }
   }
 }

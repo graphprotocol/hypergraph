@@ -1,6 +1,7 @@
 import { deserialize } from "@/lib/deserialize";
+import { isAuthenticated } from "@/lib/isAuthenticated";
 import { serialize } from "@/lib/serialize";
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import sodium, { KeyPair } from "libsodium-wrappers";
 import { useEffect, useState } from "react";
 import { useYjsSync } from "secsync-react-yjs";
@@ -17,8 +18,21 @@ import { EventsPage } from "../../components/events-page";
 
 const websocketEndpoint = "ws://localhost:3030";
 
-export const Route = createLazyFileRoute("/space/$spaceId")({
+export const Route = createFileRoute("/space/$spaceId")({
   component: SpaceWithKey,
+  beforeLoad: () => {
+    if (!isAuthenticated()) {
+      throw redirect({
+        to: "/login",
+        search: {
+          // Use the current location to power a redirect after login
+          // (Do not use `router.state.resolvedLocation` as it can
+          // potentially lag behind the actual current location)
+          redirect: location.href,
+        },
+      });
+    }
+  },
 });
 
 function SpaceWithKey() {
