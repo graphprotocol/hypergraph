@@ -22,3 +22,21 @@ So what they are doing is generate a random keypair for encryption which they wa
 To store it on the server they create anoterh random value which is shared with the server. And the wallet signature of this random value is the secret to encrypt and decrypt the encryption keypair. Since the server does not have the wallet private key it can't create the signature.
 
 In general this is not a good practice. Signature have not been designed to be used as input for an encryption key.
+
+## Process
+
+how the XMTP library works:
+
+Sign-up:
+
+- Generate a random `encryptionPrivateKey` for encryption (and derive a `encryptionPublicKey` from it)
+- Sign the `encryptionPublicKey` with your Wallet and send the `encryptionPublicKey` and `encryptionPublicKeySignature` to XMTP. So anyone can verify that this `encryptionPublicKey` really belongs to your Wallet.
+- Then the `encryptionPrivateKey` backup starts:
+  - Generate a random `prevKey`. Sign it with your wallet to get a `prevKeySignature`. Encrypt the `encryptionPrivateKey` with the `prevKeySignature` as key which results in `keyBackup`. This is the very unusual part in terms of cryptography.
+  - Send `keyBackup` and `prevKey` to the server.
+
+Sign in and restore keys:
+
+- Get the `keyBackup` and `prevKey` from the server
+- create `prevKeySignature` from `prevKey` with your Wallet (Enable Identity)
+- With `prevKeySignature` you can decrypt `keyBackup` and get out the `encryptionPrivateKey`. Tadaaa, you used your Wallet to get back your one private key to have an end-to-end encryption identity.
