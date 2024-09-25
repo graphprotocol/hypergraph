@@ -1,3 +1,4 @@
+import { PrivyProvider } from "@privy-io/react-auth";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { ready } from "libsodium-wrappers";
 import { useEffect, useState } from "react";
@@ -23,5 +24,24 @@ export function Boot() {
     });
   }, []);
 
-  return isReady ? <RouterProvider router={router} /> : null;
+  return isReady ? (
+    <PrivyProvider
+      appId="cm1gt9i1b002g12ih6b6l4vvi"
+      config={{
+        // Display email and wallet as login methods
+        loginMethods: ["wallet"],
+        // Customize Privy's appearance in your app
+        appearance: {
+          theme: "light",
+          accentColor: "#676FFF",
+        },
+        // Create embedded wallets for users who don't have a wallet
+        // embeddedWallets: {
+        //   createOnLogin: "users-without-wallets",
+        // },
+      }}
+    >
+      <RouterProvider router={router} />
+    </PrivyProvider>
+  ) : null;
 }
