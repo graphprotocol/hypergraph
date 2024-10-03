@@ -12,8 +12,8 @@
     "@automerge/automerge": "^2",
     "@automerge/automerge-repo": "^1",
     "@automerge/automerge-repo-react-hooks": "^1",
-    "react": "^18",
-    "@effect/schema": "^0.74"
+    "@effect/schema": "^0.74",
+    "react": "^18"
   },
   "devDependencies": {
     "@automerge/automerge": "^2.2.8",
@@ -21,6 +21,7 @@
     "@automerge/automerge-repo-react-hooks": "^1.2.1",
     "@effect/schema": "^0.74.1",
     "@types/react": "^18.3.3",
-    "vitest": "^2.1.1"
+    "vitest": "^2.1.1",
+    "zod": "^3.23.8"
   }
 }
