@@ -1,5 +1,14 @@
+import { Repo } from "@automerge/automerge-repo";
+import {
+  RepoContext,
+  useDocument,
+} from "@automerge/automerge-repo-react-hooks";
 import * as S from "@effect/schema/Schema";
 import { createContext, ReactNode, useContext } from "react";
+
+const repo = new Repo({
+  network: [],
+});
 
 // Function to create schema functions
 function createFunctions<
@@ -117,6 +126,7 @@ type SpaceContextProps<
   createEntity: ReturnType<
     typeof createFunctions<Attributes, Types>
   >["createEntity"];
+  id: string;
 };
 
 const SpaceContext = createContext<SpaceContextProps<any, any> | undefined>(
@@ -129,23 +139,27 @@ interface SpaceProviderProps<
 > {
   schema: { attributes: Attributes; types: Types };
   children: ReactNode;
+  id: string;
 }
 
 export function SpaceProvider<
   Attributes extends { [attrName: string]: S.Schema<any> },
   Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->({ schema, children }: SpaceProviderProps<Attributes, Types>) {
+>({ schema, children, id }: SpaceProviderProps<Attributes, Types>) {
   const { createEntity } = createFunctions(schema);
 
   const contextValue: SpaceContextProps<Attributes, Types> = {
     ...schema,
     createEntity,
+    id,
   };
 
   return (
-    <SpaceContext.Provider value={contextValue}>
-      {children}
-    </SpaceContext.Provider>
+    <RepoContext.Provider value={repo}>
+      <SpaceContext.Provider value={contextValue}>
+        {children}
+      </SpaceContext.Provider>
+    </RepoContext.Provider>
   );
 }
 
@@ -161,24 +175,25 @@ export function useSchema<
   return context as SpaceContextProps<Attributes, Types>;
 }
 
+export const useSpaceId = () => {
+  const context = useContext(SpaceContext);
+  if (!context) {
+    throw new Error("useSpaceId must be used within a SpaceProvider");
+  }
+  return context?.id;
+};
+export const useSpaceDocument = () => {
+  const id = useSpaceId();
+  // @ts-expect-error this is a valid URL
+  return useDocument(id);
+};
+export const createDocumentId = () => {
+  const { documentId } = repo.create();
+  return documentId;
+};
+
 // Custom hook to use the createEntity function
 export function useCreateEntity() {
   const { createEntity } = useSchema<typeof attributes, typeof types>();
   return createEntity;
 }
-
-const { createEntity } = createFunctions({ attributes, types });
-
-// Creating an entity combining 'Person' and 'User' types
-const personUser = createEntity({
-  types: ["Person", "User"],
-  data: {
-    name: "Alice",
-    age: 30,
-    email: "alice@example.com",
-    isActive: true,
-  },
-});
-
-// personUser is now strongly typed with all attributes from 'Person' and 'User'
-console.log(personUser);

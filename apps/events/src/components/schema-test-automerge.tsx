@@ -1,6 +1,6 @@
 import {
   createDocumentId,
-  SchemaProvider,
+  SpaceProvider,
   type,
   useCreateEntity,
   useSpaceDocument,
@@ -45,9 +45,9 @@ export const SchemaTestAutomerge: React.FC = () => {
 
   return (
     <>
-      <SchemaProvider schema={schema}>
+      <SpaceProvider schema={schema} id={id}>
         <Events />
-      </SchemaProvider>
+      </SpaceProvider>
     </>
   );
 };
@@ -59,7 +59,7 @@ export const Events: React.FC = () => {
   const createEntity = useCreateEntity();
 
   useEffect(() => {
-    const personUser = createEntity({
+    createEntity({
       types: ["Person", "User"],
       data: {
         name: "Alice",
