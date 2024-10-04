@@ -1,33 +1,11 @@
-import { Schema } from "@effect/schema";
 import {
   Boolean,
   Schema as EffectSchema,
   Number,
   String,
-  Struct,
-  Union,
 } from "@effect/schema/Schema";
-
 import { useY } from "react-yjs";
 import * as Yjs from "yjs";
-
-const Birthday = Struct({
-  birthday: String,
-});
-
-const Age = Struct({
-  age: Number,
-});
-
-const schema = {
-  entity: {
-    user: [Birthday, Age],
-  },
-} as const;
-
-const User = Union(...schema.entity.user);
-
-type UserType = Schema.Schema.Type<typeof User>;
 
 export const t = {
   String: String,

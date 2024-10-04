@@ -265,3 +265,4 @@ const { schema: schemaV2, migrate: migrateV2 } : Migration({
 ## Open Questions
 
 - What about collections?
+- Can an entity have only attributes defined in a type or also additional ones?

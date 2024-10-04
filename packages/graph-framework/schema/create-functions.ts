@@ -1,28 +1,13 @@
 import * as S from "@effect/schema/Schema";
 
-// Define base attribute types
-const AttributeTypes = {
-  string: S.String,
-  number: S.Number,
-  boolean: S.Boolean,
-} as const;
-type BaseType = keyof typeof AttributeTypes;
-
-// Function to define the schema
-function defineSchema<
-  Attributes extends { [attrName: string]: BaseType },
+export function createFunctions<
+  Attributes extends { [attrName: string]: S.Schema<any> },
   Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
 >({ attributes, types }: { attributes: Attributes; types: Types }) {
   // Build attribute schemas
   const attributeSchemas: {
-    [K in keyof Attributes]: (typeof AttributeTypes)[Attributes[K]];
-  } = {} as any;
-
-  for (const attrName in attributes) {
-    const baseType = attributes[attrName];
-    const schemaType = AttributeTypes[baseType];
-    attributeSchemas[attrName as keyof Attributes] = schemaType;
-  }
+    [K in keyof Attributes]: Attributes[K];
+  } = attributes;
 
   // Build type schemas
   const typeSchemas: {
@@ -86,51 +71,24 @@ function defineSchema<
   }
 
   // createEntity function with type safety
-  function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>(
-    typesToCombine: [...TypeNames],
-    data: MergedType<TypeNames>
-  ): MergedType<TypeNames> {
-    if (typesToCombine.length === 0) {
+  function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>({
+    types,
+    data,
+  }: {
+    types: [...TypeNames];
+    data: MergedType<TypeNames>;
+  }): MergedType<TypeNames> {
+    if (types.length === 0) {
       throw new Error("Entity must have at least one type");
     }
 
-    const mergedSchema = buildMergedSchema(typesToCombine);
-    const result = S.decode(mergedSchema)(data);
+    const mergedSchema = buildMergedSchema(types);
+    const result = S.decodeUnknownSync(mergedSchema)(data);
 
-    // Adjust this based on how decode returns the result in your version
-    if (result._tag === "Left") {
-      throw new Error(`Validation failed: ${JSON.stringify(result.left)}`);
-    }
-
-    return result.right as MergedType<TypeNames>;
+    return result as MergedType<TypeNames>;
   }
 
   return {
     createEntity,
   };
 }
-
-const attributes = {
-  name: "string",
-  age: "number",
-  isActive: "boolean",
-  email: "string",
-} as const;
-
-const types = {
-  Person: ["name", "age"] as const,
-  User: ["name", "email", "isActive"] as const,
-} as const;
-
-const { createEntity } = defineSchema({ attributes, types });
-
-// Creating an entity combining 'Person' and 'User' types
-const personUser = createEntity(["Person", "User"], {
-  name: "Alice",
-  age: 30,
-  email: "alice@example.com",
-  isActive: true,
-});
-
-// personUser is now strongly typed with all attributes from 'Person' and 'User'
-console.log(personUser);

@@ -1,6 +1,7 @@
 import {
   createDocumentId,
   SpaceProvider,
+  type,
   useSpaceDocument,
   useSpaceId,
 } from "graph-framework";
@@ -30,7 +31,21 @@ export const SchemaTestAutomerge: React.FC = () => {
 
   return (
     <>
-      <SpaceProvider id={id} schema={{ events: { id: "string" } }}>
+      <SpaceProvider
+        id={id}
+        schema={{
+          attributes: {
+            name: type.Text,
+            age: type.Number,
+            isActive: type.Checkbox,
+            email: type.Text,
+          },
+          types: {
+            Person: ["name", "age"],
+            User: ["name", "email", "isActive"],
+          },
+        }}
+      >
         <Events />
       </SpaceProvider>
     </>
