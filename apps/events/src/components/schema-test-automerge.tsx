@@ -1,7 +1,8 @@
 import {
   createDocumentId,
-  SpaceProvider,
+  SchemaProvider,
   type,
+  useCreateEntity,
   useSpaceDocument,
   useSpaceId,
 } from "graph-framework";
@@ -17,6 +18,19 @@ import {
 } from "./ui/card";
 import { Input } from "./ui/input";
 
+const schema = {
+  attributes: {
+    name: type.Text,
+    age: type.Number,
+    isActive: type.Checkbox,
+    email: type.Text,
+  },
+  types: {
+    Person: ["name", "age"] as const,
+    User: ["name", "email", "isActive"] as const,
+  },
+};
+
 export const SchemaTestAutomerge: React.FC = () => {
   const [id, setId] = React.useState<string | null>(null);
 
@@ -31,23 +45,9 @@ export const SchemaTestAutomerge: React.FC = () => {
 
   return (
     <>
-      <SpaceProvider
-        id={id}
-        schema={{
-          attributes: {
-            name: type.Text,
-            age: type.Number,
-            isActive: type.Checkbox,
-            email: type.Text,
-          },
-          types: {
-            Person: ["name", "age"],
-            User: ["name", "email", "isActive"],
-          },
-        }}
-      >
+      <SchemaProvider schema={schema}>
         <Events />
-      </SpaceProvider>
+      </SchemaProvider>
     </>
   );
 };
@@ -56,6 +56,19 @@ export const Events: React.FC = () => {
   const [newTodo, setNewTodo] = React.useState("");
   const id = useSpaceId();
   const [doc, changeDoc] = useSpaceDocument();
+  const createEntity = useCreateEntity();
+
+  useEffect(() => {
+    const personUser = createEntity({
+      types: ["Person", "User"],
+      data: {
+        name: "Alice",
+        age: 30,
+        email: "alice@example.com",
+        isActive: true,
+      },
+    });
+  }, []);
 
   return (
     <main className="flex-1">
