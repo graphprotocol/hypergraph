@@ -28,6 +28,7 @@ const schema = {
   types: {
     Person: ["name", "age"] as const,
     User: ["name", "email", "isActive"] as const,
+    Event: ["name"] as const,
   },
 };
 
@@ -56,7 +57,10 @@ export const Events: React.FC = () => {
   const [newTodo, setNewTodo] = React.useState("");
   const id = useSpaceId();
   const [doc, changeDoc] = useSpaceDocument();
-  const createEntity = useCreateEntity();
+  const createEntity = useCreateEntity<
+    typeof schema.attributes,
+    typeof schema.types
+  >();
 
   useEffect(() => {
     createEntity({
@@ -66,6 +70,12 @@ export const Events: React.FC = () => {
         age: 30,
         email: "alice@example.com",
         isActive: true,
+      },
+    });
+    createEntity({
+      types: ["Event"],
+      data: {
+        name: "Bob",
       },
     });
   }, []);

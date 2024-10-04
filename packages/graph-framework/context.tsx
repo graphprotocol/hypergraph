@@ -104,18 +104,6 @@ function createFunctions<
   };
 }
 
-const attributes = {
-  name: S.String,
-  age: S.Number,
-  isActive: S.Boolean,
-  email: S.String,
-} as const;
-
-const types = {
-  Person: ["name", "age"] as const,
-  User: ["name", "email", "isActive"] as const,
-} as const;
-
 // Create a React Context to provide the schema
 type SpaceContextProps<
   Attributes extends { [attrName: string]: S.Schema<any, any, never> },
@@ -193,7 +181,10 @@ export const createDocumentId = () => {
 };
 
 // Custom hook to use the createEntity function
-export function useCreateEntity() {
-  const { createEntity } = useSchema<typeof attributes, typeof types>();
+export function useCreateEntity<
+  Attributes extends { [attrName: string]: S.Schema<any> },
+  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
+>() {
+  const { createEntity } = useSchema<Attributes, Types>();
   return createEntity;
 }
