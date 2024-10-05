@@ -46,5 +46,10 @@ export const schema = {
   // },
 };
 
-export const { SpaceProvider, useCreateEntity, useSpaceId, createDocumentId } =
-  createFunctions(schema);
+export const {
+  SpaceProvider,
+  useCreateEntity,
+  useSpaceId,
+  createDocumentId,
+  useQuery,
+} = createFunctions(schema);

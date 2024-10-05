@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useCreateEntity, useSpaceId } from "./schema";
+import React from "react";
+import { useCreateEntity, useQuery, useSpaceId } from "./schema";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -15,10 +15,7 @@ export const Events: React.FC = () => {
   const id = useSpaceId();
   const createEntity = useCreateEntity();
 
-  // const entities = useQuery({
-  //   // TODO include it a where clause
-  //   types: ["Event"] as const,
-  // });
+  const entities = useQuery({ types: ["Event"] });
 
   // const entities = useQuery({
   //   where: {
@@ -41,43 +38,40 @@ export const Events: React.FC = () => {
   //   },
   // });
 
-  useEffect(() => {
-    // createEntity({
-    //   types: ["Event"],
-    //   data: {
-    //     name: "Silvester in NY",
-    //   },
-    // });
+  // useEffect(() => {
+  //   // createEntity({
+  //   //   types: ["Event"],
+  //   //   data: {
+  //   //     name: "Silvester in NY",
+  //   //   },
+  //   // });
 
-    // TODO create - can be an object or an array
-    createEntity({
-      types: ["Person", "User"], // TODO can types be inferred if they are located in data?
-      data: {
-        name: "Alice",
-        age: 30,
-        email: "alice@example.com",
-        // isActive: true,
-        // friends: ["abc", "def"], // ids to connect
-        // friends: [
-        //   { id: "abc", name: "abc" },
-        //   { id: "def", name: "lala" },
-        // ], // create objects or overwrite existing ones
-        // friends: ["abc", { id: "def", name: "lala" }], // mix between connect and create
-      },
-    });
+  //   // TODO create - can be an object or an array
+  //   createEntity({
+  //     types: ["Person", "User"], // TODO can types be inferred if they are located in data?
+  //     data: {
+  //       name: "Alice",
+  //       age: 30,
+  //       email: "alice@example.com",
+  //       // isActive: true,
+  //       // friends: ["abc", "def"], // ids to connect
+  //       // friends: [
+  //       //   { id: "abc", name: "abc" },
+  //       //   { id: "def", name: "lala" },
+  //       // ], // create objects or overwrite existing ones
+  //       // friends: ["abc", { id: "def", name: "lala" }], // mix between connect and create
+  //     },
+  //   });
 
-    // createEntity(["Person", "User"], {
-    //   name: "Alice",
-    //   age: 30,
-    //   email: "alice@example.com",
-    //   isActive: true,
-    // });
-  }, []);
+  //   // createEntity(["Person", "User"], {
+  //   //   name: "Alice",
+  //   //   age: 30,
+  //   //   email: "alice@example.com",
+  //   //   isActive: true,
+  //   // });
+  // }, []);
 
   // TODO different API for setting a Triple with a value on a entities
-
-  // console.log("entities:", entities);
-  const entities = {};
 
   return (
     <main className="flex-1">
@@ -109,7 +103,7 @@ export const Events: React.FC = () => {
               Object.keys(entities).map((entityId) => {
                 const entity = entities[entityId];
                 return (
-                  <Card key={entity.name}>
+                  <Card key={entityId}>
                     <CardHeader>
                       <CardTitle>
                         <Input

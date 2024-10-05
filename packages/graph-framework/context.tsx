@@ -1,4 +1,4 @@
-import { Repo } from "@automerge/automerge-repo";
+import { AnyDocumentId, Repo } from "@automerge/automerge-repo";
 import {
   RepoContext,
   useDocument,
@@ -86,8 +86,47 @@ export function createFunctions<
     return S.Struct(mergedFields);
   }
 
-  // createEntity function with type safety
-  const createEntityWrapper = (changeDoc) => {
+  // Create a React Context to provide the schema
+  type SpaceContextProps = {
+    id: string;
+  };
+
+  const SpaceContext = createContext<SpaceContextProps | undefined>(undefined);
+
+  function SpaceProvider({ children, id }: SpaceProviderProps) {
+    const contextValue: SpaceContextProps = {
+      id,
+    };
+
+    return (
+      <RepoContext.Provider value={repo}>
+        <SpaceContext.Provider value={contextValue}>
+          {children}
+        </SpaceContext.Provider>
+      </RepoContext.Provider>
+    );
+  }
+
+  const useSpaceId = () => {
+    const context = useContext(SpaceContext);
+    if (!context) {
+      throw new Error("useSpaceId must be used within a SpaceProvider");
+    }
+    return context?.id;
+  };
+
+  const createDocumentId = () => {
+    const { documentId } = repo.create();
+    return documentId;
+  };
+
+  // Custom hook to use the createEntity function
+  function useCreateEntity() {
+    const id = useSpaceId();
+    const [doc, changeDoc] = useDocument(id as AnyDocumentId);
+
+    console.log("useCreateEntity doc", doc);
+
     function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>({
       types,
       data,
@@ -103,11 +142,10 @@ export function createFunctions<
       const result = S.decodeUnknownSync(mergedSchema)(data);
 
       changeDoc((doc) => {
-        console.log("changeDoc doc", doc);
-        doc.entities = doc.entities || {};
-        console.log("changeDoc doc2", doc.entities);
+        if (!doc.entities) {
+          doc.entities = {};
+        }
         const entityId = createDocumentId();
-        console.log("changeDoc entities", doc.entities);
         doc.entities[entityId] = {
           types,
           data: result,
@@ -116,70 +154,40 @@ export function createFunctions<
 
       return result as MergedType<TypeNames>;
     }
+
     return createEntity;
-  };
+  }
 
-  // Create a React Context to provide the schema
-  type SpaceContextProps = {
-    createEntityWrapper: ReturnType<
-      typeof createFunctions<Attributes, Types>
-    >["createEntityWrapper"];
-    id: string;
-  };
-
-  const SpaceContext = createContext<SpaceContextProps | undefined>(undefined);
-
-  function SpaceProvider({ children, id }: SpaceProviderProps) {
-    const contextValue: SpaceContextProps = {
-      createEntityWrapper: createEntityWrapper,
-      id,
+  function useQuery<TypeNames extends (keyof TypeSchemasMap)[]>({
+    types,
+    where,
+  }: {
+    types: [...TypeNames];
+    where?: {
+      [AttrName in keyof Attributes]?: {
+        equals?: S.Schema.Type<Attributes[AttrName]>;
+        contains?: S.Schema.Type<Attributes[AttrName]>;
+      };
     };
-
-    return (
-      <RepoContext.Provider value={repo}>
-        <SpaceContext.Provider value={contextValue}>
-          {children}
-        </SpaceContext.Provider>
-      </RepoContext.Provider>
-    );
-  }
-
-  // Custom hook to use the schema context
-  function useSchema() {
-    const context = useContext(SpaceContext);
-    if (!context) {
-      throw new Error("useSchema must be used within a SpaceProvider");
-    }
-    return context as SpaceContextProps;
-  }
-
-  const useSpaceId = () => {
-    const context = useContext(SpaceContext);
-    if (!context) {
-      throw new Error("useSpaceId must be used within a SpaceProvider");
-    }
-    return context?.id;
-  };
-  const useSpaceDocument = () => {
+  }) {
     const id = useSpaceId();
-    // @ts-expect-error this is a valid URL
-    return useDocument(id);
-  };
-  const createDocumentId = () => {
-    const { documentId } = repo.create();
-    return documentId;
-  };
+    const [doc] = useDocument(id as AnyDocumentId);
 
-  // Custom hook to use the createEntity function
-  function useCreateEntity() {
-    const { createEntityWrapper } = useSchema();
-    const [doc, changeDoc] = useSpaceDocument();
-    return createEntityWrapper(changeDoc);
+    const entities = doc.entities || {};
+
+    // iterate over entities and get the property data
+    const result: Record<string, MergedType<TypeNames>> = {};
+
+    for (const entityId in entities) {
+      result[entityId] = entities[entityId].data as MergedType<TypeNames>;
+    }
+
+    return result;
   }
 
   return {
-    createEntityWrapper,
     useCreateEntity,
+    useQuery,
     SpaceProvider,
     useSpaceId,
     createDocumentId,
