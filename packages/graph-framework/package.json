@@ -21,7 +21,11 @@
     "@automerge/automerge-repo-react-hooks": "^1.2.1",
     "@effect/schema": "^0.74.1",
     "@types/react": "^18.3.3",
+    "@types/uuid": "^10.0.0",
     "vitest": "^2.1.1",
     "zod": "^3.23.8"
+  },
+  "dependencies": {
+    "uuid": "^10.0.0"
   }
 }

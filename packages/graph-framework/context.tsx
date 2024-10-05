@@ -1,4 +1,4 @@
-import { Repo } from "@automerge/automerge-repo";
+import { AnyDocumentId, Repo } from "@automerge/automerge-repo";
 import {
   RepoContext,
   useDocument,
@@ -6,12 +6,17 @@ import {
 import * as S from "@effect/schema/Schema";
 import { createContext, ReactNode, useContext } from "react";
 
+interface SpaceProviderProps {
+  children: ReactNode;
+  id: string;
+}
+
 const repo = new Repo({
   network: [],
 });
 
 // Function to create schema functions
-function createFunctions<
+export function createFunctions<
   Attributes extends { [attrName: string]: S.Schema<any> },
   Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
 >({ attributes, types }: { attributes: Attributes; types: Types }) {
@@ -81,110 +86,110 @@ function createFunctions<
     return S.Struct(mergedFields);
   }
 
-  // createEntity function with type safety
-  function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>({
-    types,
-    data,
-  }: {
-    types: [...TypeNames];
-    data: MergedType<TypeNames>;
-  }): MergedType<TypeNames> {
-    if (types.length === 0) {
-      throw new Error("Entity must have at least one type");
+  // Create a React Context to provide the schema
+  type SpaceContextProps = {
+    id: string;
+  };
+
+  const SpaceContext = createContext<SpaceContextProps | undefined>(undefined);
+
+  function SpaceProvider({ children, id }: SpaceProviderProps) {
+    const contextValue: SpaceContextProps = {
+      id,
+    };
+
+    return (
+      <RepoContext.Provider value={repo}>
+        <SpaceContext.Provider value={contextValue}>
+          {children}
+        </SpaceContext.Provider>
+      </RepoContext.Provider>
+    );
+  }
+
+  const useSpaceId = () => {
+    const context = useContext(SpaceContext);
+    if (!context) {
+      throw new Error("useSpaceId must be used within a SpaceProvider");
+    }
+    return context?.id;
+  };
+
+  const createDocumentId = () => {
+    const { documentId } = repo.create();
+    return documentId;
+  };
+
+  // Custom hook to use the createEntity function
+  function useCreateEntity() {
+    const id = useSpaceId();
+    const [doc, changeDoc] = useDocument(id as AnyDocumentId);
+
+    console.log("useCreateEntity doc", doc);
+
+    function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>({
+      types,
+      data,
+    }: {
+      types: [...TypeNames];
+      data: MergedType<TypeNames>;
+    }): MergedType<TypeNames> {
+      if (types.length === 0) {
+        throw new Error("Entity must have at least one type");
+      }
+
+      const mergedSchema = buildMergedSchema(types);
+      const result = S.decodeUnknownSync(mergedSchema)(data);
+
+      changeDoc((doc) => {
+        if (!doc.entities) {
+          doc.entities = {};
+        }
+        const entityId = createDocumentId();
+        doc.entities[entityId] = {
+          types,
+          data: result,
+        };
+      });
+
+      return result as MergedType<TypeNames>;
     }
 
-    const mergedSchema = buildMergedSchema(types);
-    const result = S.decodeUnknownSync(mergedSchema)(data);
+    return createEntity;
+  }
 
-    return result as MergedType<TypeNames>;
+  function useQuery<TypeNames extends (keyof TypeSchemasMap)[]>({
+    types,
+    where,
+  }: {
+    types: [...TypeNames];
+    where?: {
+      [AttrName in keyof Attributes]?: {
+        equals?: S.Schema.Type<Attributes[AttrName]>;
+        contains?: S.Schema.Type<Attributes[AttrName]>;
+      };
+    };
+  }) {
+    const id = useSpaceId();
+    const [doc] = useDocument(id as AnyDocumentId);
+
+    const entities = doc.entities || {};
+
+    // iterate over entities and get the property data
+    const result: Record<string, MergedType<TypeNames>> = {};
+
+    for (const entityId in entities) {
+      result[entityId] = entities[entityId].data as MergedType<TypeNames>;
+    }
+
+    return result;
   }
 
   return {
-    createEntity,
+    useCreateEntity,
+    useQuery,
+    SpaceProvider,
+    useSpaceId,
+    createDocumentId,
   };
-}
-
-// Create a React Context to provide the schema
-type SpaceContextProps<
-  Attributes extends { [attrName: string]: S.Schema<any, any, never> },
-  Types extends { [typeName: string]: readonly (keyof Attributes)[] },
-> = {
-  attributes: Attributes;
-  types: Types;
-  createEntity: ReturnType<
-    typeof createFunctions<Attributes, Types>
-  >["createEntity"];
-  id: string;
-};
-
-const SpaceContext = createContext<SpaceContextProps<any, any> | undefined>(
-  undefined
-);
-
-interface SpaceProviderProps<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
-> {
-  schema: { attributes: Attributes; types: Types };
-  children: ReactNode;
-  id: string;
-}
-
-export function SpaceProvider<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->({ schema, children, id }: SpaceProviderProps<Attributes, Types>) {
-  const { createEntity } = createFunctions(schema);
-
-  const contextValue: SpaceContextProps<Attributes, Types> = {
-    ...schema,
-    createEntity,
-    id,
-  };
-
-  return (
-    <RepoContext.Provider value={repo}>
-      <SpaceContext.Provider value={contextValue}>
-        {children}
-      </SpaceContext.Provider>
-    </RepoContext.Provider>
-  );
-}
-
-// Custom hook to use the schema context
-export function useSchema<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->() {
-  const context = useContext(SpaceContext);
-  if (!context) {
-    throw new Error("useSchema must be used within a SpaceProvider");
-  }
-  return context as SpaceContextProps<Attributes, Types>;
-}
-
-export const useSpaceId = () => {
-  const context = useContext(SpaceContext);
-  if (!context) {
-    throw new Error("useSpaceId must be used within a SpaceProvider");
-  }
-  return context?.id;
-};
-export const useSpaceDocument = () => {
-  const id = useSpaceId();
-  // @ts-expect-error this is a valid URL
-  return useDocument(id);
-};
-export const createDocumentId = () => {
-  const { documentId } = repo.create();
-  return documentId;
-};
-
-// Custom hook to use the createEntity function
-export function useCreateEntity<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->() {
-  const { createEntity } = useSchema<Attributes, Types>();
-  return createEntity;
 }
