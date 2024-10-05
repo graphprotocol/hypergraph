@@ -4,5 +4,4 @@ export const type = {
   Text: S.String,
   Number: S.Number,
   Checkbox: S.Boolean,
-  // ... uri, time
 };

@@ -6,12 +6,17 @@ import {
 import * as S from "@effect/schema/Schema";
 import { createContext, ReactNode, useContext } from "react";
 
+interface SpaceProviderProps {
+  children: ReactNode;
+  id: string;
+}
+
 const repo = new Repo({
   network: [],
 });
 
 // Function to create schema functions
-function createFunctions<
+export function createFunctions<
   Attributes extends { [attrName: string]: S.Schema<any> },
   Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
 >({ attributes, types }: { attributes: Attributes; types: Types }) {
@@ -114,150 +119,69 @@ function createFunctions<
     return createEntity;
   };
 
+  // Create a React Context to provide the schema
+  type SpaceContextProps = {
+    createEntityWrapper: ReturnType<
+      typeof createFunctions<Attributes, Types>
+    >["createEntityWrapper"];
+    id: string;
+  };
+
+  const SpaceContext = createContext<SpaceContextProps | undefined>(undefined);
+
+  function SpaceProvider({ children, id }: SpaceProviderProps) {
+    const contextValue: SpaceContextProps = {
+      createEntityWrapper: createEntityWrapper,
+      id,
+    };
+
+    return (
+      <RepoContext.Provider value={repo}>
+        <SpaceContext.Provider value={contextValue}>
+          {children}
+        </SpaceContext.Provider>
+      </RepoContext.Provider>
+    );
+  }
+
+  // Custom hook to use the schema context
+  function useSchema() {
+    const context = useContext(SpaceContext);
+    if (!context) {
+      throw new Error("useSchema must be used within a SpaceProvider");
+    }
+    return context as SpaceContextProps;
+  }
+
+  const useSpaceId = () => {
+    const context = useContext(SpaceContext);
+    if (!context) {
+      throw new Error("useSpaceId must be used within a SpaceProvider");
+    }
+    return context?.id;
+  };
+  const useSpaceDocument = () => {
+    const id = useSpaceId();
+    // @ts-expect-error this is a valid URL
+    return useDocument(id);
+  };
+  const createDocumentId = () => {
+    const { documentId } = repo.create();
+    return documentId;
+  };
+
+  // Custom hook to use the createEntity function
+  function useCreateEntity() {
+    const { createEntityWrapper } = useSchema();
+    const [doc, changeDoc] = useSpaceDocument();
+    return createEntityWrapper(changeDoc);
+  }
+
   return {
     createEntityWrapper,
+    useCreateEntity,
+    SpaceProvider,
+    useSpaceId,
+    createDocumentId,
   };
-}
-
-// Create a React Context to provide the schema
-type SpaceContextProps<
-  Attributes extends { [attrName: string]: S.Schema<any, any, never> },
-  Types extends { [typeName: string]: readonly (keyof Attributes)[] },
-> = {
-  attributes: Attributes;
-  types: Types;
-  createEntityWrapper: ReturnType<
-    typeof createFunctions<Attributes, Types>
-  >["createEntityWrapper"];
-  id: string;
-};
-
-const SpaceContext = createContext<SpaceContextProps<any, any> | undefined>(
-  undefined
-);
-
-interface SpaceProviderProps<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
-> {
-  schema: { attributes: Attributes; types: Types };
-  children: ReactNode;
-  id: string;
-}
-
-export function SpaceProvider<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->({ schema, children, id }: SpaceProviderProps<Attributes, Types>) {
-  const { createEntityWrapper } = createFunctions(schema);
-
-  const contextValue: SpaceContextProps<Attributes, Types> = {
-    ...schema,
-    createEntityWrapper: createEntityWrapper,
-    id,
-  };
-
-  return (
-    <RepoContext.Provider value={repo}>
-      <SpaceContext.Provider value={contextValue}>
-        {children}
-      </SpaceContext.Provider>
-    </RepoContext.Provider>
-  );
-}
-
-// Custom hook to use the schema context
-export function useSchema<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->() {
-  const context = useContext(SpaceContext);
-  if (!context) {
-    throw new Error("useSchema must be used within a SpaceProvider");
-  }
-  return context as SpaceContextProps<Attributes, Types>;
-}
-
-export const useSpaceId = () => {
-  const context = useContext(SpaceContext);
-  if (!context) {
-    throw new Error("useSpaceId must be used within a SpaceProvider");
-  }
-  return context?.id;
-};
-export const useSpaceDocument = () => {
-  const id = useSpaceId();
-  // @ts-expect-error this is a valid URL
-  return useDocument(id);
-};
-export const createDocumentId = () => {
-  const { documentId } = repo.create();
-  return documentId;
-};
-
-// Custom hook to use the createEntity function
-export function useCreateEntity<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->() {
-  const { createEntityWrapper } = useSchema<Attributes, Types>();
-  const [doc, changeDoc] = useSpaceDocument();
-  return createEntityWrapper(changeDoc);
-}
-
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
-  ? I
-  : never;
-
-// Updated MergedAttributesType
-type MergedAttributesType<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  AttributeNames extends keyof Attributes,
-> = {
-  [K in AttributeNames]: S.Schema.Type<Attributes[K]>;
-};
-
-export function useQuery<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
-  TypeNames extends readonly (keyof Types)[],
->({ types }: { types: TypeNames }) {
-  if (types.length === 0) {
-    throw new Error(
-      "You must provide at least one type in the options object."
-    );
-  }
-
-  // Compute attribute names and selected attributes
-  type AttributeNames = Types[TypeNames[number]][number];
-  type SelectedAttributes = MergedAttributesType<Attributes, AttributeNames>;
-
-  const [doc] = useSpaceDocument();
-
-  if (!doc || !doc.entities) {
-    return {} as Record<string, SelectedAttributes>;
-  }
-
-  const data: Record<string, SelectedAttributes> = {};
-
-  for (const entityId in doc.entities) {
-    const entity = doc.entities[entityId];
-    if (!entity.data) {
-      throw new Error(`Entity ${entityId} is missing data`);
-    }
-
-    const entityTypes: (keyof Types)[] = entity.types;
-
-    const hasMatchingType = entityTypes.some((entityType) =>
-      types.includes(entityType)
-    );
-
-    if (hasMatchingType) {
-      data[entityId] = entity.data as SelectedAttributes;
-    }
-  }
-
-  return data;
 }

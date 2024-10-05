@@ -1,6 +1,5 @@
-import { useCreateEntity, useQuery, useSpaceId } from "graph-framework";
 import React, { useEffect } from "react";
-import { schema } from "./schema";
+import { useCreateEntity, useSpaceId } from "./schema";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -14,36 +13,33 @@ import { Input } from "./ui/input";
 export const Events: React.FC = () => {
   const [newTodo, setNewTodo] = React.useState("");
   const id = useSpaceId();
-  const createEntity = useCreateEntity<
-    typeof schema.attributes,
-    typeof schema.types
-  >();
+  const createEntity = useCreateEntity();
 
-  const entities = useQuery({
-    // TODO include it a where clause
-    types: ["Event"] as const,
-  });
+  // const entities = useQuery({
+  //   // TODO include it a where clause
+  //   types: ["Event"] as const,
+  // });
 
-  const entities = useQuery({
-    where: {
-      name: {
-        equals: "Alice",
-      },
-      // TODO include it a where clause
-      types: {
-        contains: ["Person"] as const,
-      },
-      select: {
-        name: true,
-        friends: {
-          // where: {},
-          select: {
-            name: true,
-          },
-        },
-      },
-    },
-  });
+  // const entities = useQuery({
+  //   where: {
+  //     name: {
+  //       equals: "Alice",
+  //     },
+  //     // TODO include it a where clause
+  //     types: {
+  //       contains: ["Person"] as const,
+  //     },
+  //     select: {
+  //       name: true,
+  //       friends: {
+  //         // where: {},
+  //         select: {
+  //           name: true,
+  //         },
+  //       },
+  //     },
+  //   },
+  // });
 
   useEffect(() => {
     // createEntity({
@@ -60,7 +56,7 @@ export const Events: React.FC = () => {
         name: "Alice",
         age: 30,
         email: "alice@example.com",
-        isActive: true,
+        // isActive: true,
         // friends: ["abc", "def"], // ids to connect
         // friends: [
         //   { id: "abc", name: "abc" },
@@ -80,7 +76,8 @@ export const Events: React.FC = () => {
 
   // TODO different API for setting a Triple with a value on a entities
 
-  console.log("entities:", entities);
+  // console.log("entities:", entities);
+  const entities = {};
 
   return (
     <main className="flex-1">

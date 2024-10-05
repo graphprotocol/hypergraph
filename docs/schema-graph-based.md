@@ -266,3 +266,66 @@ const { schema: schemaV2, migrate: migrateV2 } : Migration({
 
 - What about collections?
 - Can an entity have only attributes defined in a type or also additional ones?
+
+## New version
+
+Types:
+
+```tsx
+import * as S from "@effect/schema/Schema";
+
+export const type = {
+  Text: S.String,
+  Number: S.Number,
+  Checkbox: S.Boolean,
+};
+```
+
+Schema example:
+
+```tsx
+export const schema: Schema = {
+  attributes: {
+    name: type.Text,
+    age: type.Number,
+    isActive: type.Checkbox,
+    email: type.Text,
+  },
+  types: {
+    Person: ["name", "age"],
+    User: ["name", "email"],
+    Event: ["name"],
+  },
+};
+```
+
+Hooks:
+
+```tsx
+const createEntity = useCreateEntity();
+createEntity(["Person", "User"], {
+  // create entity with type Person and User
+  name: "John",
+  age: 30,
+  email: "john@example.com",
+});
+```
+
+```tsx
+// query all entities of type Person and User where name is John
+const entities = useQuery({
+  where: {
+    type: ["Person", "User"], // must be both Person and User
+    name: {
+      equals: "John",
+    },
+  },
+});
+
+// query all entities of type Person
+const entities = useQuery({
+  where: {
+    type: ["Person"],
+  },
+});
+```

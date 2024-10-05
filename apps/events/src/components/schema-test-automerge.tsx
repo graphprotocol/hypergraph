@@ -1,7 +1,6 @@
-import { createDocumentId, SpaceProvider } from "graph-framework";
 import React, { useEffect } from "react";
 import { Events } from "./events";
-import { schema } from "./schema";
+import { SpaceProvider, createDocumentId } from "./schema";
 
 export const SchemaTestAutomerge: React.FC = () => {
   const [id, setId] = React.useState<string | null>(null);
@@ -17,7 +16,7 @@ export const SchemaTestAutomerge: React.FC = () => {
 
   return (
     <>
-      <SpaceProvider schema={schema} id={id}>
+      <SpaceProvider id={id}>
         <Events />
       </SpaceProvider>
     </>
