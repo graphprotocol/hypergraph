@@ -10,10 +10,10 @@ import {
 } from "./ui/card";
 import { Input } from "./ui/input";
 
-export const Events: React.FC = () => {
-  const entities = useQuery({ types: ["Event"] });
+export const Users: React.FC = () => {
+  const entities = useQuery({ types: ["User"] });
 
-  console.log("Rendering Events", entities);
+  console.log("Rendering Users", entities);
 
   // const entities = useQuery({
   //   where: {
@@ -92,7 +92,7 @@ export const Events: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p>A new event</p>
+                <p>A new user</p>
               </CardContent>
               <CardFooter className="flex gap-2">
                 <Button

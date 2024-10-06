@@ -2,9 +2,17 @@ import { AnyDocumentId, Repo } from "@automerge/automerge-repo";
 import {
   RepoContext,
   useDocument,
+  useRepo,
 } from "@automerge/automerge-repo-react-hooks";
 import * as S from "@effect/schema/Schema";
-import { createContext, ReactNode, useContext } from "react";
+import fastDeepEqual from "fast-deep-equal";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 
 interface SpaceProviderProps {
   children: ReactNode;
@@ -166,16 +174,57 @@ export function createFunctions<
       };
     };
   }) {
+    const prevEntitiesRef = useRef<any>(null);
     const id = useSpaceId();
-    const [doc] = useDocument<DocumentContent>(id as AnyDocumentId);
-    if (!doc) {
-      return {} as Record<string, MergedType<TypeNames>>;
-    }
+    const repo = useRepo();
+    const handle = id ? repo.find<DocumentContent>(id as AnyDocumentId) : null;
 
-    // const entities = useSyncExternalStore(() => )
+    const subscribe = (callback: () => void) => {
+      const handleChange = () => {
+        callback();
+      };
 
-    const entities = doc.entities || {};
-    return entities as Record<string, MergedType<TypeNames>>;
+      const handleDelete = () => {
+        callback();
+      };
+
+      handle?.on("change", handleChange);
+      handle?.on("delete", handleDelete);
+
+      return () => {
+        handle?.off("change", handleChange);
+        handle?.off("delete", handleDelete);
+      };
+    };
+
+    const entities = useSyncExternalStore(
+      subscribe,
+      (): Record<string, MergedType<TypeNames>> => {
+        const doc = handle?.docSync();
+        if (!doc) {
+          prevEntitiesRef.current = {};
+          return {};
+        }
+
+        // create filteredEntities object with only entities that include all the types
+        const filteredEntities: Record<string, MergedType<TypeNames>> = {};
+        for (const entityId in doc.entities) {
+          const entity = doc.entities[entityId];
+          if (types.every((type) => entity.types.includes(type as string))) {
+            filteredEntities[entityId] = entity as MergedType<TypeNames>;
+          }
+        }
+
+        if (fastDeepEqual(prevEntitiesRef.current, filteredEntities)) {
+          return prevEntitiesRef.current;
+        } else {
+          prevEntitiesRef.current = filteredEntities;
+          return prevEntitiesRef.current;
+        }
+      }
+    );
+
+    return entities;
   }
 
   return {
