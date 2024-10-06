@@ -49,6 +49,7 @@ export const schema = {
 export const {
   SpaceProvider,
   useCreateEntity,
+  useDeleteEntity,
   useSpaceId,
   createDocumentId,
   useQuery,

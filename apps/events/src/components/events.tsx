@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery } from "../schema";
+import { useDeleteEntity, useQuery } from "../schema";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -11,9 +11,10 @@ import {
 import { Input } from "./ui/input";
 
 export const Events: React.FC = () => {
-  const entities = useQuery({ types: ["Event"] });
+  const events = useQuery({ types: ["Event"] });
+  const deleteEntity = useDeleteEntity();
 
-  console.log("Rendering Events", entities);
+  console.log("Rendering Events", events);
 
   // const entities = useQuery({
   //   where: {
@@ -73,11 +74,11 @@ export const Events: React.FC = () => {
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {entities &&
-        Object.keys(entities).map((entityId) => {
-          const entity = entities[entityId];
+      {events &&
+        Object.keys(events).map((eventId) => {
+          const entity = events[eventId];
           return (
-            <Card key={entityId}>
+            <Card key={eventId}>
               <CardHeader>
                 <CardTitle>
                   <Input
@@ -98,9 +99,7 @@ export const Events: React.FC = () => {
                 <Button
                   onClick={(evt) => {
                     evt.preventDefault();
-                    // changeDoc((doc) => {
-                    //   delete doc.events[event.id];
-                    // });
+                    deleteEntity(eventId);
                   }}
                 >
                   Delete

@@ -132,7 +132,6 @@ export function createFunctions<
     return documentId;
   };
 
-  // Custom hook to use the createEntity function
   function useCreateEntity() {
     const id = useSpaceId();
     const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
@@ -160,6 +159,26 @@ export function createFunctions<
     }
 
     return createEntity;
+  }
+
+  function useDeleteEntity() {
+    const id = useSpaceId();
+    const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
+
+    function deleteEntity(entityId: string) {
+      let result = false;
+      changeDoc((doc) => {
+        if (doc.entities) {
+          if (doc.entities[entityId]) {
+            delete doc.entities[entityId];
+            result = true;
+          }
+        }
+      });
+      return result;
+    }
+
+    return deleteEntity;
   }
 
   function useQuery<TypeNames extends (keyof TypeSchemasMap)[]>({
@@ -229,6 +248,7 @@ export function createFunctions<
 
   return {
     useCreateEntity,
+    useDeleteEntity,
     useQuery,
     SpaceProvider,
     useSpaceId,
