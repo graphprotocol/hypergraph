@@ -11,6 +11,10 @@ interface SpaceProviderProps {
   id: string;
 }
 
+type DocumentContent = {
+  entities: Record<string, any>;
+};
+
 const repo = new Repo({
   network: [],
 });
@@ -123,15 +127,12 @@ export function createFunctions<
   // Custom hook to use the createEntity function
   function useCreateEntity() {
     const id = useSpaceId();
-    const [doc, changeDoc] = useDocument(id as AnyDocumentId);
+    const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
 
-    function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>({
-      types,
-      data,
-    }: {
-      types: [...TypeNames];
-      data: MergedType<TypeNames>;
-    }): MergedType<TypeNames> {
+    function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>(
+      types: [...TypeNames],
+      data: MergedType<TypeNames>
+    ): MergedType<TypeNames> {
       if (types.length === 0) {
         throw new Error("Entity must have at least one type");
       }
@@ -144,10 +145,7 @@ export function createFunctions<
           doc.entities = {};
         }
         const entityId = createDocumentId();
-        doc.entities[entityId] = {
-          types,
-          data: result,
-        };
+        doc.entities[entityId] = { ...result, types };
       });
 
       return result as MergedType<TypeNames>;
@@ -169,20 +167,15 @@ export function createFunctions<
     };
   }) {
     const id = useSpaceId();
-    const [doc] = useDocument(id as AnyDocumentId);
+    const [doc] = useDocument<DocumentContent>(id as AnyDocumentId);
+    if (!doc) {
+      return {} as Record<string, MergedType<TypeNames>>;
+    }
 
     // const entities = useSyncExternalStore(() => )
 
     const entities = doc.entities || {};
-
-    // iterate over entities and get the property data
-    const result: Record<string, MergedType<TypeNames>> = {};
-
-    for (const entityId in entities) {
-      result[entityId] = entities[entityId].data as MergedType<TypeNames>;
-    }
-
-    return result;
+    return entities as Record<string, MergedType<TypeNames>>;
   }
 
   return {

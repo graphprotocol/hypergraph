@@ -11,11 +11,8 @@ export const AddEvent: React.FC = () => {
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        createEntity({
-          types: ["Event"],
-          data: {
-            name: "Bob",
-          },
+        createEntity(["Event"], {
+          name: newEventName,
         });
         setNewEventName("");
       }}
@@ -24,6 +21,7 @@ export const AddEvent: React.FC = () => {
         placeholder="Event Name"
         onChange={(event) => setNewEventName(event.target.value)}
         value={newEventName}
+        required
       />
       <Button>Add</Button>
     </form>
