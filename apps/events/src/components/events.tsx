@@ -1,5 +1,5 @@
 import React from "react";
-import { useCreateEntity, useQuery, useSpaceId } from "./schema";
+import { useQuery } from "../schema";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -11,11 +11,9 @@ import {
 import { Input } from "./ui/input";
 
 export const Events: React.FC = () => {
-  const [newTodo, setNewTodo] = React.useState("");
-  const id = useSpaceId();
-  const createEntity = useCreateEntity();
-
   const entities = useQuery({ types: ["Event"] });
+
+  console.log("Rendering Events", entities);
 
   // const entities = useQuery({
   //   where: {
@@ -74,70 +72,43 @@ export const Events: React.FC = () => {
   // TODO different API for setting a Triple with a value on a entities
 
   return (
-    <main className="flex-1">
-      <section className="w-full py-12 md:py-24">
-        <div className="container px-4 md:px-6">
-          <h1>Events of Space w/ ID: {id}</h1>
-
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              createEntity({
-                types: ["Event"],
-                data: {
-                  name: "Bob",
-                },
-              });
-              setNewTodo("");
-            }}
-          >
-            <Input
-              placeholder="Event Title"
-              onChange={(event) => setNewTodo(event.target.value)}
-              value={newTodo}
-            />
-            <Button>Add</Button>
-          </form>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {entities &&
-              Object.keys(entities).map((entityId) => {
-                const entity = entities[entityId];
-                return (
-                  <Card key={entityId}>
-                    <CardHeader>
-                      <CardTitle>
-                        <Input
-                          className="edit"
-                          onChange={(evt) => {
-                            // changeDoc((doc) => {
-                            //   doc.events[event.id].value = evt.target.value;
-                            // });
-                          }}
-                          value={entity.name}
-                        />
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p>A new event</p>
-                    </CardContent>
-                    <CardFooter className="flex gap-2">
-                      <Button
-                        onClick={(evt) => {
-                          evt.preventDefault();
-                          // changeDoc((doc) => {
-                          //   delete doc.events[event.id];
-                          // });
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-          </div>
-        </div>
-      </section>
-    </main>
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {entities &&
+        Object.keys(entities).map((entityId) => {
+          const entity = entities[entityId];
+          return (
+            <Card key={entityId}>
+              <CardHeader>
+                <CardTitle>
+                  <Input
+                    className="edit"
+                    onChange={(evt) => {
+                      // changeDoc((doc) => {
+                      //   doc.events[event.id].value = evt.target.value;
+                      // });
+                    }}
+                    value={entity.name}
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>A new event</p>
+              </CardContent>
+              <CardFooter className="flex gap-2">
+                <Button
+                  onClick={(evt) => {
+                    evt.preventDefault();
+                    // changeDoc((doc) => {
+                    //   delete doc.events[event.id];
+                    // });
+                  }}
+                >
+                  Delete
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
+    </div>
   );
 };

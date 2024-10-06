@@ -125,8 +125,6 @@ export function createFunctions<
     const id = useSpaceId();
     const [doc, changeDoc] = useDocument(id as AnyDocumentId);
 
-    console.log("useCreateEntity doc", doc);
-
     function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>({
       types,
       data,
@@ -172,6 +170,8 @@ export function createFunctions<
   }) {
     const id = useSpaceId();
     const [doc] = useDocument(id as AnyDocumentId);
+
+    // const entities = useSyncExternalStore(() => )
 
     const entities = doc.entities || {};
 
