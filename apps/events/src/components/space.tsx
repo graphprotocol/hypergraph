@@ -25,11 +25,13 @@ export const Space: React.FC = () => {
             <div className="container px-4 md:px-6">
               <h1>Events of Space w/ ID: {id}</h1>
 
-              <AddUser />
-              <Users />
-              <hr />
-              <AddEvent />
-              <Events />
+              <div className="flex flex-col space-y-4">
+                <AddUser />
+                <Users />
+                <hr />
+                <AddEvent />
+                <Events />
+              </div>
             </div>
           </section>
         </main>

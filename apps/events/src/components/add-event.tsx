@@ -16,6 +16,7 @@ export const AddEvent: React.FC = () => {
         });
         setNewEventName("");
       }}
+      className="flex space-x-4"
     >
       <Input
         placeholder="Event Name"

@@ -1,14 +1,6 @@
 import React from "react";
 import { useQuery } from "../schema";
-import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import { Input } from "./ui/input";
+import { User } from "./user";
 
 export const Users: React.FC = () => {
   const entities = useQuery({ types: ["User"] });
@@ -76,38 +68,7 @@ export const Users: React.FC = () => {
       {entities &&
         Object.keys(entities).map((entityId) => {
           const entity = entities[entityId];
-          return (
-            <Card key={entityId}>
-              <CardHeader>
-                <CardTitle>
-                  <Input
-                    className="edit"
-                    onChange={() => {
-                      // changeDoc((doc) => {
-                      //   doc.events[event.id].value = evt.target.value;
-                      // });
-                    }}
-                    value={entity.name}
-                  />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>A new user</p>
-              </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button
-                  onClick={(evt) => {
-                    evt.preventDefault();
-                    // changeDoc((doc) => {
-                    //   delete doc.events[event.id];
-                    // });
-                  }}
-                >
-                  Delete
-                </Button>
-              </CardFooter>
-            </Card>
-          );
+          return <User name={entity.name} />;
         })}
     </div>
   );

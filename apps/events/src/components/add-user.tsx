@@ -18,6 +18,7 @@ export const AddUser: React.FC = () => {
         });
         setNewUserName("");
       }}
+      className="flex space-x-4"
     >
       <Input
         placeholder="User Name"
