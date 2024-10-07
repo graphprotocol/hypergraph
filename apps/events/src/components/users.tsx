@@ -67,8 +67,8 @@ export const Users: React.FC = () => {
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {users &&
         Object.keys(users).map((userId) => {
-          const entity = users[userId];
-          return <User name={entity.name} key={userId} />;
+          const user = users[userId];
+          return <User name={user.name} key={userId} />;
         })}
     </div>
   );

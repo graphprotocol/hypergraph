@@ -76,7 +76,7 @@ export const Events: React.FC = () => {
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events &&
         Object.keys(events).map((eventId) => {
-          const entity = events[eventId];
+          const event = events[eventId];
           return (
             <Card key={eventId}>
               <CardHeader>
@@ -88,7 +88,7 @@ export const Events: React.FC = () => {
                       //   doc.events[event.id].value = evt.target.value;
                       // });
                     }}
-                    value={entity.name}
+                    value={event.name}
                   />
                 </CardTitle>
               </CardHeader>
