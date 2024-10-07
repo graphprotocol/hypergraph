@@ -15,7 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as Schema2Import } from './routes/schema2'
 import { Route as IndexImport } from './routes/index'
-import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
+import { Route as SpaceOldSpaceIdImport } from './routes/space-old/$spaceId'
 
 // Create Virtual Routes
 
@@ -44,8 +44,8 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
-  path: '/space/$spaceId',
+const SpaceOldSpaceIdRoute = SpaceOldSpaceIdImport.update({
+  path: '/space-old/$spaceId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,11 +81,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Login2LazyImport
       parentRoute: typeof rootRoute
     }
-    '/space/$spaceId': {
-      id: '/space/$spaceId'
-      path: '/space/$spaceId'
-      fullPath: '/space/$spaceId'
-      preLoaderRoute: typeof SpaceSpaceIdImport
+    '/space-old/$spaceId': {
+      id: '/space-old/$spaceId'
+      path: '/space-old/$spaceId'
+      fullPath: '/space-old/$spaceId'
+      preLoaderRoute: typeof SpaceOldSpaceIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -98,7 +98,7 @@ export interface FileRoutesByFullPath {
   '/schema2': typeof Schema2Route
   '/login': typeof LoginLazyRoute
   '/login2': typeof Login2LazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/space-old/$spaceId': typeof SpaceOldSpaceIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -106,7 +106,7 @@ export interface FileRoutesByTo {
   '/schema2': typeof Schema2Route
   '/login': typeof LoginLazyRoute
   '/login2': typeof Login2LazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/space-old/$spaceId': typeof SpaceOldSpaceIdRoute
 }
 
 export interface FileRoutesById {
@@ -115,15 +115,21 @@ export interface FileRoutesById {
   '/schema2': typeof Schema2Route
   '/login': typeof LoginLazyRoute
   '/login2': typeof Login2LazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/space-old/$spaceId': typeof SpaceOldSpaceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/schema2' | '/login' | '/login2' | '/space/$spaceId'
+  fullPaths: '/' | '/schema2' | '/login' | '/login2' | '/space-old/$spaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/schema2' | '/login' | '/login2' | '/space/$spaceId'
-  id: '__root__' | '/' | '/schema2' | '/login' | '/login2' | '/space/$spaceId'
+  to: '/' | '/schema2' | '/login' | '/login2' | '/space-old/$spaceId'
+  id:
+    | '__root__'
+    | '/'
+    | '/schema2'
+    | '/login'
+    | '/login2'
+    | '/space-old/$spaceId'
   fileRoutesById: FileRoutesById
 }
 
@@ -132,7 +138,7 @@ export interface RootRouteChildren {
   Schema2Route: typeof Schema2Route
   LoginLazyRoute: typeof LoginLazyRoute
   Login2LazyRoute: typeof Login2LazyRoute
-  SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
+  SpaceOldSpaceIdRoute: typeof SpaceOldSpaceIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -140,7 +146,7 @@ const rootRouteChildren: RootRouteChildren = {
   Schema2Route: Schema2Route,
   LoginLazyRoute: LoginLazyRoute,
   Login2LazyRoute: Login2LazyRoute,
-  SpaceSpaceIdRoute: SpaceSpaceIdRoute,
+  SpaceOldSpaceIdRoute: SpaceOldSpaceIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -159,7 +165,7 @@ export const routeTree = rootRoute
         "/schema2",
         "/login",
         "/login2",
-        "/space/$spaceId"
+        "/space-old/$spaceId"
       ]
     },
     "/": {
@@ -174,8 +180,8 @@ export const routeTree = rootRoute
     "/login2": {
       "filePath": "login2.lazy.tsx"
     },
-    "/space/$spaceId": {
-      "filePath": "space/$spaceId.tsx"
+    "/space-old/$spaceId": {
+      "filePath": "space-old/$spaceId.tsx"
     }
   }
 }
