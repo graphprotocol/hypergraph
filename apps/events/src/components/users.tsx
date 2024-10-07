@@ -3,9 +3,9 @@ import { useQuery } from "../schema";
 import { User } from "./user";
 
 export const Users: React.FC = () => {
-  const entities = useQuery({ types: ["User"] });
+  const users = useQuery({ types: ["User"] });
 
-  console.log("Rendering Users", entities);
+  console.log("Rendering Users", users);
 
   // const entities = useQuery({
   //   where: {
@@ -65,10 +65,10 @@ export const Users: React.FC = () => {
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {entities &&
-        Object.keys(entities).map((entityId) => {
-          const entity = entities[entityId];
-          return <User name={entity.name} />;
+      {users &&
+        Object.keys(users).map((userId) => {
+          const entity = users[userId];
+          return <User name={entity.name} key={userId} />;
         })}
     </div>
   );

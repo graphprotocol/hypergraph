@@ -23,7 +23,7 @@ type DocumentContent = {
   entities: Record<string, any>;
 };
 
-const repo = new Repo({
+export const repo = new Repo({
   network: [],
 });
 
@@ -193,10 +193,13 @@ export function createFunctions<
       };
     };
   }) {
-    const prevEntitiesRef = useRef<any>(null);
+    const prevEntitiesRef = useRef<any>({});
     const id = useSpaceId();
     const repo = useRepo();
-    const handle = id ? repo.find<DocumentContent>(id as AnyDocumentId) : null;
+
+    const handle = id
+      ? repo.find<DocumentContent>(id as AnyDocumentId)
+      : repo.create<DocumentContent>({ entities: {} });
 
     const subscribe = (callback: () => void) => {
       const handleChange = () => {
@@ -221,8 +224,12 @@ export function createFunctions<
       (): Record<string, MergedType<TypeNames>> => {
         const doc = handle?.docSync();
         if (!doc) {
-          prevEntitiesRef.current = {};
-          return {};
+          if (fastDeepEqual(prevEntitiesRef.current, {})) {
+            return prevEntitiesRef.current;
+          } else {
+            prevEntitiesRef.current = {};
+            return {};
+          }
         }
 
         // create filteredEntities object with only entities that include all the types
