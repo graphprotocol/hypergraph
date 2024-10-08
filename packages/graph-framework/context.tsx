@@ -1,4 +1,4 @@
-import { AnyDocumentId, Repo } from "@automerge/automerge-repo";
+import { AnyDocumentId, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   RepoContext,
   useDocument,
@@ -9,6 +9,7 @@ import fastDeepEqual from "fast-deep-equal";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useRef,
   useSyncExternalStore,
@@ -163,20 +164,32 @@ export function createFunctions<
 
   function useDeleteEntity() {
     const id = useSpaceId();
-    const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
 
-    function deleteEntity(entityId: string) {
-      let result = false;
-      changeDoc((doc) => {
-        if (doc.entities) {
-          if (doc.entities[entityId]) {
-            delete doc.entities[entityId];
-            result = true;
-          }
-        }
-      });
-      return result;
+    // can't use useDocument here because it would trigger a re-render every time the document changes
+    const repo = useRepo();
+    const handle = id ? repo.find<DocumentContent>(id as AnyDocumentId) : null;
+    const handleRef = useRef<DocHandle<DocumentContent> | null>(handle);
+    if (handle !== handleRef.current) {
+      handleRef.current = handle;
     }
+
+    const deleteEntity = useCallback(
+      function deleteEntity(entityId: string) {
+        let result = false;
+        if (!handle) return result;
+        handle.change((doc) => {
+          if (doc.entities) {
+            if (doc.entities[entityId]) {
+              delete doc.entities[entityId];
+              result = true;
+            }
+          }
+        });
+
+        return result;
+      },
+      [id]
+    );
 
     return deleteEntity;
   }
