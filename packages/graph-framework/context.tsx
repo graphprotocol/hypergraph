@@ -28,81 +28,61 @@ export const repo = new Repo({
   network: [],
 });
 
+// Helper type to extract schema type
+type SchemaType<T> = T extends S.Schema<any, infer A> ? A : never;
+
+// Type for the schema structure
+export type SchemaDefinition = {
+  types: Record<string, Record<string, S.Schema<any, any>>>;
+};
+
+// Extract all possible keys from schema types
+type EntityKeys<T extends SchemaDefinition> = keyof T["types"] & string;
+
+// Get merged type from array of keys
+type MergedEntityType<
+  T extends SchemaDefinition,
+  Keys extends readonly EntityKeys<T>[],
+> = UnionToIntersection<
+  {
+    [K in Keys[number]]: {
+      [P in keyof T["types"][K]]: SchemaType<T["types"][K][P]>;
+    };
+  }[Keys[number]]
+>;
+
+// Helper type to convert union to intersection
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
+  ? I
+  : never;
+
 // Function to create schema functions
-export function createFunctions<
-  Attributes extends { [attrName: string]: S.Schema<any> },
-  Types extends { [typeName: string]: ReadonlyArray<keyof Attributes> },
->({ attributes, types }: { attributes: Attributes; types: Types }) {
-  // Build attribute schemas
-  const attributeSchemas: {
-    [K in keyof Attributes]: Attributes[K];
-  } = attributes;
-
-  // Build type schemas
-  const typeSchemas: {
-    [K in keyof Types]: S.Schema<{
-      [AttrName in Types[K][number]]: S.Schema.Type<
-        (typeof attributeSchemas)[AttrName]
-      >;
-    }>;
-  } = {} as any;
-
-  for (const typeName in types) {
-    const attrNames = types[typeName as keyof Types];
-    const attrSchemaEntries: any = {};
-    for (const attrName of attrNames) {
-      const attrSchema = attributeSchemas[attrName];
-      if (!attrSchema) {
-        throw new Error(`Attribute ${String(attrName)} is not defined`);
-      }
-      attrSchemaEntries[attrName as string] = attrSchema;
-    }
-    typeSchemas[typeName as keyof Types] = S.Struct(attrSchemaEntries) as any;
-  }
-
-  // Type for merged types
-  type TypeSchemasMap = typeof typeSchemas;
-
-  type TypeSchemaTypes<T extends keyof TypeSchemasMap> = S.Schema.Type<
-    TypeSchemasMap[T]
-  >;
-
-  type UnionToIntersection<U> = (
-    U extends any ? (k: U) => void : never
-  ) extends (k: infer I) => void
-    ? I
-    : never;
-
-  type MergedType<T extends (keyof TypeSchemasMap)[]> = UnionToIntersection<
-    TypeSchemaTypes<T[number]>
-  >;
-
-  // Helper function to build merged schema
-  function buildMergedSchema<TypeNames extends (keyof TypeSchemasMap)[]>(
-    typesToCombine: [...TypeNames]
-  ): S.Schema<any> {
-    const mergedFields: Record<string, S.Schema<any>> = {};
-
-    for (const typeName of typesToCombine) {
-      const schema = typeSchemas[typeName];
-      const structSchema = schema as S.Schema<any> & {
-        fields: Record<string, S.Schema<any>>;
-      };
-
-      if ("fields" in structSchema) {
-        Object.assign(mergedFields, structSchema.fields);
-      } else {
-        throw new Error(`Schema for type ${String(typeName)} is not a struct`);
-      }
-    }
-
-    return S.Struct(mergedFields);
-  }
-
+export function createFunctions<T extends SchemaDefinition>(schema: T) {
   // Create a React Context to provide the schema
   type SpaceContextProps = {
     id: string;
   };
+
+  function buildMergedSchema<K extends readonly EntityKeys<T>[]>(
+    types: [...K]
+  ): S.Schema<any, MergedEntityType<T, K>> {
+    // Create a record of all properties and their schemas
+    const propertySchemas = types.reduce(
+      (acc, type) => {
+        const typeSchema = schema.types[type];
+        return { ...acc, ...typeSchema };
+      },
+      {} as Record<string, S.Schema<any, any>>
+    );
+
+    // Convert the record to a struct schema
+    return S.Struct(propertySchemas) as unknown as S.Schema<
+      any,
+      MergedEntityType<T, K>
+    >;
+  }
 
   const SpaceContext = createContext<SpaceContextProps | undefined>(undefined);
 
@@ -137,10 +117,10 @@ export function createFunctions<
     const id = useSpaceId();
     const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
 
-    function createEntity<TypeNames extends (keyof TypeSchemasMap)[]>(
-      types: [...TypeNames],
-      data: MergedType<TypeNames>
-    ): MergedType<TypeNames> {
+    function createEntity<K extends readonly EntityKeys<T>[]>(
+      types: [...K],
+      data: MergedEntityType<T, K>
+    ): MergedEntityType<T, K> {
       if (types.length === 0) {
         throw new Error("Entity must have at least one type");
       }
@@ -156,7 +136,7 @@ export function createFunctions<
         doc.entities[entityId] = { ...result, types };
       });
 
-      return result as MergedType<TypeNames>;
+      return result as MergedEntityType<T, K>;
     }
 
     return createEntity;
@@ -194,17 +174,10 @@ export function createFunctions<
     return deleteEntity;
   }
 
-  function useQuery<TypeNames extends (keyof TypeSchemasMap)[]>({
+  function useQuery<K extends readonly EntityKeys<T>[]>({
     types,
-    where,
   }: {
-    types: [...TypeNames];
-    where?: {
-      [AttrName in keyof Attributes]?: {
-        equals?: S.Schema.Type<Attributes[AttrName]>;
-        contains?: S.Schema.Type<Attributes[AttrName]>;
-      };
-    };
+    types: [...K];
   }) {
     const prevEntitiesRef = useRef<any>({});
     const id = useSpaceId();
@@ -234,7 +207,7 @@ export function createFunctions<
 
     const entities = useSyncExternalStore(
       subscribe,
-      (): Record<string, MergedType<TypeNames>> => {
+      (): Record<string, MergedEntityType<T, K>> => {
         const doc = handle?.docSync();
         if (!doc) {
           if (fastDeepEqual(prevEntitiesRef.current, {})) {
@@ -246,11 +219,11 @@ export function createFunctions<
         }
 
         // create filteredEntities object with only entities that include all the types
-        const filteredEntities: Record<string, MergedType<TypeNames>> = {};
+        const filteredEntities: Record<string, MergedEntityType<T, K>> = {};
         for (const entityId in doc.entities) {
           const entity = doc.entities[entityId];
           if (types.every((type) => entity.types.includes(type as string))) {
-            filteredEntities[entityId] = entity as MergedType<TypeNames>;
+            filteredEntities[entityId] = entity as MergedEntityType<T, K>;
           }
         }
 
