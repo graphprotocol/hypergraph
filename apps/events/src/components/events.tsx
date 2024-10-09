@@ -93,7 +93,7 @@ export const Events: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p>A new event</p>
+                <p>by {event.author.name}</p>
               </CardContent>
               <CardFooter className="flex gap-2">
                 <Button

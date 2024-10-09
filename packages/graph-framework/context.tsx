@@ -261,6 +261,26 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
           }
         }
 
+        // go through all filteredEntities and replace relational entity ids with the actual entity
+        for (const entityId in filteredEntities) {
+          const entity = filteredEntities[entityId];
+          for (const key in entity) {
+            const relationId = entity[key];
+            if (key !== "types") {
+              // @ts-expect-error
+              const field = buildMergedSchema(entity.types).fields[key];
+
+              if (field._kind === "relation") {
+                // @ts-expect-error
+                const relationalEntity = doc.entities[relationId];
+                if (relationalEntity) {
+                  entity[key] = relationalEntity;
+                }
+              }
+            }
+          }
+        }
+
         if (fastDeepEqual(prevEntitiesRef.current, filteredEntities)) {
           return prevEntitiesRef.current;
         } else {
