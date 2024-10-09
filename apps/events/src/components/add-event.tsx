@@ -13,6 +13,7 @@ export const AddEvent: React.FC = () => {
         event.preventDefault();
         createEntity(["Event"], {
           name: newEventName,
+          author: { name: "Tim", age: 30, email: "tim@example.com" },
         });
         setNewEventName("");
       }}

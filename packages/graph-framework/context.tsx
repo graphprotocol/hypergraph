@@ -15,6 +15,20 @@ import {
   useSyncExternalStore,
 } from "react";
 
+export const type = {
+  Text: S.String,
+  Number: S.Number,
+  Checkbox: S.Boolean,
+  Relation: (types: string[], options: { cardinality: "one" | "many" }) => {
+    const type = S.Record({ key: S.String, value: S.Any });
+    // @ts-expect-error - this is a hack to add custom properties to the schema type
+    type._kind = "relation";
+    // @ts-expect-error - this is a hack to add custom properties to the schema type
+    type._types = types;
+    return type;
+  },
+};
+
 interface SpaceProviderProps {
   children: ReactNode;
   id: string;
@@ -125,12 +139,32 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
         throw new Error("Entity must have at least one type");
       }
 
+      const relationalEntities: Record<string, any> = {};
+
       const mergedSchema = buildMergedSchema(types);
       const result = S.decodeUnknownSync(mergedSchema)(data);
+
+      // identify relational entities and create them
+      for (const key in result) {
+        const value = result[key];
+
+        // get the entry of the mergedSchema based on the key
+        // @ts-expect-error - this is a hack to access the _kind property
+        const field = mergedSchema.fields[key];
+
+        if (field._kind === "relation") {
+          const entityId = createDocumentId();
+          relationalEntities[entityId] = { ...value, types: field._types };
+          result[key] = entityId;
+        }
+      }
 
       changeDoc((doc) => {
         if (!doc.entities) {
           doc.entities = {};
+        }
+        for (const entityId in relationalEntities) {
+          doc.entities[entityId] = relationalEntities[entityId];
         }
         const entityId = createDocumentId();
         doc.entities[entityId] = { ...result, types };
