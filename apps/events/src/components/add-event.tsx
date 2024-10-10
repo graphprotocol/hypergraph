@@ -14,6 +14,16 @@ export const AddEvent: React.FC = () => {
         createEntity(["Event"], {
           name: newEventName,
           author: { name: "Tim", age: 30, email: "tim@example.com" },
+          participants: [
+            {
+              name: "Alice",
+              age: 30,
+            },
+            {
+              name: "Bob",
+              age: 25,
+            },
+          ],
         });
         setNewEventName("");
       }}

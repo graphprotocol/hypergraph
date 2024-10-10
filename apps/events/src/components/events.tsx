@@ -94,6 +94,12 @@ export const Events: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p>by {event.author.name}</p>
+                <p>Participants:</p>
+                <ul>
+                  {event.participants.map((participant) => (
+                    <li key={participant.id}>{participant.name}</li>
+                  ))}
+                </ul>
               </CardContent>
               <CardFooter className="flex gap-2">
                 <Button
