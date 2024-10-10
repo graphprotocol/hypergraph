@@ -12,7 +12,7 @@ export const schema = {
     },
     Event: {
       name: type.Text,
-      author: type.Relation(["User", "Person"], { cardinality: "one" }),
+      author: type.Relation(["User", "Person"] as const),
     },
   },
 };

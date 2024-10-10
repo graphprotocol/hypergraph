@@ -15,20 +15,6 @@ import {
   useSyncExternalStore,
 } from "react";
 
-export const type = {
-  Text: S.String,
-  Number: S.Number,
-  Checkbox: S.Boolean,
-  Relation: (types: string[], options: { cardinality: "one" | "many" }) => {
-    const type = S.Record({ key: S.String, value: S.Any });
-    // @ts-expect-error - this is a hack to add custom properties to the schema type
-    type._kind = "relation";
-    // @ts-expect-error - this is a hack to add custom properties to the schema type
-    type._types = types;
-    return type;
-  },
-};
-
 interface SpaceProviderProps {
   children: ReactNode;
   id: string;
@@ -42,12 +28,31 @@ export const repo = new Repo({
   network: [],
 });
 
+export const type = {
+  Text: S.String,
+  Number: S.Number,
+  Checkbox: S.Boolean,
+  Relation: <K extends readonly string[]>(types: K) => {
+    const type: Relation<K> = {
+      _tag: "Relation",
+      types,
+    };
+    return type;
+  },
+};
+
 // Helper type to extract schema type
 type SchemaType<T> = T extends S.Schema<any, infer A> ? A : never;
 
+// Generic Relation type
+type Relation<K extends readonly string[]> = {
+  _tag: "Relation";
+  types: K;
+};
+
 // Type for the schema structure
 export type SchemaDefinition = {
-  types: Record<string, Record<string, S.Schema<any, any>>>;
+  types: Record<string, Record<string, S.Schema<any, any> | Relation<any>>>;
 };
 
 // Extract all possible keys from schema types
@@ -60,7 +65,11 @@ type MergedEntityType<
 > = UnionToIntersection<
   {
     [K in Keys[number]]: {
-      [P in keyof T["types"][K]]: SchemaType<T["types"][K][P]>;
+      [P in keyof T["types"][K]]: T["types"][K][P] extends Relation<
+        infer R extends readonly any[]
+      >
+        ? MergedEntityType<T, Extract<R[number], EntityKeys<T>>[]>
+        : SchemaType<T["types"][K][P]>;
     };
   }[Keys[number]]
 >;
