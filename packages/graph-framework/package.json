@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
     "lint": "echo 'No linting configured'"
   },

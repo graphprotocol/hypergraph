@@ -1,7 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import React from "react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  expectTypeOf,
+  it,
+} from "vitest";
 import { createFunctions, repo, type } from "./context.js";
 
 afterEach(() => {
@@ -168,6 +175,27 @@ describe("Library Tests", () => {
     // Check author
     expect(event.author.name).toBe("Charlie");
     expect(event.author.email).toBe("charlie@example.com");
+
+    expectTypeOf(event).toMatchTypeOf<{
+      name: string;
+      participants: {
+        name: string;
+        age: number;
+        badges: {
+          name: string;
+        }[];
+      }[];
+      author: {
+        name: string;
+        age: number;
+        badges: {
+          name: string;
+        }[];
+      } & {
+        name: string;
+        email: string;
+      };
+    }>();
   });
 
   it("should create entities with nested relations and query them", () => {
