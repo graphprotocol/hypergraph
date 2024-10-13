@@ -8,6 +8,11 @@
     "ts:check": "tsc --noEmit",
     "lint": "echo 'No linting configured'"
   },
+  "exports": {
+    ".": {
+      "default": "./src/index.js"
+    }
+  },
   "peerDependencies": {
     "@automerge/automerge": "^2",
     "@automerge/automerge-repo": "^1",

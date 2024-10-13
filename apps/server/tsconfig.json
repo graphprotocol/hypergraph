@@ -9,7 +9,7 @@
     "noEmit": false,
     "outDir": "dist",
     "lib": ["esnext"],
-    "types": ["node", "jest"],
+    "types": ["node"],
     "baseUrl": "./",
     "strict": true
   },

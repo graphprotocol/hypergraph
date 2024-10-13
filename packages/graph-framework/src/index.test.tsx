@@ -140,10 +140,21 @@ describe("Library Tests", () => {
     expect(Object.keys(events)).toHaveLength(1);
 
     const event = Object.values(events)[0];
+    if (!event) {
+      throw new Error("Event not found");
+    }
     expect(event.name).toBe("Conference");
 
     // Check participants
     expect(event.participants).toHaveLength(2);
+    if (
+      !event.participants[0] ||
+      !event.participants[1] ||
+      !event.participants[0].badges[0] ||
+      !event.participants[1].badges[0]
+    ) {
+      throw new Error("Participants not found");
+    }
     expect(event.participants[0].name).toBe("Alice");
     expect(event.participants[0].age).toBe(30);
     expect(event.participants[0].badges).toHaveLength(1);
@@ -182,9 +193,15 @@ describe("Library Tests", () => {
     expect(Object.keys(people)).toHaveLength(1);
 
     const person = Object.values(people)[0];
+    if (!person) {
+      throw new Error("Person not found");
+    }
     expect(person.name).toBe("Dave");
     expect(person.age).toBe(40);
     expect(person.badges).toHaveLength(2);
+    if (!person.badges[0] || !person.badges[1]) {
+      throw new Error("Badges not found");
+    }
     expect(person.badges[0].name).toBe("VIP");
     expect(person.badges[1].name).toBe("Contributor");
   });

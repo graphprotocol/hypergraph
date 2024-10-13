@@ -91,6 +91,7 @@ function XmtpLogin({ signer }: { signer: Signer }) {
 
   useEffect(() => {
     void initXmtpWithKeys();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) {

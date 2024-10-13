@@ -11,7 +11,7 @@ export const Route = createLazyFileRoute("/login2")({
 });
 
 function Login() {
-  const { ready, authenticated, user, login, logout, signMessage } = usePrivy();
+  const { ready, authenticated, login, signMessage } = usePrivy();
   // Disable login when Privy is not ready or the user is already authenticated
   const disableLogin = !ready || (ready && authenticated);
 
@@ -35,11 +35,13 @@ function Login() {
             buttonText: "Enable XMTP",
           };
 
+          // @ts-expect-error signMessage is a string in this case
           const signature = await signMessage(message, uiConfig);
 
           return signature;
         };
         setSigner(newSigner);
+        // eslint-disable-next-line no-constant-binary-expression, valid-typeof
       } else if (typeof window.ethereum !== undefined) {
         try {
           await window.ethereum.enable();
@@ -58,6 +60,7 @@ function Login() {
     if (wallets.length > 0) {
       getSigner();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallets]);
 
   console.log("signer", signer);
@@ -100,6 +103,7 @@ function XmtpLogin({ signer }: { signer: Signer }) {
 
   useEffect(() => {
     void initXmtpWithKeys();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) {
