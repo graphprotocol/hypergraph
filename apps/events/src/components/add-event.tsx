@@ -13,15 +13,22 @@ export const AddEvent: React.FC = () => {
         event.preventDefault();
         createEntity(["Event"], {
           name: newEventName,
-          author: { name: "Tim", age: 30, email: "tim@example.com" },
+          author: {
+            name: "Tim",
+            age: 30,
+            email: "tim@example.com",
+            badge: { name: "VIP" },
+          },
           participants: [
             {
               name: "Alice",
               age: 30,
+              badge: { name: "Speaker" },
             },
             {
               name: "Bob",
               age: 25,
+              badge: { name: "Attendee" },
             },
           ],
         });

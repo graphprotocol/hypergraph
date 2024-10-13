@@ -4,19 +4,20 @@ import React from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFunctions, repo, type } from "./context.js";
 
-// runs a clean after each test case (e.g. clearing jsdom)
 afterEach(() => {
   cleanup();
 });
 
 describe("Library Tests", () => {
-  // Define a sample schema
   const schema = {
     types: {
       Person: {
         name: type.Text,
         age: type.Number,
-        badges: type.Relation({ types: ["Badge"], cardinality: "many" }),
+        badges: type.Relation({
+          types: ["Badge"] as const,
+          cardinality: "many",
+        }),
       },
       User: {
         name: type.Text,
@@ -27,9 +28,12 @@ describe("Library Tests", () => {
       },
       Event: {
         name: type.Text,
-        participants: type.Relation({ types: ["Person"], cardinality: "many" }),
+        participants: type.Relation({
+          types: ["Person"] as const,
+          cardinality: "many",
+        }),
         author: type.Relation({
-          types: ["User", "Person"],
+          types: ["User", "Person"] as const,
           cardinality: "one",
         }),
       },
@@ -57,7 +61,7 @@ describe("Library Tests", () => {
     );
   });
 
-  it("should create a document ID", () => {
+  it("should create one entity successfully", () => {
     expect([1]).toHaveLength(1);
 
     const { result: createResult } = renderHook(() => useCreateEntity(), {
@@ -87,6 +91,8 @@ describe("Library Tests", () => {
         author: {
           name: "Charlie",
           email: "charlie@example.com",
+          age: 35,
+          badges: [{ name: "VIP" }],
         },
       });
     });
@@ -123,6 +129,8 @@ describe("Library Tests", () => {
         author: {
           name: "Charlie",
           email: "charlie@example.com",
+          age: 35,
+          badges: [{ name: "VIP" }],
         },
       });
     });
@@ -217,66 +225,4 @@ describe("Library Tests", () => {
       expect(Object.keys(badgesAfterDelete)).toHaveLength(0);
     });
   });
-
-  // it("should handle circular relations gracefully", () => {
-  //   const { result: createResult } = renderHook(() => useCreateEntity(), {
-  //     wrapper,
-  //   });
-
-  //   const { result: queryResult } = renderHook(
-  //     () => useQuery({ types: ["Person"] }),
-  //     { wrapper }
-  //   );
-
-  //   let personAId: string | undefined;
-  //   let personBId: string | undefined;
-
-  //   act(() => {
-  //     createResult.current(["Person"], {
-  //       name: "Eve",
-  //       age: 28,
-  //       badges: [],
-  //     });
-  //   });
-
-  //   act(() => {
-  //     const people = queryResult.current;
-  //     expect(Object.keys(people)).toHaveLength(1);
-  //     personAId = Object.keys(people)[0];
-  //   });
-
-  //   act(() => {
-  //     createResult.current(["Person"], {
-  //       name: "Frank",
-  //       age: 35,
-  //       badges: [],
-  //     });
-  //   });
-
-  //   act(() => {
-  //     const people = queryResult.current;
-  //     expect(Object.keys(people)).toHaveLength(2);
-  //     personBId = Object.keys(people).find((id) => id !== personAId);
-  //   });
-
-  //   // Now, create a circular relation
-  //   act(() => {
-  //     createResult.current(["Person"], {
-  //       name: "Eve",
-  //       age: 28,
-  //       badges: [],
-  //       friend: personBId, // Assuming you have a 'friend' relation
-  //     });
-  //   });
-
-  //   act(() => {
-  //     const people = queryResult.current;
-  //     const personA = people[personAId!];
-  //     const personB = people[personBId!];
-
-  //     // Check that circular relations are handled (this depends on your implementation)
-  //     expect(personA.friend).toBeDefined();
-  //     expect(personA.friend.name).toBe("Frank");
-  //   });
-  // });
 });
