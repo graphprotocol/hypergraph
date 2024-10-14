@@ -105,7 +105,7 @@ describe("Library Tests", () => {
     });
 
     const events = queryResult.current;
-    expect(Object.keys(events)).toHaveLength(1);
+    expect(events).toHaveLength(1);
   });
 
   it("should create and query entities with relations", () => {
@@ -144,9 +144,9 @@ describe("Library Tests", () => {
 
     // Wait for the hook to update
     const events = queryResult.current;
-    expect(Object.keys(events)).toHaveLength(1);
+    expect(events).toHaveLength(1);
 
-    const event = Object.values(events)[0];
+    const event = events[0];
     if (!event) {
       throw new Error("Event not found");
     }
@@ -235,9 +235,9 @@ describe("Library Tests", () => {
 
     // Wait for the hook to update
     const people = queryResult.current;
-    expect(Object.keys(people)).toHaveLength(1);
+    expect(people).toHaveLength(1);
 
-    const person = Object.values(people)[0];
+    const person = people[0];
     if (!person) {
       throw new Error("Person not found");
     }
@@ -273,8 +273,8 @@ describe("Library Tests", () => {
 
     act(() => {
       const badges = queryResult.current;
-      expect(Object.keys(badges)).toHaveLength(1);
-      badgeId = Object.keys(badges)[0];
+      expect(badges).toHaveLength(1);
+      badgeId = badges[0]?.id;
     });
 
     act(() => {
@@ -284,7 +284,7 @@ describe("Library Tests", () => {
 
     act(() => {
       const badgesAfterDelete = queryResult.current;
-      expect(Object.keys(badgesAfterDelete)).toHaveLength(0);
+      expect(badgesAfterDelete).toHaveLength(0);
     });
   });
 });

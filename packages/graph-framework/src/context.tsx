@@ -337,7 +337,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
   }: {
     types: [...K];
   }) {
-    const prevEntitiesRef = useRef<any>({});
+    const prevEntitiesRef = useRef<MergedEntityType<T, K, BaseEntity>[]>([]);
     const id = useSpaceId();
     const repo = useRepo();
 
@@ -365,14 +365,14 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
     const entities = useSyncExternalStore(
       subscribe,
-      (): Record<string, MergedEntityType<T, K, BaseEntity>> => {
+      (): MergedEntityType<T, K, BaseEntity>[] => {
         const doc = handle?.docSync();
         if (!doc) {
-          if (fastDeepEqual(prevEntitiesRef.current, {})) {
+          if (fastDeepEqual(prevEntitiesRef.current, [])) {
             return prevEntitiesRef.current;
           } else {
-            prevEntitiesRef.current = {};
-            return {};
+            prevEntitiesRef.current = [];
+            return prevEntitiesRef.current;
           }
         }
 
@@ -406,10 +406,12 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
           filteredEntities[entityId] = resolvedEntity;
         }
 
-        if (fastDeepEqual(prevEntitiesRef.current, filteredEntities)) {
+        const filteredEntitiesArray = Object.values(filteredEntities);
+
+        if (fastDeepEqual(prevEntitiesRef.current, filteredEntitiesArray)) {
           return prevEntitiesRef.current;
         } else {
-          prevEntitiesRef.current = filteredEntities;
+          prevEntitiesRef.current = filteredEntitiesArray;
           return prevEntitiesRef.current;
         }
 
