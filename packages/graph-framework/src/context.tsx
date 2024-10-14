@@ -46,6 +46,7 @@ export const type = {
 };
 
 type BaseEntity = {
+  id: string;
   types: string[];
 };
 
@@ -424,7 +425,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
             return entity; // Return as is or handle accordingly
           }
           visited.add(entityId);
-          const resolvedEntity = { ...entity };
+          const resolvedEntity = { ...entity, id: entityId };
           for (const entityType of entityTypes) {
             const typeSchema = schema.types[entityType];
             for (const key in typeSchema) {
