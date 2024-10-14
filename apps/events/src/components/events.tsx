@@ -97,7 +97,7 @@ export const Events: React.FC = () => {
                 <p>Participants:</p>
                 <ul>
                   {event.participants.map((participant) => (
-                    <li key={participant.id}>
+                    <li key={participant.name}>
                       {participant.name} ({participant.badge.name})
                     </li>
                   ))}

@@ -45,6 +45,10 @@ export const type = {
   },
 };
 
+type BaseEntity = {
+  types: string[];
+};
+
 // Helper type to extract schema type
 type SchemaType<T> = T extends S.Schema<any, infer A> ? A : never;
 
@@ -70,6 +74,7 @@ type EntityKeys<T extends SchemaDefinition> = keyof T["types"] & string;
 type MergedEntityType<
   T extends SchemaDefinition,
   Keys extends readonly EntityKeys<T>[],
+  Additional,
 > = UnionToIntersection<
   {
     [K in Keys[number]]: {
@@ -78,12 +83,17 @@ type MergedEntityType<
         infer C
       >
         ? C extends "many"
-          ? MergedEntityType<T, Extract<R[number], EntityKeys<T>>[]>[]
-          : MergedEntityType<T, Extract<R[number], EntityKeys<T>>[]>
+          ? MergedEntityType<
+              T,
+              Extract<R[number], EntityKeys<T>>[],
+              Additional
+            >[]
+          : MergedEntityType<T, Extract<R[number], EntityKeys<T>>[], Additional>
         : SchemaType<T["types"][K][P]>;
     };
   }[Keys[number]]
->;
+> &
+  Additional;
 
 // Helper function to check if a property is a Relation
 function isRelation(
@@ -108,7 +118,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
   function buildMergedSchema<K extends readonly EntityKeys<T>[]>(
     types: [...K]
-  ): S.Schema<any, MergedEntityType<T, K>> {
+  ): S.Schema<any, MergedEntityType<T, K, {}>> {
     // Create a record of all properties and their schemas
     const propertySchemas = types.reduce(
       (acc, type) => {
@@ -158,7 +168,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
     // Convert the record to a struct schema
     return S.Struct(propertySchemas) as unknown as S.Schema<
       any,
-      MergedEntityType<T, K>
+      MergedEntityType<T, K, {}>
     >;
   }
 
@@ -197,8 +207,8 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
     function createEntity<K extends readonly EntityKeys<T>[]>(
       types: [...K],
-      data: MergedEntityType<T, K>
-    ): MergedEntityType<T, K> {
+      data: MergedEntityType<T, K, {}>
+    ): MergedEntityType<T, K, {}> {
       if (types.length === 0) {
         throw new Error("Entity must have at least one type");
       }
@@ -224,7 +234,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
         doc.entities[entityId] = { ...resultWithRefs, types };
       });
 
-      return result as MergedEntityType<T, K>;
+      return result as MergedEntityType<T, K, BaseEntity>;
 
       // Helper function to extract relational entities
       function extractRelationalEntities(
@@ -354,7 +364,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
     const entities = useSyncExternalStore(
       subscribe,
-      (): Record<string, MergedEntityType<T, K>> => {
+      (): Record<string, MergedEntityType<T, K, BaseEntity>> => {
         const doc = handle?.docSync();
         if (!doc) {
           if (fastDeepEqual(prevEntitiesRef.current, {})) {
@@ -366,11 +376,18 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
         }
 
         // Create filteredEntities object with only entities that include all the types
-        const filteredEntities: Record<string, MergedEntityType<T, K>> = {};
+        const filteredEntities: Record<
+          string,
+          MergedEntityType<T, K, BaseEntity>
+        > = {};
         for (const entityId in doc.entities) {
           const entity = doc.entities[entityId];
           if (types.every((type) => entity.types.includes(type as string))) {
-            filteredEntities[entityId] = entity as MergedEntityType<T, K>;
+            filteredEntities[entityId] = entity as MergedEntityType<
+              T,
+              K,
+              BaseEntity
+            >;
           }
         }
 

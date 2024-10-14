@@ -150,6 +150,7 @@ describe("Library Tests", () => {
     if (!event) {
       throw new Error("Event not found");
     }
+    expect(event.types).toStrictEqual(["Event"]);
     expect(event.name).toBe("Conference");
 
     // Check participants
@@ -162,23 +163,28 @@ describe("Library Tests", () => {
     ) {
       throw new Error("Participants not found");
     }
+    expect(event.participants[0].types).toStrictEqual(["Person"]);
     expect(event.participants[0].name).toBe("Alice");
     expect(event.participants[0].age).toBe(30);
     expect(event.participants[0].badges).toHaveLength(1);
     expect(event.participants[0].badges[0].name).toBe("Speaker");
 
+    expect(event.participants[1].types).toStrictEqual(["Person"]);
     expect(event.participants[1].name).toBe("Bob");
     expect(event.participants[1].age).toBe(25);
     expect(event.participants[1].badges).toHaveLength(1);
     expect(event.participants[1].badges[0].name).toBe("Attendee");
 
     // Check author
+    expect(event.author.types).toStrictEqual(["User", "Person"]);
     expect(event.author.name).toBe("Charlie");
     expect(event.author.email).toBe("charlie@example.com");
 
     expectTypeOf(event).toMatchTypeOf<{
+      types: string[];
       name: string;
       participants: {
+        types: string[];
         name: string;
         age: number;
         badges: {
@@ -186,14 +192,14 @@ describe("Library Tests", () => {
         }[];
       }[];
       author: {
+        types: string[];
         name: string;
         age: number;
+        email: string;
         badges: {
+          types: string[];
           name: string;
         }[];
-      } & {
-        name: string;
-        email: string;
       };
     }>();
   });
