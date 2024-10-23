@@ -7,7 +7,7 @@ The goal of this document is to structure my thoughts and opinions in a concise 
 1. Authentication - wer investigated how to establish encryption keys with Wallets. XMTP uses a technique where they use the signature of a nonce value stored on the server to recover a stable encryption key for message encryption. We can use XMTP directly or use the same technique to establish encryption keys for end-to-end encrypted data sync.
 2. Demo showing end-to-end encrypted data sync on top of Yjs & Automerge that is leveraging a defined Schema - we have a working prototype that shows how to sync data between two clients using Yjs and Automerge. The data is end-to-end encrypted and the schema is defined in a way that it's easy to read and write. We experimented with LiveStore and Tinybase which we believe are both not good fits. Both could be used as stores, but sync would require a rebase technique with manual conflict resolution or a lax schema and again using a CRDT engine on top to sync the data.
 3. Schema design and implementation including relations - based on the GRC-20 spec we created a library on top of Automerge that allows to define a schema with multiple types per entity as well as relations.
-4. GRC-20 spec feedback and alternative design - see all the discussion in the chat and the alternative spec in the docs folder
+4. GRC-20 spec feedback and alternative design - several discussion in the chat, call and the alternative spec in the docs folder
 
 ## Current state of the art
 
@@ -28,30 +28,51 @@ Building local-first apps that are decentralized and end-to-end encrypted is ver
 ## Main areas to consider when building a local-first app
 
 - Sync
-- Key management (Rotation is the hard part)
+- Key management (Key rotation when members are leaving the group is the hard part)
 - Invitation
-- Permissions
+- Permissions (affects Key Management)
 - Identity
 
 ## Sync
 
-Syncing back data from a public graph is tricky!!!
+For unencrypted data in a document structure there are established solutions.
 
-- Either every (text) change is accompanied with a CRDT
+When it comes to encrypted data there is Secsync relying on a central server. Jazz afaik as and both rely on finding the missing changes. Other solutions try to be fully decentralized e.g. Nextgraph. The upcoming Automerge sync also wants to go in this direction.
+
+The hard part is not only syncing one entities/documents, but to identify which ones you need to update. Personally I'm wondering about the data storage overhead. Further problems that need to be considered are:
+
+- prioritized sync (loading one particular document first)
+- progress indication
+- handling errors (can you abort and retry if state is lost)
+- compaction for of history to heavily reduce the data that needs to be synced
+- shallow document/entity loading to retract history
+
+When considering the GRC-20 spec we need to think how to sync data back from a public graph. Ideally the indexer have similar capabilities as the native CRDT sync engine. We can do naive approaches, but long term we probably want a solid approach and this is not trivial. Note: One idea is to accompany every change with a CRDT that is published publicly as well.
 
 ### Key Management
 
-- Rotation is the hard part. One specific problem is: who do you allow to rotate the keys?
+Managing encryption keys for a a group is quite tricky problem. In general it's easy to establish a key for a group, but rotating the key is the hard part.
 
-e.g. you have commenter that informs you that his devices was stolen. can they initiate a new key? probably not. can any member in a group do so or only the admins?
+Example of a key rotation problem:
 
-how do you recover from failed key rotations? (ignore them and move on)
+- Who do you allow to rotate the keys? e.g. you have commenter that informs you that his devices was stolen. can they initiate a new key? probably not. can any member in a group do so or only the admins?
+- How do you recover from failed key rotations? (ignore them and move on?)
 
-The easy way and what most do: just trust everyone with access in the group
+The easy way and what most do: just trust everyone with access in the group, but this model might now work well for all use-cases.
 
 ### Permissions
 
-TODO
+In general it's straight forward to do read/write permissions based on space roles. This could be made more granular per entity with a custom permission system, but probably out of scope.
+
+There were some attempts like UCAN to make permissions very granular, but I haven't seen it in action yet.
+
+### Invitation
+
+The most common way to handle this is invitation links (Jazz, DXOS, Serenity). There are a couple of fine details that need to be considered. The main issue is: you can't just invite someone via Email directly to a space without them having an encryption key that you know beforehand or you send a secret (which then can't go through a server).
+
+### Identity
+
+The easy answer would be to use a wallet and XMTP for a stable encryption key. Account recovery on top is not that crazy either, but when you try to come up with key rotation or a multi-device setup things become quite tricky. Even more so in case you want to allow decentralization.
 
 ## Overview of Local-first frameworks and tools
 
@@ -60,6 +81,8 @@ TODO
 https://evolu.com/
 
 ### Yjs
+
+https://github.com/yjs/yjs
 
 ### Jazz
 
@@ -95,11 +118,17 @@ Works on top of Automerge
 Interesting vision
 https://docs.dxos.org/guide/
 
-### What about others?
+### Livestore
 
-- Tinybase (nice UX, wipes data locally if it doesn't match the schema)
-- Livestore (strongly typed - migrations and sync unknown)
-- Yjs
+Strongly typed and doesn't use a CRDT.
+
+The sync system will probably be rebasing with manual conflict resolution.
+
+### Tinybase
+
+A database with a CRDT build in (MergableStores) that works for unencrypted data.
+
+Nice UX, wipes data locally if it doesn't match the schema.
 
 ## Strategies for the future
 
@@ -141,11 +170,23 @@ One thing almost nobody has explored is having only only a subset of the data en
 
 This has some benefits, but personally I haven't explored the direction.
 
-## How would I imagine a perfect scenario? (OPINION)
+## Personal conclusion
+
+What to do heavily depends on the direction we want to go. Personally I'm find triple stores and the GRC-20 spec very fascinating, but my gut-feeling tells me that it's not helpful to establish a local-first framework.
+
+If the goal is to establish GRC-20, then building an end-to-end encrypted local-first framework is a good way to support it.
+
+Based on this we can probably can sit together and evaluate a path forward. Personally I would take a lot of short-cuts to get as fast as possible to a state where internal/external devs can build things with it e.g. once per month a 1-2 day Hackathon using it and giving feedback.
+
+I tried to think through how I would go about these two different directions:
+
+## Local-first focused framework
 
 ### Schema and CRDT
 
-In general I like schemas and therefor I would define a schema that defines a clear structure that looks like a SQL-DB with certain limitations.
+In general I like schemas and therefor I would define a schema that defines a clear structure that looks like a SQL-DB with certain limitations. It probably would also allow nested structures like any other NoSQL store or SQL-Store with JSON support. In addition you can be very flexible in terms of types (as long as Automerge supports it).
+
+For rich-text editing you would probably use the automerge-prosemirror integration.
 
 While Automerge is document based I would try to built this as a layer on top of Automerge (we already have this). What we should add is the ability to define in the schema what stays in the main document and what data is stored in a sub-document. When writing and querying data this mostly should be abstracted. The overhead vor sub-documents should be minimal, but what's currently missing in SecSync and only limited in the existing Automerge sync is the ability to do prioritized sync. This is important for large data sets. Automerge is working on it.
 
@@ -165,9 +206,15 @@ This is where blockchains could really shine. We could use the chain as a way to
 
 We could start with something simple that relies on a server managing the latest state. We can experiment and verify what works for users and what doesn't. In parallel we can develop the blockchain part or we just delay it and move to the blockchain later once we are sure due smart contracts being expensive to develop.
 
+Alternatively we might just like Beehive and be happy with it.
+
 ### Identity
 
-Personally I'm not a fan of the wallet experience. The embedded wallets from Privy look great, but I haven't looked into the details yet. I worked on and with the OPAQUE protocol which would allow to build embedded wallets. The main concern for me is the UX of signing messages to e.g. create an invitation. Due our explorations we can use wallets as the primary auth method, but again it comes with some limitations. Ideally this most of the time hidden away from the user and only required in certain cases e.g. when doing a crucial action like creating an invitation link to a space/group.
+This highly depends on key management. If we use a key management relying not relying on a blockchain we could make wallets completely optional. This would open it up to a larger audience that doesn't want to integrate wallets or use Privy.
+
+If we rely on blockchains the embedded wallets from Privy look promising, but I haven't looked into the details yet. I worked on and with the OPAQUE protocol which would allow to build embedded wallets so people don't have to use Privy.
+
+If we require wallets we could even abstract them away and the build a auth layer where developers and users don't have to know about wallets.
 
 ### Invitation
 
@@ -176,10 +223,52 @@ https://github.com/serenity-kit/invitation/
 
 XMTP could be used to directly add users or at least send them an invite. Not sure how active it's used in the eco-system. Personally I would stick to link-invitations and explore adding users directly later on.
 
-## Personal conclusion
+### Permissions
 
-What to do heavily depends on the direction we want to go. Personally I'm find triple stores and the GRC-20 spec very fascinating, but my gut-feeling tells me that it's not helpful to establish a local-first framework.
+Beehive afaik is only focusing on read/write permissions at the time being. We could focus on that and give developers the options to add more where needed.
 
-If the goal is to establish GRC-20, then building an end-to-end encrypted local-first framework is a good way to support it.
+### GRC-20 integration
 
-Based on this we can probably can sit together and evaluate a path forward. Personally I would take a lot of short-cuts to get as fast as possible to a state where internal/external devs can build things with it e.g. once per month a 1-2 day hackathon using it and giving feedback.
+This probably would be a separate library that allows you to specify where your schema maps to GRC-20 attributes, types and so on.
+
+In addition it feels like a very natural extension to the framework to allow you to pull in data from public graphs, showing the different states and diffs from local data compared to public data. Probably we want to store the last known public data that matches the entries in the local data. Ideally the indexers offer a event log based API to allow syncing updates in without aggressively querying the indexer or downloading the entire space.
+
+We can give guides for people who want to integrate into the GRC-20 spec.
+
+## GRC-20 focused framework
+
+### Schema and CRDT
+
+The schema probably is where we see the difference to the other approach. It allows entities to have multiple types and is limited to the GRC-20 base types and relations. The beautiful aspect of this is that we can much clearly communicate the framework focus in terms of that it provides you amazing tooling for building GRC-20 based apps. The downside is that the group of developers interested in local-first, but not GRC-20 will probably focus on other tools. I believe for example that a lot local-first apps probably never will have public data and the whole story with public spaces and publishing data makes little sense to their use-case.
+
+In order to use rich-text editing it's probably recommended to use our editor with GRC-20 blocks.
+
+The flexible design of the GRC-20 requires a different architecture on how to store data in one or multiple Automerge documents, which is less performant. With the other design I can store entities in maps per type. Here I need to store them in one entities map. We would need to explore at what amount of entities this starts to become an issue and what kind of caching/indexing we can do to counter the issues.
+
+Migrations could be implemented similar to what I described above.
+
+### Sync
+
+This I see identical to the other version.
+
+### Key Management
+
+This I see identical to the other version.
+
+### Identity
+
+Here integrating with wallets probably makes the most sense. You anyway need a wallet to make any kind of change on a public space.
+
+### Invitation
+
+This I see identical to the other version.
+
+### Permissions
+
+I assume there is an existing permission model defined (which I'm not aware of) of who is a member with certain permissions for a space and so on. By default we probably want this exact model. This might influence key management as well.
+
+### GRC-20 integration
+
+Since data is shaped on the same spec syncing from and to the public space is a lot easier and can be a lot more automated.
+
+The main thing I'm still missing conceptional is what kind of indexers can offer to allow syncing updates in without aggressively querying the indexer or downloading the entire space.
