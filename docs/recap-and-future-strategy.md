@@ -4,7 +4,7 @@ The goal of this document is to structure my thoughts and opinions in a concise 
 
 ## Recap of the last couple weeks
 
-1. Authentication - wer investigated how to establish encryption keys with Wallets. XMTP uses a technique where they use the signature of a nonce value stored on the server to recover a stable encryption key for message encryption. We can use XMTP directly or use the same technique to establish encryption keys for end-to-end encrypted data sync.
+1. Authentication - we investigated how to establish encryption keys with Wallets. XMTP uses a technique where they use the signature of a nonce value stored on the server to recover a stable encryption key for message encryption. We can use XMTP directly or use the same technique to establish encryption keys for end-to-end encrypted data sync.
 2. Demo showing end-to-end encrypted data sync on top of Yjs & Automerge that is leveraging a defined Schema - we have a working prototype that shows how to sync data between two clients using Yjs and Automerge. The data is end-to-end encrypted and the schema is defined in a way that it's easy to read and write. We experimented with LiveStore and Tinybase which we believe are both not good fits. Both could be used as stores, but sync would require a rebase technique with manual conflict resolution or a lax schema and again using a CRDT engine on top to sync the data.
 3. Schema design and implementation including relations - based on the GRC-20 spec we created a library on top of Automerge that allows to define a schema with multiple types per entity as well as relations.
 4. GRC-20 spec feedback and alternative design - several discussion in the chat, call and the alternative spec in the docs folder
@@ -138,7 +138,7 @@ The first question we should answer is: what is the direction we want to go?
 
 Of course we probably want to have both, but in reality I believe the outcome looks very different.
 
-One we have clarify I see multiple possible scenarios:
+One we have clarity I see multiple possible scenarios:
 
 - Build something completely from ground up (CRDTs, Sync, Key Management, etc.)
 - Leverage existing CRDTs and built on top of those (Yjs, Automerge - they are all document based)
@@ -188,7 +188,7 @@ In general I like schemas and therefor I would define a schema that defines a cl
 
 For rich-text editing you would probably use the automerge-prosemirror integration.
 
-While Automerge is document based I would try to built this as a layer on top of Automerge (we already have this). What we should add is the ability to define in the schema what stays in the main document and what data is stored in a sub-document. When writing and querying data this mostly should be abstracted. The overhead vor sub-documents should be minimal, but what's currently missing in SecSync and only limited in the existing Automerge sync is the ability to do prioritized sync. This is important for large data sets. Automerge is working on it.
+While Automerge is document based I would try to built this as a layer on top of Automerge (we already have this). What we should add is the ability to define in the schema what stays in the main document and what data is stored in a sub-document. When writing and querying data this mostly should be abstracted. The overhead for sub-documents should be minimal, but what's currently missing in SecSync and only limited in the existing Automerge sync is the ability to do prioritized sync. This is important for large data sets. Automerge is working on it.
 
 Why Automerge and not Yjs? Yjs is the best for real-time collaboration at the moment and I'm a big fan, but Automerge is actively working towards local-first supporting full decentralization and end-to-end encryption. They have more resources and a clear vision. So in terms of long-term plans Automerge seems to be the better choice.
 
