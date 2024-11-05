@@ -148,6 +148,50 @@ Params:
 
 Authentication is handled through Privy cookies. Authorization for the actions is handled by verifying the signature of the event. The server should only accept events that are signed by the user that is part of the space.
 
+## API
+
+### Authentication and Authorization
+
+```tsx
+const { authenticated } = usePrivy();
+```
+
+```tsx
+import {
+  createSpace,
+  acceptInvite,
+  createSpace,
+  listSpaces,
+} from "graph-framework";
+
+export const {
+  SpaceProvider,
+  // schema
+  useCreateEntity,
+  useDeleteEntity,
+  useSpaceId,
+  createDocumentId,
+  useQuery,
+  // space utils
+  createInvite,
+  removeInvite,
+  updateMember,
+  removeMember,
+  deleteSpace,
+  listSpaces,
+  getSpace,
+} = createFunctions(schema, {
+  endpoint: "http://localhost:3000/sync",
+});
+
+// automatically connects to the server
+<SpaceProvider id={spaceId} account={account} />;
+
+listSpaces({ account });
+getSpace({ account, spaceId });
+acceptInvite({ account, spaceId, inviteKey });
+```
+
 ## Questions
 
 - Do we want to use a blockchain to manage space/invite/member events?
@@ -155,3 +199,7 @@ Authentication is handled through Privy cookies. Authorization for the actions i
 - When submitting an event to the chain. How long do we usually need to wait on an L2 chain before there is enough certainty that the event is part of the chain?
 - Can we aggregate data on the server, send it down and verify that it's correct? Or would we need all the events and how can we verify that the server didn't leave out some?
 - Do we want to leverage IPFS for storing data?
+
+```
+
+```
