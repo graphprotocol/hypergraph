@@ -25,6 +25,11 @@ Separate from these we need to discover and sync the spaces the user is part of:
 - sendUpdate
 - sendCompactedUpdate
 
+Auth
+
+- createIdentity
+- restoreIdentity
+
 I believe these actions should be independent from the transport layer, but initially would built them on top of Websocket. This way we can easily have real-time updates without a lot of retry logic.
 
 Some of the events have a lastKnownSpaceEventId. This is to ensure that the client has the latest state of the space. If the client doesn't have the latest state, the server should return an error or if the client is behind it should discard the event and retry syncing.
@@ -39,6 +44,7 @@ Params:
 - nonce: string
 - memberSignaturePublicKey: string
 - memberEncryptionPublicKey: string
+- keyBox: { ciphertext: string, recipientPublicKey: string, authorPublicKey: string }
 - signature of the combined data: string
 
 ### deleteSpace
@@ -195,11 +201,7 @@ acceptInvite({ account, spaceId, inviteKey });
 ## Questions
 
 - Do we want to use a blockchain to manage space/invite/member events?
-- Without a blockchain I would make sure the previous event is part of the params to ensure a linear order. Can this be done in a blockchain or can multiple events end up in a block? Should we then sort them or can we argue only one is valid?
+- Can we ensure a linear order of events using an L2 chain or can multiple events end up in a block? If so should we then sort them or can we argue only one is valid?
 - When submitting an event to the chain. How long do we usually need to wait on an L2 chain before there is enough certainty that the event is part of the chain?
 - Can we aggregate data on the server, send it down and verify that it's correct? Or would we need all the events and how can we verify that the server didn't leave out some?
 - Do we want to leverage IPFS for storing data?
-
-```
-
-```
