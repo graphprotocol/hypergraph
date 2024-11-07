@@ -1,11 +1,11 @@
-import { expect, it } from "vitest";
-import { applyEvent } from "./apply-event.js";
-import { createSpace } from "./create-space.js";
+import { expect, it } from 'vitest';
+import { applyEvent } from './apply-event.js';
+import { createSpace } from './create-space.js';
 
-it("should create a space state", () => {
+it('should create a space state', () => {
   const author = {
-    signaturePublicKey: "signature",
-    encryptionPublicKey: "encryption",
+    signaturePublicKey: 'signature',
+    encryptionPublicKey: 'encryption',
   };
   const spaceEvent = createSpace({ author });
   const state = applyEvent({ event: spaceEvent });
@@ -16,10 +16,10 @@ it("should create a space state", () => {
       [author.signaturePublicKey]: {
         signaturePublicKey: author.signaturePublicKey,
         encryptionPublicKey: author.encryptionPublicKey,
-        role: "admin",
+        role: 'admin',
       },
     },
     removedMembers: {},
-    transactionHash: "",
+    transactionHash: '',
   });
 });

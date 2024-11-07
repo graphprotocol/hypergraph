@@ -1,11 +1,11 @@
-import { AddEvent } from "@/components/add-event";
-import { AddUser } from "@/components/add-user";
-import { Events } from "@/components/events";
-import { Users } from "@/components/users";
-import { SpaceProvider } from "@/schema";
-import { createFileRoute } from "@tanstack/react-router";
+import { AddEvent } from '@/components/add-event';
+import { AddUser } from '@/components/add-user';
+import { Events } from '@/components/events';
+import { Users } from '@/components/users';
+import { SpaceProvider } from '@/schema';
+import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute("/space/$spaceId")({
+export const Route = createFileRoute('/space/$spaceId')({
   component: Space,
 });
 

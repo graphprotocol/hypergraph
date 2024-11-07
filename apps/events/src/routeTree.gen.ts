@@ -8,20 +8,20 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as Schema2Import } from './routes/schema2'
-import { Route as PlaygroundImport } from './routes/playground'
-import { Route as IndexImport } from './routes/index'
-import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
+import { Route as rootRoute } from './routes/__root';
+import { Route as IndexImport } from './routes/index';
+import { Route as PlaygroundImport } from './routes/playground';
+import { Route as Schema2Import } from './routes/schema2';
+import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId';
 
 // Create Virtual Routes
 
-const Login2LazyImport = createFileRoute('/login2')()
-const LoginLazyImport = createFileRoute('/login')()
+const Login2LazyImport = createFileRoute('/login2')();
+const LoginLazyImport = createFileRoute('/login')();
 
 // Create/Update Routes
 
@@ -29,152 +29,133 @@ const Login2LazyRoute = Login2LazyImport.update({
   id: '/login2',
   path: '/login2',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/login2.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/login2.lazy').then((d) => d.Route));
 
 const LoginLazyRoute = LoginLazyImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route));
 
 const Schema2Route = Schema2Import.update({
   id: '/schema2',
   path: '/schema2',
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const PlaygroundRoute = PlaygroundImport.update({
   id: '/playground',
   path: '/playground',
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
   id: '/space/$spaceId',
   path: '/space/$spaceId',
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexImport;
+      parentRoute: typeof rootRoute;
+    };
     '/playground': {
-      id: '/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof PlaygroundImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/playground';
+      path: '/playground';
+      fullPath: '/playground';
+      preLoaderRoute: typeof PlaygroundImport;
+      parentRoute: typeof rootRoute;
+    };
     '/schema2': {
-      id: '/schema2'
-      path: '/schema2'
-      fullPath: '/schema2'
-      preLoaderRoute: typeof Schema2Import
-      parentRoute: typeof rootRoute
-    }
+      id: '/schema2';
+      path: '/schema2';
+      fullPath: '/schema2';
+      preLoaderRoute: typeof Schema2Import;
+      parentRoute: typeof rootRoute;
+    };
     '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginLazyImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/login';
+      path: '/login';
+      fullPath: '/login';
+      preLoaderRoute: typeof LoginLazyImport;
+      parentRoute: typeof rootRoute;
+    };
     '/login2': {
-      id: '/login2'
-      path: '/login2'
-      fullPath: '/login2'
-      preLoaderRoute: typeof Login2LazyImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/login2';
+      path: '/login2';
+      fullPath: '/login2';
+      preLoaderRoute: typeof Login2LazyImport;
+      parentRoute: typeof rootRoute;
+    };
     '/space/$spaceId': {
-      id: '/space/$spaceId'
-      path: '/space/$spaceId'
-      fullPath: '/space/$spaceId'
-      preLoaderRoute: typeof SpaceSpaceIdImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/space/$spaceId';
+      path: '/space/$spaceId';
+      fullPath: '/space/$spaceId';
+      preLoaderRoute: typeof SpaceSpaceIdImport;
+      parentRoute: typeof rootRoute;
+    };
   }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/playground': typeof PlaygroundRoute
-  '/schema2': typeof Schema2Route
-  '/login': typeof LoginLazyRoute
-  '/login2': typeof Login2LazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/': typeof IndexRoute;
+  '/playground': typeof PlaygroundRoute;
+  '/schema2': typeof Schema2Route;
+  '/login': typeof LoginLazyRoute;
+  '/login2': typeof Login2LazyRoute;
+  '/space/$spaceId': typeof SpaceSpaceIdRoute;
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/playground': typeof PlaygroundRoute
-  '/schema2': typeof Schema2Route
-  '/login': typeof LoginLazyRoute
-  '/login2': typeof Login2LazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/': typeof IndexRoute;
+  '/playground': typeof PlaygroundRoute;
+  '/schema2': typeof Schema2Route;
+  '/login': typeof LoginLazyRoute;
+  '/login2': typeof Login2LazyRoute;
+  '/space/$spaceId': typeof SpaceSpaceIdRoute;
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/playground': typeof PlaygroundRoute
-  '/schema2': typeof Schema2Route
-  '/login': typeof LoginLazyRoute
-  '/login2': typeof Login2LazyRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  __root__: typeof rootRoute;
+  '/': typeof IndexRoute;
+  '/playground': typeof PlaygroundRoute;
+  '/schema2': typeof Schema2Route;
+  '/login': typeof LoginLazyRoute;
+  '/login2': typeof Login2LazyRoute;
+  '/space/$spaceId': typeof SpaceSpaceIdRoute;
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/playground'
-    | '/schema2'
-    | '/login'
-    | '/login2'
-    | '/space/$spaceId'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/playground'
-    | '/schema2'
-    | '/login'
-    | '/login2'
-    | '/space/$spaceId'
-  id:
-    | '__root__'
-    | '/'
-    | '/playground'
-    | '/schema2'
-    | '/login'
-    | '/login2'
-    | '/space/$spaceId'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: '/' | '/playground' | '/schema2' | '/login' | '/login2' | '/space/$spaceId';
+  fileRoutesByTo: FileRoutesByTo;
+  to: '/' | '/playground' | '/schema2' | '/login' | '/login2' | '/space/$spaceId';
+  id: '__root__' | '/' | '/playground' | '/schema2' | '/login' | '/login2' | '/space/$spaceId';
+  fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  PlaygroundRoute: typeof PlaygroundRoute
-  Schema2Route: typeof Schema2Route
-  LoginLazyRoute: typeof LoginLazyRoute
-  Login2LazyRoute: typeof Login2LazyRoute
-  SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
+  IndexRoute: typeof IndexRoute;
+  PlaygroundRoute: typeof PlaygroundRoute;
+  Schema2Route: typeof Schema2Route;
+  LoginLazyRoute: typeof LoginLazyRoute;
+  Login2LazyRoute: typeof Login2LazyRoute;
+  SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute;
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -184,11 +165,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginLazyRoute: LoginLazyRoute,
   Login2LazyRoute: Login2LazyRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRoute,
-}
+};
 
-export const routeTree = rootRoute
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+export const routeTree = rootRoute._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
 
 /* ROUTE_MANIFEST_START
 {

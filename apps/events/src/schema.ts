@@ -1,4 +1,4 @@
-import { createFunctions, type } from "graph-framework";
+import { createFunctions, type } from 'graph-framework';
 
 export const schema = {
   types: {
@@ -6,8 +6,8 @@ export const schema = {
       name: type.Text,
       age: type.Number,
       badge: type.Relation({
-        types: ["Badge"] as const,
-        cardinality: "one",
+        types: ['Badge'] as const,
+        cardinality: 'one',
       }),
     },
     User: {
@@ -20,22 +20,16 @@ export const schema = {
     Event: {
       name: type.Text,
       participants: type.Relation({
-        types: ["Person"] as const,
-        cardinality: "many",
+        types: ['Person'] as const,
+        cardinality: 'many',
       }),
       author: type.Relation({
-        types: ["User", "Person"] as const,
-        cardinality: "one",
+        types: ['User', 'Person'] as const,
+        cardinality: 'one',
       }),
     },
   },
 };
 
-export const {
-  SpaceProvider,
-  useCreateEntity,
-  useDeleteEntity,
-  useSpaceId,
-  createDocumentId,
-  useQuery,
-} = createFunctions(schema);
+export const { SpaceProvider, useCreateEntity, useDeleteEntity, useSpaceId, createDocumentId, useQuery } =
+  createFunctions(schema);

@@ -1,11 +1,11 @@
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 
-export const getEnv = (): "dev" | "production" | "local" => {
-  return "dev";
+export const getEnv = (): 'dev' | 'production' | 'local' => {
+  return 'dev';
 };
 
 export const buildLocalStorageKey = (walletAddress: string) =>
-  walletAddress ? `xmtp:${getEnv()}:keys:${walletAddress}` : "";
+  walletAddress ? `xmtp:${getEnv()}:keys:${walletAddress}` : '';
 
 export const loadKeys = (walletAddress: string): Uint8Array | null => {
   const accessKey = buildLocalStorageKey(walletAddress);

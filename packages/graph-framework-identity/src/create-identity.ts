@@ -1,8 +1,8 @@
 export const createIdentity = () => {
   return {
-    signaturePublicKey: "",
-    signaturePrivateKey: "",
-    encryptionPublicKey: "",
-    encryptionPrivateKey: "",
+    signaturePublicKey: '',
+    signaturePrivateKey: '',
+    encryptionPublicKey: '',
+    encryptionPrivateKey: '',
   };
 };

@@ -1,9 +1,9 @@
-import * as Schema from "effect/Schema";
+import * as Schema from 'effect/Schema';
 
 export const SpaceMember = Schema.Struct({
   signaturePublicKey: Schema.String,
   encryptionPublicKey: Schema.String,
-  role: Schema.Union(Schema.Literal("admin"), Schema.Literal("member")),
+  role: Schema.Union(Schema.Literal('admin'), Schema.Literal('member')),
 });
 
 export type SpaceMember = Schema.Schema.Type<typeof SpaceMember>;
@@ -28,7 +28,7 @@ export type SpaceState = Schema.Schema.Type<typeof SpaceState>;
 export const SpaceEvent = Schema.Union(
   Schema.Struct({
     transaction: Schema.Struct({
-      type: Schema.Literal("create-space"),
+      type: Schema.Literal('create-space'),
       id: Schema.String,
       creatorSignaturePublicKey: Schema.String,
       creatorEncryptionPublicKey: Schema.String,
@@ -40,7 +40,7 @@ export const SpaceEvent = Schema.Union(
   }),
   Schema.Struct({
     transaction: Schema.Struct({
-      type: Schema.Literal("delete-space"),
+      type: Schema.Literal('delete-space'),
       id: Schema.String,
     }),
     author: Schema.Struct({
@@ -50,7 +50,7 @@ export const SpaceEvent = Schema.Union(
   }),
   Schema.Struct({
     transaction: Schema.Struct({
-      type: Schema.Literal("create-invitation"),
+      type: Schema.Literal('create-invitation'),
       id: Schema.String,
       ciphertext: Schema.String,
       nonce: Schema.String,
@@ -61,7 +61,7 @@ export const SpaceEvent = Schema.Union(
       publicKey: Schema.String,
       signature: Schema.String,
     }),
-  })
+  }),
 );
 
 export type SpaceEvent = Schema.Schema.Type<typeof SpaceEvent>;

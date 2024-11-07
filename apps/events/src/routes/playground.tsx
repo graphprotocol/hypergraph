@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { createFileRoute } from "@tanstack/react-router";
-import { createIdentity, createSpace } from "graph-framework";
-import { useEffect, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { createFileRoute } from '@tanstack/react-router';
+import { createIdentity, createSpace } from 'graph-framework';
+import { useEffect, useState } from 'react';
 
-export const Route = createFileRoute("/playground")({
+export const Route = createFileRoute('/playground')({
   component: () => <Playground />,
 });
 
@@ -15,30 +15,30 @@ const Playground = () => {
     setWebsocketConnection(websocketConnection);
 
     const onMessage = (event: MessageEvent) => {
-      console.log("message received", event.data);
+      console.log('message received', event.data);
     };
-    websocketConnection.addEventListener("message", onMessage);
+    websocketConnection.addEventListener('message', onMessage);
 
     const onOpen = () => {
-      console.log("websocket connected");
+      console.log('websocket connected');
     };
-    websocketConnection.addEventListener("open", onOpen);
+    websocketConnection.addEventListener('open', onOpen);
 
     const onError = (event: Event) => {
-      console.log("websocket error", event);
+      console.log('websocket error', event);
     };
-    websocketConnection.addEventListener("error", onError);
+    websocketConnection.addEventListener('error', onError);
 
     const onClose = (event: CloseEvent) => {
-      console.log("websocket close", event);
+      console.log('websocket close', event);
     };
-    websocketConnection.addEventListener("close", onClose);
+    websocketConnection.addEventListener('close', onClose);
 
     return () => {
-      websocketConnection.removeEventListener("message", onMessage);
-      websocketConnection.removeEventListener("open", onOpen);
-      websocketConnection.removeEventListener("error", onError);
-      websocketConnection.removeEventListener("close", onClose);
+      websocketConnection.removeEventListener('message', onMessage);
+      websocketConnection.removeEventListener('open', onOpen);
+      websocketConnection.removeEventListener('error', onError);
+      websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
   }, []);

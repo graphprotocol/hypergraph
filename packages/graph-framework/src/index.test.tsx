@@ -1,5 +1,5 @@
-import { expect, it } from "vitest";
+import { expect, it } from 'vitest';
 
-it.skip("TODO test full integration", () => {
+it.skip('TODO test full integration', () => {
   expect(true).toBe(false);
 });

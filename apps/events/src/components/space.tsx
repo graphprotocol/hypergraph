@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
-import { SpaceProvider, createDocumentId } from "../schema";
-import { AddEvent } from "./add-event";
-import { AddUser } from "./add-user";
-import { Events } from "./events";
-import { Users } from "./users";
+import React, { useEffect } from 'react';
+import { SpaceProvider, createDocumentId } from '../schema';
+import { AddEvent } from './add-event';
+import { AddUser } from './add-user';
+import { Events } from './events';
+import { Users } from './users';
 
 export const Space: React.FC = () => {
   const [id, setId] = React.useState<string | null>(null);

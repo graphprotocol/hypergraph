@@ -1,4 +1,4 @@
-import { Author, SpaceEvent } from "./types.js";
+import type { Author, SpaceEvent } from './types.js';
 
 type Params = {
   author: Author;
@@ -7,15 +7,15 @@ type Params = {
 
 export const createInvitation = ({ author, id }: Params): SpaceEvent => {
   const transaction = {
-    type: "create-invitation" as const,
+    type: 'create-invitation' as const,
     id,
-    ciphertext: "",
-    nonce: "",
-    signaturePublicKey: "",
-    encryptionPublicKey: "",
+    ciphertext: '',
+    nonce: '',
+    signaturePublicKey: '',
+    encryptionPublicKey: '',
   };
   // TODO canonicalize, hash and sign the transaction
-  const signature = "";
+  const signature = '';
 
   return {
     transaction,
