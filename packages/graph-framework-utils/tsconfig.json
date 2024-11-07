@@ -1,10 +1,9 @@
 {
-  "extends": "./tsconfig.build.json",
+  "extends": "../../tsconfig.options.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": ".",
     "noEmit": true
   },
-  "include": ["**/*", "vite.config.mts"],
+  "include": ["**/*", "vite.config.mts", "../../shared/*.ts"],
   "exclude": ["**/node_modules", "**/dist"]
 }

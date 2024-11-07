@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
-import { vitePluginExternalizeDependencies } from "./vitePluginExternalizeDependencies.js";
+import { vitePluginExternalizeDependencies } from "../../shared/vitePluginExternalizeDependencies.js";
 
 // https://vitejs.dev/config/
 export default defineConfig({
