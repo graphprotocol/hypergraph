@@ -38,6 +38,6 @@
     "vitest": "^2.1.1"
   },
   "dependencies": {
-    "uuid": "^10.0.0"
+    "uuid": "^11.0.2"
   }
 }
