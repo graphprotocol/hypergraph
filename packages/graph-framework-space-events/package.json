@@ -1,0 +1,28 @@
+{
+  "name": "graph-framework-space-events",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --typecheck",
+    "ts:check": "tsc --noEmit",
+    "lint": "echo 'No linting configured'"
+  },
+  "exports": {
+    ".": {
+      "default": "./src/index.js"
+    }
+  },
+  "peerDependencies": {
+    "@effect/schema": "^0.74"
+  },
+  "devDependencies": {
+    "@effect/schema": "^0.74.1",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.1"
+  },
+  "dependencies": {
+    "uuid": "^10.0.0",
+    "graph-framework-utils": "workspace:*"
+  }
+}
