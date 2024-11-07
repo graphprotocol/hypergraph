@@ -238,15 +238,21 @@ importers:
 
   packages/graph-framework:
     dependencies:
-      fast-deep-equal:
-        specifier: ^3.1.3
-        version: 3.1.3
+      graph-framework-identity:
+        specifier: workspace:*
+        version: link:../graph-framework-identity
+      graph-framework-schema:
+        specifier: workspace:*
+        version: link:../graph-framework-schema
+      graph-framework-space-events:
+        specifier: workspace:*
+        version: link:../graph-framework-space-events
+      graph-framework-utils:
+        specifier: workspace:*
+        version: link:../graph-framework-utils
       react:
         specifier: ^18
         version: 18.3.1
-      uuid:
-        specifier: ^10.0.0
-        version: 10.0.0
     devDependencies:
       '@automerge/automerge':
         specifier: ^2.2.8
@@ -284,9 +290,112 @@ importers:
       vitest:
         specifier: ^2.1.1
         version: 2.1.1(@types/node@22.7.4)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
+
+  packages/graph-framework-identity:
+    dependencies:
+      graph-framework-utils:
+        specifier: workspace:*
+        version: link:../graph-framework-utils
+      uuid:
+        specifier: ^10.0.0
+        version: 10.0.0
+    devDependencies:
+      '@effect/schema':
+        specifier: ^0.74.1
+        version: 0.74.2(effect@3.8.4)
+      vite:
+        specifier: ^5.4.8
+        version: 5.4.8(@types/node@22.7.4)
+      vitest:
+        specifier: ^2.1.1
+        version: 2.1.2(@types/node@22.7.4)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+
+  packages/graph-framework-schema:
+    dependencies:
+      fast-deep-equal:
+        specifier: ^3.1.3
+        version: 3.1.3
+      graph-framework-utils:
+        specifier: workspace:*
+        version: link:../graph-framework-utils
+      react:
+        specifier: ^18
+        version: 18.3.1
+    devDependencies:
+      '@automerge/automerge':
+        specifier: ^2.2.8
+        version: 2.2.8
+      '@automerge/automerge-repo':
+        specifier: ^1.2.1
+        version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.7.4)(typescript@5.6.2)
+      '@automerge/automerge-repo-react-hooks':
+        specifier: ^1.2.1
+        version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.7.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.2)
+      '@effect/schema':
+        specifier: ^0.74.1
+        version: 0.74.2(effect@3.8.4)
+      '@testing-library/jest-dom':
+        specifier: ^6.5.0
+        version: 6.5.0
+      '@testing-library/react':
+        specifier: ^16.0.1
+        version: 16.0.1(@testing-library/dom@10.4.0)(@types/react-dom@18.3.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ^18.3.7
+        version: 18.3.11
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
+      '@vitejs/plugin-react':
+        specifier: ^4.3.2
+        version: 4.3.2(vite@5.4.8(@types/node@22.7.4))
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      vite:
+        specifier: ^5.4.8
+        version: 5.4.8(@types/node@22.7.4)
+      vitest:
+        specifier: ^2.1.1
+        version: 2.1.2(@types/node@22.7.4)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+
+  packages/graph-framework-space-events:
+    dependencies:
+      graph-framework-utils:
+        specifier: workspace:*
+        version: link:../graph-framework-utils
+      uuid:
+        specifier: ^10.0.0
+        version: 10.0.0
+    devDependencies:
+      '@effect/schema':
+        specifier: ^0.74.1
+        version: 0.74.2(effect@3.8.4)
+      vite:
+        specifier: ^5.4.8
+        version: 5.4.8(@types/node@22.7.4)
+      vitest:
+        specifier: ^2.1.1
+        version: 2.1.2(@types/node@22.7.4)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+
+  packages/graph-framework-utils:
+    dependencies:
+      uuid:
+        specifier: ^10.0.0
+        version: 10.0.0
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.7
+        version: 18.3.11
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
+      vite:
+        specifier: ^5.4.8
+        version: 5.4.8(@types/node@22.7.4)
+      vitest:
+        specifier: ^2.1.1
+        version: 2.1.2(@types/node@22.7.4)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
 packages:
 
@@ -7015,6 +7124,16 @@ snapshots:
       dom-accessibility-api: 0.6.3
       lodash: 4.17.21
       redent: 3.0.0
+
+  '@testing-library/react@16.0.1(@testing-library/dom@10.4.0)(@types/react-dom@18.3.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@babel/runtime': 7.25.7
+      '@testing-library/dom': 10.4.0
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.11
+      '@types/react-dom': 18.3.0
 
   '@testing-library/react@16.0.1(@testing-library/dom@10.4.0)(@types/react-dom@18.3.0)(@types/react@18.3.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:

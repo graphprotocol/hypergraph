@@ -1,4 +1,4 @@
-import { generateId } from "../generateId.js";
+import { generateId } from "graph-framework-utils";
 import { Author, SpaceEvent } from "./types.js";
 
 type Params = {
