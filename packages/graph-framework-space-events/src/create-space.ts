@@ -1,5 +1,5 @@
 import { generateId } from "graph-framework-utils";
-import { Author, SpaceEvent } from "./types.js";
+import type { Author, SpaceEvent } from "./types.js";
 
 type Params = {
   author: Author;

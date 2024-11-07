@@ -1,10 +1,9 @@
 import { expect, it } from "vitest";
+
 import { generateId } from "./generateId.js";
 
-it("should generate an id", () => {
-  expect(generateId()).toBeTypeOf("string");
-});
-
-it.skip("should have a length of 22 characters", () => {
-  expect(generateId()).toHaveLength(22);
+it("should generate a base58 encoded uuid of 22 char length", () => {
+  const id = generateId();
+  expect(id).toBeTypeOf("string");
+  expect(id).toHaveLength(22);
 });
