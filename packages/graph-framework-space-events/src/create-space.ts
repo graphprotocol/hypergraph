@@ -1,5 +1,6 @@
-import { generateId } from "graph-framework-utils";
-import type { Author, SpaceEvent } from "./types.js";
+import { generateId } from 'graph-framework-utils';
+
+import type { Author, SpaceEvent } from './types.js';
 
 type Params = {
   author: Author;
@@ -7,13 +8,13 @@ type Params = {
 
 export const createSpace = ({ author }: Params): SpaceEvent => {
   const transaction = {
-    type: "create-space" as const,
+    type: 'create-space' as const,
     id: generateId(),
     creatorSignaturePublicKey: author.signaturePublicKey,
     creatorEncryptionPublicKey: author.encryptionPublicKey,
   };
   // TODO canonicalize, hash and sign the transaction
-  const signature = "";
+  const signature = '';
 
   return {
     transaction,

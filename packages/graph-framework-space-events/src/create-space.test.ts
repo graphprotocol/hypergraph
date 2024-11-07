@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+
 import { applyEvent } from './apply-event.js';
 import { createSpace } from './create-space.js';
 
