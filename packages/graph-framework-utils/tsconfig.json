@@ -1,27 +1,10 @@
 {
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "strict": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-    "sourceMap": true,
-    "declarationMap": true,
-    "declaration": true,
-    "strictNullChecks": true,
-    "incremental": true,
-    "composite": true,
-    "allowJs": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noErrorTruncation": true,
-    "isolatedModules": true,
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "jsx": "react-jsx"
+    "baseUrl": ".",
+    "rootDir": ".",
+    "noEmit": true
   },
-  "include": ["./src"]
+  "include": ["**/*"],
+  "exclude": ["**/node_modules", "**/dist"]
 }
