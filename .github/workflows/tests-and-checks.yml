@@ -3,7 +3,8 @@ name: Tests and Checks
 on: [push]
 
 jobs:
-  typecheck:
+  build-test-check:
+    name: Install deps, build required package, typecheck, lint and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -12,29 +13,13 @@ jobs:
           version: 9
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
       - name: Generate Prisma Types
         run: cd apps/server && pnpm prisma generate
       - name: Typecheck
         run: pnpm ts:check
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Linting
         run: pnpm lint
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Test
         run: pnpm test
