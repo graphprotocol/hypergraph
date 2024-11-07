@@ -11,7 +11,8 @@
     "lib": ["esnext"],
     "types": ["node"],
     "baseUrl": "./",
-    "strict": true
+    "strict": true,
+    "exactOptionalPropertyTypes": true
   },
   "ts-node": {
     "esm": true

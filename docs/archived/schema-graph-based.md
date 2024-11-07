@@ -272,7 +272,7 @@ const { schema: schemaV2, migrate: migrateV2 } : Migration({
 Types:
 
 ```tsx
-import * as S from "@effect/schema/Schema";
+import * as S from "effect/Schema";
 
 export const type = {
   Text: S.String,

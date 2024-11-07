@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
+    "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
     "sourceMap": true,

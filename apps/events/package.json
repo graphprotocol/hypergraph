@@ -14,7 +14,7 @@
   "dependencies": {
     "@automerge/automerge": "^2.2.8",
     "@automerge/automerge-repo-react-hooks": "^1.2.1",
-    "@effect/schema": "^0.74.2",
+    "effect": "^3.10.12",
     "@noble/hashes": "^1.5.0",
     "@privy-io/react-auth": "^1.88.4",
     "@radix-ui/react-avatar": "^1.1.1",

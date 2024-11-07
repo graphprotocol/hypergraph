@@ -1,14 +1,10 @@
-import * as trpcExpress from "@trpc/server/adapters/express";
-import cors, { CorsOptions } from "cors";
+import cors from "cors";
 import "dotenv/config";
+import { Schema } from "effect";
 import express from "express";
-import { createWebSocketConnection } from "secsync-server";
-import { WebSocketServer } from "ws";
-import { createSnapshot } from "./db/createSnapshot.js";
-import { createUpdate } from "./db/createUpdate.js";
-import { getDocumentData } from "./db/getDocumentData.js";
-import { appRouter } from "./trpc/appRouter.js";
-import { createContext } from "./utils/trpc/trpc.js";
+import { SpaceEvent } from "graph-framework-space-events";
+import { IncomingMessage } from "http";
+import WebSocket, { WebSocketServer } from "ws";
 
 const webSocketServer = new WebSocketServer({ noServer: true });
 const PORT = process.env.PORT !== undefined ? parseInt(process.env.PORT) : 3030;
@@ -16,25 +12,7 @@ const app = express();
 
 app.use(express.json());
 
-const corsOptions: CorsOptions = {
-  origin:
-    process.env.NODE_ENV === "production"
-      ? "TODO production url"
-      : "http://localhost:8081",
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-export type AppRouter = typeof appRouter;
-
-app.use(
-  "/api",
-  trpcExpress.createExpressMiddleware({
-    router: appRouter,
-    createContext,
-  })
-);
+app.use(cors());
 
 app.get("/", (_req, res) => {
   res.send(`Server is running`);
@@ -44,20 +22,24 @@ const server = app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
 
+const decodeEvent = Schema.decodeUnknownEither(SpaceEvent);
+
 webSocketServer.on(
   "connection",
-  createWebSocketConnection({
-    getDocument: getDocumentData,
-    createSnapshot: createSnapshot,
-    createUpdate: createUpdate,
-    // @ts-expect-error
-    hasAccess: async ({ documentId, websocketSessionKey, connection }) => {
-      return true;
-    },
-    hasBroadcastAccess: async ({ documentId, websocketSessionKeys }) =>
-      websocketSessionKeys.map(() => true),
-    logging: "error",
-  })
+  async (webSocket: WebSocket, request: IncomingMessage) => {
+    console.log("Connection established");
+    webSocket.on("message", async (message) => {
+      const rawData = JSON.parse(message.toString());
+      const result = decodeEvent(rawData);
+      if (result._tag === "Right") {
+        const data = result.right;
+        console.log("Message received", data);
+      }
+    });
+    webSocket.on("close", () => {
+      console.log("Connection closed");
+    });
+  }
 );
 
 server.on("upgrade", async (request, socket, head) => {

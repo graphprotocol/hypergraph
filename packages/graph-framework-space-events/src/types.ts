@@ -1,49 +1,74 @@
-export type SpaceMember = {
-  signaturePublicKey: string;
-  encryptionPublicKey: string;
-  role: "admin" | "member";
-};
+import * as Schema from "effect/Schema";
 
-export type SpaceInvitation = {
-  signaturePublicKey: string;
-  encryptionPublicKey: string;
-};
+export const SpaceMember = Schema.Struct({
+  signaturePublicKey: Schema.String,
+  encryptionPublicKey: Schema.String,
+  role: Schema.Union(Schema.Literal("admin"), Schema.Literal("member")),
+});
 
-export type SpaceState = {
-  id: string;
-  invitations: { [signaturePublicKey: string]: SpaceInvitation };
-  members: { [signaturePublicKey: string]: SpaceMember };
-  removedMembers: { [signaturePublicKey: string]: SpaceMember };
-  transactionHash: string;
-};
+export type SpaceMember = Schema.Schema.Type<typeof SpaceMember>;
 
-export type SpaceEvent = {
-  transaction:
-    | {
-        type: "create-space";
-        id: string;
-        creatorSignaturePublicKey: string;
-        creatorEncryptionPublicKey: string;
-      }
-    | {
-        type: "delete-space";
-        id: string;
-      }
-    | {
-        type: "create-invitation";
-        id: string;
-        ciphertext: string;
-        nonce: string;
-        signaturePublicKey: string;
-        encryptionPublicKey: string;
-      };
-  author: {
-    publicKey: string;
-    signature: string;
-  };
-};
+export const SpaceInvitation = Schema.Struct({
+  signaturePublicKey: Schema.String,
+  encryptionPublicKey: Schema.String,
+});
 
-export type Author = {
-  signaturePublicKey: string;
-  encryptionPublicKey: string;
-};
+export type SpaceInvitation = Schema.Schema.Type<typeof SpaceInvitation>;
+
+export const SpaceState = Schema.Struct({
+  id: Schema.String,
+  invitations: Schema.Record({ key: Schema.String, value: SpaceInvitation }),
+  members: Schema.Record({ key: Schema.String, value: SpaceMember }),
+  removedMembers: Schema.Record({ key: Schema.String, value: SpaceMember }),
+  transactionHash: Schema.String,
+});
+
+export type SpaceState = Schema.Schema.Type<typeof SpaceState>;
+
+export const SpaceEvent = Schema.Union(
+  Schema.Struct({
+    transaction: Schema.Struct({
+      type: Schema.Literal("create-space"),
+      id: Schema.String,
+      creatorSignaturePublicKey: Schema.String,
+      creatorEncryptionPublicKey: Schema.String,
+    }),
+    author: Schema.Struct({
+      publicKey: Schema.String,
+      signature: Schema.String,
+    }),
+  }),
+  Schema.Struct({
+    transaction: Schema.Struct({
+      type: Schema.Literal("delete-space"),
+      id: Schema.String,
+    }),
+    author: Schema.Struct({
+      publicKey: Schema.String,
+      signature: Schema.String,
+    }),
+  }),
+  Schema.Struct({
+    transaction: Schema.Struct({
+      type: Schema.Literal("create-invitation"),
+      id: Schema.String,
+      ciphertext: Schema.String,
+      nonce: Schema.String,
+      signaturePublicKey: Schema.String,
+      encryptionPublicKey: Schema.String,
+    }),
+    author: Schema.Struct({
+      publicKey: Schema.String,
+      signature: Schema.String,
+    }),
+  })
+);
+
+export type SpaceEvent = Schema.Schema.Type<typeof SpaceEvent>;
+
+export const Author = Schema.Struct({
+  signaturePublicKey: Schema.String,
+  encryptionPublicKey: Schema.String,
+});
+
+export type Author = Schema.Schema.Type<typeof Author>;
