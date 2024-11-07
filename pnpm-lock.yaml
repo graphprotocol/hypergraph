@@ -8,9 +8,18 @@ importers:
 
   .:
     devDependencies:
+      escape-string-regexp:
+        specifier: ^5.0.0
+        version: 5.0.0
       typescript:
-        specifier: ^5.6.2
+        specifier: ^5.6.3
         version: 5.6.3
+      vite:
+        specifier: ^5.4.10
+        version: 5.4.10(@types/node@22.9.0)
+      vitest:
+        specifier: ^2.1.4
+        version: 2.1.4(@types/node@22.9.0)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
   apps/events:
     dependencies:
@@ -132,18 +141,12 @@ importers:
       typescript-eslint:
         specifier: ^8.8.0
         version: 8.13.0(eslint@9.14.0(jiti@1.21.6))(typescript@5.6.3)
-      vite:
-        specifier: ^5.4.8
-        version: 5.4.10(@types/node@22.9.0)
       vite-plugin-top-level-await:
         specifier: ^1.4.4
         version: 1.4.4(@swc/helpers@0.5.13)(rollup@4.21.3)(vite@5.4.10(@types/node@22.9.0))
       vite-plugin-wasm:
         specifier: ^3.3.0
         version: 3.3.0(vite@5.4.10(@types/node@22.9.0))
-      vitest:
-        specifier: ^2.1.2
-        version: 2.1.4(@types/node@22.9.0)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
   apps/server:
     dependencies:
@@ -242,12 +245,6 @@ importers:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      vite:
-        specifier: ^5.4.8
-        version: 5.4.10(@types/node@22.9.0)
-      vitest:
-        specifier: ^2.1.1
-        version: 2.1.4(@types/node@22.9.0)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
   packages/graph-framework-identity:
     dependencies:
@@ -261,12 +258,6 @@ importers:
       effect:
         specifier: ^3.10.12
         version: 3.10.12
-      vite:
-        specifier: ^5.4.8
-        version: 5.4.10(@types/node@22.9.0)
-      vitest:
-        specifier: ^2.1.1
-        version: 2.1.4(@types/node@22.9.0)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
   packages/graph-framework-schema:
     dependencies:
@@ -310,12 +301,6 @@ importers:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      vite:
-        specifier: ^5.4.8
-        version: 5.4.10(@types/node@22.9.0)
-      vitest:
-        specifier: ^2.1.1
-        version: 2.1.4(@types/node@22.9.0)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
   packages/graph-framework-space-events:
     dependencies:
@@ -329,31 +314,18 @@ importers:
       effect:
         specifier: ^3.10.12
         version: 3.10.12
-      vite:
-        specifier: ^5.4.8
-        version: 5.4.10(@types/node@22.9.0)
-      vitest:
-        specifier: ^2.1.1
-        version: 2.1.4(@types/node@22.9.0)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
   packages/graph-framework-utils:
-    dependencies:
-      uuid:
-        specifier: ^11.0.2
-        version: 11.0.2
     devDependencies:
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
-      vite:
-        specifier: ^5.4.8
-        version: 5.4.10(@types/node@22.9.0)
+      uuid:
+        specifier: ^11.0.2
+        version: 11.0.2
       vite-plugin-dts:
         specifier: ^4.3.0
         version: 4.3.0(@types/node@22.9.0)(rollup@4.21.3)(typescript@5.6.3)(vite@5.4.10(@types/node@22.9.0))
-      vitest:
-        specifier: ^2.1.1
-        version: 2.1.4(@types/node@22.9.0)(jsdom@25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
 packages:
 
@@ -3073,6 +3045,10 @@ packages:
   escape-string-regexp@4.0.0:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
+
+  escape-string-regexp@5.0.0:
+    resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
+    engines: {node: '>=12'}
 
   eslint-plugin-react-hooks@5.1.0-rc-fb9a90fa48-20240614:
     resolution: {integrity: sha512-xsiRwaDNF5wWNC4ZHLut+x/YcAxksUd9Rizt7LaEn3bV8VyYRpXnRJQlLOfYaVy9esk4DFP4zPPnoNVjq5Gc0w==}
@@ -8837,6 +8813,8 @@ snapshots:
   escape-string-regexp@1.0.5: {}
 
   escape-string-regexp@4.0.0: {}
+
+  escape-string-regexp@5.0.0: {}
 
   eslint-plugin-react-hooks@5.1.0-rc-fb9a90fa48-20240614(eslint@9.14.0(jiti@1.21.6)):
     dependencies:

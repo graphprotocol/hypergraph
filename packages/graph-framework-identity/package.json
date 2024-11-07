@@ -17,9 +17,7 @@
     "effect": "^3.10.12"
   },
   "devDependencies": {
-    "effect": "^3.10.12",
-    "vite": "^5.4.8",
-    "vitest": "^2.1.1"
+    "effect": "^3.10.12"
   },
   "dependencies": {
     "uuid": "^11.0.2",
