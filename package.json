@@ -14,7 +14,7 @@
     "vite-plugin-dts": "^4.3.0"
   },
   "scripts": {
-    "build": "pnpm --filter graph-framework-utils build",
+    "build": "pnpm --filter graph-framework-utils --filter graph-framework-identity --filter graph-framework-schema --filter graph-gramework-space-events build",
     "ts:check": "pnpm -r ts:check",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"
