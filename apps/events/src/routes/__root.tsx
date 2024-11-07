@@ -11,7 +11,14 @@ export const Route = createRootRoute({
             <span className="sr-only">Acme Events</span>
             <CalendarDays className="h-6 w-6" />
           </Link>
+
           <nav className="ml-auto flex gap-4 sm:gap-6">
+            <Link
+              to="/playground"
+              className="text-sm font-medium hover:underline underline-offset-4"
+            >
+              Playground
+            </Link>
             <Link
               to="/space/$spaceId"
               params={{ spaceId: "abc" }}

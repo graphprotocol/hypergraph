@@ -4,7 +4,7 @@ import {
   useDocument,
   useRepo,
 } from "@automerge/automerge-repo-react-hooks";
-import * as S from "@effect/schema/Schema";
+import * as S from "effect/Schema";
 import fastDeepEqual from "fast-deep-equal";
 import {
   createContext,

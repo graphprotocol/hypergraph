@@ -14,10 +14,10 @@
     }
   },
   "peerDependencies": {
-    "@effect/schema": "^0.74"
+    "effect": "^3.10.12"
   },
   "devDependencies": {
-    "@effect/schema": "^0.74.1",
+    "effect": "^3.10.12",
     "vite": "^5.4.8",
     "vitest": "^2.1.1"
   },
