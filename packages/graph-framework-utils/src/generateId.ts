@@ -20,6 +20,5 @@ import { encodeBase58 } from "./base58.js";
 export function generateId() {
   const uuid = uuidv4();
   const stripped = uuid.replaceAll(/-/g, "");
-  const encoded = encodeBase58(stripped);
-  return encoded.padStart(22, "1");
+  return encodeBase58(stripped);
 }
