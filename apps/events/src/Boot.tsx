@@ -1,7 +1,5 @@
 import { PrivyProvider } from "@privy-io/react-auth";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { ready } from "libsodium-wrappers";
-import { useEffect, useState } from "react";
 
 import { routeTree } from "./routeTree.gen";
 
@@ -16,15 +14,7 @@ declare module "@tanstack/react-router" {
 }
 
 export function Boot() {
-  // only return the App component when the libsodium-wrappers is ready
-  const [isReady, setIsReady] = useState(false);
-  useEffect(() => {
-    ready.then(() => {
-      setIsReady(true);
-    });
-  }, []);
-
-  return isReady ? (
+  return (
     <PrivyProvider
       appId="cm1gt9i1b002g12ih6b6l4vvi"
       config={{
@@ -43,5 +33,5 @@ export function Boot() {
     >
       <RouterProvider router={router} />
     </PrivyProvider>
-  ) : null;
+  );
 }
