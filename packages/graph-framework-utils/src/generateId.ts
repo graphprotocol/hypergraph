@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { encodeBase58 } from "./base58.js";
+import { encodeBase58 } from './base58.js';
 
 /**
  * Generate a v4 UUID.
@@ -19,6 +19,6 @@ import { encodeBase58 } from "./base58.js";
  */
 export function generateId() {
   const uuid = uuidv4();
-  const stripped = uuid.replaceAll(/-/g, "");
+  const stripped = uuid.replaceAll(/-/g, '');
   return encodeBase58(stripped);
 }

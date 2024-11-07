@@ -1,5 +1,9 @@
 {
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.removeUnused.ts": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
   "[javascript]": {
     "editor.maxTokenizationLineLength": 2500,
     "editor.defaultFormatter": "biomejs.biome"

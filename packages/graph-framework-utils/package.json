@@ -20,10 +20,7 @@
       "default": "./dist/base58.mjs"
     }
   },
-  "files": [
-    "dist",
-    "package.json"
-  ],
+  "files": ["dist", "package.json"],
   "sideEffects": false,
   "scripts": {
     "build": "vite build",

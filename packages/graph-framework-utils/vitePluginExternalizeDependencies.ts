@@ -1,7 +1,7 @@
-import escapeStringRegexp from "escape-string-regexp";
-import fs from "node:fs/promises";
-import path from "node:path";
-import type { Plugin } from "vite";
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import escapeStringRegexp from 'escape-string-regexp';
+import type { Plugin } from 'vite';
 
 /**
  * Vite plugin to automatically externalize all `dependencies` and `peerDependencies` of the package.
@@ -10,15 +10,12 @@ import type { Plugin } from "vite";
  */
 export function vitePluginExternalizeDependencies(): Plugin {
   return {
-    name: "vite-plugin-externalize-dependencies",
+    name: 'vite-plugin-externalize-dependencies',
     async config(config, { command }) {
       // Only run for the `build` command
-      if (command !== "build") return;
+      if (command !== 'build') return;
 
-      const packageJsonPath = path.join(
-        config.root ?? process.cwd(),
-        "package.json"
-      );
+      const packageJsonPath = path.join(config.root ?? process.cwd(), 'package.json');
       try {
         await fs.access(packageJsonPath);
       } catch {
@@ -31,12 +28,9 @@ export function vitePluginExternalizeDependencies(): Plugin {
         peerDependencies?: Record<string, string>;
       } = {};
       try {
-        packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"));
+        packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
       } catch (error) {
-        console.error(
-          `Failed to read or parse package.json at ${packageJsonPath}`,
-          error
-        );
+        console.error(`Failed to read or parse package.json at ${packageJsonPath}`, error);
         return;
       }
 
@@ -48,8 +42,7 @@ export function vitePluginExternalizeDependencies(): Plugin {
           ...Object.keys(packageJson.peerDependencies ?? {}),
         ].map(
           // Match the exact dependency name and any path under it (except CSS files)
-          (dependency) =>
-            new RegExp(`^${escapeStringRegexp(dependency)}(/(?!.*\\.css$).*)?$`)
+          (dependency) => new RegExp(`^${escapeStringRegexp(dependency)}(/(?!.*\\.css$).*)?$`),
         ),
       };
 
