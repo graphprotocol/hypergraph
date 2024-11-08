@@ -28,6 +28,13 @@ cd apps/server
 pnpm dev
 ```
 
+Any time you make changes to the schema, you will need to run the following commands:
+
+```sh
+cd apps/server
+pnpm prisma migrate dev # this will also generate the Prisma client
+```
+
 ## Upgrading Dependencies
 
 ```sh

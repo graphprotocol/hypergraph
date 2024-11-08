@@ -2,9 +2,11 @@ import cors from 'cors';
 import 'dotenv/config';
 import { Schema } from 'effect';
 import express from 'express';
+import type { CreateSpaceEvent } from 'graph-framework-space-events';
 import { SpaceEvent } from 'graph-framework-space-events';
 import type WebSocket from 'ws';
 import { WebSocketServer } from 'ws';
+import { createSpace } from './handlers/createSpace.js';
 
 const webSocketServer = new WebSocketServer({ noServer: true });
 const PORT = process.env.PORT !== undefined ? Number.parseInt(process.env.PORT) : 3030;
@@ -31,7 +33,9 @@ webSocketServer.on('connection', async (webSocket: WebSocket) => {
     const result = decodeEvent(rawData);
     if (result._tag === 'Right') {
       const data = result.right;
-      console.log('Message received', data);
+      if (data.transaction.type === 'create-space') {
+        await createSpace(data as CreateSpaceEvent);
+      }
     }
   });
   webSocket.on('close', () => {

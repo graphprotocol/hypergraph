@@ -13,6 +13,9 @@ jobs:
           version: 9
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Client
+        working-directory: apps/server
+        run: pnpm prisma generate
       - name: Build
         run: pnpm build
       - name: Generate Prisma Types
