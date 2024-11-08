@@ -1,22 +1,30 @@
 {
   "name": "graph-framework-identity",
   "version": "0.0.1",
-  "description": "",
+  "description": "Utilities around identity/authentication in the Graph Framework",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geobrowser/graph-framework.git",
+    "directory": "packages/graph-framework-identity"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist",
+    "provenance": true
+  },
   "scripts": {
+    "build": "pnpm build-esm && build-utils pack-v2",
+    "build-esm": "tsc -P tsconfig.build.json",
     "test": "vitest run --typecheck",
-    "ts:check": "tsc --noEmit",
+    "ts:check": "tsc -b tsconfig.json",
     "lint": "pnpm biome lint src/*",
     "lint:fix": "pnpm biome lint --write src/*",
     "format": "pnpm biome format src/*",
     "format:fix": "pnpm biome format --write src/*",
     "check": "pnpm biome check src/*",
     "check:fix": "pnpm biome check --write src/*"
-  },
-  "exports": {
-    ".": {
-      "default": "./src/index.js"
-    }
   },
   "peerDependencies": {
     "effect": "^3.10.12"

@@ -1,10 +1,12 @@
 {
-  "extends": "./tsconfig.options.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "noEmit": true,
-    "noUncheckedIndexedAccess": true
-  },
-  "include": ["**/*"],
-  "exclude": ["**/node_modules", "**/packages"]
+  "extends": "./tsconfig.base.json",
+  "include": [],
+  "exclude": ["**/node_modules", "**/packages"],
+  "references": [
+    { "path": "packages/graph-framework" },
+    { "path": "packages/graph-framework-identity" },
+    { "path": "packages/graph-framework-schema" },
+    { "path": "packages/graph-framework-space-events" },
+    { "path": "packages/graph-framework-utils" }
+  ]
 }

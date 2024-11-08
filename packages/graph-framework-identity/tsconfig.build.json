@@ -1,9 +1,11 @@
 {
-  "extends": "../../tsconfig.options.json",
+  "extends": "./tsconfig.src.json",
+  "references": [{ "path": "../graph-framework-utils/tsconfig.build.json" }],
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "stripInternal": true
   },
-  "include": ["./src"],
-  "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.spec.ts", "dist"]
+  "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.spec.ts"]
 }

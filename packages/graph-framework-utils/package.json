@@ -3,29 +3,22 @@
   "version": "0.0.1",
   "description": "Provides common utilities for the Graph Framework",
   "type": "module",
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "default": "./dist/index.mjs"
-    },
-    "./base58": {
-      "types": "./dist/base58.d.ts",
-      "require": "./dist/base58.cjs",
-      "import": "./dist/base58.mjs",
-      "default": "./dist/base58.mjs"
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geobrowser/graph-framework.git",
+    "directory": "packages/graph-framework-utils"
   },
-  "files": ["dist", "package.json"],
-  "sideEffects": false,
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist",
+    "provenance": true
+  },
   "scripts": {
-    "build": "vite build",
+    "build": "pnpm build-esm && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
-    "ts:check": "tsc --noEmit",
+    "ts:check": "tsc -b tsconfig.json",
     "lint": "pnpm biome lint src/*",
     "lint:fix": "pnpm biome lint --write src/*",
     "format": "pnpm biome format src/*",
