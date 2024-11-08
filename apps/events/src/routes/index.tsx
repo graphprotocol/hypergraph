@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { repo } from "graph-framework";
+import { Button } from '@/components/ui/button';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { repo } from 'graph-framework';
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
   component: Index,
   // beforeLoad: () => {
   //   if (!isAuthenticated()) {
@@ -27,7 +27,7 @@ export function Index() {
         onClick={() => {
           const result = repo.create();
           navigate({
-            to: "/space/$spaceId",
+            to: '/space/$spaceId',
             params: { spaceId: result.documentId },
           });
         }}

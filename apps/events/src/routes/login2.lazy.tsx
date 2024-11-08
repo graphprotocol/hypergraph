@@ -1,12 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { loadKeys, storeKeys } from "@/lib/keyStorage";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { createLazyFileRoute, redirect } from "@tanstack/react-router";
-import { Client, Signer, useClient, XMTPProvider } from "@xmtp/react-sdk";
-import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { loadKeys, storeKeys } from '@/lib/keyStorage';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { createLazyFileRoute, redirect } from '@tanstack/react-router';
+import { Client, type Signer, XMTPProvider, useClient } from '@xmtp/react-sdk';
+import { ethers } from 'ethers';
+import { useEffect, useState } from 'react';
 
-export const Route = createLazyFileRoute("/login2")({
+export const Route = createLazyFileRoute('/login2')({
   component: () => <Login />,
 });
 
@@ -20,19 +20,17 @@ function Login() {
 
   useEffect(() => {
     const getSigner = async () => {
-      const embeddedWallet =
-        wallets.find((wallet) => wallet.walletClientType === "privy") ||
-        wallets[0];
-      if (embeddedWallet.walletClientType === "privy") {
+      const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
+      if (embeddedWallet.walletClientType === 'privy') {
         // Works with social
         const provider = await embeddedWallet.getEthersProvider();
         const newSigner = provider.getSigner();
         newSigner.signMessage = async (message) => {
           const uiConfig = {
-            title: "Enable Secure Messaging with XMTP",
+            title: 'Enable Secure Messaging with XMTP',
             description:
               "What is XMTP? XMTP provides apps and websites with private, secure, and encrypted messaging without your email or phone number. To turn on secure messaging for this app, tap the 'Enable XMTP' button.",
-            buttonText: "Enable XMTP",
+            buttonText: 'Enable XMTP',
           };
 
           // @ts-expect-error signMessage is a string in this case
@@ -50,10 +48,10 @@ function Login() {
           const newSigner = await provider.getSigner();
           setSigner(newSigner);
         } catch (error) {
-          console.error("User rejected request", error);
+          console.error('User rejected request', error);
         }
       } else {
-        console.error("Metamask not found");
+        console.error('Metamask not found');
       }
     };
 
@@ -63,7 +61,7 @@ function Login() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallets]);
 
-  console.log("signer", signer);
+  console.log('signer', signer);
 
   return (
     <div className="flex flex-1 justify-center items-center flex-col gap-4">
@@ -92,13 +90,13 @@ function XmtpLogin({ signer }: { signer: Signer }) {
     let keys = loadKeys(address);
     if (!keys) {
       keys = await Client.getKeys(signer, {
-        env: "dev",
+        env: 'dev',
       });
       storeKeys(address, keys);
     }
-    await initialize({ signer, options: { env: "dev" }, keys });
-    console.log("wallet initialized");
-    redirect({ to: "/space/$spaceId", params: { spaceId: "abc" } });
+    await initialize({ signer, options: { env: 'dev' }, keys });
+    console.log('wallet initialized');
+    redirect({ to: '/space/$spaceId', params: { spaceId: 'abc' } });
   };
 
   useEffect(() => {

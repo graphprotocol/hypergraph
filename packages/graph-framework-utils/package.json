@@ -20,16 +20,18 @@
       "default": "./dist/base58.mjs"
     }
   },
-  "files": [
-    "dist",
-    "package.json"
-  ],
+  "files": ["dist", "package.json"],
   "sideEffects": false,
   "scripts": {
     "build": "vite build",
     "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
-    "lint": "echo 'No linting configured'"
+    "lint": "pnpm biome lint src/*",
+    "lint:fix": "pnpm biome lint --write src/*",
+    "format": "pnpm biome format src/*",
+    "format:fix": "pnpm biome format --write src/*",
+    "check": "pnpm biome check src/*",
+    "check:fix": "pnpm biome check --write src/*"
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0",

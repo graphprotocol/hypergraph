@@ -1,9 +1,9 @@
-import { createRoot } from "react-dom/client";
-import { Boot } from "./Boot.js";
-import "./index.css";
+import { createRoot } from 'react-dom/client';
+import { Boot } from './Boot.js';
+import './index.css';
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   // <StrictMode>
-  <Boot />
+  <Boot />,
   // </StrictMode>
 );

@@ -1,5 +1,4 @@
-const BASE58_ALLOWED_CHARS =
-  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const BASE58_ALLOWED_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
 export type Base58 = string;
 
@@ -26,12 +25,15 @@ export function encodeBase58(val: string): Base58 {
 
   while (remainder > 0n) {
     const mod = remainder % 58n;
-    result.push(BASE58_ALLOWED_CHARS[Number(mod)]!);
+    const base58CharAtMod = BASE58_ALLOWED_CHARS[Number(mod)];
+    if (base58CharAtMod) {
+      result.push(base58CharAtMod);
+    }
     remainder = remainder / 58n;
   }
 
   // Reverse and join the array to get the final Base58 encoded string
-  return result.reverse().join("");
+  return result.reverse().join('');
 }
 
 export type UUID = string;
@@ -54,23 +56,19 @@ export type UUID = string;
 export function decodeBase58ToUUID(encoded: string): UUID {
   let decoded = 0n;
 
-  for (let char of encoded) {
+  for (const char of encoded) {
     const index = BASE58_ALLOWED_CHARS.indexOf(char);
     if (index === -1) {
-      throw new Error("Invalid Base58 character");
+      throw new Error('Invalid Base58 character');
     }
     decoded = decoded * 58n + BigInt(index);
   }
 
   // Convert the bigint to a hex string, padded to 32 characters
   let hexStr = decoded.toString(16);
-  hexStr = hexStr.padStart(32, "0"); // Ensure it is 32 characters
+  hexStr = hexStr.padStart(32, '0'); // Ensure it is 32 characters
 
-  return [
-    hexStr.slice(0, 8),
-    hexStr.slice(8, 12),
-    hexStr.slice(12, 16),
-    hexStr.slice(16, 20),
-    hexStr.slice(20),
-  ].join("-");
+  return [hexStr.slice(0, 8), hexStr.slice(8, 12), hexStr.slice(12, 16), hexStr.slice(16, 20), hexStr.slice(20)].join(
+    '-',
+  );
 }

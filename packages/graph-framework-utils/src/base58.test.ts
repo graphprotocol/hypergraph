@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { v4 } from "uuid";
+import { v4 } from 'uuid';
+import { describe, expect, it } from 'vitest';
 
-import { decodeBase58ToUUID, encodeBase58 } from "./base58.js";
+import { decodeBase58ToUUID, encodeBase58 } from './base58.js';
 
-describe("base58", () => {
-  it("should be able to encoded a UUID to base58 and then decode it back to its original UUID", () => {
+describe('base58', () => {
+  it('should be able to encoded a UUID to base58 and then decode it back to its original UUID', () => {
     const expected = v4();
-    const given = expected.replaceAll(/-/g, "");
+    const given = expected.replaceAll(/-/g, '');
 
     const encoded = encodeBase58(given);
     expect(encoded).toHaveLength(22);

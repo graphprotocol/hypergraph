@@ -1,20 +1,14 @@
-import React from "react";
-import { useDeleteEntity, useQuery } from "../schema";
-import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import { Input } from "./ui/input";
+import type React from 'react';
+import { useDeleteEntity, useQuery } from '../schema';
+import { Button } from './ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Input } from './ui/input';
 
 export const Events: React.FC = () => {
-  const events = useQuery({ types: ["Event"] });
+  const events = useQuery({ types: ['Event'] });
   const deleteEntity = useDeleteEntity();
 
-  console.log("Rendering Events", events);
+  console.log('Rendering Events', events);
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,7 +1,7 @@
-import { loadKeys } from "./keyStorage";
+import { loadKeys } from './keyStorage';
 
 export const isAuthenticated = () => {
-  const localStorageSignerAddress = localStorage.getItem("signerAddress");
+  const localStorageSignerAddress = localStorage.getItem('signerAddress');
   if (!localStorageSignerAddress) {
     return false;
   }

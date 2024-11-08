@@ -1,12 +1,13 @@
-import { expect, it } from "vitest";
-import { applyEvent } from "./apply-event.js";
-import { createSpace } from "./create-space.js";
-import { deleteSpace } from "./delete-space.js";
+import { expect, it } from 'vitest';
 
-it("should delete a space", () => {
+import { applyEvent } from './apply-event.js';
+import { createSpace } from './create-space.js';
+import { deleteSpace } from './delete-space.js';
+
+it('should delete a space', () => {
   const author = {
-    signaturePublicKey: "signature",
-    encryptionPublicKey: "encryption",
+    signaturePublicKey: 'signature',
+    encryptionPublicKey: 'encryption',
   };
   const spaceEvent = createSpace({ author });
   const state = applyEvent({ event: spaceEvent });
@@ -20,9 +21,9 @@ it("should delete a space", () => {
       [author.signaturePublicKey]: {
         signaturePublicKey: author.signaturePublicKey,
         encryptionPublicKey: author.encryptionPublicKey,
-        role: "admin",
+        role: 'admin',
       },
     },
-    transactionHash: "",
+    transactionHash: '',
   });
 });

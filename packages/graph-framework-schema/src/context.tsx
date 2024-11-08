@@ -1,19 +1,11 @@
-import { AnyDocumentId, DocHandle, Repo } from "@automerge/automerge-repo";
-import {
-  RepoContext,
-  useDocument,
-  useRepo,
-} from "@automerge/automerge-repo-react-hooks";
-import * as S from "effect/Schema";
-import fastDeepEqual from "fast-deep-equal";
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useRef,
-  useSyncExternalStore,
-} from "react";
+import { type AnyDocumentId, type DocHandle, Repo } from '@automerge/automerge-repo';
+import { RepoContext, useDocument, useRepo } from '@automerge/automerge-repo-react-hooks';
+import * as S from 'effect/Schema';
+import fastDeepEqual from 'fast-deep-equal';
+import { type ReactNode, createContext, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+
+// biome-ignore lint/suspicious/noExplicitAny: typedefs are unknown and determined by the schema. todo: figure out a way to make generic?
+type SchemaTypeUnknown = any;
 
 interface SpaceProviderProps {
   children: ReactNode;
@@ -21,7 +13,7 @@ interface SpaceProviderProps {
 }
 
 type DocumentContent = {
-  entities: Record<string, any>;
+  entities: Record<string, SchemaTypeUnknown>;
 };
 
 export const repo = new Repo({
@@ -32,13 +24,13 @@ export const type = {
   Text: S.String,
   Number: S.Number,
   Checkbox: S.Boolean,
-  Relation: <K extends readonly string[], C extends "one" | "many">(params: {
+  Relation: <K extends readonly string[], C extends 'one' | 'many'>(params: {
     types: K;
     cardinality: C;
   }): Relation<K, C> => {
     const { types, cardinality } = params;
     return {
-      _tag: "Relation",
+      _tag: 'Relation',
       types,
       cardinality,
     };
@@ -51,11 +43,11 @@ type BaseEntity = {
 };
 
 // Helper type to extract schema type
-type SchemaType<T> = T extends S.Schema<any, infer A> ? A : never;
+type SchemaType<T> = T extends S.Schema<SchemaTypeUnknown, infer A> ? A : never;
 
 // Generic Relation type
-type Relation<K extends readonly string[], C extends "one" | "many" = "one"> = {
-  _tag: "Relation";
+type Relation<K extends readonly string[], C extends 'one' | 'many' = 'one'> = {
+  _tag: 'Relation';
   types: K;
   cardinality?: C;
 };
@@ -64,12 +56,12 @@ type Relation<K extends readonly string[], C extends "one" | "many" = "one"> = {
 export type SchemaDefinition = {
   types: Record<
     string,
-    Record<string, S.Schema<any, any> | Relation<any, any>>
+    Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown> | Relation<SchemaTypeUnknown, SchemaTypeUnknown>>
   >;
 };
 
 // Extract all possible keys from schema types
-type EntityKeys<T extends SchemaDefinition> = keyof T["types"] & string;
+type EntityKeys<T extends SchemaDefinition> = keyof T['types'] & string;
 
 // Get merged type from array of keys
 type MergedEntityType<
@@ -79,18 +71,11 @@ type MergedEntityType<
 > = UnionToIntersection<
   {
     [K in Keys[number]]: {
-      [P in keyof T["types"][K]]: T["types"][K][P] extends Relation<
-        infer R,
-        infer C
-      >
-        ? C extends "many"
-          ? MergedEntityType<
-              T,
-              Extract<R[number], EntityKeys<T>>[],
-              Additional
-            >[]
+      [P in keyof T['types'][K]]: T['types'][K][P] extends Relation<infer R, infer C>
+        ? C extends 'many'
+          ? MergedEntityType<T, Extract<R[number], EntityKeys<T>>[], Additional>[]
           : MergedEntityType<T, Extract<R[number], EntityKeys<T>>[], Additional>
-        : SchemaType<T["types"][K][P]>;
+        : SchemaType<T['types'][K][P]>;
     };
   }[Keys[number]]
 > &
@@ -98,15 +83,13 @@ type MergedEntityType<
 
 // Helper function to check if a property is a Relation
 function isRelation(
-  prop: S.Schema<any, any> | Relation<any, any>
-): prop is Relation<any, any> {
-  return (prop as Relation<any, any>)._tag === "Relation";
+  prop: S.Schema<SchemaTypeUnknown, SchemaTypeUnknown> | Relation<SchemaTypeUnknown, SchemaTypeUnknown>,
+): prop is Relation<SchemaTypeUnknown, SchemaTypeUnknown> {
+  return (prop as Relation<SchemaTypeUnknown, SchemaTypeUnknown>)._tag === 'Relation';
 }
 
 // Helper type to convert union to intersection
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
+type UnionToIntersection<U> = (U extends SchemaTypeUnknown ? (k: U) => void : never) extends (k: infer I) => void
   ? I
   : never;
 
@@ -118,8 +101,9 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
   };
 
   function buildMergedSchema<K extends readonly EntityKeys<T>[]>(
-    types: [...K]
-  ): S.Schema<any, MergedEntityType<T, K, {}>> {
+    types: [...K],
+    // biome-ignore lint/complexity/noBannedTypes: <explanation>
+  ): S.Schema<SchemaTypeUnknown, MergedEntityType<T, K, {}>> {
     // Create a record of all properties and their schemas
     const propertySchemas = types.reduce(
       (acc, type) => {
@@ -129,7 +113,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
         for (const [key, prop] of Object.entries(typeSchema)) {
           if (isRelation(prop)) {
             // Handle Relation
-            const relationProp = prop as Relation<any, any>;
+            const relationProp = prop as Relation<SchemaTypeUnknown, SchemaTypeUnknown>;
 
             // Build schemas for each related type
             // @ts-expect-error
@@ -138,14 +122,11 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
             });
 
             // Create a union of related schemas
-            const unionSchema =
-              relatedSchemas.length === 1
-                ? relatedSchemas[0]
-                : S.Union(...relatedSchemas);
+            const unionSchema = relatedSchemas.length === 1 ? relatedSchemas[0] : S.Union(...relatedSchemas);
 
-            let schemaWithCardinality: S.Schema<any, any>;
+            let schemaWithCardinality: S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
 
-            if (relationProp.cardinality === "many") {
+            if (relationProp.cardinality === 'many') {
               // Relation is an array
               // @ts-expect-error
               schemaWithCardinality = S.Array(unionSchema);
@@ -157,20 +138,18 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
             acc[key] = schemaWithCardinality;
           } else {
             // Regular property
-            acc[key] = prop as S.Schema<any, any>;
+            acc[key] = prop as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
           }
         }
 
         return acc;
       },
-      {} as Record<string, S.Schema<any, any>>
+      {} as Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>>,
     );
 
     // Convert the record to a struct schema
-    return S.Struct(propertySchemas) as unknown as S.Schema<
-      any,
-      MergedEntityType<T, K, {}>
-    >;
+    // biome-ignore lint/complexity/noBannedTypes: <explanation>
+    return S.Struct(propertySchemas) as unknown as S.Schema<SchemaTypeUnknown, MergedEntityType<T, K, {}>>;
   }
 
   const SpaceContext = createContext<SpaceContextProps | undefined>(undefined);
@@ -182,9 +161,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
     return (
       <RepoContext.Provider value={repo}>
-        <SpaceContext.Provider value={contextValue}>
-          {children}
-        </SpaceContext.Provider>
+        <SpaceContext.Provider value={contextValue}>{children}</SpaceContext.Provider>
       </RepoContext.Provider>
     );
   }
@@ -192,7 +169,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
   const useSpaceId = () => {
     const context = useContext(SpaceContext);
     if (!context) {
-      throw new Error("useSpaceId must be used within a SpaceProvider");
+      throw new Error('useSpaceId must be used within a SpaceProvider');
     }
     return context?.id;
   };
@@ -208,13 +185,15 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
     function createEntity<K extends readonly EntityKeys<T>[]>(
       types: [...K],
-      data: MergedEntityType<T, K, {}>
+      // biome-ignore lint/complexity/noBannedTypes: <explanation>
+      data: MergedEntityType<T, K, {}>,
+      // biome-ignore lint/complexity/noBannedTypes: <explanation>
     ): MergedEntityType<T, K, {}> {
       if (types.length === 0) {
-        throw new Error("Entity must have at least one type");
+        throw new Error('Entity must have at least one type');
       }
 
-      const relationalEntities: Record<string, any> = {};
+      const relationalEntities: Record<string, SchemaTypeUnknown> = {};
 
       const mergedSchema = buildMergedSchema(types);
       const result = S.decodeUnknownSync(mergedSchema)(data);
@@ -239,9 +218,9 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
       // Helper function to extract relational entities
       function extractRelationalEntities(
-        data: any,
-        entityTypes: readonly EntityKeys<T>[]
-      ): any {
+        data: SchemaTypeUnknown,
+        entityTypes: readonly EntityKeys<T>[],
+      ): SchemaTypeUnknown {
         const resultData = { ...data };
         for (const entityType of entityTypes) {
           const typeSchema = schema.types[entityType];
@@ -251,19 +230,16 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
             const prop = typeSchema[key];
             // @ts-expect-error
             if (isRelation(prop)) {
-              const relationProp = prop as Relation<any, any>;
+              const relationProp = prop as Relation<SchemaTypeUnknown, SchemaTypeUnknown>;
               const { types: relatedTypes, cardinality } = relationProp;
               const relatedData = data[key];
               if (relatedData !== undefined) {
-                if (cardinality === "many") {
+                if (cardinality === 'many') {
                   // Handle array of related entities
                   if (Array.isArray(relatedData)) {
-                    const relatedEntityIds = relatedData.map((item: any) => {
+                    const relatedEntityIds = relatedData.map((item: SchemaTypeUnknown) => {
                       const entityId = createDocumentId();
-                      const extractedData = extractRelationalEntities(
-                        item,
-                        relatedTypes
-                      );
+                      const extractedData = extractRelationalEntities(item, relatedTypes);
                       relationalEntities[entityId] = {
                         ...extractedData,
                         types: relatedTypes,
@@ -272,17 +248,12 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
                     });
                     resultData[key] = relatedEntityIds;
                   } else {
-                    throw new Error(
-                      `Expected an array for property "${key}" with cardinality "many"`
-                    );
+                    throw new Error(`Expected an array for property "${key}" with cardinality "many"`);
                   }
                 } else {
                   // Handle single related entity
                   const entityId = createDocumentId();
-                  const extractedData = extractRelationalEntities(
-                    relatedData,
-                    relatedTypes
-                  );
+                  const extractedData = extractRelationalEntities(relatedData, relatedTypes);
                   relationalEntities[entityId] = {
                     ...extractedData,
                     types: relatedTypes,
@@ -311,6 +282,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
       handleRef.current = handle;
     }
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     const deleteEntity = useCallback(
       function deleteEntity(entityId: string) {
         let result = false;
@@ -326,7 +298,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
 
         return result;
       },
-      [id]
+      [id],
     );
 
     return deleteEntity;
@@ -354,150 +326,133 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
         callback();
       };
 
-      handle?.on("change", handleChange);
-      handle?.on("delete", handleDelete);
+      handle?.on('change', handleChange);
+      handle?.on('delete', handleDelete);
 
       return () => {
-        handle?.off("change", handleChange);
-        handle?.off("delete", handleDelete);
+        handle?.off('change', handleChange);
+        handle?.off('delete', handleDelete);
       };
     };
 
-    const entities = useSyncExternalStore(
-      subscribe,
-      (): MergedEntityType<T, K, BaseEntity>[] => {
-        const doc = handle?.docSync();
-        if (!doc) {
-          if (fastDeepEqual(prevEntitiesRef.current, [])) {
-            return prevEntitiesRef.current;
-          } else {
-            prevEntitiesRef.current = [];
-            return prevEntitiesRef.current;
-          }
-        }
-
-        // Create filteredEntities object with only entities that include all the types
-        const filteredEntities: Record<
-          string,
-          MergedEntityType<T, K, BaseEntity>
-        > = {};
-        for (const entityId in doc.entities) {
-          const entity = doc.entities[entityId];
-          if (types.every((type) => entity.types.includes(type as string))) {
-            filteredEntities[entityId] = entity as MergedEntityType<
-              T,
-              K,
-              BaseEntity
-            >;
-          }
-        }
-
-        // Go through all filteredEntities and replace relational entity IDs with the actual entities recursively
-        const visitedEntities = new Set<string>();
-        for (const entityId in filteredEntities) {
-          const entity = filteredEntities[entityId];
-          const resolvedEntity = resolveEntity(
-            entityId,
-            entity,
-            // @ts-expect-error
-            entity.types,
-            visitedEntities
-          );
-          filteredEntities[entityId] = resolvedEntity;
-        }
-
-        const filteredEntitiesArray = Object.values(filteredEntities);
-
-        if (fastDeepEqual(prevEntitiesRef.current, filteredEntitiesArray)) {
+    const entities = useSyncExternalStore(subscribe, (): MergedEntityType<T, K, BaseEntity>[] => {
+      const doc = handle?.docSync();
+      if (!doc) {
+        if (fastDeepEqual(prevEntitiesRef.current, [])) {
           return prevEntitiesRef.current;
+          // biome-ignore lint/style/noUselessElse: <explanation>
         } else {
-          prevEntitiesRef.current = filteredEntitiesArray;
+          prevEntitiesRef.current = [];
           return prevEntitiesRef.current;
         }
+      }
 
-        // Helper function to resolve entities recursively
-        function resolveEntity(
-          entityId: string,
-          entity: any,
-          entityTypes: readonly EntityKeys<T>[],
-          visited: Set<string>
-        ): any {
-          if (visited.has(entityId)) {
-            // Circular reference detected
-            return entity; // Return as is or handle accordingly
-          }
-          visited.add(entityId);
-          const resolvedEntity = { ...entity, id: entityId };
-          for (const entityType of entityTypes) {
-            const typeSchema = schema.types[entityType];
-            for (const key in typeSchema) {
-              const prop = typeSchema[key];
-              // @ts-expect-error
-              if (isRelation(prop)) {
-                const relationProp = prop as Relation<any, any>;
-                const { types: relatedTypes, cardinality } = relationProp;
-                const relationValue = entity[key];
-                if (relationValue !== undefined) {
-                  if (cardinality === "many") {
-                    // Relation is an array of IDs
-                    if (Array.isArray(relationValue)) {
-                      const resolvedArray = relationValue.map((id: string) => {
-                        if (visited.has(id)) {
-                          return null; // Handle circular reference
-                        }
-                        // @ts-expect-error
-                        const relatedEntity = doc.entities[id];
-                        if (relatedEntity) {
-                          return resolveEntity(
-                            id,
-                            relatedEntity,
-                            relatedEntity.types,
-                            new Set(visited)
-                          );
-                        } else {
-                          return null; // Or handle missing entities
-                        }
-                      });
-                      resolvedEntity[key] = resolvedArray;
-                    } else {
-                      // Expected an array, but got something else
-                      resolvedEntity[key] = [];
-                    }
-                  } else {
-                    // Relation is a single ID
-                    const id = relationValue;
-                    if (visited.has(id)) {
-                      resolvedEntity[key] = null; // Handle circular reference
-                    } else {
+      // Create filteredEntities object with only entities that include all the types
+      const filteredEntities: Record<string, MergedEntityType<T, K, BaseEntity>> = {};
+      for (const entityId in doc.entities) {
+        const entity = doc.entities[entityId];
+        if (types.every((type) => entity.types.includes(type as string))) {
+          filteredEntities[entityId] = entity as MergedEntityType<T, K, BaseEntity>;
+        }
+      }
+
+      // Go through all filteredEntities and replace relational entity IDs with the actual entities recursively
+      const visitedEntities = new Set<string>();
+      for (const entityId in filteredEntities) {
+        const entity = filteredEntities[entityId];
+        const resolvedEntity = resolveEntity(
+          entityId,
+          entity,
+          // @ts-expect-error
+          entity.types,
+          visitedEntities,
+        );
+        filteredEntities[entityId] = resolvedEntity;
+      }
+
+      const filteredEntitiesArray = Object.values(filteredEntities);
+
+      if (fastDeepEqual(prevEntitiesRef.current, filteredEntitiesArray)) {
+        return prevEntitiesRef.current;
+        // biome-ignore lint/style/noUselessElse: <explanation>
+      } else {
+        prevEntitiesRef.current = filteredEntitiesArray;
+        return prevEntitiesRef.current;
+      }
+
+      // Helper function to resolve entities recursively
+      function resolveEntity(
+        entityId: string,
+        entity: SchemaTypeUnknown,
+        entityTypes: readonly EntityKeys<T>[],
+        visited: Set<string>,
+      ): SchemaTypeUnknown {
+        if (visited.has(entityId)) {
+          // Circular reference detected
+          return entity; // Return as is or handle accordingly
+        }
+        visited.add(entityId);
+        const resolvedEntity = { ...entity, id: entityId };
+        for (const entityType of entityTypes) {
+          const typeSchema = schema.types[entityType];
+          for (const key in typeSchema) {
+            const prop = typeSchema[key];
+            // @ts-expect-error
+            if (isRelation(prop)) {
+              const relationProp = prop as Relation<SchemaTypeUnknown, SchemaTypeUnknown>;
+              const { cardinality } = relationProp;
+              const relationValue = entity[key];
+              if (relationValue !== undefined) {
+                if (cardinality === 'many') {
+                  // Relation is an array of IDs
+                  if (Array.isArray(relationValue)) {
+                    const resolvedArray = relationValue.map((id: string) => {
+                      if (visited.has(id)) {
+                        return null; // Handle circular reference
+                      }
                       // @ts-expect-error
                       const relatedEntity = doc.entities[id];
                       if (relatedEntity) {
-                        resolvedEntity[key] = resolveEntity(
-                          id,
-                          relatedEntity,
-                          relatedEntity.types,
-                          new Set(visited)
-                        );
+                        return resolveEntity(id, relatedEntity, relatedEntity.types, new Set(visited));
+                        // biome-ignore lint/style/noUselessElse: <explanation>
                       } else {
-                        resolvedEntity[key] = null; // Or handle missing entities
+                        return null; // Or handle missing entities
                       }
+                    });
+                    resolvedEntity[key] = resolvedArray;
+                  } else {
+                    // Expected an array, but got something else
+                    resolvedEntity[key] = [];
+                  }
+                } else {
+                  // Relation is a single ID
+                  const id = relationValue;
+                  if (visited.has(id)) {
+                    resolvedEntity[key] = null; // Handle circular reference
+                  } else {
+                    // @ts-expect-error
+                    const relatedEntity = doc.entities[id];
+                    if (relatedEntity) {
+                      resolvedEntity[key] = resolveEntity(id, relatedEntity, relatedEntity.types, new Set(visited));
+                    } else {
+                      resolvedEntity[key] = null; // Or handle missing entities
                     }
                   }
                 }
               }
             }
           }
-          return resolvedEntity;
         }
-
-        // Helper function to check if a property is a Relation
-        function isRelation(
-          prop: S.Schema<any, any> | Relation<any, any>
-        ): prop is Relation<any, any> {
-          return (prop as Relation<any, any>)._tag === "Relation";
-        }
+        return resolvedEntity;
       }
-    );
+
+      // Helper function to check if a property is a Relation
+      function isRelation(
+        prop: S.Schema<SchemaTypeUnknown, SchemaTypeUnknown> | Relation<SchemaTypeUnknown, SchemaTypeUnknown>,
+      ): prop is Relation<SchemaTypeUnknown, SchemaTypeUnknown> {
+        return (prop as Relation<SchemaTypeUnknown, SchemaTypeUnknown>)._tag === 'Relation';
+      }
+    });
 
     return entities;
   }

@@ -1,11 +1,11 @@
-import React from "react";
-import { useQuery } from "../schema";
-import { User } from "./user";
+import type React from 'react';
+import { useQuery } from '../schema';
+import { User } from './user';
 
 export const Users: React.FC = () => {
-  const users = useQuery({ types: ["User"] });
+  const users = useQuery({ types: ['User'] });
 
-  console.log("Rendering Users", users);
+  console.log('Rendering Users', users);
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -4,9 +4,9 @@ type Params = {
 
 export const restoreIdentity = ({ preKey }: Params) => {
   return {
-    signaturePublicKey: "",
-    signaturePrivateKey: "",
-    encryptionPublicKey: "",
-    encryptionPrivateKey: "",
+    signaturePublicKey: '',
+    signaturePrivateKey: '',
+    encryptionPublicKey: '',
+    encryptionPrivateKey: '',
   };
 };

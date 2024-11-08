@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { loadKeys, storeKeys } from "@/lib/keyStorage";
-import { createLazyFileRoute, redirect } from "@tanstack/react-router";
-import { Client, Signer, useClient, XMTPProvider } from "@xmtp/react-sdk";
-import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { loadKeys, storeKeys } from '@/lib/keyStorage';
+import { createLazyFileRoute, redirect } from '@tanstack/react-router';
+import { Client, type Signer, XMTPProvider, useClient } from '@xmtp/react-sdk';
+import { ethers } from 'ethers';
+import { useEffect, useState } from 'react';
 
 const Login = () => {
   const [signer, setSigner] = useState<null | Signer>(null);
@@ -19,7 +19,7 @@ const Login = () => {
         // which is backed by a variety of third-party services (such
         // as INFURA). They do not have private keys installed,
         // so they only have read-only access
-        console.log("MetaMask not installed; using read-only defaults");
+        console.log('MetaMask not installed; using read-only defaults');
         provider = ethers.getDefaultProvider();
       } else {
         // Connect to the MetaMask EIP-1193 object. This is a standard
@@ -35,7 +35,7 @@ const Login = () => {
 
         setSigner(newSigner);
         const address = await newSigner?.getAddress();
-        localStorage.setItem("signerAddress", address);
+        localStorage.setItem('signerAddress', address);
       }
     } catch (error) {
       console.error(error);
@@ -44,7 +44,7 @@ const Login = () => {
 
   useEffect(() => {
     async function runEffect() {
-      const storedSignerAddress = localStorage.getItem("signerAddress");
+      const storedSignerAddress = localStorage.getItem('signerAddress');
       if (storedSignerAddress) {
         // @ts-expect-error ethereum is defined in the browser
         const provider = new ethers.BrowserProvider(window.ethereum);
@@ -58,7 +58,7 @@ const Login = () => {
   return (
     <div className="flex flex-1 justify-center items-center flex-col gap-4">
       <Button className="home-button" onClick={() => connectWallet()}>
-        {signer ? "Connected" : "Connect Wallet"}
+        {signer ? 'Connected' : 'Connect Wallet'}
       </Button>
       {signer ? (
         <XMTPProvider>
@@ -80,13 +80,13 @@ function XmtpLogin({ signer }: { signer: Signer }) {
     let keys = loadKeys(address);
     if (!keys) {
       keys = await Client.getKeys(signer, {
-        env: "dev",
+        env: 'dev',
       });
       storeKeys(address, keys);
     }
-    await initialize({ signer, options: { env: "dev" }, keys });
-    console.log("wallet initialized");
-    redirect({ to: "/space/$spaceId", params: { spaceId: "abc" } });
+    await initialize({ signer, options: { env: 'dev' }, keys });
+    console.log('wallet initialized');
+    redirect({ to: '/space/$spaceId', params: { spaceId: 'abc' } });
   };
 
   useEffect(() => {
@@ -109,6 +109,6 @@ function XmtpLogin({ signer }: { signer: Signer }) {
   );
 }
 
-export const Route = createLazyFileRoute("/login")({
+export const Route = createLazyFileRoute('/login')({
   component: Login,
 });
