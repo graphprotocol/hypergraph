@@ -6,11 +6,6 @@
 
 ```sh
 pnpm install
-docker-compose up
-```
-
-```sh
-# in another tab
 cd apps/server
 cp .env.example .env
 pnpm prisma migrate dev
@@ -19,7 +14,7 @@ pnpm prisma migrate dev
 ### Development
 
 ```sh
-docker-compose up
+pnpm build --watch
 # in another tab
 cd apps/events
 pnpm dev
@@ -38,9 +33,5 @@ pnpm prisma migrate dev # this will also generate the Prisma client
 ## Upgrading Dependencies
 
 ```sh
-pnpm up --interactive
-cd apps/events
-pnpm up --interactive
-cd packaes/graph-framework
-pnpm up --interactive
+pnpm up --interactive --latest -r
 ```
