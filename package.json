@@ -2,10 +2,7 @@
   "name": "graph-framework-monorepo",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "escape-string-regexp": "^5.0.0",
@@ -17,6 +14,8 @@
     "build": "pnpm --filter graph-framework-utils build",
     "ts:check": "pnpm -r ts:check",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "check": "pnpm -r check"
   }
 }

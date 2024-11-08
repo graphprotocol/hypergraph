@@ -6,7 +6,12 @@
   "scripts": {
     "dev": "vite --force",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "pnpm biome lint src/*",
+    "lint:fix": "pnpm biome lint --write src/*",
+    "format": "pnpm biome format src/*",
+    "format:fix": "pnpm biome format --write src/*",
+    "check": "pnpm biome check src/*",
+    "check:fix": "pnpm biome check --write src/*",
     "preview": "vite preview",
     "test": "vitest run",
     "ts:check": "tsc --noEmit"
