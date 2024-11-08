@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules/", "**/node_modules", "**/dist"]
+    "ignore": ["node_modules/", "**/node_modules", "**/dist", "routeTree.gen.ts"]
   },
   "formatter": {
     "enabled": true,
