@@ -1,6 +1,5 @@
 import cors from 'cors';
 import 'dotenv/config';
-import type { IncomingMessage } from 'http';
 import { Schema } from 'effect';
 import express from 'express';
 import { SpaceEvent } from 'graph-framework-space-events';
@@ -16,7 +15,7 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/', (_req, res) => {
-  res.send(`Server is running`);
+  res.send('Server is running');
 });
 
 const server = app.listen(PORT, () => {
@@ -25,7 +24,7 @@ const server = app.listen(PORT, () => {
 
 const decodeEvent = Schema.decodeUnknownEither(SpaceEvent);
 
-webSocketServer.on('connection', async (webSocket: WebSocket, request: IncomingMessage) => {
+webSocketServer.on('connection', async (webSocket: WebSocket) => {
   console.log('Connection established');
   webSocket.on('message', async (message) => {
     const rawData = JSON.parse(message.toString());
