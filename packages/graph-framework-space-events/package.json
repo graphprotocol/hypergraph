@@ -14,9 +14,17 @@
     "directory": "dist",
     "provenance": true
   },
+  "main": "./src/index.js",
+  "types": "./build/dts/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/dts/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
   "scripts": {
     "build": "pnpm build-esm && build-utils pack-v2",
-    "build-esm": "tsc -P tsconfig.build.json",
+    "build-esm": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
     "ts:check": "tsc -b tsconfig.json",
     "lint": "pnpm biome lint src/*",

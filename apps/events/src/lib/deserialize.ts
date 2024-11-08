@@ -1,5 +1,5 @@
 export const deserialize = (data: string) => {
-  return JSON.parse(data, (key, value) => {
+  return JSON.parse(data, (__key, value) => {
     if (typeof value === 'object' && value !== null && value.type === 'Uint8Array') {
       return new Uint8Array(value.data);
     }

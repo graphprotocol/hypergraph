@@ -10,10 +10,9 @@ const Login = () => {
 
   const connectWallet = async () => {
     let newSigner = null;
-    let provider;
+    let provider: ethers.AbstractProvider | ethers.BrowserProvider;
 
     try {
-      // @ts-expect-error ethereum is defined in the browser
       if (window.ethereum == null) {
         // If MetaMask is not installed, we use the default provider,
         // which is backed by a variety of third-party services (such
@@ -25,13 +24,12 @@ const Login = () => {
         // Connect to the MetaMask EIP-1193 object. This is a standard
         // protocol that allows Ethers access to make all read-only
         // requests through MetaMask.
-        // @ts-expect-error ethereum is defined in the browser
         provider = new ethers.BrowserProvider(window.ethereum);
 
         // It also provides an opportunity to request access to write
         // operations, which will be performed by the private key
         // that MetaMask manages for the user.
-        newSigner = await provider.getSigner();
+        newSigner = await (provider as ethers.BrowserProvider).getSigner();
 
         setSigner(newSigner);
         const address = await newSigner?.getAddress();
@@ -46,7 +44,6 @@ const Login = () => {
     async function runEffect() {
       const storedSignerAddress = localStorage.getItem('signerAddress');
       if (storedSignerAddress) {
-        // @ts-expect-error ethereum is defined in the browser
         const provider = new ethers.BrowserProvider(window.ethereum);
         const newSigner = await provider.getSigner();
         setSigner(newSigner);
@@ -89,9 +86,9 @@ function XmtpLogin({ signer }: { signer: Signer }) {
     redirect({ to: '/space/$spaceId', params: { spaceId: 'abc' } });
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     void initXmtpWithKeys();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) {

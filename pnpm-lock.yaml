@@ -96,7 +96,7 @@ importers:
         version: 6.13.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       graph-framework:
         specifier: workspace:*
-        version: link:../../packages/graph-framework
+        version: link:../../packages/graph-framework/dist
       lucide-react:
         specifier: ^0.441.0
         version: 0.441.0(react@18.3.1)
@@ -218,10 +218,10 @@ importers:
     dependencies:
       graph-framework-identity:
         specifier: workspace:*
-        version: link:../graph-framework-identity
+        version: link:../graph-framework-identity/dist
       graph-framework-schema:
         specifier: workspace:*
-        version: link:../graph-framework-schema
+        version: link:../graph-framework-schema/dist
       graph-framework-space-events:
         specifier: workspace:*
         version: link:../graph-framework-space-events/dist
@@ -259,6 +259,7 @@ importers:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+    publishDirectory: dist
 
   packages/graph-framework-identity:
     dependencies:
@@ -272,6 +273,7 @@ importers:
       effect:
         specifier: ^3.10.12
         version: 3.10.12
+    publishDirectory: dist
 
   packages/graph-framework-schema:
     dependencies:
@@ -315,6 +317,7 @@ importers:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+    publishDirectory: dist
 
   packages/graph-framework-space-events:
     dependencies:
