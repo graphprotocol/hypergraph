@@ -41,7 +41,7 @@ describe('Library Tests', () => {
   };
 
   // Create functions from the schema
-  const { useCreateEntity, useDeleteEntity, useQuery, SpaceProvider, createDocumentId } = createFunctions(schema);
+  const { useCreateEntity, useDeleteEntity, useQuery, SpaceProvider } = createFunctions(schema);
 
   let repoResult = repo.create();
   let wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -253,8 +253,12 @@ describe('Library Tests', () => {
     });
 
     act(() => {
-      const success = deleteResult.current(badgeId!);
-      expect(success).toBe(true);
+      expect(badgeId).not.toBeNull();
+      expect(badgeId).not.toBeUndefined();
+      if (badgeId) {
+        const success = deleteResult.current(badgeId);
+        expect(success).toBe(true);
+      }
     });
 
     act(() => {
