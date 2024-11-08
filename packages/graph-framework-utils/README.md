@@ -43,3 +43,24 @@ const decoded = decodeBase58ToUUID(encoded);
 expect(encoded).toHaveLength(22);
 expect(decoded).toEqual(uuid);
 ```
+
+### JSC utils
+
+- `canonicalize` - JSON canonicalize function. Creates crypto safe predictable canocalization of JSON as defined by RFC8785.
+
+```ts
+import { canonicalize } from 'graph-framework-utils'
+
+console.log(canonicalize(null)) // 'null'
+console.log(canonicalize(1)) // '1'
+console.log(canonicalize("test")) // "string"
+console.log(canonicalize(true)) // 'true'
+const json = {
+  from_account: '543 232 625-3',
+  to_account: '321 567 636-4',
+  amount: 500,
+  currency: 'USD',
+};
+console.log(canonicalize(json)) // '{"amount":500,"currency":"USD","from_account":"543 232 625-3","to_account":"321 567 636-4"}'
+console.log(canonicalize([1, 'text', null, true, false])) // '[1,"text",null,true,false]'
+```
