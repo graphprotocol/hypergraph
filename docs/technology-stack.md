@@ -8,7 +8,7 @@
 - Testing
   - Vitest
 - Backend
-  - Database: Postgres + Prisma (explore Neo4j as well)
+  - Database: Sqlite + Prisma (explore Neo4j as well)
   - API: Websocket
   - Effect
 - Other
