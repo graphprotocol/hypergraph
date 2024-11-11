@@ -156,6 +156,9 @@ importers:
       express:
         specifier: ^5.0.1
         version: 5.0.1
+      graph-framework-messages:
+        specifier: workspace:*
+        version: link:../../packages/graph-framework-messages
       graph-framework-space-events:
         specifier: workspace:*
         version: link:../../packages/graph-framework-space-events
@@ -196,6 +199,9 @@ importers:
       graph-framework-identity:
         specifier: workspace:*
         version: link:../graph-framework-identity
+      graph-framework-messages:
+        specifier: workspace:*
+        version: link:../graph-framework-messages
       graph-framework-schema:
         specifier: workspace:*
         version: link:../graph-framework-schema
@@ -249,6 +255,19 @@ importers:
       effect:
         specifier: ^3.10.12
         version: 3.10.12
+
+  packages/graph-framework-messages:
+    dependencies:
+      effect:
+        specifier: ^3.10.12
+        version: 3.10.12
+      graph-framework-space-events:
+        specifier: workspace:*
+        version: link:../graph-framework-space-events
+    devDependencies:
+      vite-plugin-dts:
+        specifier: ^4.3.0
+        version: 4.3.0(@types/node@22.9.0)(rollup@4.21.3)(typescript@5.6.3)(vite@5.4.10(@types/node@22.9.0))
 
   packages/graph-framework-schema:
     dependencies:

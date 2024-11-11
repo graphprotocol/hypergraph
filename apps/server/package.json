@@ -24,6 +24,7 @@
     "effect": "^3.10.12",
     "express": "^5.0.1",
     "graph-framework-space-events": "workspace:*",
+    "graph-framework-messages": "workspace:*",
     "ws": "^8.17.1"
   },
   "devDependencies": {

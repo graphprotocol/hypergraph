@@ -18,6 +18,12 @@ model SpaceEvent {
 }
 
 model Space {
-  id     String       @id
-  events SpaceEvent[]
+  id      String       @id
+  events  SpaceEvent[]
+  members Account[]
+}
+
+model Account {
+  id     String  @id
+  spaces Space[]
 }
