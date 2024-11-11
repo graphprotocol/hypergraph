@@ -145,7 +145,13 @@ export const ChooseAccount = () => {
       </Button>
       Account: {accountId ? accountId : 'none'}
       <hr />
-      {accountId && <App accountId={accountId} />}
+      {accountId && (
+        <App
+          // forcing a remount of the App component when the accountId changes
+          key={accountId}
+          accountId={accountId}
+        />
+      )}
     </div>
   );
 };
