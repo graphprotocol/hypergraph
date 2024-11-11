@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.options.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true
+  },
+  "include": ["**/*", "vite.config.mts", "../../shared/*.ts"],
+  "exclude": ["**/node_modules", "**/dist"]
+}

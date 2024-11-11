@@ -1,0 +1,29 @@
+{
+  "name": "graph-framework-messages",
+  "version": "0.0.1",
+  "description": "Provides types related to messages for the Graph Framework",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run --typecheck",
+    "ts:check": "tsc --noEmit",
+    "lint": "pnpm biome lint src/*",
+    "lint:fix": "pnpm biome lint --write src/*",
+    "format": "pnpm biome format src/*",
+    "format:fix": "pnpm biome format --write src/*",
+    "check": "pnpm biome check src/*",
+    "check:fix": "pnpm biome check --write src/*"
+  },
+  "dependencies": {
+    "effect": "^3.10.12",
+    "graph-framework-space-events": "workspace:*"
+  },
+  "devDependencies": {
+    "vite-plugin-dts": "^4.3.0"
+  }
+}
