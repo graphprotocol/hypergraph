@@ -1,18 +1,35 @@
-import type { SpaceEvent, SpaceInvitation, SpaceMember, SpaceState } from './types.js';
+import { secp256k1 } from '@noble/curves/secp256k1';
+import { Effect, Schema } from 'effect';
+import type { ParseError } from 'effect/ParseResult';
+import { canonicalize, stringToUint8Array } from 'graph-framework-utils';
+import type { SpaceInvitation, SpaceMember, SpaceState } from './types.js';
+import { SpaceEvent, VerifySignatureError } from './types.js';
 
 type Params = {
   state?: SpaceState;
   event: SpaceEvent;
 };
 
-export const applyEvent = ({ state, event: rawEvent }: Params): SpaceState => {
-  // TODO parse the event
-  const event = rawEvent;
+const decodeSpaceEvent = Schema.decodeUnknownEither(SpaceEvent);
 
-  // TODO verify the event
-  // - verify the signature
-  // - verify that this event is based on the previous one
-  // - verify versioning
+export const applyEvent = ({
+  state,
+  event: rawEvent,
+}: Params): Effect.Effect<SpaceState, ParseError | VerifySignatureError> => {
+  const decodedEvent = decodeSpaceEvent(rawEvent);
+  if (decodedEvent._tag === 'Left') {
+    return decodedEvent.left;
+  }
+  const event = decodedEvent.right;
+
+  const encodedTransaction = stringToUint8Array(canonicalize(event.transaction));
+  const isValidSignature = secp256k1.verify(event.author.signature, encodedTransaction, event.author.publicKey, {
+    prehash: true,
+  });
+
+  if (!isValidSignature) {
+    return Effect.fail(new VerifySignatureError());
+  }
 
   let id = '';
   let members: { [signaturePublicKey: string]: SpaceMember } = {};
@@ -46,11 +63,11 @@ export const applyEvent = ({ state, event: rawEvent }: Params): SpaceState => {
     throw new Error('State is required for all events except create-space');
   }
 
-  return {
+  return Effect.succeed({
     id,
     members,
     removedMembers,
     invitations,
     transactionHash: '', // TODO
-  };
+  });
 };

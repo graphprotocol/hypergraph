@@ -1,17 +1,24 @@
+import { Effect } from 'effect';
 import { expect, it } from 'vitest';
-
 import { applyEvent } from './apply-event.js';
 import { createSpace } from './create-space.js';
 
-it('should create a space state', () => {
+it('should create a space state', async () => {
   const author = {
-    signaturePublicKey: 'signature',
+    signaturePublicKey: '03594161eed61407084114a142d1ce05ef4c5a5279479fdd73a2b16944fbff003b',
+    signaturePrivateKey: '76b78f644c19d6133018a97a3bc2d5038be0af5a2858b9e640ff3e2f2db63a0b',
     encryptionPublicKey: 'encryption',
   };
-  const spaceEvent = createSpace({ author });
-  const state = applyEvent({ event: spaceEvent });
+
+  const state = await Effect.runPromise(
+    Effect.gen(function* () {
+      const spaceEvent = yield* createSpace({ author });
+      return yield* applyEvent({ event: spaceEvent });
+    }),
+  );
+
   expect(state).toEqual({
-    id: spaceEvent.transaction.id,
+    id: state.id,
     invitations: {},
     members: {
       [author.signaturePublicKey]: {

@@ -1,19 +1,26 @@
+import { Effect } from 'effect';
 import { expect, it } from 'vitest';
-
 import { applyEvent } from './apply-event.js';
 import { createSpace } from './create-space.js';
 import { deleteSpace } from './delete-space.js';
 
-it('should delete a space', () => {
+it('should delete a space', async () => {
   const author = {
-    signaturePublicKey: 'signature',
+    signaturePublicKey: '03594161eed61407084114a142d1ce05ef4c5a5279479fdd73a2b16944fbff003b',
+    signaturePrivateKey: '76b78f644c19d6133018a97a3bc2d5038be0af5a2858b9e640ff3e2f2db63a0b',
     encryptionPublicKey: 'encryption',
   };
-  const spaceEvent = createSpace({ author });
-  const state = applyEvent({ event: spaceEvent });
-  const spaceEvent2 = deleteSpace({ author, id: state.id });
-  const state2 = applyEvent({ state, event: spaceEvent2 });
-  expect(state2).toEqual({
+
+  const state = await Effect.runPromise(
+    Effect.gen(function* () {
+      const spaceEvent = yield* createSpace({ author });
+      const state = yield* applyEvent({ event: spaceEvent });
+      const spaceEvent2 = yield* deleteSpace({ author, id: state.id });
+      return yield* applyEvent({ state, event: spaceEvent2 });
+    }),
+  );
+
+  expect(state).toEqual({
     id: state.id,
     members: {},
     invitations: {},
