@@ -15,22 +15,20 @@ it('should delete a space', async () => {
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
       const state = yield* applyEvent({ event: spaceEvent });
-      const spaceEvent2 = yield* deleteSpace({ author, id: state.id });
+      const spaceEvent2 = yield* deleteSpace({ author, id: state.id, previousEventHash: state.lastEventHash });
       return yield* applyEvent({ state, event: spaceEvent2 });
     }),
   );
 
-  expect(state).toEqual({
-    id: state.id,
-    members: {},
-    invitations: {},
-    removedMembers: {
-      [author.signaturePublicKey]: {
-        signaturePublicKey: author.signaturePublicKey,
-        encryptionPublicKey: author.encryptionPublicKey,
-        role: 'admin',
-      },
+  expect(state.id).toBeTypeOf('string');
+  expect(state.invitations).toEqual({});
+  expect(state.members).toEqual({});
+  expect(state.removedMembers).toEqual({
+    [author.signaturePublicKey]: {
+      signaturePublicKey: author.signaturePublicKey,
+      encryptionPublicKey: author.encryptionPublicKey,
+      role: 'admin',
     },
-    transactionHash: '',
   });
+  expect(state.lastEventHash).toBeTypeOf('string');
 });

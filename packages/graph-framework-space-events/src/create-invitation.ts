@@ -6,9 +6,10 @@ import type { Author, SpaceEvent } from './types.js';
 type Params = {
   author: Author;
   id: string;
+  previousEventHash: string;
 };
 
-export const createInvitation = ({ author, id }: Params): Effect.Effect<SpaceEvent, undefined> => {
+export const createInvitation = ({ author, id, previousEventHash }: Params): Effect.Effect<SpaceEvent, undefined> => {
   const transaction = {
     type: 'create-invitation' as const,
     id,
@@ -16,6 +17,7 @@ export const createInvitation = ({ author, id }: Params): Effect.Effect<SpaceEve
     nonce: '',
     signaturePublicKey: '',
     encryptionPublicKey: '',
+    previousEventHash,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
   const signature = secp256k1.sign(encodedTransaction, author.signaturePrivateKey, { prehash: true }).toCompactHex();

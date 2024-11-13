@@ -20,7 +20,7 @@ export const SpaceState = Schema.Struct({
   invitations: Schema.Record({ key: Schema.String, value: SpaceInvitation }),
   members: Schema.Record({ key: Schema.String, value: SpaceMember }),
   removedMembers: Schema.Record({ key: Schema.String, value: SpaceMember }),
-  transactionHash: Schema.String,
+  lastEventHash: Schema.String,
 });
 
 export type SpaceState = Schema.Schema.Type<typeof SpaceState>;
@@ -44,6 +44,7 @@ export const DeleteSpaceEvent = Schema.Struct({
   transaction: Schema.Struct({
     type: Schema.Literal('delete-space'),
     id: Schema.String,
+    previousEventHash: Schema.String,
   }),
   author: Schema.Struct({
     publicKey: Schema.String,
@@ -61,6 +62,7 @@ export const CreateInvitationEvent = Schema.Struct({
     nonce: Schema.String,
     signaturePublicKey: Schema.String,
     encryptionPublicKey: Schema.String,
+    previousEventHash: Schema.String,
   }),
   author: Schema.Struct({
     publicKey: Schema.String,
@@ -84,4 +86,8 @@ export type Author = Schema.Schema.Type<typeof Author>;
 
 export class VerifySignatureError {
   readonly _tag = 'VerifySignatureError';
+}
+
+export class InvalidEventError {
+  readonly _tag = 'InvalidEventError';
 }

@@ -1,26 +1,29 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect } from 'effect';
 import { canonicalize, stringToUint8Array } from 'graph-framework-utils';
-import type { Author, SpaceEvent } from './types.js';
+import type { Author, DeleteSpaceEvent, SpaceEvent } from './types.js';
 
 type Params = {
   author: Author;
   id: string;
+  previousEventHash: string;
 };
 
-export const deleteSpace = ({ author, id }: Params): Effect.Effect<SpaceEvent, undefined> => {
+export const deleteSpace = ({ author, id, previousEventHash }: Params): Effect.Effect<SpaceEvent, undefined> => {
   const transaction = {
     type: 'delete-space' as const,
     id,
+    previousEventHash,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
   const signature = secp256k1.sign(encodedTransaction, author.signaturePrivateKey, { prehash: true }).toCompactHex();
 
-  return Effect.succeed({
+  const event: DeleteSpaceEvent = {
     transaction,
     author: {
       publicKey: author.signaturePublicKey,
       signature,
     },
-  });
+  };
+  return Effect.succeed(event);
 };

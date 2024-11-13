@@ -2,8 +2,15 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect, Schema } from 'effect';
 import type { ParseError } from 'effect/ParseResult';
 import { canonicalize, stringToUint8Array } from 'graph-framework-utils';
-import type { SpaceInvitation, SpaceMember, SpaceState } from './types.js';
-import { SpaceEvent, VerifySignatureError } from './types.js';
+import { hashEvent } from './hashEvent.js';
+import {
+  InvalidEventError,
+  SpaceEvent,
+  type SpaceInvitation,
+  type SpaceMember,
+  type SpaceState,
+  VerifySignatureError,
+} from './types.js';
 
 type Params = {
   state?: SpaceState;
@@ -15,12 +22,21 @@ const decodeSpaceEvent = Schema.decodeUnknownEither(SpaceEvent);
 export const applyEvent = ({
   state,
   event: rawEvent,
-}: Params): Effect.Effect<SpaceState, ParseError | VerifySignatureError> => {
+}: Params): Effect.Effect<SpaceState, ParseError | VerifySignatureError | InvalidEventError> => {
   const decodedEvent = decodeSpaceEvent(rawEvent);
   if (decodedEvent._tag === 'Left') {
     return decodedEvent.left;
   }
   const event = decodedEvent.right;
+
+  if (event.transaction.type !== 'create-space') {
+    if (state === undefined) {
+      return Effect.fail(new InvalidEventError());
+    }
+    if (event.transaction.previousEventHash !== state.lastEventHash) {
+      return Effect.fail(new InvalidEventError());
+    }
+  }
 
   const encodedTransaction = stringToUint8Array(canonicalize(event.transaction));
   const isValidSignature = secp256k1.verify(event.author.signature, encodedTransaction, event.author.publicKey, {
@@ -68,6 +84,6 @@ export const applyEvent = ({
     members,
     removedMembers,
     invitations,
-    transactionHash: '', // TODO
+    lastEventHash: hashEvent(event),
   });
 };
