@@ -36,7 +36,7 @@ it('should fail in case of an invalid signature', async () => {
   }
 });
 
-it('should fail in case state is not provided for an event other thant createSpace', async () => {
+it('should fail in case state is not provided for an event other than createSpace', async () => {
   const author = {
     signaturePublicKey: '03594161eed61407084114a142d1ce05ef4c5a5279479fdd73a2b16944fbff003b',
     signaturePrivateKey: '76b78f644c19d6133018a97a3bc2d5038be0af5a2858b9e640ff3e2f2db63a0b',
