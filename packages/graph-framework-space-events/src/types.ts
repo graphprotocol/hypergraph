@@ -76,7 +76,12 @@ export type SpaceEvent = Schema.Schema.Type<typeof SpaceEvent>;
 
 export const Author = Schema.Struct({
   signaturePublicKey: Schema.String,
+  signaturePrivateKey: Schema.String,
   encryptionPublicKey: Schema.String,
 });
 
 export type Author = Schema.Schema.Type<typeof Author>;
+
+export class VerifySignatureError {
+  readonly _tag = 'VerifySignatureError';
+}

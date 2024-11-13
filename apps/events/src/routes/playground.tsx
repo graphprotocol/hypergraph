@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { assertExhaustive } from '@/lib/assertExhaustive';
 import { createFileRoute } from '@tanstack/react-router';
+import { Effect } from 'effect';
 import * as Schema from 'effect/Schema';
 import type { EventMessage, RequestListSpaces, RequestSubscribeToSpace } from 'graph-framework';
-import { ResponseMessage, createIdentity, createSpace } from 'graph-framework';
+import { ResponseMessage, createSpace } from 'graph-framework';
 import { useEffect, useState } from 'react';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
@@ -12,7 +13,7 @@ export const Route = createFileRoute('/playground')({
   component: () => <ChooseAccount />,
 });
 
-const App = ({ accountId }: { accountId: string }) => {
+const App = ({ accountId, signaturePrivateKey }: { accountId: string; signaturePrivateKey: string }) => {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [spaces, setSpaces] = useState<{ id: string }[]>([]);
 
@@ -75,9 +76,16 @@ const App = ({ accountId }: { accountId: string }) => {
     <>
       <div>
         <Button
-          onClick={() => {
-            const identity = createIdentity();
-            const spaceEvent = createSpace({ author: identity });
+          onClick={async () => {
+            const spaceEvent = await Effect.runPromise(
+              createSpace({
+                author: {
+                  encryptionPublicKey: 'TODO',
+                  signaturePrivateKey,
+                  signaturePublicKey: accountId,
+                },
+              }),
+            );
             const message: EventMessage = { type: 'event', event: spaceEvent };
             websocketConnection?.send(JSON.stringify(message));
           }}
@@ -117,39 +125,49 @@ const App = ({ accountId }: { accountId: string }) => {
 };
 
 export const ChooseAccount = () => {
-  const [accountId, setAccountId] = useState<string | null>();
+  const [account, setAccount] = useState<{ accountId: string; signaturePrivateKey: string } | null>();
 
   return (
     <div>
       <h1>Choose account</h1>
       <Button
         onClick={() => {
-          setAccountId('abc');
+          setAccount({
+            accountId: '0262701b2eb1b6b37ad03e24445dfcad1b91309199e43017b657ce2604417c12f5',
+            signaturePrivateKey: '88bb6f20de8dc1787c722dc847f4cf3d00285b8955445f23c483d1237fe85366',
+          });
         }}
       >
         `abc`
       </Button>
       <Button
         onClick={() => {
-          setAccountId('cde');
+          setAccount({
+            accountId: '03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
+            signaturePrivateKey: '1eee32d3bc202dcb5d17c3b1454fb541d2290cb941860735408f1bfe39e7bc15',
+          });
         }}
       >
         `cde`
       </Button>
       <Button
         onClick={() => {
-          setAccountId('def');
+          setAccount({
+            accountId: '0351460706cf386282d9b6ebee2ccdcb9ba61194fd024345e53037f3036242e6a2',
+            signaturePrivateKey: '434518a2c9a665a7c20da086232c818b6c1592e2edfeecab29a40cf5925ca8fe',
+          });
         }}
       >
         `def`
       </Button>
-      Account: {accountId ? accountId : 'none'}
+      Account: {account?.accountId ? account.accountId : 'none'}
       <hr />
-      {accountId && (
+      {account && (
         <App
           // forcing a remount of the App component when the accountId changes
-          key={accountId}
-          accountId={accountId}
+          key={account.accountId}
+          accountId={account.accountId}
+          signaturePrivateKey={account.signaturePrivateKey}
         />
       )}
     </div>
