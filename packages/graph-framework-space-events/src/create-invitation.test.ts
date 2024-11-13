@@ -16,7 +16,7 @@ it('should create an invitation', async () => {
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
       const state = yield* applyEvent({ event: spaceEvent });
-      const spaceEvent2 = yield* createInvitation({ author, id: state.id });
+      const spaceEvent2 = yield* createInvitation({ author, id: state.id, previousEventHash: state.lastEventHash });
       const state2 = yield* applyEvent({ state, event: spaceEvent2 });
       return {
         state2,
@@ -24,22 +24,21 @@ it('should create an invitation', async () => {
       };
     }),
   );
-  expect(state2).toEqual({
-    id: state2.id,
-    members: {
-      [author.signaturePublicKey]: {
-        signaturePublicKey: author.signaturePublicKey,
-        encryptionPublicKey: author.encryptionPublicKey,
-        role: 'admin',
-      },
+
+  expect(state2.id).toBeTypeOf('string');
+  expect(state2.invitations).toEqual({
+    [spaceEvent2.transaction.id]: {
+      signaturePublicKey: '',
+      encryptionPublicKey: '',
     },
-    removedMembers: {},
-    invitations: {
-      [spaceEvent2.transaction.id]: {
-        signaturePublicKey: '',
-        encryptionPublicKey: '',
-      },
-    },
-    transactionHash: '',
   });
+  expect(state2.members).toEqual({
+    [author.signaturePublicKey]: {
+      signaturePublicKey: author.signaturePublicKey,
+      encryptionPublicKey: author.encryptionPublicKey,
+      role: 'admin',
+    },
+  });
+  expect(state2.removedMembers).toEqual({});
+  expect(state2.lastEventHash).toBeTypeOf('string');
 });

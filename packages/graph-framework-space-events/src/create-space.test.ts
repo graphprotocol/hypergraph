@@ -17,17 +17,15 @@ it('should create a space state', async () => {
     }),
   );
 
-  expect(state).toEqual({
-    id: state.id,
-    invitations: {},
-    members: {
-      [author.signaturePublicKey]: {
-        signaturePublicKey: author.signaturePublicKey,
-        encryptionPublicKey: author.encryptionPublicKey,
-        role: 'admin',
-      },
+  expect(state.id).toBeTypeOf('string');
+  expect(state.invitations).toEqual({});
+  expect(state.members).toEqual({
+    [author.signaturePublicKey]: {
+      signaturePublicKey: author.signaturePublicKey,
+      encryptionPublicKey: author.encryptionPublicKey,
+      role: 'admin',
     },
-    removedMembers: {},
-    transactionHash: '',
   });
+  expect(state.removedMembers).toEqual({});
+  expect(state.lastEventHash).toBeTypeOf('string');
 });
