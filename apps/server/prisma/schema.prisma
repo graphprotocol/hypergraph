@@ -11,10 +11,15 @@ datasource db {
 }
 
 model SpaceEvent {
-  id      String @id
-  event   String
-  space   Space  @relation(fields: [spaceId], references: [id])
-  spaceId String
+  id        String   @id
+  event     String
+  state     String
+  counter   Int
+  space     Space    @relation(fields: [spaceId], references: [id])
+  spaceId   String
+  createdAt DateTime @default(now())
+
+  @@unique([spaceId, counter])
 }
 
 model Space {

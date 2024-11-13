@@ -16,7 +16,11 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
       },
     },
     include: {
-      events: true,
+      events: {
+        orderBy: {
+          counter: 'asc',
+        },
+      },
     },
   });
 };
