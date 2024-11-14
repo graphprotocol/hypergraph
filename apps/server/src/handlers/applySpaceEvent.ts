@@ -32,6 +32,16 @@ export async function applySpaceEvent({ accountId, spaceId, event }: Params) {
       throw new Error('Invalid event');
     }
 
+    if (event.transaction.type === 'create-invitation') {
+      await transaction.invitation.create({
+        data: {
+          id: event.transaction.id,
+          spaceId,
+          accountId: event.transaction.signaturePublicKey,
+        },
+      });
+    }
+
     return await transaction.spaceEvent.create({
       data: {
         spaceId,

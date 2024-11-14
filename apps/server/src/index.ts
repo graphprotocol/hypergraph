@@ -1,16 +1,17 @@
 import cors from 'cors';
 import 'dotenv/config';
+import { parse } from 'node:url';
 import { Effect, Exit, Schema } from 'effect';
 import express from 'express';
-import type { ResponseListSpaces, ResponseSpace } from 'graph-framework-messages';
+import type { ResponseListInvitations, ResponseListSpaces, ResponseSpace } from 'graph-framework-messages';
 import { RequestMessage } from 'graph-framework-messages';
 import { type CreateSpaceEvent, applyEvent } from 'graph-framework-space-events';
-import { parse } from 'node:url';
 import type WebSocket from 'ws';
 import { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
 import { createSpace } from './handlers/createSpace.js';
 import { getSpace } from './handlers/getSpace.js';
+import { listInvitations } from './handlers/listInvitations.js';
 import { listSpaces } from './handlers/listSpaces.js';
 import { tmpInitAccount } from './handlers/tmpInitAccount.js';
 import { assertExhaustive } from './utils/assertExhaustive.js';
@@ -65,6 +66,12 @@ webSocketServer.on('connection', async (webSocket: WebSocket, request: Request) 
         case 'list-spaces': {
           const spaces = await listSpaces({ accountId });
           const outgoingMessage: ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
+          webSocket.send(JSON.stringify(outgoingMessage));
+          break;
+        }
+        case 'list-invitations': {
+          const invitations = await listInvitations({ accountId });
+          const outgoingMessage: ResponseListInvitations = { type: 'list-invitations', invitations: invitations };
           webSocket.send(JSON.stringify(outgoingMessage));
           break;
         }

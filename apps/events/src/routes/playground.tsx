@@ -5,7 +5,14 @@ import { assertExhaustive } from '@/lib/assertExhaustive';
 import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
-import type { EventMessage, RequestListSpaces, RequestSubscribeToSpace, SpaceEvent, SpaceState } from 'graph-framework';
+import type {
+  EventMessage,
+  RequestListInvitations,
+  RequestListSpaces,
+  RequestSubscribeToSpace,
+  SpaceEvent,
+  SpaceState,
+} from 'graph-framework';
 import { ResponseMessage, applyEvent, createInvitation, createSpace } from 'graph-framework';
 import { useEffect, useState } from 'react';
 
@@ -101,6 +108,10 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
             console.log('event', response);
             break;
           }
+          case 'list-invitations': {
+            console.log('list-invitations', response);
+            break;
+          }
           default:
             assertExhaustive(response);
         }
@@ -160,6 +171,15 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
           }}
         >
           List Spaces
+        </Button>
+
+        <Button
+          onClick={() => {
+            const message: RequestListInvitations = { type: 'list-invitations' };
+            websocketConnection?.send(JSON.stringify(message));
+          }}
+        >
+          List Invitations
         </Button>
       </div>
       <h2>Spaces</h2>
