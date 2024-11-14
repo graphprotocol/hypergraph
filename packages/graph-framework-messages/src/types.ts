@@ -3,6 +3,7 @@ import { SpaceEvent } from 'graph-framework-space-events';
 
 export const EventMessage = Schema.Struct({
   type: Schema.Literal('event'),
+  spaceId: Schema.String,
   event: SpaceEvent,
 });
 

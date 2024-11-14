@@ -10,11 +10,11 @@ type Params = {
 };
 
 export async function applySpaceEvent({ accountId, spaceId, event }: Params) {
-  return await prisma.$transaction(async (transaction) => {
-    if (event.transaction.type === 'create-space') {
-      throw new Error('applySpaceEvent does not support create-space events.');
-    }
+  if (event.transaction.type === 'create-space') {
+    throw new Error('applySpaceEvent does not support create-space events.');
+  }
 
+  return await prisma.$transaction(async (transaction) => {
     // verify that the account is a member of the space
     // TODO verify that the account is a admin of the space
     await transaction.space.findUniqueOrThrow({
@@ -26,8 +26,9 @@ export async function applySpaceEvent({ accountId, spaceId, event }: Params) {
       orderBy: { counter: 'desc' },
     });
 
-    const result = await Effect.runPromiseExit(applyEvent({ event }));
+    const result = await Effect.runPromiseExit(applyEvent({ event, state: JSON.parse(lastEvent.state) }));
     if (Exit.isFailure(result)) {
+      console.log('Failed to apply event', result);
       throw new Error('Invalid event');
     }
 

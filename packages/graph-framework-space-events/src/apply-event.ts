@@ -70,6 +70,15 @@ export const applyEvent = ({
       members = {};
       invitations = {};
     } else if (event.transaction.type === 'create-invitation') {
+      if (members[event.transaction.signaturePublicKey] !== undefined) {
+        return Effect.fail(new InvalidEventError());
+      }
+      for (const invitation of Object.values(invitations)) {
+        if (invitation.signaturePublicKey === event.transaction.signaturePublicKey) {
+          return Effect.fail(new InvalidEventError());
+        }
+      }
+
       invitations[event.transaction.id] = {
         signaturePublicKey: event.transaction.signaturePublicKey,
         encryptionPublicKey: event.transaction.encryptionPublicKey,

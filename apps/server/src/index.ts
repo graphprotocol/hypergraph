@@ -1,13 +1,14 @@
 import cors from 'cors';
 import 'dotenv/config';
-import { parse } from 'node:url';
 import { Effect, Exit, Schema } from 'effect';
 import express from 'express';
 import type { ResponseListSpaces, ResponseSpace } from 'graph-framework-messages';
 import { RequestMessage } from 'graph-framework-messages';
 import { type CreateSpaceEvent, applyEvent } from 'graph-framework-space-events';
+import { parse } from 'node:url';
 import type WebSocket from 'ws';
 import { WebSocketServer } from 'ws';
+import { applySpaceEvent } from './handlers/applySpaceEvent.js';
 import { createSpace } from './handlers/createSpace.js';
 import { getSpace } from './handlers/getSpace.js';
 import { listSpaces } from './handlers/listSpaces.js';
@@ -88,6 +89,14 @@ webSocketServer.on('connection', async (webSocket: WebSocket, request: Request) 
               break;
             }
             case 'create-invitation': {
+              await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event });
+              const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
+              const outgoingMessage: ResponseSpace = {
+                type: 'space',
+                id: data.spaceId,
+                events: spaceWithEvents.events.map((wrapper) => JSON.parse(wrapper.event)),
+              };
+              webSocket.send(JSON.stringify(outgoingMessage));
               break;
             }
           }
