@@ -1,9 +1,12 @@
-import type { SpaceState } from 'graph-framework-space-events';
+import { Schema } from 'effect';
+import { SpaceState } from 'graph-framework-space-events';
 import { prisma } from '../prisma.js';
 
 type Params = {
   accountId: string;
 };
+
+const decodeSpaceState = Schema.decodeUnknownEither(SpaceState);
 
 export const listInvitations = async ({ accountId }: Params) => {
   const result = await prisma.invitation.findMany({
@@ -24,12 +27,19 @@ export const listInvitations = async ({ accountId }: Params) => {
     },
   });
 
-  return result.map((invitation) => {
-    const state = JSON.parse(invitation.space.events[0].state) as SpaceState;
-    return {
-      id: invitation.id,
-      previousEventHash: state.lastEventHash,
-      spaceId: invitation.spaceId,
-    };
-  });
+  return result
+    .map((invitation) => {
+      const result = decodeSpaceState(JSON.parse(invitation.space.events[0].state));
+      if (result._tag === 'Right') {
+        const state = result.right;
+        return {
+          id: invitation.id,
+          previousEventHash: state.lastEventHash,
+          spaceId: invitation.spaceId,
+        };
+      }
+      console.error('Invalid space state from the DB', result.left);
+      return null;
+    })
+    .filter((invitation) => invitation !== null);
 };
