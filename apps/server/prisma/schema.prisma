@@ -23,12 +23,23 @@ model SpaceEvent {
 }
 
 model Space {
-  id      String       @id
-  events  SpaceEvent[]
-  members Account[]
+  id          String       @id
+  events      SpaceEvent[]
+  members     Account[]
+  invitations Invitation[]
 }
 
 model Account {
-  id     String  @id
-  spaces Space[]
+  id          String       @id
+  spaces      Space[]
+  invitations Invitation[]
+}
+
+model Invitation {
+  id        String   @id
+  space     Space    @relation(fields: [spaceId], references: [id])
+  spaceId   String
+  account   Account  @relation(fields: [accountId], references: [id])
+  accountId String
+  createdAt DateTime @default(now())
 }
