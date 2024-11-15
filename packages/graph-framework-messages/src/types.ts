@@ -48,15 +48,17 @@ export const ResponseListSpaces = Schema.Struct({
 
 export type ResponseListSpaces = Schema.Schema.Type<typeof ResponseListSpaces>;
 
+export const Invitation = Schema.Struct({
+  id: Schema.String,
+  previousEventHash: Schema.String,
+  spaceId: Schema.String,
+});
+
+export type Invitation = Schema.Schema.Type<typeof Invitation>;
+
 export const ResponseListInvitations = Schema.Struct({
   type: Schema.Literal('list-invitations'),
-  invitations: Schema.Array(
-    Schema.Struct({
-      id: Schema.String,
-      previousEventHash: Schema.String,
-      spaceId: Schema.String,
-    }),
-  ),
+  invitations: Schema.Array(Invitation),
 });
 
 export type ResponseListInvitations = Schema.Schema.Type<typeof ResponseListInvitations>;
