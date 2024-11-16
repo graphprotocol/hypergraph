@@ -15,11 +15,18 @@ export async function applySpaceEvent({ accountId, spaceId, event }: Params) {
   }
 
   return await prisma.$transaction(async (transaction) => {
-    // verify that the account is a member of the space
-    // TODO verify that the account is a admin of the space
-    await transaction.space.findUniqueOrThrow({
-      where: { id: spaceId, members: { some: { id: accountId } } },
-    });
+    if (event.transaction.type === 'accept-invitation') {
+      // verify that the account is the invitee
+      await transaction.invitation.findFirstOrThrow({
+        where: { inviteeAccountId: event.author.publicKey },
+      });
+    } else {
+      // verify that the account is a member of the space
+      // TODO verify that the account is a admin of the space
+      await transaction.space.findUniqueOrThrow({
+        where: { id: spaceId, members: { some: { id: accountId } } },
+      });
+    }
 
     const lastEvent = await transaction.spaceEvent.findFirstOrThrow({
       where: { spaceId },
@@ -38,7 +45,18 @@ export async function applySpaceEvent({ accountId, spaceId, event }: Params) {
           id: event.transaction.id,
           spaceId,
           accountId: event.transaction.signaturePublicKey,
+          inviteeAccountId: event.transaction.signaturePublicKey,
         },
+      });
+    }
+    if (event.transaction.type === 'accept-invitation') {
+      await transaction.invitation.delete({
+        where: { spaceId_inviteeAccountId: { spaceId, inviteeAccountId: event.author.publicKey } },
+      });
+
+      await transaction.space.update({
+        where: { id: spaceId },
+        data: { members: { connect: { id: event.author.publicKey } } },
       });
     }
 

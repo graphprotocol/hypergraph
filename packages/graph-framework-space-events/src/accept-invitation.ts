@@ -1,29 +1,30 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect } from 'effect';
 import { canonicalize, generateId, stringToUint8Array } from 'graph-framework-utils';
-import type { Author, CreateSpaceEvent } from './types.js';
+import type { AcceptInvitationEvent, Author } from './types.js';
 
 type Params = {
   author: Author;
+  previousEventHash: string;
 };
 
-export const createSpace = ({ author }: Params): Effect.Effect<CreateSpaceEvent, undefined> => {
+export const acceptInvitation = ({
+  author,
+  previousEventHash,
+}: Params): Effect.Effect<AcceptInvitationEvent, undefined> => {
   const transaction = {
-    type: 'create-space' as const,
     id: generateId(),
-    creatorSignaturePublicKey: author.signaturePublicKey,
-    creatorEncryptionPublicKey: author.encryptionPublicKey,
+    type: 'accept-invitation' as const,
+    previousEventHash,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
   const signature = secp256k1.sign(encodedTransaction, author.signaturePrivateKey, { prehash: true }).toCompactHex();
 
-  const event: CreateSpaceEvent = {
+  return Effect.succeed({
     transaction,
     author: {
       publicKey: author.signaturePublicKey,
       signature,
     },
-  };
-
-  return Effect.succeed(event);
+  });
 };

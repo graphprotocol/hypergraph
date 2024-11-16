@@ -1,7 +1,12 @@
 import type { Invitation } from 'graph-framework';
 import { Button } from './ui/button';
 
-export function DebugInvitations({ invitations }: { invitations: Invitation[] }) {
+type Props = {
+  invitations: Invitation[];
+  accept: (invitation: Invitation) => void;
+};
+
+export function DebugInvitations({ invitations, accept }: Props) {
   return (
     <ul className="text-xs">
       {invitations.map((invitation) => {
@@ -10,7 +15,7 @@ export function DebugInvitations({ invitations }: { invitations: Invitation[] })
             <pre>{JSON.stringify(invitation, null, 2)}</pre>
             <Button
               onClick={() => {
-                alert('TODO');
+                accept(invitation);
               }}
             >
               Accept

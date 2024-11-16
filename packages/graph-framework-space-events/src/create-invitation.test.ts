@@ -1,9 +1,11 @@
 import { expect, it } from 'vitest';
 
-import { Effect, Exit } from 'effect';
+import { Cause, Effect, Exit } from 'effect';
+import { acceptInvitation } from './accept-invitation.js';
 import { applyEvent } from './apply-event.js';
 import { createInvitation } from './create-invitation.js';
 import { createSpace } from './create-space.js';
+import { InvalidEventError } from './types.js';
 
 const author = {
   signaturePublicKey: '03594161eed61407084114a142d1ce05ef4c5a5279479fdd73a2b16944fbff003b',
@@ -14,6 +16,12 @@ const author = {
 const invitee = {
   signaturePublicKey: '03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
   signaturePrivateKey: '1eee32d3bc202dcb5d17c3b1454fb541d2290cb941860735408f1bfe39e7bc15',
+  encryptionPublicKey: 'encryption',
+};
+
+const invitee2 = {
+  signaturePublicKey: '0351460706cf386282d9b6ebee2ccdcb9ba61194fd024345e53037f3036242e6a2',
+  signaturePrivateKey: '434518a2c9a665a7c20da086232c818b6c1592e2edfeecab29a40cf5925ca8fe',
   encryptionPublicKey: 'encryption',
 };
 
@@ -37,6 +45,7 @@ it('should create an invitation', async () => {
 
   expect(state2.id).toBeTypeOf('string');
   expect(state2.invitations).toEqual({
+    // @ts-expect-error
     [spaceEvent2.transaction.id]: {
       signaturePublicKey: '03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
       encryptionPublicKey: 'encryption',
@@ -91,4 +100,38 @@ it('should fail to invite an account that is already a member', async () => {
   );
 
   expect(Exit.isFailure(result)).toBe(true);
+});
+
+it('should fail in case the author is not an admin', async () => {
+  const result = await Effect.runPromiseExit(
+    Effect.gen(function* () {
+      const spaceEvent = yield* createSpace({ author });
+      const state = yield* applyEvent({ event: spaceEvent });
+      const spaceEvent2 = yield* createInvitation({
+        author,
+        previousEventHash: state.lastEventHash,
+        invitee,
+      });
+      const state2 = yield* applyEvent({ state, event: spaceEvent2 });
+      const spaceEvent3 = yield* acceptInvitation({
+        previousEventHash: state2.lastEventHash,
+        author: invitee,
+      });
+      const state3 = yield* applyEvent({ state: state2, event: spaceEvent3 });
+      const spaceEvent4 = yield* createInvitation({
+        author: invitee,
+        previousEventHash: state.lastEventHash,
+        invitee: invitee2,
+      });
+      yield* applyEvent({ state: state3, event: spaceEvent4 });
+    }),
+  );
+
+  expect(Exit.isFailure(result)).toBe(true);
+  if (Exit.isFailure(result)) {
+    const cause = result.cause;
+    if (Cause.isFailType(cause)) {
+      expect(cause.error).toBeInstanceOf(InvalidEventError);
+    }
+  }
 });

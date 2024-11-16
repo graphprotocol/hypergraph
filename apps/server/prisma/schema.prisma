@@ -36,10 +36,13 @@ model Account {
 }
 
 model Invitation {
-  id        String   @id
-  space     Space    @relation(fields: [spaceId], references: [id])
-  spaceId   String
-  account   Account  @relation(fields: [accountId], references: [id])
-  accountId String
-  createdAt DateTime @default(now())
+  id               String   @id
+  space            Space    @relation(fields: [spaceId], references: [id])
+  spaceId          String
+  account          Account  @relation(fields: [accountId], references: [id])
+  accountId        String
+  inviteeAccountId String
+  createdAt        DateTime @default(now())
+
+  @@unique([spaceId, inviteeAccountId])
 }

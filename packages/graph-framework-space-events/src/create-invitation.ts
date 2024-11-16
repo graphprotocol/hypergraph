@@ -1,7 +1,7 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect } from 'effect';
 import { canonicalize, generateId, stringToUint8Array } from 'graph-framework-utils';
-import type { Author, SpaceEvent } from './types.js';
+import type { Author, CreateInvitationEvent } from './types.js';
 
 type Params = {
   author: Author;
@@ -16,7 +16,7 @@ export const createInvitation = ({
   author,
   previousEventHash,
   invitee,
-}: Params): Effect.Effect<SpaceEvent, undefined> => {
+}: Params): Effect.Effect<CreateInvitationEvent, undefined> => {
   const transaction = {
     id: generateId(),
     type: 'create-invitation' as const,

@@ -15,7 +15,7 @@ import type {
   SpaceEvent,
   SpaceState,
 } from 'graph-framework';
-import { ResponseMessage, applyEvent, createInvitation, createSpace } from 'graph-framework';
+import { ResponseMessage, acceptInvitation, applyEvent, createInvitation, createSpace } from 'graph-framework';
 import { useEffect, useState } from 'react';
 
 const availableAccounts = [
@@ -186,7 +186,27 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
         </Button>
       </div>
       <h2 className="text-lg">Invitations</h2>
-      <DebugInvitations invitations={invitations} />
+      <DebugInvitations
+        invitations={invitations}
+        accept={async (invitation) => {
+          const spaceEvent = await Effect.runPromiseExit(
+            acceptInvitation({
+              author: {
+                signaturePublicKey: accountId,
+                encryptionPublicKey: 'TODO',
+                signaturePrivateKey,
+              },
+              previousEventHash: invitation.previousEventHash,
+            }),
+          );
+          if (Exit.isFailure(spaceEvent)) {
+            console.error('Failed to accept invitation', spaceEvent);
+            return;
+          }
+          const message: EventMessage = { type: 'event', event: spaceEvent.value, spaceId: invitation.spaceId };
+          websocketConnection?.send(JSON.stringify(message));
+        }}
+      />
       <h2 className="text-lg">Spaces</h2>
       <ul>
         {spaces.map((space) => {
