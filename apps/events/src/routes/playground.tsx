@@ -1,3 +1,4 @@
+import { DebugInvitations } from '@/components/debug-invitations';
 import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
 import type {
   EventMessage,
+  Invitation,
   RequestListInvitations,
   RequestListSpaces,
   RequestSubscribeToSpace,
@@ -46,6 +48,7 @@ export const Route = createFileRoute('/playground')({
 const App = ({ accountId, signaturePrivateKey }: { accountId: string; signaturePrivateKey: string }) => {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [spaces, setSpaces] = useState<SpaceStorageEntry[]>([]);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
 
   useEffect(() => {
     // temporary until we have a way to create accounts and authenticate them
@@ -109,7 +112,7 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
             break;
           }
           case 'list-invitations': {
-            console.log('list-invitations', response);
+            setInvitations(response.invitations.map((invitation) => invitation));
             break;
           }
           default:
@@ -182,7 +185,9 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
           List Invitations
         </Button>
       </div>
-      <h2>Spaces</h2>
+      <h2 className="text-lg">Invitations</h2>
+      <DebugInvitations invitations={invitations} />
+      <h2 className="text-lg">Spaces</h2>
       <ul>
         {spaces.map((space) => {
           return (
