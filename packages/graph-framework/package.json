@@ -40,6 +40,7 @@
     "graph-framework-space-events": "workspace:*",
     "graph-framework-identity": "workspace:*",
     "graph-framework-schema": "workspace:*",
-    "graph-framework-messages": "workspace:*"
+    "graph-framework-messages": "workspace:*",
+    "graph-framework-key": "workspace:*"
   }
 }

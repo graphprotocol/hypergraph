@@ -6,7 +6,7 @@ type Params = {
 };
 
 export const getSpace = async ({ spaceId, accountId }: Params) => {
-  return await prisma.space.findUniqueOrThrow({
+  const space = await prisma.space.findUniqueOrThrow({
     where: {
       id: spaceId,
       members: {
@@ -21,6 +21,36 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
           counter: 'asc',
         },
       },
+      keys: {
+        include: {
+          keyBoxes: {
+            where: {
+              accountId,
+            },
+            select: {
+              nonce: true,
+              ciphertext: true,
+              authorPublicKey: true,
+            },
+          },
+        },
+      },
     },
   });
+
+  const keyBoxes = space.keys.flatMap((key) => {
+    return {
+      id: key.id,
+      nonce: key.keyBoxes[0].nonce,
+      ciphertext: key.keyBoxes[0].ciphertext,
+      accountId,
+      authorPublicKey: key.keyBoxes[0].authorPublicKey,
+    };
+  });
+
+  return {
+    id: space.id,
+    events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
+    keyBoxes,
+  };
 };

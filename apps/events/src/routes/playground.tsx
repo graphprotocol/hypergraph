@@ -3,33 +3,52 @@ import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
 import { Button } from '@/components/ui/button';
 import { assertExhaustive } from '@/lib/assertExhaustive';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
 import type {
   EventMessage,
   Invitation,
+  RequestCreateInvitationEvent,
+  RequestCreateSpaceEvent,
   RequestListInvitations,
   RequestListSpaces,
   RequestSubscribeToSpace,
   SpaceEvent,
   SpaceState,
 } from 'graph-framework';
-import { ResponseMessage, acceptInvitation, applyEvent, createInvitation, createSpace } from 'graph-framework';
+import {
+  ResponseMessage,
+  acceptInvitation,
+  applyEvent,
+  createInvitation,
+  createKey,
+  createSpace,
+  decryptKey,
+  encryptKey,
+  generateId,
+} from 'graph-framework';
 import { useEffect, useState } from 'react';
 
 const availableAccounts = [
   {
     accountId: '0262701b2eb1b6b37ad03e24445dfcad1b91309199e43017b657ce2604417c12f5',
     signaturePrivateKey: '88bb6f20de8dc1787c722dc847f4cf3d00285b8955445f23c483d1237fe85366',
+    encryptionPrivateKey: 'bbf164a93b0f78a85346017fa2673cf367c64d81b1c3d6af7ad45e308107a812',
+    encryptionPublicKey: '595e1a6b0bb346d83bc382998943d2e6d9210fd341bc8b9f41a7229eede27240',
   },
   {
     accountId: '03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
     signaturePrivateKey: '1eee32d3bc202dcb5d17c3b1454fb541d2290cb941860735408f1bfe39e7bc15',
+    encryptionPrivateKey: 'b32478dc6f40482127a09d0f1cabbf45dc83ebce638d6246f5552191009fda2c',
+    encryptionPublicKey: '0f4e22dc85167597af85cba85988770cd77c25d317f2b14a1f49a54efcbfae3f',
   },
   {
     accountId: '0351460706cf386282d9b6ebee2ccdcb9ba61194fd024345e53037f3036242e6a2',
     signaturePrivateKey: '434518a2c9a665a7c20da086232c818b6c1592e2edfeecab29a40cf5925ca8fe',
+    encryptionPrivateKey: 'aaf71397e44fc57b42eaad5b0869d1e0247b4a7f2fe9ec5cc00dec3815849e7a',
+    encryptionPublicKey: 'd494144358a610604c4ab453b442d014f2843772eed19be155dd9fc55fe8a332',
   },
 ];
 
@@ -37,6 +56,7 @@ type SpaceStorageEntry = {
   id: string;
   events: SpaceEvent[];
   state: SpaceState | undefined;
+  keys: { id: string; key: string }[];
 };
 
 const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
@@ -45,7 +65,17 @@ export const Route = createFileRoute('/playground')({
   component: () => <ChooseAccount />,
 });
 
-const App = ({ accountId, signaturePrivateKey }: { accountId: string; signaturePrivateKey: string }) => {
+const App = ({
+  accountId,
+  signaturePrivateKey,
+  encryptionPublicKey,
+  encryptionPrivateKey,
+}: {
+  accountId: string;
+  signaturePrivateKey: string;
+  encryptionPrivateKey: string;
+  encryptionPublicKey: string;
+}) => {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [spaces, setSpaces] = useState<SpaceStorageEntry[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -66,7 +96,12 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
             setSpaces((existingSpaces) => {
               return response.spaces.map((space) => {
                 const existingSpace = existingSpaces.find((s) => s.id === space.id);
-                return { id: space.id, events: existingSpace?.events ?? [], state: existingSpace?.state };
+                return {
+                  id: space.id,
+                  events: existingSpace?.events ?? [],
+                  state: existingSpace?.state,
+                  keys: existingSpace?.keys ?? [],
+                };
               });
             });
             // fetch all spaces (for debugging purposes)
@@ -96,11 +131,26 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
 
             const newState = state as SpaceState;
 
+            const keys = response.keyBoxes.map((keyBox) => {
+              const key = decryptKey({
+                keyBoxCiphertext: hexToBytes(keyBox.ciphertext),
+                keyBoxNonce: hexToBytes(keyBox.nonce),
+                publicKey: hexToBytes(keyBox.authorPublicKey),
+                privateKey: hexToBytes(encryptionPrivateKey),
+              });
+              return { id: keyBox.id, key: bytesToHex(key) };
+            });
+
             setSpaces((spaces) =>
               spaces.map((space) => {
                 if (space.id === response.id) {
                   // TODO fix readonly type issue
-                  return { ...space, events: response.events as SpaceEvent[], state: newState };
+                  return {
+                    ...space,
+                    events: response.events as SpaceEvent[],
+                    state: newState,
+                    keys,
+                  };
                 }
                 return space;
               }),
@@ -144,7 +194,7 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
       websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
-  }, [accountId]);
+  }, [accountId, encryptionPrivateKey]);
 
   return (
     <>
@@ -154,13 +204,28 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
             const spaceEvent = await Effect.runPromise(
               createSpace({
                 author: {
-                  encryptionPublicKey: 'TODO',
+                  encryptionPublicKey,
                   signaturePrivateKey,
                   signaturePublicKey: accountId,
                 },
               }),
             );
-            const message: EventMessage = { type: 'event', event: spaceEvent, spaceId: spaceEvent.transaction.id };
+            const result = createKey({
+              privateKey: hexToBytes(encryptionPrivateKey),
+              publicKey: hexToBytes(encryptionPublicKey),
+            });
+            const message: RequestCreateSpaceEvent = {
+              type: 'create-space-event',
+              event: spaceEvent,
+              spaceId: spaceEvent.transaction.id,
+              keyId: generateId(),
+              keyBox: {
+                accountId,
+                ciphertext: bytesToHex(result.keyBoxCiphertext),
+                nonce: bytesToHex(result.keyBoxNonce),
+                authorPublicKey: encryptionPublicKey,
+              },
+            };
             websocketConnection?.send(JSON.stringify(message));
           }}
         >
@@ -193,7 +258,7 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
             acceptInvitation({
               author: {
                 signaturePublicKey: accountId,
-                encryptionPublicKey: 'TODO',
+                encryptionPublicKey,
                 signaturePrivateKey,
               },
               previousEventHash: invitation.previousEventHash,
@@ -213,6 +278,8 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
           return (
             <li key={space.id}>
               <h3>Space id: {space.id}</h3>
+              <p>Keys:</p>
+              <pre className="text-xs">{JSON.stringify(space.keys)}</pre>
               <Button
                 onClick={() => {
                   const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: space.id };
@@ -235,13 +302,13 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
                         createInvitation({
                           author: {
                             signaturePublicKey: accountId,
-                            encryptionPublicKey: 'TODO',
+                            encryptionPublicKey,
                             signaturePrivateKey,
                           },
                           previousEventHash: space.state.lastEventHash,
                           invitee: {
                             signaturePublicKey: invitee.accountId,
-                            encryptionPublicKey: 'TODO',
+                            encryptionPublicKey,
                           },
                         }),
                       );
@@ -249,7 +316,28 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
                         console.error('Failed to create invitation', spaceEvent);
                         return;
                       }
-                      const message: EventMessage = { type: 'event', event: spaceEvent.value, spaceId: space.id };
+
+                      const keyBoxes = space.keys.map((key) => {
+                        const keyBox = encryptKey({
+                          key: hexToBytes(key.key),
+                          publicKey: hexToBytes(invitee.encryptionPublicKey),
+                          privateKey: hexToBytes(encryptionPrivateKey),
+                        });
+                        return {
+                          id: key.id,
+                          ciphertext: bytesToHex(keyBox.keyBoxCiphertext),
+                          nonce: bytesToHex(keyBox.keyBoxNonce),
+                          authorPublicKey: encryptionPublicKey,
+                          accountId: invitee.accountId,
+                        };
+                      });
+
+                      const message: RequestCreateInvitationEvent = {
+                        type: 'create-invitation-event',
+                        event: spaceEvent.value,
+                        spaceId: space.id,
+                        keyBoxes,
+                      };
                       websocketConnection?.send(JSON.stringify(message));
                     }}
                   >
@@ -271,7 +359,12 @@ const App = ({ accountId, signaturePrivateKey }: { accountId: string; signatureP
 };
 
 export const ChooseAccount = () => {
-  const [account, setAccount] = useState<{ accountId: string; signaturePrivateKey: string } | null>();
+  const [account, setAccount] = useState<{
+    accountId: string;
+    signaturePrivateKey: string;
+    encryptionPrivateKey: string;
+    encryptionPublicKey: string;
+  } | null>();
 
   return (
     <div>
@@ -305,6 +398,8 @@ export const ChooseAccount = () => {
           key={account.accountId}
           accountId={account.accountId}
           signaturePrivateKey={account.signaturePrivateKey}
+          encryptionPrivateKey={account.encryptionPrivateKey}
+          encryptionPublicKey={account.encryptionPublicKey}
         />
       )}
     </div>

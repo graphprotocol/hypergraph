@@ -45,7 +45,6 @@ it('should create an invitation', async () => {
 
   expect(state2.id).toBeTypeOf('string');
   expect(state2.invitations).toEqual({
-    // @ts-expect-error
     [spaceEvent2.transaction.id]: {
       signaturePublicKey: '03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
       encryptionPublicKey: 'encryption',

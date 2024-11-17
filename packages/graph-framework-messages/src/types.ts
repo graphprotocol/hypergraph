@@ -1,10 +1,51 @@
 import * as Schema from 'effect/Schema';
-import { SpaceEvent } from 'graph-framework-space-events';
+import {
+  AcceptInvitationEvent,
+  CreateInvitationEvent,
+  CreateSpaceEvent,
+  DeleteSpaceEvent,
+  SpaceEvent,
+} from 'graph-framework-space-events';
+
+export const KeyBox = Schema.Struct({
+  accountId: Schema.String,
+  ciphertext: Schema.String,
+  nonce: Schema.String,
+  authorPublicKey: Schema.String,
+});
+
+export type KeyBox = Schema.Schema.Type<typeof KeyBox>;
+
+export const KeyBoxWithKeyId = Schema.Struct({
+  ...KeyBox.fields,
+  id: Schema.String,
+});
+
+export type KeyBoxWithKeyId = Schema.Schema.Type<typeof KeyBoxWithKeyId>;
+
+export const RequestCreateSpaceEvent = Schema.Struct({
+  type: Schema.Literal('create-space-event'),
+  spaceId: Schema.String,
+  event: CreateSpaceEvent,
+  keyId: Schema.String,
+  keyBox: KeyBox, // TODO change to KeyBoxWithKeyId and remove keyId
+});
+
+export type RequestCreateSpaceEvent = Schema.Schema.Type<typeof RequestCreateSpaceEvent>;
+
+export const RequestCreateInvitationEvent = Schema.Struct({
+  type: Schema.Literal('create-invitation-event'),
+  spaceId: Schema.String,
+  event: CreateInvitationEvent,
+  keyBoxes: Schema.Array(KeyBoxWithKeyId),
+});
+
+export type RequestCreateInvitationEvent = Schema.Schema.Type<typeof RequestCreateInvitationEvent>;
 
 export const EventMessage = Schema.Struct({
   type: Schema.Literal('event'),
   spaceId: Schema.String,
-  event: SpaceEvent,
+  event: Schema.Union(DeleteSpaceEvent, AcceptInvitationEvent),
 });
 
 export type EventMessage = Schema.Schema.Type<typeof EventMessage>;
@@ -29,6 +70,8 @@ export const RequestListInvitations = Schema.Struct({
 export type RequestListInvitations = Schema.Schema.Type<typeof RequestListInvitations>;
 
 export const RequestMessage = Schema.Union(
+  RequestCreateSpaceEvent,
+  RequestCreateInvitationEvent,
   EventMessage,
   RequestSubscribeToSpace,
   RequestListSpaces,
@@ -67,6 +110,7 @@ export const ResponseSpace = Schema.Struct({
   type: Schema.Literal('space'),
   id: Schema.String,
   events: Schema.Array(SpaceEvent),
+  keyBoxes: Schema.Array(KeyBoxWithKeyId),
 });
 
 export type ResponseSpace = Schema.Schema.Type<typeof ResponseSpace>;
