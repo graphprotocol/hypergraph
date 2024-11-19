@@ -8,8 +8,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
 import type {
-  EventMessage,
   Invitation,
+  RequestAcceptInvitationEvent,
   RequestCreateInvitationEvent,
   RequestCreateSpaceEvent,
   RequestListInvitations,
@@ -80,13 +80,40 @@ const App = ({
   const [spaces, setSpaces] = useState<SpaceStorageEntry[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
 
+  // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
-    // temporary until we have a way to create accounts and authenticate them
     const websocketConnection = new WebSocket(`ws://localhost:3030/?accountId=${accountId}`);
     setWebsocketConnection(websocketConnection);
 
+    const onOpen = () => {
+      console.log('websocket connected');
+    };
+
+    const onError = (event: Event) => {
+      console.log('websocket error', event);
+    };
+
+    const onClose = (event: CloseEvent) => {
+      console.log('websocket close', event);
+    };
+
+    websocketConnection.addEventListener('open', onOpen);
+    websocketConnection.addEventListener('error', onError);
+    websocketConnection.addEventListener('close', onClose);
+
+    return () => {
+      websocketConnection.removeEventListener('open', onOpen);
+      websocketConnection.removeEventListener('error', onError);
+      websocketConnection.removeEventListener('close', onClose);
+      websocketConnection.close();
+    };
+  }, [accountId]); // Only recreate when accountId changes
+
+  // Handle WebSocket messages in a separate effect
+  useEffect(() => {
+    if (!websocketConnection) return;
+
     const onMessage = async (event: MessageEvent) => {
-      console.log('message received', event.data);
       const data = JSON.parse(event.data);
       const message = decodeResponseMessage(data);
       if (message._tag === 'Right') {
@@ -157,8 +184,31 @@ const App = ({
             );
             break;
           }
-          case 'event': {
-            console.log('event', response);
+          case 'space-event': {
+            const space = spaces.find((s) => s.id === response.spaceId);
+            if (!space) {
+              console.error('Space not found', response.spaceId);
+              return;
+            }
+            if (!space.state) {
+              console.error('Space has no state', response.spaceId);
+              return;
+            }
+
+            const applyEventResult = await Effect.runPromiseExit(
+              applyEvent({ event: response.event, state: space.state }),
+            );
+            if (Exit.isSuccess(applyEventResult)) {
+              setSpaces((spaces) =>
+                spaces.map((space) => {
+                  if (space.id === response.spaceId) {
+                    return { ...space, state: applyEventResult.value, events: [...space.events, response.event] };
+                  }
+                  return space;
+                }),
+              );
+            }
+
             break;
           }
           case 'list-invitations': {
@@ -170,31 +220,13 @@ const App = ({
         }
       }
     };
+
     websocketConnection.addEventListener('message', onMessage);
-
-    const onOpen = () => {
-      console.log('websocket connected');
-    };
-    websocketConnection.addEventListener('open', onOpen);
-
-    const onError = (event: Event) => {
-      console.log('websocket error', event);
-    };
-    websocketConnection.addEventListener('error', onError);
-
-    const onClose = (event: CloseEvent) => {
-      console.log('websocket close', event);
-    };
-    websocketConnection.addEventListener('close', onClose);
 
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
-      websocketConnection.removeEventListener('open', onOpen);
-      websocketConnection.removeEventListener('error', onError);
-      websocketConnection.removeEventListener('close', onClose);
-      websocketConnection.close();
     };
-  }, [accountId, encryptionPrivateKey]);
+  }, [websocketConnection, encryptionPrivateKey, spaces]);
 
   return (
     <>
@@ -268,7 +300,11 @@ const App = ({
             console.error('Failed to accept invitation', spaceEvent);
             return;
           }
-          const message: EventMessage = { type: 'event', event: spaceEvent.value, spaceId: invitation.spaceId };
+          const message: RequestAcceptInvitationEvent = {
+            type: 'accept-invitation-event',
+            event: spaceEvent.value,
+            spaceId: invitation.spaceId,
+          };
           websocketConnection?.send(JSON.stringify(message));
 
           // temporary until we have define a strategy for accepting invitations response

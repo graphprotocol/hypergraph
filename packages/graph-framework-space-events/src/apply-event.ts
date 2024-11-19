@@ -34,7 +34,6 @@ export const applyEvent = ({
       return Effect.fail(new InvalidEventError());
     }
     if (event.transaction.previousEventHash !== state.lastEventHash) {
-      console.log('WEEEEE', event.transaction.previousEventHash, state.lastEventHash);
       return Effect.fail(new InvalidEventError());
     }
   }

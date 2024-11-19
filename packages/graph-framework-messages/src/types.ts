@@ -3,7 +3,6 @@ import {
   AcceptInvitationEvent,
   CreateInvitationEvent,
   CreateSpaceEvent,
-  DeleteSpaceEvent,
   SpaceEvent,
 } from 'graph-framework-space-events';
 
@@ -42,13 +41,13 @@ export const RequestCreateInvitationEvent = Schema.Struct({
 
 export type RequestCreateInvitationEvent = Schema.Schema.Type<typeof RequestCreateInvitationEvent>;
 
-export const EventMessage = Schema.Struct({
-  type: Schema.Literal('event'),
+export const RequestAcceptInvitationEvent = Schema.Struct({
+  type: Schema.Literal('accept-invitation-event'),
   spaceId: Schema.String,
-  event: Schema.Union(DeleteSpaceEvent, AcceptInvitationEvent),
+  event: AcceptInvitationEvent,
 });
 
-export type EventMessage = Schema.Schema.Type<typeof EventMessage>;
+export type RequestAcceptInvitationEvent = Schema.Schema.Type<typeof RequestAcceptInvitationEvent>;
 
 export const RequestSubscribeToSpace = Schema.Struct({
   type: Schema.Literal('subscribe-space'),
@@ -72,7 +71,7 @@ export type RequestListInvitations = Schema.Schema.Type<typeof RequestListInvita
 export const RequestMessage = Schema.Union(
   RequestCreateSpaceEvent,
   RequestCreateInvitationEvent,
-  EventMessage,
+  RequestAcceptInvitationEvent,
   RequestSubscribeToSpace,
   RequestListSpaces,
   RequestListInvitations,
@@ -106,6 +105,14 @@ export const ResponseListInvitations = Schema.Struct({
 
 export type ResponseListInvitations = Schema.Schema.Type<typeof ResponseListInvitations>;
 
+export const ResponseSpaceEvent = Schema.Struct({
+  type: Schema.Literal('space-event'),
+  spaceId: Schema.String,
+  event: SpaceEvent,
+});
+
+export type ResponseSpaceEvent = Schema.Schema.Type<typeof ResponseSpaceEvent>;
+
 export const ResponseSpace = Schema.Struct({
   type: Schema.Literal('space'),
   id: Schema.String,
@@ -115,6 +122,11 @@ export const ResponseSpace = Schema.Struct({
 
 export type ResponseSpace = Schema.Schema.Type<typeof ResponseSpace>;
 
-export const ResponseMessage = Schema.Union(EventMessage, ResponseListSpaces, ResponseListInvitations, ResponseSpace);
+export const ResponseMessage = Schema.Union(
+  ResponseListSpaces,
+  ResponseListInvitations,
+  ResponseSpace,
+  ResponseSpaceEvent,
+);
 
 export type ResponseMessage = Schema.Schema.Type<typeof ResponseMessage>;

@@ -1,11 +1,17 @@
 import cors from 'cors';
 import 'dotenv/config';
+import { parse } from 'node:url';
 import { Effect, Exit, Schema } from 'effect';
 import express from 'express';
-import type { ResponseListInvitations, ResponseListSpaces, ResponseSpace } from 'graph-framework-messages';
+import type {
+  ResponseListInvitations,
+  ResponseListSpaces,
+  ResponseSpace,
+  ResponseSpaceEvent,
+} from 'graph-framework-messages';
 import { RequestMessage } from 'graph-framework-messages';
+import type { SpaceEvent } from 'graph-framework-space-events';
 import { applyEvent } from 'graph-framework-space-events';
-import { parse } from 'node:url';
 import WebSocket, { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
 import { createSpace } from './handlers/createSpace.js';
@@ -41,6 +47,25 @@ const server = app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
 
+function broadcastSpaceEvents({
+  spaceId,
+  event,
+  currentClient,
+}: { spaceId: string; event: SpaceEvent; currentClient: CustomWebSocket }) {
+  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+    if (currentClient === client) continue;
+
+    const outgoingMessage: ResponseSpaceEvent = {
+      type: 'space-event',
+      spaceId,
+      event,
+    };
+    if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+      client.send(JSON.stringify(outgoingMessage));
+    }
+  }
+}
+
 webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Request) => {
   const params = parse(request.url, true);
   if (!params.query.accountId || typeof params.query.accountId !== 'string') {
@@ -64,6 +89,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             ...space,
             type: 'space',
           };
+          webSocket.subscribedSpaces.add(data.id);
           webSocket.send(JSON.stringify(outgoingMessage));
           break;
         }
@@ -101,6 +127,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             keyBoxes: data.keyBoxes.map((keyBox) => keyBox),
           });
           const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
+          // TODO send back confirmation instead of the entire space
           const outgoingMessage: ResponseSpace = {
             ...spaceWithEvents,
             type: 'space',
@@ -118,24 +145,18 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             }
           }
 
+          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
           break;
         }
-        case 'event': {
-          switch (data.event.transaction.type) {
-            case 'delete-space': {
-              break;
-            }
-            case 'accept-invitation': {
-              await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
-              const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
-              const outgoingMessage: ResponseSpace = {
-                ...spaceWithEvents,
-                type: 'space',
-              };
-              webSocket.send(JSON.stringify(outgoingMessage));
-              break;
-            }
-          }
+        case 'accept-invitation-event': {
+          await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
+          const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
+          const outgoingMessage: ResponseSpace = {
+            ...spaceWithEvents,
+            type: 'space',
+          };
+          webSocket.send(JSON.stringify(outgoingMessage));
+          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
           break;
         }
         default:
