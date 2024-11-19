@@ -72,7 +72,26 @@ export const CreateInvitationEvent = Schema.Struct({
 
 export type CreateInvitationEvent = Schema.Schema.Type<typeof CreateInvitationEvent>;
 
-export const SpaceEvent = Schema.Union(CreateSpaceEvent, DeleteSpaceEvent, CreateInvitationEvent);
+export const AcceptInvitationEvent = Schema.Struct({
+  transaction: Schema.Struct({
+    id: Schema.String,
+    type: Schema.Literal('accept-invitation'),
+    previousEventHash: Schema.String,
+  }),
+  author: Schema.Struct({
+    publicKey: Schema.String,
+    signature: Schema.String,
+  }),
+});
+
+export type AcceptInvitationEvent = Schema.Schema.Type<typeof AcceptInvitationEvent>;
+
+export const SpaceEvent = Schema.Union(
+  CreateSpaceEvent,
+  DeleteSpaceEvent,
+  CreateInvitationEvent,
+  AcceptInvitationEvent,
+);
 
 export type SpaceEvent = Schema.Schema.Type<typeof SpaceEvent>;
 

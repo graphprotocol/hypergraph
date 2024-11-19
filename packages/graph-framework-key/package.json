@@ -1,7 +1,7 @@
 {
-  "name": "graph-framework-messages",
+  "name": "graph-framework-key",
   "version": "0.0.1",
-  "description": "Provides types related to messages for the Graph Framework",
+  "description": "Utilities for Space Keys and Key boxes",
   "type": "module",
   "exports": {
     ".": {
@@ -22,8 +22,8 @@
   "dependencies": {
     "@noble/ciphers": "^1.0.0",
     "@noble/curves": "^1.6.0",
-    "effect": "^3.10.12",
-    "graph-framework-space-events": "workspace:*"
+    "@noble/hashes": "^1.5.0",
+    "effect": "^3.10.12"
   },
   "devDependencies": {
     "vite-plugin-dts": "^4.3.0"

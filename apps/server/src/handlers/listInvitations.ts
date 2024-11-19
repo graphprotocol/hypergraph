@@ -18,7 +18,7 @@ export const listInvitations = async ({ accountId }: Params) => {
         include: {
           events: {
             orderBy: {
-              counter: 'asc',
+              counter: 'desc',
             },
             take: 1,
           },

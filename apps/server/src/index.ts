@@ -5,7 +5,7 @@ import { Effect, Exit, Schema } from 'effect';
 import express from 'express';
 import type { ResponseListInvitations, ResponseListSpaces, ResponseSpace } from 'graph-framework-messages';
 import { RequestMessage } from 'graph-framework-messages';
-import { type CreateSpaceEvent, applyEvent } from 'graph-framework-space-events';
+import { applyEvent } from 'graph-framework-space-events';
 import type WebSocket from 'ws';
 import { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
@@ -56,9 +56,8 @@ webSocketServer.on('connection', async (webSocket: WebSocket, request: Request) 
         case 'subscribe-space': {
           const space = await getSpace({ accountId, spaceId: data.id });
           const outgoingMessage: ResponseSpace = {
+            ...space,
             type: 'space',
-            id: space.id,
-            events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
           };
           webSocket.send(JSON.stringify(outgoingMessage));
           break;
@@ -75,33 +74,46 @@ webSocketServer.on('connection', async (webSocket: WebSocket, request: Request) 
           webSocket.send(JSON.stringify(outgoingMessage));
           break;
         }
+        case 'create-space-event': {
+          const applyEventResult = await Effect.runPromiseExit(applyEvent({ event: data.event }));
+          if (Exit.isSuccess(applyEventResult)) {
+            const space = await createSpace({ accountId, event: data.event, keyBox: data.keyBox, keyId: data.keyId });
+            const spaceWithEvents = await getSpace({ accountId, spaceId: space.id });
+            const outgoingMessage: ResponseSpace = {
+              ...spaceWithEvents,
+              type: 'space',
+            };
+            webSocket.send(JSON.stringify(outgoingMessage));
+          }
+          // TODO send back error
+          break;
+        }
+        case 'create-invitation-event': {
+          await applySpaceEvent({
+            accountId,
+            spaceId: data.spaceId,
+            event: data.event,
+            keyBoxes: data.keyBoxes.map((keyBox) => keyBox),
+          });
+          const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
+          const outgoingMessage: ResponseSpace = {
+            ...spaceWithEvents,
+            type: 'space',
+          };
+          webSocket.send(JSON.stringify(outgoingMessage));
+          break;
+        }
         case 'event': {
           switch (data.event.transaction.type) {
-            case 'create-space': {
-              const applyEventResult = await Effect.runPromiseExit(applyEvent({ event: data.event }));
-              if (Exit.isSuccess(applyEventResult)) {
-                const space = await createSpace({ accountId, event: data.event as CreateSpaceEvent });
-                const spaceWithEvents = await getSpace({ accountId, spaceId: space.id });
-                const outgoingMessage: ResponseSpace = {
-                  type: 'space',
-                  id: space.id,
-                  events: spaceWithEvents.events.map((wrapper) => JSON.parse(wrapper.event)),
-                };
-                webSocket.send(JSON.stringify(outgoingMessage));
-              }
-              // TODO send back error
-              break;
-            }
             case 'delete-space': {
               break;
             }
-            case 'create-invitation': {
-              await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event });
+            case 'accept-invitation': {
+              await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
               const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
               const outgoingMessage: ResponseSpace = {
+                ...spaceWithEvents,
                 type: 'space',
-                id: data.spaceId,
-                events: spaceWithEvents.events.map((wrapper) => JSON.parse(wrapper.event)),
               };
               webSocket.send(JSON.stringify(outgoingMessage));
               break;

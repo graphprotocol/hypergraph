@@ -27,19 +27,44 @@ model Space {
   events      SpaceEvent[]
   members     Account[]
   invitations Invitation[]
+  keys        SpaceKey[]
+}
+
+model SpaceKey {
+  id        String        @id
+  space     Space         @relation(fields: [spaceId], references: [id])
+  spaceId   String
+  createdAt DateTime      @default(now())
+  keyBoxes  SpaceKeyBox[]
+}
+
+model SpaceKeyBox {
+  id              String   @id
+  spaceKey        SpaceKey @relation(fields: [spaceKeyId], references: [id])
+  spaceKeyId      String
+  account         Account  @relation(fields: [accountId], references: [id])
+  accountId       String
+  ciphertext      String
+  nonce           String
+  authorPublicKey String
+  createdAt       DateTime @default(now())
 }
 
 model Account {
-  id          String       @id
+  id          String        @id
   spaces      Space[]
   invitations Invitation[]
+  keyBoxes    SpaceKeyBox[]
 }
 
 model Invitation {
-  id        String   @id
-  space     Space    @relation(fields: [spaceId], references: [id])
-  spaceId   String
-  account   Account  @relation(fields: [accountId], references: [id])
-  accountId String
-  createdAt DateTime @default(now())
+  id               String   @id
+  space            Space    @relation(fields: [spaceId], references: [id])
+  spaceId          String
+  account          Account  @relation(fields: [accountId], references: [id])
+  accountId        String
+  inviteeAccountId String
+  createdAt        DateTime @default(now())
+
+  @@unique([spaceId, inviteeAccountId])
 }

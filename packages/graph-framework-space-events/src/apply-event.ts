@@ -34,11 +34,13 @@ export const applyEvent = ({
       return Effect.fail(new InvalidEventError());
     }
     if (event.transaction.previousEventHash !== state.lastEventHash) {
+      console.log('WEEEEE', event.transaction.previousEventHash, state.lastEventHash);
       return Effect.fail(new InvalidEventError());
     }
   }
 
   const encodedTransaction = stringToUint8Array(canonicalize(event.transaction));
+
   const isValidSignature = secp256k1.verify(event.author.signature, encodedTransaction, event.author.publicKey, {
     prehash: true,
   });
@@ -65,27 +67,58 @@ export const applyEvent = ({
     removedMembers = { ...state.removedMembers };
     invitations = { ...state.invitations };
 
-    if (event.transaction.type === 'delete-space') {
-      removedMembers = { ...members };
-      members = {};
-      invitations = {};
-    } else if (event.transaction.type === 'create-invitation') {
-      if (members[event.transaction.signaturePublicKey] !== undefined) {
+    if (event.transaction.type === 'accept-invitation') {
+      // is already a member
+      if (members[event.author.publicKey] !== undefined) {
         return Effect.fail(new InvalidEventError());
       }
-      for (const invitation of Object.values(invitations)) {
-        if (invitation.signaturePublicKey === event.transaction.signaturePublicKey) {
-          return Effect.fail(new InvalidEventError());
-        }
+
+      // find the invitation
+      const result = Object.entries(invitations).find(
+        ([, invitation]) => invitation.signaturePublicKey === event.author.publicKey,
+      );
+      if (!result) {
+        return Effect.fail(new InvalidEventError());
+      }
+      const [id, invitation] = result;
+
+      members[event.author.publicKey] = {
+        signaturePublicKey: event.author.publicKey,
+        encryptionPublicKey: invitation.encryptionPublicKey,
+        role: 'member',
+      };
+      delete invitations[id];
+      if (removedMembers[event.author.publicKey] !== undefined) {
+        delete removedMembers[event.author.publicKey];
+      }
+    } else {
+      // check if the author is an admin
+      if (members[event.author.publicKey]?.role !== 'admin') {
+        return Effect.fail(new InvalidEventError());
       }
 
-      invitations[event.transaction.id] = {
-        signaturePublicKey: event.transaction.signaturePublicKey,
-        encryptionPublicKey: event.transaction.encryptionPublicKey,
-      };
+      if (event.transaction.type === 'delete-space') {
+        removedMembers = { ...members };
+        members = {};
+        invitations = {};
+      } else if (event.transaction.type === 'create-invitation') {
+        if (members[event.transaction.signaturePublicKey] !== undefined) {
+          return Effect.fail(new InvalidEventError());
+        }
+        for (const invitation of Object.values(invitations)) {
+          if (invitation.signaturePublicKey === event.transaction.signaturePublicKey) {
+            return Effect.fail(new InvalidEventError());
+          }
+        }
+
+        invitations[event.transaction.id] = {
+          signaturePublicKey: event.transaction.signaturePublicKey,
+          encryptionPublicKey: event.transaction.encryptionPublicKey,
+        };
+      } else {
+        throw new Error('State is required for all events except create-space');
+      }
     }
-  } else {
-    throw new Error('State is required for all events except create-space');
   }
 
   return Effect.succeed({
