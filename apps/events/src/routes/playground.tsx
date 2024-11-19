@@ -270,6 +270,12 @@ const App = ({
           }
           const message: EventMessage = { type: 'event', event: spaceEvent.value, spaceId: invitation.spaceId };
           websocketConnection?.send(JSON.stringify(message));
+
+          // temporary until we have define a strategy for accepting invitations response
+          setTimeout(() => {
+            const message2: RequestListInvitations = { type: 'list-invitations' };
+            websocketConnection?.send(JSON.stringify(message2));
+          }, 1000);
         }}
       />
       <h2 className="text-lg">Spaces</h2>
