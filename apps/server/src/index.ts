@@ -3,11 +3,16 @@ import 'dotenv/config';
 import { parse } from 'node:url';
 import { Effect, Exit, Schema } from 'effect';
 import express from 'express';
-import type { ResponseListInvitations, ResponseListSpaces, ResponseSpace } from 'graph-framework-messages';
+import type {
+  ResponseListInvitations,
+  ResponseListSpaces,
+  ResponseSpace,
+  ResponseSpaceEvent,
+} from 'graph-framework-messages';
 import { RequestMessage } from 'graph-framework-messages';
+import type { SpaceEvent } from 'graph-framework-space-events';
 import { applyEvent } from 'graph-framework-space-events';
-import type WebSocket from 'ws';
-import { WebSocketServer } from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
 import { createSpace } from './handlers/createSpace.js';
 import { getSpace } from './handlers/getSpace.js';
@@ -15,6 +20,10 @@ import { listInvitations } from './handlers/listInvitations.js';
 import { listSpaces } from './handlers/listSpaces.js';
 import { tmpInitAccount } from './handlers/tmpInitAccount.js';
 import { assertExhaustive } from './utils/assertExhaustive.js';
+interface CustomWebSocket extends WebSocket {
+  accountId: string;
+  subscribedSpaces: Set<string>;
+}
 
 const decodeRequestMessage = Schema.decodeUnknownEither(RequestMessage);
 
@@ -38,13 +47,34 @@ const server = app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
 
-webSocketServer.on('connection', async (webSocket: WebSocket, request: Request) => {
+function broadcastSpaceEvents({
+  spaceId,
+  event,
+  currentClient,
+}: { spaceId: string; event: SpaceEvent; currentClient: CustomWebSocket }) {
+  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+    if (currentClient === client) continue;
+
+    const outgoingMessage: ResponseSpaceEvent = {
+      type: 'space-event',
+      spaceId,
+      event,
+    };
+    if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+      client.send(JSON.stringify(outgoingMessage));
+    }
+  }
+}
+
+webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Request) => {
   const params = parse(request.url, true);
   if (!params.query.accountId || typeof params.query.accountId !== 'string') {
     webSocket.close();
     return;
   }
   const accountId = params.query.accountId;
+  webSocket.accountId = accountId;
+  webSocket.subscribedSpaces = new Set();
 
   console.log('Connection established', accountId);
   webSocket.on('message', async (message) => {
@@ -59,6 +89,7 @@ webSocketServer.on('connection', async (webSocket: WebSocket, request: Request) 
             ...space,
             type: 'space',
           };
+          webSocket.subscribedSpaces.add(data.id);
           webSocket.send(JSON.stringify(outgoingMessage));
           break;
         }
@@ -96,29 +127,36 @@ webSocketServer.on('connection', async (webSocket: WebSocket, request: Request) 
             keyBoxes: data.keyBoxes.map((keyBox) => keyBox),
           });
           const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
+          // TODO send back confirmation instead of the entire space
           const outgoingMessage: ResponseSpace = {
             ...spaceWithEvents,
             type: 'space',
           };
           webSocket.send(JSON.stringify(outgoingMessage));
-          break;
-        }
-        case 'event': {
-          switch (data.event.transaction.type) {
-            case 'delete-space': {
-              break;
-            }
-            case 'accept-invitation': {
-              await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
-              const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
-              const outgoingMessage: ResponseSpace = {
-                ...spaceWithEvents,
-                type: 'space',
-              };
-              webSocket.send(JSON.stringify(outgoingMessage));
-              break;
+          for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+            if (
+              client.readyState === WebSocket.OPEN &&
+              client.accountId === data.event.transaction.signaturePublicKey
+            ) {
+              const invitations = await listInvitations({ accountId: client.accountId });
+              const outgoingMessage: ResponseListInvitations = { type: 'list-invitations', invitations: invitations };
+              // for now sending the entire list of invitations to the client - we could send only a single one
+              client.send(JSON.stringify(outgoingMessage));
             }
           }
+
+          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
+          break;
+        }
+        case 'accept-invitation-event': {
+          await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
+          const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
+          const outgoingMessage: ResponseSpace = {
+            ...spaceWithEvents,
+            type: 'space',
+          };
+          webSocket.send(JSON.stringify(outgoingMessage));
+          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
           break;
         }
         default:
