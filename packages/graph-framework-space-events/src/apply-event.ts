@@ -13,7 +13,7 @@ import {
 } from './types.js';
 
 type Params = {
-  state?: SpaceState;
+  state: SpaceState | undefined;
   event: SpaceEvent;
 };
 

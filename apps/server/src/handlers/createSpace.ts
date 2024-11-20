@@ -11,7 +11,7 @@ type Params = {
 };
 
 export const createSpace = async ({ accountId, event, keyBox, keyId }: Params) => {
-  const result = await Effect.runPromiseExit(applyEvent({ event }));
+  const result = await Effect.runPromiseExit(applyEvent({ event, state: undefined }));
   if (Exit.isFailure(result)) {
     throw new Error('Invalid event');
   }

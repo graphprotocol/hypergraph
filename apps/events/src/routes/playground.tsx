@@ -141,18 +141,10 @@ const App = ({
           case 'space': {
             let state: SpaceState | undefined = undefined;
 
-            // TODO fix typing
             for (const event of response.events) {
-              if (state === undefined) {
-                const applyEventResult = await Effect.runPromiseExit(applyEvent({ event }));
-                if (Exit.isSuccess(applyEventResult)) {
-                  state = applyEventResult.value;
-                }
-              } else {
-                const applyEventResult = await Effect.runPromiseExit(applyEvent({ event, state }));
-                if (Exit.isSuccess(applyEventResult)) {
-                  state = applyEventResult.value;
-                }
+              const applyEventResult = await Effect.runPromiseExit(applyEvent({ state: undefined, event }));
+              if (Exit.isSuccess(applyEventResult)) {
+                state = applyEventResult.value;
               }
             }
 

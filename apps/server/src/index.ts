@@ -106,7 +106,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           break;
         }
         case 'create-space-event': {
-          const applyEventResult = await Effect.runPromiseExit(applyEvent({ event: data.event }));
+          const applyEventResult = await Effect.runPromiseExit(applyEvent({ event: data.event, state: undefined }));
           if (Exit.isSuccess(applyEventResult)) {
             const space = await createSpace({ accountId, event: data.event, keyBox: data.keyBox, keyId: data.keyId });
             const spaceWithEvents = await getSpace({ accountId, spaceId: space.id });
