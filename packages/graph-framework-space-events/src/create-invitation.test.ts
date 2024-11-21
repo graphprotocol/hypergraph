@@ -29,13 +29,13 @@ it('should create an invitation', async () => {
   const { spaceEvent2, state2 } = await Effect.runPromise(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
       const spaceEvent2 = yield* createInvitation({
         author,
         previousEventHash: state.lastEventHash,
         invitee,
       });
-      const state2 = yield* applyEvent({ state, event: spaceEvent2 });
+      const state2 = yield* applyEvent({ event: spaceEvent2, state });
       return {
         state2,
         spaceEvent2,
@@ -65,13 +65,13 @@ it('should fail to invite the account twice', async () => {
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
       const spaceEvent2 = yield* createInvitation({
         author,
         previousEventHash: state.lastEventHash,
         invitee,
       });
-      const state2 = yield* applyEvent({ state, event: spaceEvent2 });
+      const state2 = yield* applyEvent({ event: spaceEvent2, state });
       const spaceEvent3 = yield* createInvitation({
         author,
         previousEventHash: state.lastEventHash,
@@ -88,13 +88,13 @@ it('should fail to invite an account that is already a member', async () => {
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
       const spaceEvent2 = yield* createInvitation({
         author,
         previousEventHash: state.lastEventHash,
         invitee: author, // inviting the author
       });
-      yield* applyEvent({ state, event: spaceEvent2 });
+      yield* applyEvent({ event: spaceEvent2, state });
     }),
   );
 
@@ -105,24 +105,24 @@ it('should fail in case the author is not an admin', async () => {
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
       const spaceEvent2 = yield* createInvitation({
         author,
         previousEventHash: state.lastEventHash,
         invitee,
       });
-      const state2 = yield* applyEvent({ state, event: spaceEvent2 });
+      const state2 = yield* applyEvent({ event: spaceEvent2, state });
       const spaceEvent3 = yield* acceptInvitation({
         previousEventHash: state2.lastEventHash,
         author: invitee,
       });
-      const state3 = yield* applyEvent({ state: state2, event: spaceEvent3 });
+      const state3 = yield* applyEvent({ event: spaceEvent3, state: state2 });
       const spaceEvent4 = yield* createInvitation({
         author: invitee,
         previousEventHash: state.lastEventHash,
         invitee: invitee2,
       });
-      yield* applyEvent({ state: state3, event: spaceEvent4 });
+      yield* applyEvent({ event: spaceEvent4, state: state3 });
     }),
   );
 

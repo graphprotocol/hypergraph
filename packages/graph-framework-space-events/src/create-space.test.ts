@@ -13,7 +13,7 @@ it('should create a space state', async () => {
   const state = await Effect.runPromise(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      return yield* applyEvent({ event: spaceEvent });
+      return yield* applyEvent({ event: spaceEvent, state: undefined });
     }),
   );
 

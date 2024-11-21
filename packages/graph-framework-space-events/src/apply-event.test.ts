@@ -29,7 +29,7 @@ it('should fail in case of an invalid signature', async () => {
 
       // @ts-expect-error
       spaceEvent.author.signature = signature;
-      return yield* applyEvent({ event: spaceEvent });
+      return yield* applyEvent({ event: spaceEvent, state: undefined });
     }),
   );
 
@@ -46,10 +46,10 @@ it('should fail in case state is not provided for an event other than createSpac
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
 
       const spaceEvent2 = yield* createInvitation({ author, previousEventHash: state.lastEventHash, invitee });
-      return yield* applyEvent({ event: spaceEvent2 });
+      return yield* applyEvent({ event: spaceEvent2, state: undefined });
     }),
   );
 
@@ -66,13 +66,13 @@ it('should fail in case of an event is applied that is not based on the previous
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
 
       const spaceEvent2 = yield* createSpace({ author });
-      const state2 = yield* applyEvent({ state, event: spaceEvent2 });
+      const state2 = yield* applyEvent({ event: spaceEvent2, state });
 
       const spaceEvent3 = yield* createInvitation({ author, previousEventHash: state.lastEventHash, invitee });
-      return yield* applyEvent({ state: state2, event: spaceEvent3 });
+      return yield* applyEvent({ event: spaceEvent3, state: state2 });
     }),
   );
 
