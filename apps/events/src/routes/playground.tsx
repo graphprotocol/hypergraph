@@ -3,6 +3,7 @@ import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
 import { Button } from '@/components/ui/button';
 import { assertExhaustive } from '@/lib/assertExhaustive';
+import { uuid } from '@automerge/automerge';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Exit } from 'effect';
@@ -12,6 +13,7 @@ import type {
   RequestAcceptInvitationEvent,
   RequestCreateInvitationEvent,
   RequestCreateSpaceEvent,
+  RequestCreateUpdate,
   RequestListInvitations,
   RequestListSpaces,
   RequestSubscribeToSpace,
@@ -57,6 +59,8 @@ type SpaceStorageEntry = {
   events: SpaceEvent[];
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
+  updates: string[];
+  lastUpdateClock: number;
 };
 
 const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
@@ -79,6 +83,7 @@ const App = ({
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [spaces, setSpaces] = useState<SpaceStorageEntry[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [updatesInFlight, setUpdatesInFlight] = useState<string[]>([]);
 
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
@@ -128,6 +133,8 @@ const App = ({
                   events: existingSpace?.events ?? [],
                   state: existingSpace?.state,
                   keys: existingSpace?.keys ?? [],
+                  updates: existingSpace?.updates ?? [],
+                  lastUpdateClock: existingSpace?.lastUpdateClock ?? -1,
                 };
               });
             });
@@ -163,12 +170,29 @@ const App = ({
             setSpaces((spaces) =>
               spaces.map((space) => {
                 if (space.id === response.id) {
+                  let lastUpdateClock = space.lastUpdateClock;
+                  const updates = [];
+                  if (space.updates) {
+                    updates.push(...space.updates);
+                  }
+                  if (response.updates) {
+                    console.log('response.updates', response.updates, lastUpdateClock);
+                    if (response.updates.firstUpdateClock === lastUpdateClock + 1) {
+                      lastUpdateClock = response.updates.lastUpdateClock;
+                      updates.push(...response.updates.updates);
+                    } else {
+                      // TODO request missing updates from server
+                    }
+                  }
+
                   // TODO fix readonly type issue
                   return {
                     ...space,
                     events: response.events as SpaceEvent[],
                     state: newState,
                     keys,
+                    lastUpdateClock,
+                    updates,
                   };
                 }
                 return space;
@@ -205,6 +229,40 @@ const App = ({
           }
           case 'list-invitations': {
             setInvitations(response.invitations.map((invitation) => invitation));
+            break;
+          }
+          case 'update-confirmed': {
+            setSpaces((spaces) =>
+              spaces.map((space) => {
+                if (space.id === response.spaceId && space.lastUpdateClock + 1 === response.clock) {
+                  return { ...space, lastUpdateClock: response.clock };
+                }
+                return space;
+              }),
+            );
+            setUpdatesInFlight((updatesInFlight) => updatesInFlight.filter((id) => id !== response.ephemeralId));
+            break;
+          }
+          case 'updates-notification': {
+            setSpaces((spaces) =>
+              spaces.map((space) => {
+                if (space.id === response.spaceId) {
+                  let lastUpdateClock = space.lastUpdateClock;
+                  if (response.updates.firstUpdateClock === space.lastUpdateClock + 1) {
+                    lastUpdateClock = response.updates.lastUpdateClock;
+                  } else {
+                    // TODO request missing updates from server
+                  }
+
+                  return {
+                    ...space,
+                    updates: [...space.updates, ...response.updates.updates],
+                    lastUpdateClock,
+                  };
+                }
+                return space;
+              }),
+            );
             break;
           }
           default:
@@ -379,8 +437,56 @@ const App = ({
                   </Button>
                 );
               })}
+              <h3>Updates</h3>
+              <Button
+                onClick={() => {
+                  const ephemeralId = uuid();
+                  setUpdatesInFlight((updatesInFlight) => [...updatesInFlight, ephemeralId]);
+                  setSpaces((currentSpaces) =>
+                    currentSpaces.map((currentSpace) => {
+                      if (space.id === currentSpace.id) {
+                        return { ...currentSpace, updates: [...currentSpace.updates, 'a'] };
+                      }
+                      return currentSpace;
+                    }),
+                  );
+                  const message: RequestCreateUpdate = {
+                    type: 'create-update',
+                    ephemeralId,
+                    update: 'a',
+                    spaceId: space.id,
+                  };
+                  websocketConnection?.send(JSON.stringify(message));
+                }}
+              >
+                Create an update
+              </Button>
+              <h3>Updates Content</h3>
+              <p>last update clock: {space.lastUpdateClock}</p>
+              <p className="text-xs">
+                {space.updates.map((update, index) => {
+                  return (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: we need a unique identifier here
+                    <span key={`${update}-${index}`} className="border border-gray-300">
+                      {update}
+                    </span>
+                  );
+                })}
+              </p>
+              <h3>Updates in flight</h3>
+              <ul className="text-xs">
+                {updatesInFlight.map((updateInFlight) => {
+                  return (
+                    <li key={updateInFlight} className="border border-gray-300">
+                      {updateInFlight}
+                    </li>
+                  );
+                })}
+              </ul>
+              <hr />
               <h3>State</h3>
               <DebugSpaceState state={space.state} />
+              <hr />
               <h3>Events</h3>
               <DebugSpaceEvents events={space.events} />
               <hr />

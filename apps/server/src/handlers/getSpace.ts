@@ -35,6 +35,11 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
           },
         },
       },
+      updates: {
+        orderBy: {
+          clock: 'asc',
+        },
+      },
     },
   });
 
@@ -52,5 +57,13 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
     id: space.id,
     events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
     keyBoxes,
+    updates:
+      space.updates.length > 0
+        ? {
+            updates: space.updates.map((update) => update.content.toString()),
+            firstUpdateClock: space.updates[0].clock,
+            lastUpdateClock: space.updates[space.updates.length - 1].clock,
+          }
+        : undefined,
   };
 };

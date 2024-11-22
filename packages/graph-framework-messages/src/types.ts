@@ -6,6 +6,14 @@ import {
   SpaceEvent,
 } from 'graph-framework-space-events';
 
+export const Updates = Schema.Struct({
+  updates: Schema.Array(Schema.String),
+  firstUpdateClock: Schema.Number,
+  lastUpdateClock: Schema.Number,
+});
+
+export type Updates = Schema.Schema.Type<typeof Updates>;
+
 export const KeyBox = Schema.Struct({
   accountId: Schema.String,
   ciphertext: Schema.String,
@@ -52,6 +60,7 @@ export type RequestAcceptInvitationEvent = Schema.Schema.Type<typeof RequestAcce
 export const RequestSubscribeToSpace = Schema.Struct({
   type: Schema.Literal('subscribe-space'),
   id: Schema.String,
+  lastKnownUpdateClock: Schema.optional(Schema.Number),
 });
 
 export type RequestSubscribeToSpace = Schema.Schema.Type<typeof RequestSubscribeToSpace>;
@@ -68,6 +77,15 @@ export const RequestListInvitations = Schema.Struct({
 
 export type RequestListInvitations = Schema.Schema.Type<typeof RequestListInvitations>;
 
+export const RequestCreateUpdate = Schema.Struct({
+  type: Schema.Literal('create-update'),
+  update: Schema.String,
+  spaceId: Schema.String,
+  ephemeralId: Schema.String, // used to identify the confirmation message
+});
+
+export type RequestCreateUpdate = Schema.Schema.Type<typeof RequestCreateUpdate>;
+
 export const RequestMessage = Schema.Union(
   RequestCreateSpaceEvent,
   RequestCreateInvitationEvent,
@@ -75,6 +93,7 @@ export const RequestMessage = Schema.Union(
   RequestSubscribeToSpace,
   RequestListSpaces,
   RequestListInvitations,
+  RequestCreateUpdate,
 );
 
 export type RequestMessage = Schema.Schema.Type<typeof RequestMessage>;
@@ -118,15 +137,35 @@ export const ResponseSpace = Schema.Struct({
   id: Schema.String,
   events: Schema.Array(SpaceEvent),
   keyBoxes: Schema.Array(KeyBoxWithKeyId),
+  updates: Schema.optional(Updates),
 });
 
 export type ResponseSpace = Schema.Schema.Type<typeof ResponseSpace>;
+
+export const ResponseUpdateConfirmed = Schema.Struct({
+  type: Schema.Literal('update-confirmed'),
+  ephemeralId: Schema.String,
+  clock: Schema.Number,
+  spaceId: Schema.String,
+});
+
+export type ResponseUpdateConfirmed = Schema.Schema.Type<typeof ResponseUpdateConfirmed>;
+
+export const ResponseUpdatesNotification = Schema.Struct({
+  type: Schema.Literal('updates-notification'),
+  updates: Updates,
+  spaceId: Schema.String,
+});
+
+export type ResponseUpdatesNotification = Schema.Schema.Type<typeof ResponseUpdatesNotification>;
 
 export const ResponseMessage = Schema.Union(
   ResponseListSpaces,
   ResponseListInvitations,
   ResponseSpace,
   ResponseSpaceEvent,
+  ResponseUpdateConfirmed,
+  ResponseUpdatesNotification,
 );
 
 export type ResponseMessage = Schema.Schema.Type<typeof ResponseMessage>;
