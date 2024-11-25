@@ -2,7 +2,7 @@ import { prisma } from '../prisma.js';
 
 type Params = {
   accountId: string;
-  update: string;
+  update: Uint8Array;
   spaceId: string;
 };
 

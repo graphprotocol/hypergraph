@@ -28,8 +28,12 @@ import {
   createKey,
   createSpace,
   decryptKey,
+  decryptMessage,
+  deserialize,
   encryptKey,
+  encryptMessage,
   generateId,
+  serialize,
 } from 'graph-framework';
 import { useEffect, useState } from 'react';
 
@@ -59,7 +63,7 @@ type SpaceStorageEntry = {
   events: SpaceEvent[];
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
-  updates: string[];
+  updates: Uint8Array[];
   lastUpdateClock: number;
 };
 
@@ -119,7 +123,7 @@ const App = ({
     if (!websocketConnection) return;
 
     const onMessage = async (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
+      const data = deserialize(event.data);
       const message = decodeResponseMessage(data);
       if (message._tag === 'Right') {
         const response = message.right;
@@ -141,7 +145,7 @@ const App = ({
             // fetch all spaces (for debugging purposes)
             for (const space of response.spaces) {
               const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: space.id };
-              websocketConnection?.send(JSON.stringify(message));
+              websocketConnection?.send(serialize(message));
             }
             break;
           }
@@ -176,10 +180,17 @@ const App = ({
                     updates.push(...space.updates);
                   }
                   if (response.updates) {
-                    console.log('response.updates', response.updates, lastUpdateClock);
                     if (response.updates.firstUpdateClock === lastUpdateClock + 1) {
                       lastUpdateClock = response.updates.lastUpdateClock;
-                      updates.push(...response.updates.updates);
+
+                      const newUpdates = (response.updates ? response.updates.updates : []).map((encryptedUpdate) => {
+                        return decryptMessage({
+                          nonceAndCiphertext: encryptedUpdate,
+                          secretKey: hexToBytes(keys[0].key),
+                        });
+                      });
+
+                      updates.push(...newUpdates);
                     } else {
                       // TODO request missing updates from server
                     }
@@ -254,9 +265,16 @@ const App = ({
                     // TODO request missing updates from server
                   }
 
+                  const newUpdates = (response.updates ? response.updates.updates : []).map((encryptedUpdate) => {
+                    return decryptMessage({
+                      nonceAndCiphertext: encryptedUpdate,
+                      secretKey: hexToBytes(space.keys[0].key),
+                    });
+                  });
+
                   return {
                     ...space,
-                    updates: [...space.updates, ...response.updates.updates],
+                    updates: [...space.updates, ...newUpdates],
                     lastUpdateClock,
                   };
                 }
@@ -308,7 +326,7 @@ const App = ({
                 authorPublicKey: encryptionPublicKey,
               },
             };
-            websocketConnection?.send(JSON.stringify(message));
+            websocketConnection?.send(serialize(message));
           }}
         >
           Create space
@@ -317,7 +335,7 @@ const App = ({
         <Button
           onClick={() => {
             const message: RequestListSpaces = { type: 'list-spaces' };
-            websocketConnection?.send(JSON.stringify(message));
+            websocketConnection?.send(serialize(message));
           }}
         >
           List Spaces
@@ -326,7 +344,7 @@ const App = ({
         <Button
           onClick={() => {
             const message: RequestListInvitations = { type: 'list-invitations' };
-            websocketConnection?.send(JSON.stringify(message));
+            websocketConnection?.send(serialize(message));
           }}
         >
           List Invitations
@@ -355,12 +373,12 @@ const App = ({
             event: spaceEvent.value,
             spaceId: invitation.spaceId,
           };
-          websocketConnection?.send(JSON.stringify(message));
+          websocketConnection?.send(serialize(message));
 
           // temporary until we have define a strategy for accepting invitations response
           setTimeout(() => {
             const message2: RequestListInvitations = { type: 'list-invitations' };
-            websocketConnection?.send(JSON.stringify(message2));
+            websocketConnection?.send(serialize(message2));
           }, 1000);
         }}
       />
@@ -375,7 +393,7 @@ const App = ({
               <Button
                 onClick={() => {
                   const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: space.id };
-                  websocketConnection?.send(JSON.stringify(message));
+                  websocketConnection?.send(serialize(message));
                 }}
               >
                 Get data and subscribe to Space
@@ -430,7 +448,7 @@ const App = ({
                         spaceId: space.id,
                         keyBoxes,
                       };
-                      websocketConnection?.send(JSON.stringify(message));
+                      websocketConnection?.send(serialize(message));
                     }}
                   >
                     Invite {invitee.accountId.substring(0, 4)}
@@ -445,18 +463,24 @@ const App = ({
                   setSpaces((currentSpaces) =>
                     currentSpaces.map((currentSpace) => {
                       if (space.id === currentSpace.id) {
-                        return { ...currentSpace, updates: [...currentSpace.updates, 'a'] };
+                        return { ...currentSpace, updates: [...currentSpace.updates, new Uint8Array([0])] };
                       }
                       return currentSpace;
                     }),
                   );
+
+                  const nonceAndCiphertext = encryptMessage({
+                    message: new Uint8Array([0]),
+                    secretKey: hexToBytes(space.keys[0].key),
+                  });
+
                   const message: RequestCreateUpdate = {
                     type: 'create-update',
                     ephemeralId,
-                    update: 'a',
+                    update: nonceAndCiphertext,
                     spaceId: space.id,
                   };
-                  websocketConnection?.send(JSON.stringify(message));
+                  websocketConnection?.send(serialize(message));
                 }}
               >
                 Create an update

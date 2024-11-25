@@ -60,7 +60,7 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
     updates:
       space.updates.length > 0
         ? {
-            updates: space.updates.map((update) => update.content.toString()),
+            updates: space.updates.map((update) => new Uint8Array(update.content)),
             firstUpdateClock: space.updates[0].clock,
             lastUpdateClock: space.updates[space.updates.length - 1].clock,
           }
