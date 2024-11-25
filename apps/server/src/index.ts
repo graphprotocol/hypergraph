@@ -8,6 +8,9 @@ import type {
   ResponseListSpaces,
   ResponseSpace,
   ResponseSpaceEvent,
+  ResponseUpdateConfirmed,
+  ResponseUpdatesNotification,
+  Updates,
 } from 'graph-framework-messages';
 import { RequestMessage } from 'graph-framework-messages';
 import type { SpaceEvent } from 'graph-framework-space-events';
@@ -15,6 +18,7 @@ import { applyEvent } from 'graph-framework-space-events';
 import WebSocket, { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
 import { createSpace } from './handlers/createSpace.js';
+import { createUpdate } from './handlers/createUpdate.js';
 import { getSpace } from './handlers/getSpace.js';
 import { listInvitations } from './handlers/listInvitations.js';
 import { listSpaces } from './handlers/listSpaces.js';
@@ -59,6 +63,25 @@ function broadcastSpaceEvents({
       type: 'space-event',
       spaceId,
       event,
+    };
+    if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+      client.send(JSON.stringify(outgoingMessage));
+    }
+  }
+}
+
+function broadcastUpdates({
+  spaceId,
+  updates,
+  currentClient,
+}: { spaceId: string; updates: Updates; currentClient: CustomWebSocket }) {
+  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+    if (currentClient === client) continue;
+
+    const outgoingMessage: ResponseUpdatesNotification = {
+      type: 'updates-notification',
+      updates,
+      spaceId,
     };
     if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
       client.send(JSON.stringify(outgoingMessage));
@@ -157,6 +180,27 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           };
           webSocket.send(JSON.stringify(outgoingMessage));
           broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
+          break;
+        }
+        case 'create-update': {
+          const update = await createUpdate({ accountId, spaceId: data.spaceId, update: data.update });
+          const outgoingMessage: ResponseUpdateConfirmed = {
+            type: 'update-confirmed',
+            ephemeralId: data.ephemeralId,
+            clock: update.clock,
+            spaceId: data.spaceId,
+          };
+          webSocket.send(JSON.stringify(outgoingMessage));
+
+          broadcastUpdates({
+            spaceId: data.spaceId,
+            updates: {
+              updates: [update.content.toString()],
+              firstUpdateClock: update.clock,
+              lastUpdateClock: update.clock,
+            },
+            currentClient: webSocket,
+          });
           break;
         }
         default:

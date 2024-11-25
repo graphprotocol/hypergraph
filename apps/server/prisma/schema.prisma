@@ -28,6 +28,7 @@ model Space {
   members     Account[]
   invitations Invitation[]
   keys        SpaceKey[]
+  updates     Update[]
 }
 
 model SpaceKey {
@@ -67,4 +68,13 @@ model Invitation {
   createdAt        DateTime @default(now())
 
   @@unique([spaceId, inviteeAccountId])
+}
+
+model Update {
+  space   Space  @relation(fields: [spaceId], references: [id])
+  spaceId String
+  clock   Int
+  content Bytes
+
+  @@id([spaceId, clock])
 }
