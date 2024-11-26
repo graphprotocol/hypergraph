@@ -1,4 +1,6 @@
 {
+  "extends": "../../tsconfig.base.json",
+  "references": [{ "path": "../../packages/graph-framework" }],
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],

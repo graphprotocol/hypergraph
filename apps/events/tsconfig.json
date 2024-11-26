@@ -5,7 +5,9 @@
     /* Shadcn */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "graph-framework": ["../../packages/graph-framework/src/index.js"],
+      "graph-framework/*": ["../../packages/graph-framework/src/*.js"]
     }
   }
 }

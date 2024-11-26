@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src"],
+  "references": [
+    { "path": "../graph-framework-utils" },
+    { "path": "../graph-framework-identity" },
+    { "path": "../graph-framework-schema" },
+    { "path": "../graph-framework-space-events" },
+    { "path": "../graph-framework-messages" },
+    { "path": "../graph-framework-key" }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuildinfo/src.tsbuildinfo",
+    "rootDir": "src",
+    "outDir": "build/src"
+  }
+}
