@@ -1,12 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
-  "references": [{ "path": "../../packages/graph-framework" }],
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
 
     /* Bundler mode */
     "moduleResolution": "bundler",

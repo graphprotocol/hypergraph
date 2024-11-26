@@ -14,7 +14,7 @@
   "scripts": {
     "build": "pnpm --filter graph-framework-utils build",
     "ts:check": "pnpm -r ts:check",
-    "test": "pnpm -r test",
+    "test": "vitest",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "check": "pnpm -r check"
