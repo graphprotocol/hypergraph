@@ -5,11 +5,11 @@
   "type": "module",
   "exports": {
     ".": {
-      "default": "./src/index.js"
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "vite build",
+    "build": "tsc",
     "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
     "lint": "pnpm biome lint src/*",

@@ -15,7 +15,7 @@
   },
   "exports": {
     ".": {
-      "default": "./src/index.js"
+      "default": "./dist/index.js"
     }
   },
   "peerDependencies": {

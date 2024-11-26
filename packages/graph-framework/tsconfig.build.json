@@ -1,9 +1,18 @@
 {
-  "extends": "../../tsconfig.options.json",
+  "extends": "./tsconfig.src.json",
+  "references": [
+    { "path": "../graph-framework-utils/tsconfig.build.json" },
+    { "path": "../graph-framework-identity/tsconfig.build.json" },
+    { "path": "../graph-framework-schema/tsconfig.build.json" },
+    { "path": "../graph-framework-space-events/tsconfig.build.json" },
+    { "path": "../graph-framework-messages/tsconfig.build.json" },
+    { "path": "../graph-framework-key/tsconfig.build.json" }
+  ],
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "stripInternal": true
   },
-  "include": ["./src"],
-  "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.spec.ts", "dist"]
+  "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts", "src/**/*.spec.tsx"]
 }

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "TS_NODE_TRANSPILE_ONLY=true nodemon --exec node --loader ts-node/esm ./src/index.ts",
+    "dev": "bun run ./src/index.ts",
     "build:ts": "rm -rf dist && pnpm tsc --project tsconfig.json",
     "build:deploy": "rm -rf build && pnpm deploy --filter=server --prod build",
     "build": "pnpm run build:ts && pnpm build:deploy",
