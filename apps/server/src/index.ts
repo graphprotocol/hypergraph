@@ -12,7 +12,7 @@ import type {
   ResponseUpdatesNotification,
   Updates,
 } from 'graph-framework-messages';
-import { RequestMessage } from 'graph-framework-messages';
+import { RequestMessage, deserialize, serialize } from 'graph-framework-messages';
 import type { SpaceEvent } from 'graph-framework-space-events';
 import { applyEvent } from 'graph-framework-space-events';
 import WebSocket, { WebSocketServer } from 'ws';
@@ -65,7 +65,7 @@ function broadcastSpaceEvents({
       event,
     };
     if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
-      client.send(JSON.stringify(outgoingMessage));
+      client.send(serialize(outgoingMessage));
     }
   }
 }
@@ -84,7 +84,7 @@ function broadcastUpdates({
       spaceId,
     };
     if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
-      client.send(JSON.stringify(outgoingMessage));
+      client.send(serialize(outgoingMessage));
     }
   }
 }
@@ -101,7 +101,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
 
   console.log('Connection established', accountId);
   webSocket.on('message', async (message) => {
-    const rawData = JSON.parse(message.toString());
+    const rawData = deserialize(message.toString());
     const result = decodeRequestMessage(rawData);
     if (result._tag === 'Right') {
       const data = result.right;
@@ -113,19 +113,19 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             type: 'space',
           };
           webSocket.subscribedSpaces.add(data.id);
-          webSocket.send(JSON.stringify(outgoingMessage));
+          webSocket.send(serialize(outgoingMessage));
           break;
         }
         case 'list-spaces': {
           const spaces = await listSpaces({ accountId });
           const outgoingMessage: ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
-          webSocket.send(JSON.stringify(outgoingMessage));
+          webSocket.send(serialize(outgoingMessage));
           break;
         }
         case 'list-invitations': {
           const invitations = await listInvitations({ accountId });
           const outgoingMessage: ResponseListInvitations = { type: 'list-invitations', invitations: invitations };
-          webSocket.send(JSON.stringify(outgoingMessage));
+          webSocket.send(serialize(outgoingMessage));
           break;
         }
         case 'create-space-event': {
@@ -137,7 +137,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               ...spaceWithEvents,
               type: 'space',
             };
-            webSocket.send(JSON.stringify(outgoingMessage));
+            webSocket.send(serialize(outgoingMessage));
           }
           // TODO send back error
           break;
@@ -155,7 +155,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             ...spaceWithEvents,
             type: 'space',
           };
-          webSocket.send(JSON.stringify(outgoingMessage));
+          webSocket.send(serialize(outgoingMessage));
           for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
             if (
               client.readyState === WebSocket.OPEN &&
@@ -164,7 +164,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               const invitations = await listInvitations({ accountId: client.accountId });
               const outgoingMessage: ResponseListInvitations = { type: 'list-invitations', invitations: invitations };
               // for now sending the entire list of invitations to the client - we could send only a single one
-              client.send(JSON.stringify(outgoingMessage));
+              client.send(serialize(outgoingMessage));
             }
           }
 
@@ -178,7 +178,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             ...spaceWithEvents,
             type: 'space',
           };
-          webSocket.send(JSON.stringify(outgoingMessage));
+          webSocket.send(serialize(outgoingMessage));
           broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
           break;
         }
@@ -190,12 +190,12 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             clock: update.clock,
             spaceId: data.spaceId,
           };
-          webSocket.send(JSON.stringify(outgoingMessage));
+          webSocket.send(serialize(outgoingMessage));
 
           broadcastUpdates({
             spaceId: data.spaceId,
             updates: {
-              updates: [update.content.toString()],
+              updates: [new Uint8Array(update.content)],
               firstUpdateClock: update.clock,
               lastUpdateClock: update.clock,
             },

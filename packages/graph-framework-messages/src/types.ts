@@ -7,7 +7,7 @@ import {
 } from 'graph-framework-space-events';
 
 export const Updates = Schema.Struct({
-  updates: Schema.Array(Schema.String),
+  updates: Schema.Array(Schema.Uint8Array),
   firstUpdateClock: Schema.Number,
   lastUpdateClock: Schema.Number,
 });
@@ -79,7 +79,7 @@ export type RequestListInvitations = Schema.Schema.Type<typeof RequestListInvita
 
 export const RequestCreateUpdate = Schema.Struct({
   type: Schema.Literal('create-update'),
-  update: Schema.String,
+  update: Schema.Uint8Array,
   spaceId: Schema.String,
   ephemeralId: Schema.String, // used to identify the confirmation message
 });
