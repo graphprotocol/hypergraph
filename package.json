@@ -12,7 +12,7 @@
     "vite-plugin-dts": "^4.3.0"
   },
   "scripts": {
-    "build": "pnpm --filter graph-framework-utils build",
+    "build": "pnpm -r build",
     "ts:check": "pnpm -r ts:check",
     "test": "vitest",
     "lint": "pnpm -r lint",

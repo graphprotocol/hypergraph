@@ -1,5 +1,6 @@
 import cors from 'cors';
 import 'dotenv/config';
+import { parse } from 'node:url';
 import { Effect, Exit, Schema } from 'effect';
 import express from 'express';
 import type {
@@ -14,7 +15,6 @@ import type {
 import { RequestMessage, deserialize, serialize } from 'graph-framework-messages';
 import type { SpaceEvent } from 'graph-framework-space-events';
 import { applyEvent } from 'graph-framework-space-events';
-import { parse } from 'node:url';
 import WebSocket, { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
 import { createSpace } from './handlers/createSpace.js';
