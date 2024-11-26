@@ -35,9 +35,15 @@ importers:
       '@automerge/automerge':
         specifier: ^2.2.8
         version: 2.2.8
+      '@automerge/automerge-repo':
+        specifier: ^1.2.1
+        version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
       '@automerge/automerge-repo-react-hooks':
         specifier: ^1.2.1
         version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
+      '@automerge/automerge-repo-storage-indexeddb':
+        specifier: ^1.2.1
+        version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
       '@graphprotocol/graph-framework':
         specifier: workspace:*
         version: link:../../packages/graph-framework
@@ -387,6 +393,9 @@ packages:
     peerDependencies:
       react: '>16.8.0'
       react-dom: '>16.8.0'
+
+  '@automerge/automerge-repo-storage-indexeddb@1.2.1':
+    resolution: {integrity: sha512-u+9eZZJK7DAr541buF4ut1ipkuiKRoaAtoFYo/ilq7zOLO7JX+GQOFx/8eKKRDlGt/AHTcDaFktkcaX0vKahQQ==}
 
   '@automerge/automerge-repo@1.2.1':
     resolution: {integrity: sha512-uEBr4bM01aSWkEt2tDKQxfW0Pahz2zbTTn4sRJfeKJlAg2SLr4QepFJ+3Tp4CNEkkU485olfnKYf6gt7uilMZQ==}
@@ -5065,6 +5074,16 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-usestateref: 1.0.9(react@18.3.1)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - supports-color
+      - typescript
+
+  '@automerge/automerge-repo-storage-indexeddb@1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)':
+    dependencies:
+      '@automerge/automerge-repo': 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'

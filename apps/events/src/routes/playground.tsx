@@ -1,4 +1,6 @@
 import { uuid } from '@automerge/automerge';
+import { type AutomergeUrl, type DocHandle, Repo } from '@automerge/automerge-repo';
+import { RepoContext, useDocument } from '@automerge/automerge-repo-react-hooks';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Exit } from 'effect';
@@ -37,6 +39,7 @@ import { DebugInvitations } from '@/components/debug-invitations';
 import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
 import { Button } from '@/components/ui/button';
+import { GraphFrameworkNetworkAdapter } from '@/lib/GraphFrameworkNetworkAdapter';
 import { assertExhaustive } from '@/lib/assertExhaustive';
 
 const availableAccounts = [
@@ -69,11 +72,38 @@ type SpaceStorageEntry = {
   lastUpdateClock: number;
 };
 
+interface Doc {
+  count: number;
+}
+
 const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
 
 export const Route = createFileRoute('/playground')({
   component: () => <ChooseAccount />,
 });
+
+const AutoMergeApp = ({ url }: { url: AutomergeUrl }) => {
+  // const hardcodedUrl = 'automerge:4KiBkKrw52GSiTbhQUVVtuGcVZyo';
+  const [doc, changeDoc] = useDocument<Doc>(url);
+
+  console.log('AutoMergeApp url:', url);
+
+  if (!doc) {
+    return null;
+  }
+
+  return (
+    <Button
+      onClick={() => {
+        changeDoc((d: Doc) => {
+          d.count = (d.count || 0) + 1;
+        });
+      }}
+    >
+      Count: {doc?.count ?? 0}
+    </Button>
+  );
+};
 
 const App = ({
   accountId,
@@ -87,13 +117,24 @@ const App = ({
   encryptionPublicKey: string;
 }) => {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
+  const [repo, setRepo] = useState<Repo | null>(null);
   const [spaces, setSpaces] = useState<SpaceStorageEntry[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [updatesInFlight, setUpdatesInFlight] = useState<string[]>([]);
+  const [graphFrameworkNetworkAdapter] = useState<GraphFrameworkNetworkAdapter>(
+    () => new GraphFrameworkNetworkAdapter(),
+  );
+  const [automergeHandle, setAutomergeHandle] = useState<DocHandle<{ count: number }> | null>(null);
 
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     const websocketConnection = new WebSocket(`ws://localhost:3030/?accountId=${accountId}`);
+    const repo = new Repo({
+      network: [graphFrameworkNetworkAdapter],
+    });
+    graphFrameworkNetworkAdapter.setWebSocket(websocketConnection);
+    setRepo(repo);
+    setAutomergeHandle(repo.create<{ count: number }>({ count: 0 }));
     setWebsocketConnection(websocketConnection);
 
     const onOpen = () => {
@@ -118,7 +159,7 @@ const App = ({
       websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
-  }, [accountId]); // Only recreate when accountId changes
+  }, [accountId, graphFrameworkNetworkAdapter]); // Only recreate when accountId changes
 
   // Handle WebSocket messages in a separate effect
   useEffect(() => {
@@ -458,6 +499,20 @@ const App = ({
                 );
               })}
               <h3>Updates</h3>
+              <RepoContext.Provider value={repo}>
+                <Button
+                  onClick={() => {
+                    graphFrameworkNetworkAdapter.setSpaceValues({
+                      spaceId: space.id,
+                      spaceKey: space.keys[0].key,
+                      setUpdatesInFlight,
+                    });
+                  }}
+                >
+                  Init
+                </Button>
+                {automergeHandle && <AutoMergeApp url={automergeHandle.url} />}
+              </RepoContext.Provider>
               <Button
                 onClick={() => {
                   const ephemeralId = uuid();
