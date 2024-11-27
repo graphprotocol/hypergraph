@@ -4,32 +4,16 @@ import type { Message, PeerId, PeerMetadata } from '@automerge/automerge-repo/sl
 import { hexToBytes } from '@noble/hashes/utils';
 import * as Schema from 'effect/Schema';
 import { type RequestCreateUpdate, ResponseMessage, deserialize, encryptMessage, serialize } from 'graph-framework';
+import { store } from './store';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
 
 export class GraphFrameworkNetworkAdapter extends NetworkAdapter {
   webSocket?: WebSocket;
-  spaceId?: string;
-  setUpdatesInFlight?: (callback: (updatesInFlight: string[]) => string[]) => void;
-  spaceKey?: string;
 
   setWebSocket(websocket: WebSocket) {
     this.webSocket = websocket;
     this.webSocket.addEventListener('message', this.onMessage);
-  }
-
-  setSpaceValues({
-    spaceId,
-    spaceKey,
-    setUpdatesInFlight,
-  }: {
-    spaceId: string;
-    spaceKey: string;
-    setUpdatesInFlight: (callback: (updatesInFlight: string[]) => string[]) => void;
-  }) {
-    this.spaceId = spaceId;
-    this.spaceKey = spaceKey;
-    this.setUpdatesInFlight = setUpdatesInFlight;
   }
 
   isReady() {
@@ -50,25 +34,27 @@ export class GraphFrameworkNetworkAdapter extends NetworkAdapter {
   }
 
   send(message: Message) {
-    if (!this.webSocket || !this.spaceKey || !this.spaceId || !this.setUpdatesInFlight) {
-      console.error('WebSocket, spaceKey, and spaceId must be set before sending a message');
+    console.log('send', message);
+    if (!this.webSocket) {
+      console.error('WebSocket must be set before sending a message');
       return;
     }
-    console.log('send', message);
+    // get spaceId, spaceId for DocumentId
+    const storeState = store.getSnapshot();
+    const space = storeState.context.spaces[0];
 
     const ephemeralId = uuid();
-    this.setUpdatesInFlight((updatesInFlight) => [...updatesInFlight, ephemeralId]);
 
     const nonceAndCiphertext = encryptMessage({
       message: new Uint8Array([0]),
-      secretKey: hexToBytes(this.spaceKey),
+      secretKey: hexToBytes(space.keys[0].key),
     });
 
     const messageToSend: RequestCreateUpdate = {
       type: 'create-update',
       ephemeralId,
       update: nonceAndCiphertext,
-      spaceId: this.spaceId,
+      spaceId: space.id,
     };
     this.webSocket.send(serialize(messageToSend));
   }
@@ -83,15 +69,6 @@ export class GraphFrameworkNetworkAdapter extends NetworkAdapter {
           break;
         }
         case 'update-confirmed': {
-          // setSpaces((spaces) =>
-          //   spaces.map((space) => {
-          //     if (space.id === response.spaceId && space.lastUpdateClock + 1 === response.clock) {
-          //       return { ...space, lastUpdateClock: response.clock };
-          //     }
-          //     return space;
-          //   }),
-          // );
-          // setUpdatesInFlight((updatesInFlight) => updatesInFlight.filter((id) => id !== response.ephemeralId));
           break;
         }
         case 'updates-notification': {

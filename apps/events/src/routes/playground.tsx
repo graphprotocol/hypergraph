@@ -1,8 +1,8 @@
-import { uuid } from '@automerge/automerge';
 import { type AutomergeUrl, type DocHandle, Repo } from '@automerge/automerge-repo';
 import { RepoContext, useDocument } from '@automerge/automerge-repo-react-hooks';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { createFileRoute } from '@tanstack/react-router';
+import { useSelector } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
 import { useEffect, useState } from 'react';
@@ -12,13 +12,13 @@ import type {
   RequestAcceptInvitationEvent,
   RequestCreateInvitationEvent,
   RequestCreateSpaceEvent,
-  RequestCreateUpdate,
   RequestListInvitations,
   RequestListSpaces,
   RequestSubscribeToSpace,
   SpaceEvent,
   SpaceState,
-} from '@graphprotocol/graph-framework';
+  Updates,
+} from 'graph-framework';
 import {
   ResponseMessage,
   acceptInvitation,
@@ -27,13 +27,11 @@ import {
   createKey,
   createSpace,
   decryptKey,
-  decryptMessage,
   deserialize,
   encryptKey,
-  encryptMessage,
   generateId,
   serialize,
-} from '@graphprotocol/graph-framework';
+} from 'graph-framework';
 
 import { DebugInvitations } from '@/components/debug-invitations';
 import { DebugSpaceEvents } from '@/components/debug-space-events';
@@ -62,15 +60,6 @@ const availableAccounts = [
     encryptionPublicKey: 'd494144358a610604c4ab453b442d014f2843772eed19be155dd9fc55fe8a332',
   },
 ];
-
-type SpaceStorageEntry = {
-  id: string;
-  events: SpaceEvent[];
-  state: SpaceState | undefined;
-  keys: { id: string; key: string }[];
-  updates: Uint8Array[];
-  lastUpdateClock: number;
-};
 
 interface Doc {
   count: number;
@@ -118,13 +107,14 @@ const App = ({
 }) => {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [repo, setRepo] = useState<Repo | null>(null);
-  const [spaces, setSpaces] = useState<SpaceStorageEntry[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [updatesInFlight, setUpdatesInFlight] = useState<string[]>([]);
   const [graphFrameworkNetworkAdapter] = useState<GraphFrameworkNetworkAdapter>(
     () => new GraphFrameworkNetworkAdapter(),
   );
   const [automergeHandle, setAutomergeHandle] = useState<DocHandle<{ count: number }> | null>(null);
+  const storeState = useSelector(store, (state) => state.context);
+  const spaces = storeState.spaces;
+  const updatesInFlight = storeState.updatesInFlight;
 
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
@@ -172,17 +162,10 @@ const App = ({
         const response = message.right;
         switch (response.type) {
           case 'list-spaces': {
-            setSpaces((existingSpaces) => {
-              return response.spaces.map((space) => {
-                const existingSpace = existingSpaces.find((s) => s.id === space.id);
-                return {
-                  id: space.id,
-                  events: existingSpace?.events ?? [],
-                  state: existingSpace?.state,
-                  keys: existingSpace?.keys ?? [],
-                  updates: existingSpace?.updates ?? [],
-                  lastUpdateClock: existingSpace?.lastUpdateClock ?? -1,
-                };
+            response.spaces.map((space) => {
+              store.send({
+                type: 'setSpaceFromList',
+                spaceId: space.id,
               });
             });
             // fetch all spaces (for debugging purposes)
@@ -214,44 +197,15 @@ const App = ({
               return { id: keyBox.id, key: bytesToHex(key) };
             });
 
-            setSpaces((spaces) =>
-              spaces.map((space) => {
-                if (space.id === response.id) {
-                  let lastUpdateClock = space.lastUpdateClock;
-                  const updates = [];
-                  if (space.updates) {
-                    updates.push(...space.updates);
-                  }
-                  if (response.updates) {
-                    if (response.updates.firstUpdateClock === lastUpdateClock + 1) {
-                      lastUpdateClock = response.updates.lastUpdateClock;
+            store.send({
+              type: 'setSpace',
+              spaceId: response.id,
+              updates: response.updates as Updates,
+              events: response.events as SpaceEvent[],
+              spaceState: newState,
+              keys,
+            });
 
-                      const newUpdates = (response.updates ? response.updates.updates : []).map((encryptedUpdate) => {
-                        return decryptMessage({
-                          nonceAndCiphertext: encryptedUpdate,
-                          secretKey: hexToBytes(keys[0].key),
-                        });
-                      });
-
-                      updates.push(...newUpdates);
-                    } else {
-                      // TODO request missing updates from server
-                    }
-                  }
-
-                  // TODO fix readonly type issue
-                  return {
-                    ...space,
-                    events: response.events as SpaceEvent[],
-                    state: newState,
-                    keys,
-                    lastUpdateClock,
-                    updates,
-                  };
-                }
-                return space;
-              }),
-            );
             break;
           }
           case 'space-event': {
@@ -269,14 +223,12 @@ const App = ({
               applyEvent({ event: response.event, state: space.state }),
             );
             if (Exit.isSuccess(applyEventResult)) {
-              setSpaces((spaces) =>
-                spaces.map((space) => {
-                  if (space.id === response.spaceId) {
-                    return { ...space, state: applyEventResult.value, events: [...space.events, response.event] };
-                  }
-                  return space;
-                }),
-              );
+              store.send({
+                type: 'applyEvent',
+                spaceId: response.spaceId,
+                event: response.event,
+                state: applyEventResult.value,
+              });
             }
 
             break;
@@ -286,44 +238,24 @@ const App = ({
             break;
           }
           case 'update-confirmed': {
-            setSpaces((spaces) =>
-              spaces.map((space) => {
-                if (space.id === response.spaceId && space.lastUpdateClock + 1 === response.clock) {
-                  return { ...space, lastUpdateClock: response.clock };
-                }
-                return space;
-              }),
-            );
-            setUpdatesInFlight((updatesInFlight) => updatesInFlight.filter((id) => id !== response.ephemeralId));
+            store.send({
+              type: 'updateConfirmed',
+              spaceId: response.spaceId,
+              clock: response.clock,
+            });
+            store.send({
+              type: 'removeUpdateInFlight',
+              ephemeralId: response.ephemeralId,
+            });
             break;
           }
           case 'updates-notification': {
-            setSpaces((spaces) =>
-              spaces.map((space) => {
-                if (space.id === response.spaceId) {
-                  let lastUpdateClock = space.lastUpdateClock;
-                  if (response.updates.firstUpdateClock === space.lastUpdateClock + 1) {
-                    lastUpdateClock = response.updates.lastUpdateClock;
-                  } else {
-                    // TODO request missing updates from server
-                  }
-
-                  const newUpdates = (response.updates ? response.updates.updates : []).map((encryptedUpdate) => {
-                    return decryptMessage({
-                      nonceAndCiphertext: encryptedUpdate,
-                      secretKey: hexToBytes(space.keys[0].key),
-                    });
-                  });
-
-                  return {
-                    ...space,
-                    updates: [...space.updates, ...newUpdates],
-                    lastUpdateClock,
-                  };
-                }
-                return space;
-              }),
-            );
+            store.send({
+              type: 'applyUpdate',
+              spaceId: response.spaceId,
+              firstUpdateClock: response.updates.firstUpdateClock,
+              lastUpdateClock: response.updates.lastUpdateClock,
+            });
             break;
           }
           default:
@@ -500,60 +432,9 @@ const App = ({
               })}
               <h3>Updates</h3>
               <RepoContext.Provider value={repo}>
-                <Button
-                  onClick={() => {
-                    graphFrameworkNetworkAdapter.setSpaceValues({
-                      spaceId: space.id,
-                      spaceKey: space.keys[0].key,
-                      setUpdatesInFlight,
-                    });
-                  }}
-                >
-                  Init
-                </Button>
                 {automergeHandle && <AutoMergeApp url={automergeHandle.url} />}
               </RepoContext.Provider>
-              <Button
-                onClick={() => {
-                  const ephemeralId = uuid();
-                  setUpdatesInFlight((updatesInFlight) => [...updatesInFlight, ephemeralId]);
-                  setSpaces((currentSpaces) =>
-                    currentSpaces.map((currentSpace) => {
-                      if (space.id === currentSpace.id) {
-                        return { ...currentSpace, updates: [...currentSpace.updates, new Uint8Array([0])] };
-                      }
-                      return currentSpace;
-                    }),
-                  );
-
-                  const nonceAndCiphertext = encryptMessage({
-                    message: new Uint8Array([0]),
-                    secretKey: hexToBytes(space.keys[0].key),
-                  });
-
-                  const message: RequestCreateUpdate = {
-                    type: 'create-update',
-                    ephemeralId,
-                    update: nonceAndCiphertext,
-                    spaceId: space.id,
-                  };
-                  websocketConnection?.send(serialize(message));
-                }}
-              >
-                Create an update
-              </Button>
-              <h3>Updates Content</h3>
-              <p>last update clock: {space.lastUpdateClock}</p>
-              <p className="text-xs">
-                {space.updates.map((update, index) => {
-                  return (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: we need a unique identifier here
-                    <span key={`${update}-${index}`} className="border border-gray-300">
-                      {update}
-                    </span>
-                  );
-                })}
-              </p>
+              <h3>Last update clock: {space.lastUpdateClock}</h3>
               <h3>Updates in flight</h3>
               <ul className="text-xs">
                 {updatesInFlight.map((updateInFlight) => {
@@ -592,6 +473,7 @@ export const ChooseAccount = () => {
       <h1>Choose account</h1>
       <Button
         onClick={() => {
+          store.send({ type: 'reset' });
           setAccount(availableAccounts[0]);
         }}
       >
@@ -599,6 +481,7 @@ export const ChooseAccount = () => {
       </Button>
       <Button
         onClick={() => {
+          store.send({ type: 'reset' });
           setAccount(availableAccounts[1]);
         }}
       >
@@ -606,6 +489,7 @@ export const ChooseAccount = () => {
       </Button>
       <Button
         onClick={() => {
+          store.send({ type: 'reset' });
           setAccount(availableAccounts[2]);
         }}
       >
