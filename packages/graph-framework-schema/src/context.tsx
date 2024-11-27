@@ -109,7 +109,6 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
       (acc, type) => {
         const typeSchema = schema.types[type];
 
-        // @ts-expect-error
         for (const [key, prop] of Object.entries(typeSchema)) {
           if (isRelation(prop)) {
             // Handle Relation
@@ -224,11 +223,8 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
         const resultData = { ...data };
         for (const entityType of entityTypes) {
           const typeSchema = schema.types[entityType];
-          // @ts-expect-error
           for (const key of Object.keys(typeSchema)) {
-            // @ts-expect-error
             const prop = typeSchema[key];
-            // @ts-expect-error
             if (isRelation(prop)) {
               const relationProp = prop as Relation<SchemaTypeUnknown, SchemaTypeUnknown>;
               const { types: relatedTypes, cardinality } = relationProp;
@@ -360,13 +356,7 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
       const visitedEntities = new Set<string>();
       for (const entityId in filteredEntities) {
         const entity = filteredEntities[entityId];
-        const resolvedEntity = resolveEntity(
-          entityId,
-          entity,
-          // @ts-expect-error
-          entity.types,
-          visitedEntities,
-        );
+        const resolvedEntity = resolveEntity(entityId, entity, entity.types, visitedEntities);
         filteredEntities[entityId] = resolvedEntity;
       }
 
@@ -397,7 +387,6 @@ export function createFunctions<T extends SchemaDefinition>(schema: T) {
           const typeSchema = schema.types[entityType];
           for (const key in typeSchema) {
             const prop = typeSchema[key];
-            // @ts-expect-error
             if (isRelation(prop)) {
               const relationProp = prop as Relation<SchemaTypeUnknown, SchemaTypeUnknown>;
               const { cardinality } = relationProp;

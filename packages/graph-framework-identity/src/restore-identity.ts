@@ -3,6 +3,7 @@ type Params = {
 };
 
 export const restoreIdentity = ({ preKey }: Params) => {
+  console.log('preKey', preKey);
   return {
     signaturePublicKey: '',
     signaturePrivateKey: '',
