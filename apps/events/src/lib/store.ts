@@ -5,16 +5,32 @@ import type { SpaceStorageEntry } from '../types';
 interface StoreContext {
   spaces: SpaceStorageEntry[];
   updatesInFlight: string[];
+  encryptionPrivateKey: string;
+  automergeDocumentId: string;
 }
 
 const initialStoreContext: StoreContext = {
   spaces: [],
   updatesInFlight: [],
+  encryptionPrivateKey: '',
+  automergeDocumentId: '',
 };
 
 export const store = createStore({
   context: initialStoreContext,
   on: {
+    setAutomergeDocumentId: (context, event: { automergeDocumentId: string }) => {
+      return {
+        ...context,
+        automergeDocumentId: event.automergeDocumentId,
+      };
+    },
+    setEncryptionPrivateKey: (context, event: { encryptionPrivateKey: string }) => {
+      return {
+        ...context,
+        encryptionPrivateKey: event.encryptionPrivateKey,
+      };
+    },
     reset: () => {
       return initialStoreContext;
     },
@@ -45,6 +61,7 @@ export const store = createStore({
                 keys: existingSpace.keys ?? [],
                 updates: existingSpace.updates ?? [],
                 lastUpdateClock: existingSpace.lastUpdateClock ?? -1,
+                automergeDocumentId: existingSpace.automergeDocumentId ?? '',
               };
               return newSpace;
             }
@@ -63,6 +80,7 @@ export const store = createStore({
             keys: [],
             updates: [],
             lastUpdateClock: -1,
+            automergeDocumentId: '',
           },
         ],
       };
@@ -129,6 +147,7 @@ export const store = createStore({
           lastUpdateClock: -1,
           keys: event.keys,
           updates: [],
+          automergeDocumentId: '',
         };
         return {
           ...context,

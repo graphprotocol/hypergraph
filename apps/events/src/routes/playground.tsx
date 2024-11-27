@@ -15,9 +15,6 @@ import type {
   RequestListInvitations,
   RequestListSpaces,
   RequestSubscribeToSpace,
-  SpaceEvent,
-  SpaceState,
-  Updates,
 } from 'graph-framework';
 import {
   ResponseMessage,
@@ -26,7 +23,6 @@ import {
   createInvitation,
   createKey,
   createSpace,
-  decryptKey,
   deserialize,
   encryptKey,
   generateId,
@@ -74,9 +70,7 @@ export const Route = createFileRoute('/playground')({
 const AutoMergeApp = ({ url }: { url: AutomergeUrl }) => {
   // const hardcodedUrl = 'automerge:4KiBkKrw52GSiTbhQUVVtuGcVZyo';
   const [doc, changeDoc] = useDocument<Doc>(url);
-
-  console.log('AutoMergeApp url:', url);
-
+  console.log('automerge doc', url, doc);
   if (!doc) {
     return null;
   }
@@ -124,7 +118,13 @@ const App = ({
     });
     graphFrameworkNetworkAdapter.setWebSocket(websocketConnection);
     setRepo(repo);
-    setAutomergeHandle(repo.create<{ count: number }>({ count: 0 }));
+    const docHandle = repo.create<{ count: number }>({ count: 0 });
+    setAutomergeHandle(docHandle);
+
+    store.send({
+      type: 'setAutomergeDocumentId',
+      automergeDocumentId: docHandle.url.slice(10),
+    });
     setWebsocketConnection(websocketConnection);
 
     const onOpen = () => {
@@ -176,36 +176,6 @@ const App = ({
             break;
           }
           case 'space': {
-            let state: SpaceState | undefined = undefined;
-
-            for (const event of response.events) {
-              const applyEventResult = await Effect.runPromiseExit(applyEvent({ state: undefined, event }));
-              if (Exit.isSuccess(applyEventResult)) {
-                state = applyEventResult.value;
-              }
-            }
-
-            const newState = state as SpaceState;
-
-            const keys = response.keyBoxes.map((keyBox) => {
-              const key = decryptKey({
-                keyBoxCiphertext: hexToBytes(keyBox.ciphertext),
-                keyBoxNonce: hexToBytes(keyBox.nonce),
-                publicKey: hexToBytes(keyBox.authorPublicKey),
-                privateKey: hexToBytes(encryptionPrivateKey),
-              });
-              return { id: keyBox.id, key: bytesToHex(key) };
-            });
-
-            store.send({
-              type: 'setSpace',
-              spaceId: response.id,
-              updates: response.updates as Updates,
-              events: response.events as SpaceEvent[],
-              spaceState: newState,
-              keys,
-            });
-
             break;
           }
           case 'space-event': {
@@ -238,24 +208,9 @@ const App = ({
             break;
           }
           case 'update-confirmed': {
-            store.send({
-              type: 'updateConfirmed',
-              spaceId: response.spaceId,
-              clock: response.clock,
-            });
-            store.send({
-              type: 'removeUpdateInFlight',
-              ephemeralId: response.ephemeralId,
-            });
             break;
           }
           case 'updates-notification': {
-            store.send({
-              type: 'applyUpdate',
-              spaceId: response.spaceId,
-              firstUpdateClock: response.updates.firstUpdateClock,
-              lastUpdateClock: response.updates.lastUpdateClock,
-            });
             break;
           }
           default:
@@ -269,7 +224,7 @@ const App = ({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, encryptionPrivateKey, spaces]);
+  }, [websocketConnection, spaces]);
 
   return (
     <>
@@ -289,6 +244,7 @@ const App = ({
               privateKey: hexToBytes(encryptionPrivateKey),
               publicKey: hexToBytes(encryptionPublicKey),
             });
+
             const message: RequestCreateSpaceEvent = {
               type: 'create-space-event',
               event: spaceEvent,
@@ -474,6 +430,10 @@ export const ChooseAccount = () => {
       <Button
         onClick={() => {
           store.send({ type: 'reset' });
+          store.send({
+            type: 'setEncryptionPrivateKey',
+            encryptionPrivateKey: availableAccounts[0].encryptionPrivateKey,
+          });
           setAccount(availableAccounts[0]);
         }}
       >
@@ -482,6 +442,10 @@ export const ChooseAccount = () => {
       <Button
         onClick={() => {
           store.send({ type: 'reset' });
+          store.send({
+            type: 'setEncryptionPrivateKey',
+            encryptionPrivateKey: availableAccounts[1].encryptionPrivateKey,
+          });
           setAccount(availableAccounts[1]);
         }}
       >
@@ -490,6 +454,10 @@ export const ChooseAccount = () => {
       <Button
         onClick={() => {
           store.send({ type: 'reset' });
+          store.send({
+            type: 'setEncryptionPrivateKey',
+            encryptionPrivateKey: availableAccounts[2].encryptionPrivateKey,
+          });
           setAccount(availableAccounts[2]);
         }}
       >
