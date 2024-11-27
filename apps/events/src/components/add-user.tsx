@@ -15,6 +15,9 @@ export const AddUser: React.FC = () => {
           name: newUserName,
           age: 30,
           email: 'example@example.com',
+          badge: {
+            name: 'Badge',
+          },
         });
         setNewUserName('');
       }}
