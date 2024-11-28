@@ -1,23 +1,31 @@
 {
   "name": "graph-framework-identity",
   "version": "0.0.1",
-  "description": "",
+  "description": "Contains utils and tools for creating identities for graph-framework dapp users. As well as handling authentication for dapps built ontop of the graph-framework.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geobrowser/graph-framework.git",
+    "directory": "packages/graph-framework-identity"
+  },
+  "license": "MIT",
   "type": "module",
+  "exports": {
+    ".": {
+      "default": "./build/esm/index.js",
+      "types": "./build/dts/index.d.ts"
+    }
+  },
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
+    "build": "pnpm build-esm && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
-    "ts:check": "tsc --noEmit",
+    "ts:check": "tsc -b tsconfig.build.json",
     "lint": "pnpm biome lint src/*",
     "lint:fix": "pnpm biome lint --write src/*",
     "format": "pnpm biome format src/*",
     "format:fix": "pnpm biome format --write src/*",
     "check": "pnpm biome check src/*",
     "check:fix": "pnpm biome check --write src/*"
-  },
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
   },
   "peerDependencies": {
     "effect": "^3.10.19"
