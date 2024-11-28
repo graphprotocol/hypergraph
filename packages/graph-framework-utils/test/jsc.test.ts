@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { InfinityNotAllowedError, NaNNotAllowedError, canonicalize } from './jsc.js';
+import { InfinityNotAllowedError, NaNNotAllowedError, canonicalize } from '../src/jsc.js';
 
 describe('jsc', () => {
   describe('canonicalize', () => {

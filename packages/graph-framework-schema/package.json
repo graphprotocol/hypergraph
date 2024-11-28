@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "build": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
     "lint": "pnpm biome lint src/*",
@@ -22,14 +23,14 @@
     "@automerge/automerge": "^2",
     "@automerge/automerge-repo": "^1",
     "@automerge/automerge-repo-react-hooks": "^1",
-    "effect": "^3.10.12",
+    "effect": "^3.10.19",
     "react": "^18"
   },
   "devDependencies": {
     "@automerge/automerge": "^2.2.8",
     "@automerge/automerge-repo": "^1.2.1",
     "@automerge/automerge-repo-react-hooks": "^1.2.1",
-    "effect": "^3.10.12",
+    "effect": "^3.10.19",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "@types/react": "^18.3.7",

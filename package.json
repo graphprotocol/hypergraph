@@ -8,8 +8,7 @@
     "escape-string-regexp": "^5.0.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
-    "vitest": "^2.1.4",
-    "vite-plugin-dts": "^4.3.0"
+    "vitest": "^2.1.4"
   },
   "scripts": {
     "build": "pnpm -r build",

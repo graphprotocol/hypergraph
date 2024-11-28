@@ -21,7 +21,7 @@
     "@prisma/client": "5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "effect": "^3.10.12",
+    "effect": "^3.10.19",
     "express": "^5.0.1",
     "graph-framework-space-events": "workspace:*",
     "graph-framework-messages": "workspace:*",

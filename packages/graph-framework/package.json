@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "build": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
     "lint": "pnpm biome lint src/*",

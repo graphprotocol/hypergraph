@@ -1,8 +1,9 @@
 import { randomBytes } from '@noble/ciphers/webcrypto';
 import { describe, expect, it } from 'vitest';
-import { createKey } from './create-key.js';
-import { encryptKey } from './encrypt-key.js';
-import { decryptKeyBox, generateKeypair } from './key-box.js';
+
+import { createKey } from '../src/create-key.js';
+import { encryptKey } from '../src/encrypt-key.js';
+import { decryptKeyBox, generateKeypair } from '../src/key-box.js';
 
 describe('Key Encryption', () => {
   describe('encryptKey', () => {
@@ -158,9 +159,7 @@ describe('Key Encryption', () => {
       // Each recipient should be able to decrypt their version
       recipients.forEach((recipient, index) => {
         const decryptedKey = decryptKeyBox({
-          // @ts-expect-error entry is defined
           ciphertext: encryptedKeys[index].keyBoxCiphertext,
-          // @ts-expect-error entry is defined
           nonce: encryptedKeys[index].keyBoxNonce,
           publicKey: sender.publicKey,
           secretKey: recipient.secretKey,

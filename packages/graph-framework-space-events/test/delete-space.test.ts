@@ -1,11 +1,12 @@
 import { Cause, Effect, Exit } from 'effect';
 import { expect, it } from 'vitest';
-import { acceptInvitation } from './accept-invitation.js';
-import { applyEvent } from './apply-event.js';
-import { createInvitation } from './create-invitation.js';
-import { createSpace } from './create-space.js';
-import { deleteSpace } from './delete-space.js';
-import { InvalidEventError } from './types.js';
+
+import { acceptInvitation } from '../src/accept-invitation.js';
+import { applyEvent } from '../src/apply-event.js';
+import { createInvitation } from '../src/create-invitation.js';
+import { createSpace } from '../src/create-space.js';
+import { deleteSpace } from '../src/delete-space.js';
+import { InvalidEventError } from '../src/types.js';
 
 const author = {
   signaturePublicKey: '03594161eed61407084114a142d1ce05ef4c5a5279479fdd73a2b16944fbff003b',

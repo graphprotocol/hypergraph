@@ -9,7 +9,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
     "lint": "pnpm biome lint src/*",
@@ -22,10 +22,7 @@
   "dependencies": {
     "@noble/ciphers": "^1.0.0",
     "@noble/curves": "^1.6.0",
-    "effect": "^3.10.12",
+    "effect": "^3.10.19",
     "graph-framework-space-events": "workspace:*"
-  },
-  "devDependencies": {
-    "vite-plugin-dts": "^4.3.0"
   }
 }

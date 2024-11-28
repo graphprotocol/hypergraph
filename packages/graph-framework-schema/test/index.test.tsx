@@ -1,8 +1,10 @@
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
-import type React from 'react';
+// biome-ignore lint/style/useImportType: <explanation>
+import React from 'react';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
-import { createFunctions, repo, type } from './context.js';
+
+import { createFunctions, repo, type } from '../src/context.js';
 
 afterEach(() => {
   cleanup();

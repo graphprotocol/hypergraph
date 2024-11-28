@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { generateId } from './generateId.js';
+import { generateId } from '../src/generateId.js';
 
 it('should generate a base58 encoded uuid of 22 char length', () => {
   const id = generateId();

@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "build": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
     "lint": "pnpm biome lint src/*",
@@ -19,15 +20,15 @@
     }
   },
   "peerDependencies": {
-    "effect": "^3.10.12"
+    "effect": "^3.10.19"
   },
   "devDependencies": {
-    "effect": "^3.10.12"
+    "effect": "^3.10.19"
   },
   "dependencies": {
     "@noble/curves": "^1.6.0",
     "@noble/hashes": "^1.5.0",
     "graph-framework-utils": "workspace:*",
-    "uuid": "^11.0.2"
+    "uuid": "^11.0.3"
   }
 }

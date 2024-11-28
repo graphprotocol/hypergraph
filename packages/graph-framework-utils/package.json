@@ -3,27 +3,13 @@
   "version": "0.0.1",
   "description": "Provides common utilities for the Graph Framework",
   "type": "module",
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "default": "./dist/index.mjs"
-    },
-    "./base58": {
-      "types": "./dist/base58.d.ts",
-      "require": "./dist/base58.cjs",
-      "import": "./dist/base58.mjs",
-      "default": "./dist/base58.mjs"
+      "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "package.json"],
-  "sideEffects": false,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
     "ts:check": "tsc --noEmit",
     "lint": "pnpm biome lint src/*",
@@ -35,8 +21,7 @@
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0",
-    "uuid": "^11.0.2",
-    "vite-plugin-dts": "^4.3.0"
+    "uuid": "^11.0.3"
   },
   "peerDependencies": {
     "uuid": "^11"
