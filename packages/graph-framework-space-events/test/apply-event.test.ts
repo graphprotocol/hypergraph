@@ -2,7 +2,7 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 import { Cause, Effect, Exit } from 'effect';
 import { expect, it } from 'vitest';
 
-import { canonicalize, stringToUint8Array } from 'graph-framework-utils';
+import { canonicalize, stringToUint8Array } from '@graph-framework/utils';
 
 import { applyEvent } from '../src/apply-event.js';
 import { createInvitation } from '../src/create-invitation.js';

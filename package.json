@@ -20,5 +20,9 @@
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "check": "pnpm -r check"
+  },
+  "packageManager": "pnpm@9.14.4",
+  "engines": {
+    "node": ">=22"
   }
 }

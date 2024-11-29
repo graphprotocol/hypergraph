@@ -1,5 +1,5 @@
 {
-  "name": "graph-framework-schema",
+  "name": "@graph-framework/schema",
   "version": "0.0.1",
   "description": "Generates a strongly-typed schema representation of a Space and exposes functionality for creating a provider, and react hooks to interact with that schema.",
   "repository": {
@@ -48,6 +48,6 @@
   },
   "dependencies": {
     "fast-deep-equal": "^3.1.3",
-    "graph-framework-utils": "workspace:*"
+    "@graph-framework/utils": "workspace:*"
   }
 }

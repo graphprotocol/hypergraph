@@ -1,5 +1,7 @@
 import { Schema } from 'effect';
-import { SpaceState } from 'graph-framework-space-events';
+
+import { SpaceState } from '@graph-framework/space-events';
+
 import { prisma } from '../prisma.js';
 
 type Params = {

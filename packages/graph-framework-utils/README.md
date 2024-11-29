@@ -9,7 +9,7 @@ _All utilities must be runnable on: Browser, NodeJS server, ReactNative._
 - `generateId()` - generates a base58 encoded ID from a generated v4 UUID.
 
 ```ts
-import { generateId } from "graph-framework-utils";
+import { generateId } from "@graph-framework/utils";
 
 const id = generateId();
 console.log(id); // Gw9uTVTnJdhtczyuzBkL3X
@@ -21,7 +21,7 @@ console.log(id); // Gw9uTVTnJdhtczyuzBkL3X
 
 ```ts
 import { v4 } from "uuid";
-import { encodeBase58 } from "graph-framework-utils/base58";
+import { encodeBase58 } from "@graph-framework/utils";
 
 const uuid = v4(); // 92539817-7989-4083-ab80-e9c2b2b66669
 const stripped = uuid.replaceAll(/-/g, ""); // 9253981779894083ab80e9c2b2b66669
@@ -33,7 +33,7 @@ console.log(encoded); // K51CbDqxW35osbjPo5ZF77
 
 ```ts
 import { v4 } from "uuid";
-import { decodeBase58ToUUID, encodeBase58 } from "graph-framework-utils/base58";
+import { decodeBase58ToUUID, encodeBase58 } from "@graph-framework/utils";
 
 const uuid = v4(); // 92539817-7989-4083-ab80-e9c2b2b66669
 const stripped = uuid.replaceAll(/-/g, ""); // 9253981779894083ab80e9c2b2b66669
@@ -49,7 +49,7 @@ expect(decoded).toEqual(uuid);
 - `canonicalize` - JSON canonicalize function. Creates crypto safe predictable canocalization of JSON as defined by RFC8785.
 
 ```ts
-import { canonicalize } from 'graph-framework-utils'
+import { canonicalize } from '@graph-framework/utils'
 
 console.log(canonicalize(null)) // 'null'
 console.log(canonicalize(1)) // '1'

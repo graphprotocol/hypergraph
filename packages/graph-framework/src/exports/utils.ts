@@ -1,1 +1,1 @@
-export * from 'graph-framework-utils';
+export * from '@graph-framework/utils';

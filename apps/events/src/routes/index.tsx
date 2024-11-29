@@ -1,6 +1,8 @@
-import { Button } from '@/components/ui/button';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { repo } from 'graph-framework';
+
+import { repo } from '@graphprotocol/graph-framework';
+
+import { Button } from '@/components/ui/button';
 
 export const Route = createFileRoute('/')({
   component: Index,

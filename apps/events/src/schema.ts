@@ -1,4 +1,4 @@
-import { createFunctions, type } from 'graph-framework';
+import { createFunctions, type } from '@graphprotocol/graph-framework';
 
 export const schema = {
   types: {

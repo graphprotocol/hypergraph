@@ -1,13 +1,10 @@
-import { DebugInvitations } from '@/components/debug-invitations';
-import { DebugSpaceEvents } from '@/components/debug-space-events';
-import { DebugSpaceState } from '@/components/debug-space-state';
-import { Button } from '@/components/ui/button';
-import { assertExhaustive } from '@/lib/assertExhaustive';
 import { uuid } from '@automerge/automerge';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
+import { useEffect, useState } from 'react';
+
 import type {
   Invitation,
   RequestAcceptInvitationEvent,
@@ -19,7 +16,7 @@ import type {
   RequestSubscribeToSpace,
   SpaceEvent,
   SpaceState,
-} from 'graph-framework';
+} from '@graphprotocol/graph-framework';
 import {
   ResponseMessage,
   acceptInvitation,
@@ -34,8 +31,13 @@ import {
   encryptMessage,
   generateId,
   serialize,
-} from 'graph-framework';
-import { useEffect, useState } from 'react';
+} from '@graphprotocol/graph-framework';
+
+import { DebugInvitations } from '@/components/debug-invitations';
+import { DebugSpaceEvents } from '@/components/debug-space-events';
+import { DebugSpaceState } from '@/components/debug-space-state';
+import { Button } from '@/components/ui/button';
+import { assertExhaustive } from '@/lib/assertExhaustive';
 
 const availableAccounts = [
   {

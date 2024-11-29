@@ -1,5 +1,5 @@
 {
-  "name": "graph-framework-identity",
+  "name": "@graph-framework/identity",
   "version": "0.0.1",
   "description": "Contains utils and tools for creating identities for graph-framework dapp users. As well as handling authentication for dapps built ontop of the graph-framework.",
   "repository": {
@@ -35,6 +35,6 @@
   },
   "dependencies": {
     "uuid": "^11.0.3",
-    "graph-framework-utils": "workspace:*"
+    "@graph-framework/utils": "workspace:*"
   }
 }

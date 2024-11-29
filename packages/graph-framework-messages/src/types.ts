@@ -1,10 +1,11 @@
 import * as Schema from 'effect/Schema';
+
 import {
   AcceptInvitationEvent,
   CreateInvitationEvent,
   CreateSpaceEvent,
   SpaceEvent,
-} from 'graph-framework-space-events';
+} from '@graph-framework/space-events';
 
 export const Updates = Schema.Struct({
   updates: Schema.Array(Schema.Uint8Array),

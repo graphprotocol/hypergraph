@@ -1,1 +1,1 @@
-export * from 'graph-framework-schema';
+export * from '@graph-framework/schema';

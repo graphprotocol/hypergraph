@@ -9,7 +9,7 @@ import { encodeBase58 } from './base58.js';
  *
  * @example
  * ```
- * import { generateId } from 'graph-framework-utils'
+ * import { generateId } from '@graph-framework/utils'
  *
  * const id = generateId()
  * console.log(id) // Gw9uTVTnJdhtczyuzBkL3X

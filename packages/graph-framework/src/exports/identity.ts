@@ -1,1 +1,1 @@
-export * from 'graph-framework-identity';
+export * from '@graph-framework/identity';

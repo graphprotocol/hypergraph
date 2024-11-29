@@ -1,7 +1,7 @@
+import { canonicalize, stringToUint8Array } from '@graph-framework/utils';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect, Schema } from 'effect';
 import type { ParseError } from 'effect/ParseResult';
-import { canonicalize, stringToUint8Array } from 'graph-framework-utils';
 import { hashEvent } from './hash-event.js';
 import {
   InvalidEventError,
