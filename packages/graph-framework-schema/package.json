@@ -19,7 +19,7 @@
     "build": "pnpm build-esm && build-utils pack-v2",
     "build-esm": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
-    "ts:check": "tsc -b tsconfig.build.json",
+    "ts:check": "tsc -b tsconfig.json",
     "lint": "pnpm biome lint src/*",
     "lint:fix": "pnpm biome lint --write src/*",
     "format": "pnpm biome format src/*",
