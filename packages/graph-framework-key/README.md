@@ -1,3 +1,3 @@
-# Graph Framework Key
+# @graph-framework/key
 
 Utilities for Space Keys and Key boxes.

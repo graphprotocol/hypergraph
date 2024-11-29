@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import type { UserConfig } from 'vitest/config';
+import type { ViteUserConfig } from 'vitest/config';
 
 const alias = (pkg: string, dir = pkg) => {
   return {
@@ -9,7 +9,7 @@ const alias = (pkg: string, dir = pkg) => {
 };
 
 // This is a workaround, see https://github.com/vitest-dev/vitest/issues/4744
-const config: UserConfig = {
+const config: ViteUserConfig = {
   test: {
     alias: {
       ...alias('graph-framework'),

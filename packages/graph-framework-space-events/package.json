@@ -1,11 +1,25 @@
 {
   "name": "graph-framework-space-events",
   "version": "0.0.1",
-  "description": "",
+  "description": "Exposes functionality for events, and applying them, to a space.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geobrowser/graph-framework.git",
+    "directory": "packages/graph-framework-space-events"
+  },
+  "license": "MIT",
   "type": "module",
+  "exports": {
+    ".": {
+      "default": "./build/esm/index.js",
+      "types": "./build/dts/index.d.ts"
+    }
+  },
   "scripts": {
+    "build": "pnpm build-esm && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
-    "ts:check": "tsc --noEmit",
+    "ts:check": "tsc -b tsconfig.json",
     "lint": "pnpm biome lint src/*",
     "lint:fix": "pnpm biome lint --write src/*",
     "format": "pnpm biome format src/*",
@@ -13,21 +27,16 @@
     "check": "pnpm biome check src/*",
     "check:fix": "pnpm biome check --write src/*"
   },
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
-  },
   "peerDependencies": {
-    "effect": "^3.10.12"
+    "effect": "^3.10.19"
   },
   "devDependencies": {
-    "effect": "^3.10.12"
+    "effect": "^3.10.19"
   },
   "dependencies": {
     "@noble/curves": "^1.6.0",
     "@noble/hashes": "^1.5.0",
     "graph-framework-utils": "workspace:*",
-    "uuid": "^11.0.2"
+    "uuid": "^11.0.3"
   }
 }

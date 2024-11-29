@@ -1,7 +1,8 @@
 import { randomBytes } from '@noble/ciphers/webcrypto';
 import { bytesToHex } from '@noble/hashes/utils';
 import { describe, expect, it } from 'vitest';
-import { decryptKeyBox, encryptKeyBox, generateKeypair } from './key-box.js';
+
+import { decryptKeyBox, encryptKeyBox, generateKeypair } from '../src/key-box.js';
 
 describe('KeyBox Encryption/Decryption', () => {
   describe('encryptKeyBox', () => {

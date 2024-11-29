@@ -1,22 +1,55 @@
 {
   "name": "graph-framework",
   "version": "0.0.1",
-  "description": "",
+  "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geobrowser/graph-framework.git",
+    "directory": "packages/graph-framework"
+  },
+  "license": "MIT",
   "type": "module",
+  "exports": {
+    ".": {
+      "default": "./build/esm/index.js",
+      "types": "./build/dts/index.d.ts"
+    },
+    "./utils": {
+      "default": "./build/esm/exports/utils.js",
+      "types": "./build/dts/exports/utils.d.ts"
+    },
+    "./schema": {
+      "default": "./build/esm/exports/schema.js",
+      "types": "./build/dts/exports/schema.d.ts"
+    },
+    "./identity": {
+      "default": "./build/esm/exports/identity.js",
+      "types": "./build/dts/exports/identity.d.ts"
+    },
+    "./space-events": {
+      "default": "./build/esm/exports/space-events.js",
+      "types": "./build/dts/exports/space-events.d.ts"
+    },
+    "./key": {
+      "default": "./build/esm/exports/key.js",
+      "types": "./build/dts/exports/key.d.ts"
+    },
+    "./messages": {
+      "default": "./build/esm/exports/messages.js",
+      "types": "./build/dts/exports/messages.d.ts"
+    }
+  },
   "scripts": {
+    "build": "pnpm build-esm && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
     "test": "vitest run --typecheck",
-    "ts:check": "tsc --noEmit",
+    "ts:check": "tsc -b tsconfig.json",
     "lint": "pnpm biome lint src/*",
     "lint:fix": "pnpm biome lint --write src/*",
     "format": "pnpm biome format src/*",
     "format:fix": "pnpm biome format --write src/*",
     "check": "pnpm biome check src/*",
     "check:fix": "pnpm biome check --write src/*"
-  },
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
   },
   "peerDependencies": {
     "@automerge/automerge": "^2",

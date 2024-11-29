@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { decryptMessage } from './decrypt-message.js';
-import { encryptMessage } from './encrypt-message.js';
+
+import { decryptMessage } from '../src/decrypt-message.js';
+import { encryptMessage } from '../src/encrypt-message.js';
+
 describe('decryptMessage', () => {
   const testKey = new Uint8Array(32).fill(1);
 

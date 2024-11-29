@@ -1,4 +1,4 @@
-# Graph Framework Utils
+# @graph-framework/utils
 
 Provides common utilities for the Graph Framework.
 

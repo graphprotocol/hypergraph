@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { stringToUint8Array } from './stringToUint8Array.js';
+
+import { stringToUint8Array } from '../src/stringToUint8Array.js';
 
 describe('stringToUint8Array', () => {
   it('should convert a string to a Uint8Array', () => {
