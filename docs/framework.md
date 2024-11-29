@@ -168,7 +168,7 @@ import {
   acceptInvite,
   createSpace,
   listSpaces,
-} from "graph-framework";
+} from "@graphprotocol/graph-framework";
 
 export const {
   SpaceProvider,
