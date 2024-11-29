@@ -1,5 +1,5 @@
 {
-  "name": "graph-framework",
+  "name": "@graphprotocol/graph-framework",
   "version": "0.0.1",
   "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
   "repository": {
@@ -69,11 +69,11 @@
     "jsdom": "^25.0.1"
   },
   "dependencies": {
-    "graph-framework-utils": "workspace:*",
-    "graph-framework-space-events": "workspace:*",
-    "graph-framework-identity": "workspace:*",
-    "graph-framework-schema": "workspace:*",
-    "graph-framework-messages": "workspace:*",
-    "graph-framework-key": "workspace:*"
+    "@graph-framework/utils": "workspace:*",
+    "@graph-framework/space-events": "workspace:*",
+    "@graph-framework/identity": "workspace:*",
+    "@graph-framework/schema": "workspace:*",
+    "@graph-framework/messages": "workspace:*",
+    "@graph-framework/key": "workspace:*"
   }
 }

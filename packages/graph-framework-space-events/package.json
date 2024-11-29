@@ -1,5 +1,5 @@
 {
-  "name": "graph-framework-space-events",
+  "name": "@graph-framework/space-events",
   "version": "0.0.1",
   "description": "Exposes functionality for events, and applying them, to a space.",
   "repository": {
@@ -36,7 +36,7 @@
   "dependencies": {
     "@noble/curves": "^1.6.0",
     "@noble/hashes": "^1.5.0",
-    "graph-framework-utils": "workspace:*",
+    "@graph-framework/utils": "workspace:*",
     "uuid": "^11.0.3"
   }
 }

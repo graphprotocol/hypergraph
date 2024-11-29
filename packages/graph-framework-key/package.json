@@ -1,5 +1,5 @@
 {
-  "name": "graph-framework-key",
+  "name": "@graph-framework/key",
   "version": "0.0.1",
   "description": "Utilities for Space Keys and Key boxes",
   "repository": {

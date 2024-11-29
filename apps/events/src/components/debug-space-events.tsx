@@ -1,4 +1,4 @@
-import type { SpaceEvent } from 'graph-framework';
+import type { SpaceEvent } from '@graphprotocol/graph-framework';
 
 export function DebugSpaceEvents({ events }: { events: SpaceEvent[] }) {
   return (

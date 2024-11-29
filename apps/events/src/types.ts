@@ -1,4 +1,4 @@
-import type { SpaceEvent, SpaceState } from 'graph-framework';
+import type { SpaceEvent, SpaceState } from '@graphprotocol/graph-framework';
 
 export type SpaceStorageEntry = {
   id: string;

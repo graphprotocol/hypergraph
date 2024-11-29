@@ -31,7 +31,7 @@
     "clsx": "^2.1.1",
     "effect": "^3.10.19",
     "ethers": "^6.13.3",
-    "graph-framework": "workspace:*",
+    "@graphprotocol/graph-framework": "workspace:*",
     "lucide-react": "^0.441.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

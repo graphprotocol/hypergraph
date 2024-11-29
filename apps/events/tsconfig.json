@@ -6,20 +6,20 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "graph-framework": ["../../packages/graph-framework/src/index.js"],
-      "graph-framework/*": ["../../packages/graph-framework/src/*.js"],
-      "graph-framework-space-events": ["../../packages/graph-framework-space-events/src/index.js"],
-      "graph-framework-space-events/*": ["../../packages/graph-framework-space-events/src/*.js"],
-      "graph-framework-messages": ["../../packages/graph-framework-messages/src/index.js"],
-      "graph-framework-messages/*": ["../../packages/graph-framework-messages/src/*.js"],
-      "graph-framework-identity": ["../../packages/graph-framework-identity/src/index.js"],
-      "graph-framework-identity/*": ["../../packages/graph-framework-identity/src/*.js"],
-      "graph-framework-key": ["../../packages/graph-framework-key/src/index.js"],
-      "graph-framework-key/*": ["../../packages/graph-framework-key/src/*.js"],
-      "graph-framework-schema": ["../../packages/graph-framework-schema/src/index.js"],
-      "graph-framework-schema/*": ["../../packages/graph-framework-schema/src/*.js"],
-      "graph-framework-utils": ["../../packages/graph-framework-utils/src/index.js"],
-      "graph-framework-utils/*": ["../../packages/graph-framework-utils/src/*.js"]
+      "@graphprotocol/graph-framework": ["../../packages/graph-framework/src/index.js"],
+      "@graphprotocol/graph-framework/*": ["../../packages/graph-framework/src/*.js"],
+      "@graph-framework/space-events": ["../../packages/graph-framework-space-events/src/index.js"],
+      "@graph-framework/space-events/*": ["../../packages/graph-framework-space-events/src/*.js"],
+      "@graph-framework/messages": ["../../packages/graph-framework-messages/src/index.js"],
+      "@graph-framework/messages/*": ["../../packages/graph-framework-messages/src/*.js"],
+      "@graph-framework/identity": ["../../packages/graph-framework-identity/src/index.js"],
+      "@graph-framework/identity/*": ["../../packages/graph-framework-identity/src/*.js"],
+      "@graph-framework/key": ["../../packages/graph-framework-key/src/index.js"],
+      "@graph-framework/key/*": ["../../packages/graph-framework-key/src/*.js"],
+      "@graph-framework/schema": ["../../packages/graph-framework-schema/src/index.js"],
+      "@graph-framework/schema/*": ["../../packages/graph-framework-schema/src/*.js"],
+      "@graph-framework/utils": ["../../packages/graph-framework-utils/src/index.js"],
+      "@graph-framework/utils/*": ["../../packages/graph-framework-utils/src/*.js"]
     }
   }
 }

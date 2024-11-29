@@ -1,1 +1,1 @@
-export * from 'graph-framework-key';
+export * from '@graph-framework/key';

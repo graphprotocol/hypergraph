@@ -1,6 +1,8 @@
 import { Effect, Exit } from 'effect';
-import type { KeyBox } from 'graph-framework-messages';
-import { type CreateSpaceEvent, applyEvent } from 'graph-framework-space-events';
+
+import type { KeyBox } from '@graph-framework/messages';
+import { type CreateSpaceEvent, applyEvent } from '@graph-framework/space-events';
+
 import { prisma } from '../prisma.js';
 
 type Params = {

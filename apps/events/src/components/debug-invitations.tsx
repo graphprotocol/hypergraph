@@ -1,4 +1,5 @@
-import type { Invitation } from 'graph-framework';
+import type { Invitation } from '@graphprotocol/graph-framework';
+
 import { Button } from './ui/button';
 
 type Props = {

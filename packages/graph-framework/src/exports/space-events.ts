@@ -1,1 +1,1 @@
-export * from 'graph-framework-space-events';
+export * from '@graph-framework/space-events';

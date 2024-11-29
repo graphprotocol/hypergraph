@@ -1,4 +1,4 @@
-import type { SpaceState } from 'graph-framework';
+import type { SpaceState } from '@graphprotocol/graph-framework';
 
 export function DebugSpaceState(props: { state: SpaceState | undefined }) {
   return (

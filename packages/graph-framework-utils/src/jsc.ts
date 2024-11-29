@@ -18,7 +18,7 @@ export class InfinityNotAllowedError extends Error {
  *
  * @example <caption>Primitive values</caption>
  * ```ts
- * import { canonicalize } from 'graph-framework-utils'
+ * import { canonicalize } from '@graph-framework/utils'
  *
  * console.log(canonicalize(null)) // 'null'
  * console.log(canonicalize(1)) // '1'
@@ -28,7 +28,7 @@ export class InfinityNotAllowedError extends Error {
  *
  * @example <caption>Objects</caption>
  * ```
- * import { canonicalize } from 'graph-framework-utils'
+ * import { canonicalize } from '@graph-framework/utils'
  *
  * const json = {
  *    from_account: '543 232 625-3',
@@ -41,7 +41,7 @@ export class InfinityNotAllowedError extends Error {
  *
  * @example <caption>Arrays</caption>
  * ```ts
- * import { canonicalize } from 'graph-framework-utils'
+ * import { canonicalize } from '@graph-framework/utils'
  *
  * console.log(canonicalize([1, 'text', null, true, false])) // '[1,"text",null,true,false]'
  * ```

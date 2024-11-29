@@ -2,9 +2,11 @@ import * as path from 'node:path';
 import type { ViteUserConfig } from 'vitest/config';
 
 const alias = (pkg: string, dir = pkg) => {
+  const name = pkg === 'graph-framework' ? '@graphprotocol/graph-framework' : `@graph-framework/${pkg}`;
+
   return {
-    [`${pkg}/test`]: path.join(__dirname, 'packages', dir, 'test'),
-    [`${pkg}`]: path.join(__dirname, 'packages', dir, 'src'),
+    [`${name}/test`]: path.join(__dirname, 'packages', dir, 'test'),
+    [`${name}`]: path.join(__dirname, 'packages', dir, 'src'),
   };
 };
 

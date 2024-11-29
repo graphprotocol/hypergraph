@@ -1,7 +1,7 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect } from 'effect';
 
-import { canonicalize, generateId, stringToUint8Array } from 'graph-framework-utils';
+import { canonicalize, generateId, stringToUint8Array } from '@graph-framework/utils';
 
 import type { Author, CreateSpaceEvent } from './types.js';
 

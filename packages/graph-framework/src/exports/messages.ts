@@ -1,1 +1,1 @@
-export * from 'graph-framework-messages';
+export * from '@graph-framework/messages';
