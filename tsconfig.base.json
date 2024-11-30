@@ -7,7 +7,7 @@
     "composite": true,
     "downlevelIteration": true,
     "resolveJsonModule": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "declaration": true,
     "skipLibCheck": true,
     "emitDecoratorMetadata": true,

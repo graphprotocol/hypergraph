@@ -33,17 +33,20 @@ importers:
   apps/events:
     dependencies:
       '@automerge/automerge':
-        specifier: ^2.2.8
-        version: 2.2.8
+        specifier: ^v2.2.9-alpha.3
+        version: 2.2.9-betterpatches.0
       '@automerge/automerge-repo':
-        specifier: ^1.2.1
-        version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
+        specifier: ^2.0.0-alpha.14
+        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
+      '@automerge/automerge-repo-network-websocket':
+        specifier: ^2.0.0-alpha.14
+        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@5.0.10)
       '@automerge/automerge-repo-react-hooks':
-        specifier: ^1.2.1
-        version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
+        specifier: ^2.0.0-alpha.14
+        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
       '@automerge/automerge-repo-storage-indexeddb':
-        specifier: ^1.2.1
-        version: 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
+        specifier: ^2.0.0-alpha.14
+        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
       '@graphprotocol/graph-framework':
         specifier: workspace:*
         version: link:../../packages/graph-framework
@@ -86,6 +89,9 @@ importers:
       ethers:
         specifier: ^6.13.3
         version: 6.13.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      isomorphic-ws:
+        specifier: ^5.0.0
+        version: 5.0.0(ws@8.13.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       lucide-react:
         specifier: ^0.441.0
         version: 0.441.0(react@18.3.1)
@@ -391,20 +397,38 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
+  '@automerge/automerge-repo-network-websocket@2.0.0-collectionsync-alpha.1':
+    resolution: {integrity: sha512-AVsh5virUN+mIXPhCPhdVT+5A/WVSk4SBcR//kf4iR2doGKI7zsDXjTIzAHpJaWTe7wFQS/CmwAI7fPnIzdlOQ==}
+
   '@automerge/automerge-repo-react-hooks@1.2.1':
     resolution: {integrity: sha512-xRRPFRp7dMLZZoIPuczI6ll8U6Qo4NkLAstIHZloGcVefSEOLXRRObMwkITbVaRCEM2zyRLG0MfA9T4dA1JYFQ==}
     peerDependencies:
       react: '>16.8.0'
       react-dom: '>16.8.0'
 
-  '@automerge/automerge-repo-storage-indexeddb@1.2.1':
-    resolution: {integrity: sha512-u+9eZZJK7DAr541buF4ut1ipkuiKRoaAtoFYo/ilq7zOLO7JX+GQOFx/8eKKRDlGt/AHTcDaFktkcaX0vKahQQ==}
+  '@automerge/automerge-repo-react-hooks@2.0.0-collectionsync-alpha.1':
+    resolution: {integrity: sha512-7aqn2VwnBJ+ok696Pimod2kxn3d02QrOhAYTCZIKF2DgKtp8lv6mQE1N2zSLuITjS8qud/SlcHckjLaDSA39/w==}
+    peerDependencies:
+      react: '>16.8.0'
+      react-dom: '>16.8.0'
+
+  '@automerge/automerge-repo-storage-indexeddb@2.0.0-collectionsync-alpha.1':
+    resolution: {integrity: sha512-eK9CJLutYGWg0BQGathQjE9bI/h3/HQsiR3OWLluloQkkPOcZHTPG2P9UUTZ2ub/eyVB2GdU8MpXB6iDSiqJUw==}
 
   '@automerge/automerge-repo@1.2.1':
     resolution: {integrity: sha512-uEBr4bM01aSWkEt2tDKQxfW0Pahz2zbTTn4sRJfeKJlAg2SLr4QepFJ+3Tp4CNEkkU485olfnKYf6gt7uilMZQ==}
 
+  '@automerge/automerge-repo@2.0.0-collectionsync-alpha.1':
+    resolution: {integrity: sha512-IRjwNOHOCL/E+qqKAqyLro/K/MrTCTsBGyXwlvgN19lHV0v2mMngXJUHF3iSGS2DY7nTeP4dSzGR/8+uFXDLSQ==}
+
   '@automerge/automerge@2.2.8':
     resolution: {integrity: sha512-kP6Z9lIkNeIGe/jhF8SUQAgUMwVjtXCBL0eZEgQGCoWvPNTPcg8fnQco28XkYBrfkkuqiEUAbdHhJmSp0y79ug==}
+
+  '@automerge/automerge@2.2.9-betterpatches.0':
+    resolution: {integrity: sha512-WPZZ0X/rPq5RZC21wP9i5xsh+Vf5kzJsS9n9J4ADZ6DiDBV2d8ioBPdPC+fgBmfJPjPXhNE0gNCqmJYLJAm3ig==}
+
+  '@automerge/automerge@3.0.0-collectionsync-alpha.1':
+    resolution: {integrity: sha512-FO7QCjMz0pdoNxotVaH84X2sJKZdSYrjo6VHuVwFkQB0N/PQ0EHWi7N6knd9/JC+tIAzhGS3rb4xQwXITsewcg==}
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -3370,6 +3394,11 @@ packages:
     peerDependencies:
       ws: '*'
 
+  isomorphic-ws@5.0.0:
+    resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
+    peerDependencies:
+      ws: '*'
+
   isows@1.0.3:
     resolution: {integrity: sha512-2cKei4vlmg2cxEjm3wVSqn8pcoRF/LX/wpifuuNquFO4SQmPwarClT+SUCA2lt+l581tTeZIPIZuIDo2jWN1fg==}
     peerDependencies:
@@ -5086,6 +5115,23 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
+  '@automerge/automerge-repo-network-websocket@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@automerge/automerge-repo': 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
+      cbor-x: 1.6.0
+      debug: 4.3.7(supports-color@5.5.0)
+      eventemitter3: 5.0.1
+      isomorphic-ws: 5.0.0(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - bufferutil
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   '@automerge/automerge-repo-react-hooks@1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)':
     dependencies:
       '@automerge/automerge': 2.2.8
@@ -5101,9 +5147,24 @@ snapshots:
       - supports-color
       - typescript
 
-  '@automerge/automerge-repo-storage-indexeddb@1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)':
+  '@automerge/automerge-repo-react-hooks@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)':
     dependencies:
-      '@automerge/automerge-repo': 1.2.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
+      '@automerge/automerge': 2.2.8
+      '@automerge/automerge-repo': 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
+      eventemitter3: 5.0.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-usestateref: 1.0.9(react@18.3.1)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - supports-color
+      - typescript
+
+  '@automerge/automerge-repo-storage-indexeddb@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)':
+    dependencies:
+      '@automerge/automerge-repo': 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -5116,7 +5177,26 @@ snapshots:
       '@automerge/automerge': 2.2.8
       bs58check: 3.0.1
       cbor-x: 1.6.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
+      eventemitter3: 5.0.1
+      fast-sha256: 1.3.0
+      tiny-typed-emitter: 2.1.0
+      ts-node: 10.9.2(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
+      uuid: 9.0.1
+      xstate: 5.18.1
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - supports-color
+      - typescript
+
+  '@automerge/automerge-repo@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)':
+    dependencies:
+      '@automerge/automerge': 3.0.0-collectionsync-alpha.1
+      bs58check: 3.0.1
+      cbor-x: 1.6.0
+      debug: 4.3.7(supports-color@5.5.0)
       eventemitter3: 5.0.1
       fast-sha256: 1.3.0
       tiny-typed-emitter: 2.1.0
@@ -5131,6 +5211,14 @@ snapshots:
       - typescript
 
   '@automerge/automerge@2.2.8':
+    dependencies:
+      uuid: 9.0.1
+
+  '@automerge/automerge@2.2.9-betterpatches.0':
+    dependencies:
+      uuid: 9.0.1
+
+  '@automerge/automerge@3.0.0-collectionsync-alpha.1':
     dependencies:
       uuid: 9.0.1
 
@@ -5162,7 +5250,7 @@ snapshots:
       '@babel/traverse': 7.25.6
       '@babel/types': 7.25.6
       convert-source-map: 2.0.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -5182,7 +5270,7 @@ snapshots:
       '@babel/traverse': 7.25.9
       '@babel/types': 7.26.0
       convert-source-map: 2.0.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -5356,7 +5444,7 @@ snapshots:
       '@babel/parser': 7.25.6
       '@babel/template': 7.25.0
       '@babel/types': 7.25.6
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -5368,7 +5456,7 @@ snapshots:
       '@babel/parser': 7.26.2
       '@babel/template': 7.25.9
       '@babel/types': 7.26.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -5984,7 +6072,7 @@ snapshots:
   '@metamask/utils@3.6.0':
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
       semver: 7.6.3
       superstruct: 1.0.4
     transitivePeerDependencies:
@@ -5994,7 +6082,7 @@ snapshots:
     dependencies:
       '@ethereumjs/tx': 4.2.0
       '@types/debug': 4.1.12
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
       semver: 7.6.3
       superstruct: 1.0.4
     transitivePeerDependencies:
@@ -7981,10 +8069,6 @@ snapshots:
     dependencies:
       ms: 2.1.2
 
-  debug@4.3.7:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.3.7(supports-color@5.5.0):
     dependencies:
       ms: 2.1.3
@@ -8731,6 +8815,14 @@ snapshots:
   isomorphic-ws@4.0.1(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
     dependencies:
       ws: 7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+
+  isomorphic-ws@5.0.0(ws@8.13.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
+    dependencies:
+      ws: 8.13.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+
+  isomorphic-ws@5.0.0(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
+    dependencies:
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
 
   isows@1.0.3(ws@8.13.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
     dependencies:

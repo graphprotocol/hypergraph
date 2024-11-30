@@ -1,5 +1,5 @@
+import type { SpaceEvent, SpaceState, Updates } from '@graphprotocol/graph-framework';
 import { createStore } from '@xstate/store';
-import type { SpaceEvent, SpaceState, Updates } from 'graph-framework';
 import type { SpaceStorageEntry } from '../types';
 
 interface StoreContext {
