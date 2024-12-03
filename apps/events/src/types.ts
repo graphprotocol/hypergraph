@@ -9,3 +9,7 @@ export type SpaceStorageEntry = {
   lastUpdateClock: number;
   automergeDocumentId: string;
 };
+
+export interface Doc {
+  count: number;
+}

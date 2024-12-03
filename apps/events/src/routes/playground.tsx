@@ -1,7 +1,7 @@
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { type AutomergeUrl, type DocHandle, Repo } from '@automerge/automerge-repo';
-import { RepoContext, useDocument } from '@automerge/automerge-repo-react-hooks';
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
@@ -38,6 +38,7 @@ import {
   serialize,
 } from '@graphprotocol/graph-framework';
 
+import { AutomergeApp } from '@/components/automerge-app';
 import { DebugInvitations } from '@/components/debug-invitations';
 import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
@@ -66,10 +67,6 @@ const availableAccounts = [
   },
 ];
 
-interface Doc {
-  count: number;
-}
-
 const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
 
 export const Route = createFileRoute('/playground')({
@@ -77,26 +74,6 @@ export const Route = createFileRoute('/playground')({
 });
 
 const hardcodedUrl = 'automerge:2JWupfYZBBm7s2NCy1VnvQa4Vdvf' as AutomergeUrl;
-
-const AutoMergeApp = ({ url }: { url: AutomergeUrl }) => {
-  const [doc, changeDoc] = useDocument<Doc>(url);
-
-  if (!doc) {
-    return null;
-  }
-
-  return (
-    <Button
-      onClick={() => {
-        changeDoc((d: Doc) => {
-          d.count = (d.count || 0) + 1;
-        });
-      }}
-    >
-      Count: {doc?.count ?? 0}
-    </Button>
-  );
-};
 
 const App = ({
   accountId,
@@ -519,7 +496,7 @@ const App = ({
               })}
               <h3>Updates</h3>
               <RepoContext.Provider value={repo}>
-                {automergeHandle && <AutoMergeApp url={automergeHandle.url} />}
+                {automergeHandle && <AutomergeApp url={automergeHandle.url} />}
               </RepoContext.Provider>
               <h3>Last update clock: {space.lastUpdateClock}</h3>
               <h3>Updates in flight</h3>
