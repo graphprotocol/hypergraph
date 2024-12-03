@@ -316,32 +316,25 @@ const App = ({
             break;
           }
           case 'updates-notification': {
-            // setSpaces((spaces) =>
-            //   spaces.map((space) => {
-            //     if (space.id === response.spaceId) {
-            //       let lastUpdateClock = space.lastUpdateClock;
-            //       if (response.updates.firstUpdateClock === space.lastUpdateClock + 1) {
-            //         lastUpdateClock = response.updates.lastUpdateClock;
-            //       } else {
-            //         // TODO request missing updates from server
-            //       }
+            const storeState = store.getSnapshot();
 
-            //       const newUpdates = (response.updates ? response.updates.updates : []).map((encryptedUpdate) => {
-            //         return decryptMessage({
-            //           nonceAndCiphertext: encryptedUpdate,
-            //           secretKey: hexToBytes(space.keys[0].key),
-            //         });
-            //       });
+            const space = storeState.context.spaces.find((s) => s.id === response.spaceId);
+            if (!space) {
+              console.error('Space not found', response.spaceId);
+              return;
+            }
 
-            //       return {
-            //         ...space,
-            //         updates: [...space.updates, ...newUpdates],
-            //         lastUpdateClock,
-            //       };
-            //     }
-            //     return space;
-            //   }),
-            // );
+            const automergeUpdates = response.updates.updates.map((update) => {
+              return decryptMessage({
+                nonceAndCiphertext: update,
+                secretKey: hexToBytes(space.keys[0].key),
+              });
+            });
+
+            automergeHandle?.update((existingDoc) => {
+              const [newDoc] = automerge.applyChanges(existingDoc, automergeUpdates);
+              return newDoc;
+            });
 
             store.send({
               type: 'applyUpdate',
