@@ -19,9 +19,7 @@
   "dependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
     "@automerge/automerge-repo": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-network-websocket": "^2.0.0-alpha.14",
     "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-storage-indexeddb": "^2.0.0-alpha.14",
     "@noble/hashes": "^1.5.0",
     "@privy-io/react-auth": "^1.88.4",
     "@radix-ui/react-avatar": "^1.1.1",
