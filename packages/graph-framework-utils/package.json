@@ -36,6 +36,9 @@
     "uuid": "^11"
   },
   "dependencies": {
-    "bs58check": "^4.0.0"
+    "@noble/ciphers": "^1.0.0",
+    "@noble/secp256k1": "^2.2.2",
+    "bs58check": "^4.0.0",
+    "viem": "^2.21.56"
   }
 }

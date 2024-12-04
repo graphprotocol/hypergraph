@@ -8,20 +8,23 @@ import { createSpace } from '../src/create-space.js';
 import { InvalidEventError } from '../src/types.js';
 
 const author = {
-  signaturePublicKey: '03594161eed61407084114a142d1ce05ef4c5a5279479fdd73a2b16944fbff003b',
-  signaturePrivateKey: '76b78f644c19d6133018a97a3bc2d5038be0af5a2858b9e640ff3e2f2db63a0b',
+  accountId: '0x12345678',
+  signaturePublicKey: '0x03594161eed61407084114a142d1ce05ef4c5a5279479fdd73a2b16944fbff003b',
+  signaturePrivateKey: '0x76b78f644c19d6133018a97a3bc2d5038be0af5a2858b9e640ff3e2f2db63a0b',
   encryptionPublicKey: 'encryption',
 };
 
 const invitee = {
-  signaturePublicKey: '03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
-  signaturePrivateKey: '1eee32d3bc202dcb5d17c3b1454fb541d2290cb941860735408f1bfe39e7bc15',
+  accountId: '0x9abcdef0',
+  signaturePublicKey: '0x03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
+  signaturePrivateKey: '0x1eee32d3bc202dcb5d17c3b1454fb541d2290cb941860735408f1bfe39e7bc15',
   encryptionPublicKey: 'encryption',
 };
 
 const invitee2 = {
-  signaturePublicKey: '0351460706cf386282d9b6ebee2ccdcb9ba61194fd024345e53037f3036242e6a2',
-  signaturePrivateKey: '434518a2c9a665a7c20da086232c818b6c1592e2edfeecab29a40cf5925ca8fe',
+  accountId: '0x1a2b3c4d',
+  signaturePublicKey: '0x0351460706cf386282d9b6ebee2ccdcb9ba61194fd024345e53037f3036242e6a2',
+  signaturePrivateKey: '0x434518a2c9a665a7c20da086232c818b6c1592e2edfeecab29a40cf5925ca8fe',
   encryptionPublicKey: 'encryption',
 };
 
@@ -46,12 +49,14 @@ it('should create an invitation', async () => {
   expect(state2.id).toBeTypeOf('string');
   expect(state2.invitations).toEqual({
     [spaceEvent2.transaction.id]: {
-      signaturePublicKey: '03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
+      inviteeAccountId: invitee.accountId,
+      signaturePublicKey: '0x03bf5d2a1badf15387b08a007d1a9a13a9bfd6e1c56f681e251514d9ba10b57462',
       encryptionPublicKey: 'encryption',
     },
   });
   expect(state2.members).toEqual({
     [author.signaturePublicKey]: {
+      accountId: author.accountId,
       signaturePublicKey: author.signaturePublicKey,
       encryptionPublicKey: author.encryptionPublicKey,
       role: 'admin',

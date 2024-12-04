@@ -1,8 +1,19 @@
-export const createIdentity = () => {
+import { generateKeypair } from '@graph-framework/key';
+import { bytesToHex } from '@graph-framework/utils';
+import { secp256k1 } from '@noble/curves/secp256k1';
+import type { Keys } from './types.js';
+
+export const createIdentity = (): Keys => {
+  // generate a random private key for encryption
+  const { publicKey: encryptionPublicKey, secretKey: encryptionPrivateKey } = generateKeypair();
+  // generate a random private key for signing
+  const signaturePrivateKey = secp256k1.utils.randomPrivateKey();
+  const signaturePublicKey = secp256k1.getPublicKey(signaturePrivateKey);
+
   return {
-    signaturePublicKey: '',
-    signaturePrivateKey: '',
-    encryptionPublicKey: '',
-    encryptionPrivateKey: '',
+    encryptionPublicKey: bytesToHex(encryptionPublicKey),
+    encryptionPrivateKey: bytesToHex(encryptionPrivateKey),
+    signaturePublicKey: bytesToHex(signaturePublicKey),
+    signaturePrivateKey: bytesToHex(signaturePrivateKey),
   };
 };

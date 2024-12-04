@@ -1,6 +1,6 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
-import { createStore } from '@xstate/store';
+import { type Store, createStore } from '@xstate/store';
 
 import type { Invitation, Updates } from '@graph-framework/messages';
 import type { SpaceEvent, SpaceState } from '@graph-framework/space-events';
@@ -21,6 +21,14 @@ interface StoreContext {
   invitations: Invitation[];
   encryptionPrivateKey: string;
   repo: Repo;
+  userIdentities: {
+    [accountId: string]: {
+      encryptionPublicKey: string;
+      signaturePublicKey: string;
+      accountProof: string;
+      keyProof: string;
+    };
+  };
 }
 
 const initialStoreContext: StoreContext = {
@@ -29,9 +37,42 @@ const initialStoreContext: StoreContext = {
   invitations: [],
   encryptionPrivateKey: '',
   repo: new Repo({}),
+  userIdentities: {},
 };
 
-export const store = createStore({
+type StoreEvent =
+  | { type: 'setInvitations'; invitations: Invitation[] }
+  | { type: 'setEncryptionPrivateKey'; encryptionPrivateKey: string }
+  | { type: 'reset' }
+  | { type: 'addUpdateInFlight'; ephemeralId: string }
+  | { type: 'removeUpdateInFlight'; ephemeralId: string }
+  | { type: 'setSpaceFromList'; spaceId: string }
+  | { type: 'applyEvent'; spaceId: string; event: SpaceEvent; state: SpaceState }
+  | { type: 'updateConfirmed'; spaceId: string; clock: number }
+  | { type: 'applyUpdate'; spaceId: string; firstUpdateClock: number; lastUpdateClock: number }
+  | {
+      type: 'addUserIdentity';
+      accountId: string;
+      encryptionPublicKey: string;
+      signaturePublicKey: string;
+      accountProof: string;
+      keyProof: string;
+    }
+  | {
+      type: 'setSpace';
+      spaceId: string;
+      updates?: Updates;
+      events: SpaceEvent[];
+      spaceState: SpaceState;
+      keys: {
+        id: string;
+        key: string;
+      }[];
+    };
+
+type GenericEventObject = { type: string };
+
+export const store: Store<StoreContext, StoreEvent, GenericEventObject> = createStore({
   context: initialStoreContext,
   on: {
     setInvitations: (context, event: { invitations: Invitation[] }) => {
@@ -141,6 +182,29 @@ export const store = createStore({
           }
           return space;
         }),
+      };
+    },
+    addUserIdentity: (
+      context,
+      event: {
+        accountId: string;
+        encryptionPublicKey: string;
+        signaturePublicKey: string;
+        accountProof: string;
+        keyProof: string;
+      },
+    ) => {
+      return {
+        ...context,
+        userIdentities: {
+          ...context.userIdentities,
+          [event.accountId]: {
+            encryptionPublicKey: event.encryptionPublicKey,
+            signaturePublicKey: event.signaturePublicKey,
+            accountProof: event.accountProof,
+            keyProof: event.keyProof,
+          },
+        },
       };
     },
     setSpace: (

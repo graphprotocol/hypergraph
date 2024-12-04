@@ -1,5 +1,5 @@
+import { bytesToHex } from '@graph-framework/utils';
 import { blake3 } from '@noble/hashes/blake3';
-import { bytesToHex } from '@noble/hashes/utils';
 
 import { canonicalize } from '@graph-framework/utils';
 

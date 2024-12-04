@@ -52,10 +52,16 @@ model SpaceKeyBox {
 }
 
 model Account {
-  id          String        @id
-  spaces      Space[]
-  invitations Invitation[]
-  keyBoxes    SpaceKeyBox[]
+  id                  String        @id
+  spaces              Space[]
+  invitations         Invitation[]
+  keyBoxes            SpaceKeyBox[]
+  identities          Identity[]
+  sessionNonce          String?
+  sessionToken          String?
+  sessionTokenExpires   DateTime?
+
+  @@index([sessionToken])
 }
 
 model Invitation {
@@ -77,4 +83,17 @@ model Update {
   content Bytes
 
   @@id([spaceId, clock])
+}
+
+model Identity {
+  account             Account  @relation(fields: [accountId], references: [id])
+  accountId           String
+  ciphertext          String
+  nonce               String
+  signaturePublicKey  String
+  encryptionPublicKey String
+  accountProof        String
+  keyProof            String
+
+  @@id([accountId, nonce])
 }
