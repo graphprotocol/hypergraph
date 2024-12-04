@@ -4,10 +4,24 @@ import { Button } from './ui/button';
 
 type Props = {
   invitations: Invitation[];
-  accept: (invitation: Invitation) => void;
+  encryptionPublicKey: string;
+  encryptionPrivateKey: string;
+  signaturePrivateKey: string;
+  accept: (params: {
+    encryptionPublicKey: string;
+    encryptionPrivateKey: string;
+    signaturePrivateKey: string;
+    invitation: Invitation;
+  }) => Promise<unknown>;
 };
 
-export function DebugInvitations({ invitations, accept }: Props) {
+export function DebugInvitations({
+  invitations,
+  accept,
+  encryptionPublicKey,
+  encryptionPrivateKey,
+  signaturePrivateKey,
+}: Props) {
   return (
     <ul className="text-xs">
       {invitations.map((invitation) => {
@@ -16,7 +30,12 @@ export function DebugInvitations({ invitations, accept }: Props) {
             <pre>{JSON.stringify(invitation, null, 2)}</pre>
             <Button
               onClick={() => {
-                accept(invitation);
+                accept({
+                  encryptionPublicKey,
+                  encryptionPrivateKey,
+                  signaturePrivateKey,
+                  invitation,
+                });
               }}
             >
               Accept

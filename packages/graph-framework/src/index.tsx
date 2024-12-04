@@ -1,3 +1,4 @@
+export * from './core.js';
 export * from './exports/identity.js';
 export * from './exports/key.js';
 export * from './exports/messages.js';

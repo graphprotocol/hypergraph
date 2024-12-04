@@ -1,50 +1,15 @@
-import * as automerge from '@automerge/automerge';
-import { uuid } from '@automerge/automerge';
-import { type AutomergeUrl, type DocHandle, Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
-import { Effect, Exit } from 'effect';
-import * as Schema from 'effect/Schema';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import type {
-  Invitation,
-  RequestAcceptInvitationEvent,
-  RequestCreateInvitationEvent,
-  RequestCreateSpaceEvent,
-  RequestCreateUpdate,
-  RequestListInvitations,
-  RequestListSpaces,
-  RequestSubscribeToSpace,
-  SpaceEvent,
-  SpaceState,
-  Updates,
-} from '@graphprotocol/graph-framework';
-import {
-  ResponseMessage,
-  acceptInvitation,
-  applyEvent,
-  createInvitation,
-  createKey,
-  createSpace,
-  decryptKey,
-  decryptMessage,
-  deserialize,
-  encryptKey,
-  encryptMessage,
-  generateId,
-  serialize,
-  store,
-} from '@graphprotocol/graph-framework';
+import { GraphFramework, store, useGraphFramework } from '@graphprotocol/graph-framework';
 
 import { AutomergeApp } from '@/components/automerge-app';
 import { DebugInvitations } from '@/components/debug-invitations';
 import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
 import { Button } from '@/components/ui/button';
-import { assertExhaustive } from '@/lib/assertExhaustive';
 
 const availableAccounts = [
   {
@@ -67,16 +32,11 @@ const availableAccounts = [
   },
 ];
 
-const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
-
 export const Route = createFileRoute('/playground')({
   component: () => <ChooseAccount />,
 });
 
-const hardcodedUrl = 'automerge:2JWupfYZBBm7s2NCy1VnvQa4Vdvf' as AutomergeUrl;
-
 const App = ({
-  accountId,
   signaturePrivateKey,
   encryptionPublicKey,
   encryptionPrivateKey,
@@ -86,286 +46,27 @@ const App = ({
   encryptionPrivateKey: string;
   encryptionPublicKey: string;
 }) => {
-  const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
-  const [repo, setRepo] = useState<Repo | null>(null);
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [automergeHandle, setAutomergeHandle] = useState<DocHandle<{ count: number }> | null>(null);
   const storeState = useSelector(store, (state) => state.context);
   const spaces = storeState.spaces;
   const updatesInFlight = storeState.updatesInFlight;
-
-  // Create a stable WebSocket connection that only depends on accountId
-  useEffect(() => {
-    const websocketConnection = new WebSocket(`ws://localhost:3030/?accountId=${accountId}`);
-    const repo = new Repo({});
-    setRepo(repo);
-
-    const docHandle = repo.find<{ count: number }>(hardcodedUrl);
-    // set it to ready to interact with the document
-    docHandle.doneLoading();
-
-    docHandle.on('change', (result) => {
-      const lastLocalChange = automerge.getLastLocalChange(result.doc);
-      if (!lastLocalChange) {
-        return;
-      }
-
-      try {
-        const storeState = store.getSnapshot();
-        const space = storeState.context.spaces[0];
-
-        const ephemeralId = uuid();
-
-        const nonceAndCiphertext = encryptMessage({
-          message: lastLocalChange,
-          secretKey: hexToBytes(space.keys[0].key),
-        });
-
-        const messageToSend: RequestCreateUpdate = {
-          type: 'create-update',
-          ephemeralId,
-          update: nonceAndCiphertext,
-          spaceId: space.id,
-        };
-        websocketConnection.send(serialize(messageToSend));
-      } catch (error) {
-        console.error('Error sending message', error);
-      }
-    });
-
-    setAutomergeHandle(docHandle);
-
-    store.send({
-      type: 'setAutomergeDocumentId',
-      automergeDocumentId: docHandle.url.slice(10),
-    });
-    setWebsocketConnection(websocketConnection);
-
-    const onOpen = () => {
-      console.log('websocket connected');
-    };
-
-    const onError = (event: Event) => {
-      console.log('websocket error', event);
-    };
-
-    const onClose = (event: CloseEvent) => {
-      console.log('websocket close', event);
-    };
-
-    websocketConnection.addEventListener('open', onOpen);
-    websocketConnection.addEventListener('error', onError);
-    websocketConnection.addEventListener('close', onClose);
-
-    return () => {
-      websocketConnection.removeEventListener('open', onOpen);
-      websocketConnection.removeEventListener('error', onError);
-      websocketConnection.removeEventListener('close', onClose);
-      websocketConnection.close();
-    };
-  }, [accountId]); // Only recreate when accountId changes
-
-  // Handle WebSocket messages in a separate effect
-  // biome-ignore lint/correctness/useExhaustiveDependencies: automergeHandle is a mutable object
-  useEffect(() => {
-    if (!websocketConnection) return;
-
-    const onMessage = async (event: MessageEvent) => {
-      const data = deserialize(event.data);
-      const message = decodeResponseMessage(data);
-      if (message._tag === 'Right') {
-        const response = message.right;
-        switch (response.type) {
-          case 'list-spaces': {
-            response.spaces.map((space) => {
-              store.send({
-                type: 'setSpaceFromList',
-                spaceId: space.id,
-              });
-            });
-            // fetch all spaces (for debugging purposes)
-            for (const space of response.spaces) {
-              const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: space.id };
-              websocketConnection?.send(serialize(message));
-            }
-            break;
-          }
-          case 'space': {
-            let state: SpaceState | undefined = undefined;
-
-            for (const event of response.events) {
-              const applyEventResult = await Effect.runPromiseExit(applyEvent({ state: undefined, event }));
-              if (Exit.isSuccess(applyEventResult)) {
-                state = applyEventResult.value;
-              }
-            }
-
-            const newState = state as SpaceState;
-
-            const storeState = store.getSnapshot();
-
-            const keys = response.keyBoxes.map((keyBox) => {
-              const key = decryptKey({
-                keyBoxCiphertext: hexToBytes(keyBox.ciphertext),
-                keyBoxNonce: hexToBytes(keyBox.nonce),
-                publicKey: hexToBytes(keyBox.authorPublicKey),
-                privateKey: hexToBytes(storeState.context.encryptionPrivateKey),
-              });
-              return { id: keyBox.id, key: bytesToHex(key) };
-            });
-
-            store.send({
-              type: 'setSpace',
-              spaceId: response.id,
-              updates: response.updates as Updates,
-              events: response.events as SpaceEvent[],
-              spaceState: newState,
-              keys,
-            });
-
-            if (response.updates) {
-              const updates = response.updates?.updates.map((update) => {
-                return decryptMessage({
-                  nonceAndCiphertext: update,
-                  secretKey: hexToBytes(keys[0].key),
-                });
-              });
-
-              for (const update of updates) {
-                if (!automergeHandle) {
-                  return;
-                }
-
-                automergeHandle.update((existingDoc) => {
-                  const [newDoc] = automerge.applyChanges(existingDoc, [update]);
-                  return newDoc;
-                });
-              }
-
-              store.send({
-                type: 'applyUpdate',
-                spaceId: response.id,
-                firstUpdateClock: response.updates?.firstUpdateClock,
-                lastUpdateClock: response.updates?.lastUpdateClock,
-              });
-            }
-            break;
-          }
-          case 'space-event': {
-            const space = spaces.find((s) => s.id === response.spaceId);
-            if (!space) {
-              console.error('Space not found', response.spaceId);
-              return;
-            }
-            if (!space.state) {
-              console.error('Space has no state', response.spaceId);
-              return;
-            }
-
-            const applyEventResult = await Effect.runPromiseExit(
-              applyEvent({ event: response.event, state: space.state }),
-            );
-            if (Exit.isSuccess(applyEventResult)) {
-              store.send({
-                type: 'applyEvent',
-                spaceId: response.spaceId,
-                event: response.event,
-                state: applyEventResult.value,
-              });
-            }
-
-            break;
-          }
-          case 'list-invitations': {
-            setInvitations(response.invitations.map((invitation) => invitation));
-            break;
-          }
-          case 'update-confirmed': {
-            store.send({
-              type: 'removeUpdateInFlight',
-              ephemeralId: response.ephemeralId,
-            });
-            store.send({
-              type: 'updateConfirmed',
-              spaceId: response.spaceId,
-              clock: response.clock,
-            });
-            break;
-          }
-          case 'updates-notification': {
-            const storeState = store.getSnapshot();
-
-            const space = storeState.context.spaces.find((s) => s.id === response.spaceId);
-            if (!space) {
-              console.error('Space not found', response.spaceId);
-              return;
-            }
-
-            const automergeUpdates = response.updates.updates.map((update) => {
-              return decryptMessage({
-                nonceAndCiphertext: update,
-                secretKey: hexToBytes(space.keys[0].key),
-              });
-            });
-
-            automergeHandle?.update((existingDoc) => {
-              const [newDoc] = automerge.applyChanges(existingDoc, automergeUpdates);
-              return newDoc;
-            });
-
-            store.send({
-              type: 'applyUpdate',
-              spaceId: response.spaceId,
-              firstUpdateClock: response.updates.firstUpdateClock,
-              lastUpdateClock: response.updates.lastUpdateClock,
-            });
-            break;
-          }
-          default:
-            assertExhaustive(response);
-        }
-      }
-    };
-
-    websocketConnection.addEventListener('message', onMessage);
-
-    return () => {
-      websocketConnection.removeEventListener('message', onMessage);
-    };
-  }, [websocketConnection, spaces]);
+  const {
+    createSpace,
+    listSpaces,
+    listInvitations,
+    invitations,
+    acceptInvitation,
+    subscribeToSpace,
+    inviteToSpace,
+    repo,
+    automergeHandle,
+  } = useGraphFramework();
 
   return (
     <>
       <div>
         <Button
-          onClick={async () => {
-            const spaceEvent = await Effect.runPromise(
-              createSpace({
-                author: {
-                  encryptionPublicKey,
-                  signaturePrivateKey,
-                  signaturePublicKey: accountId,
-                },
-              }),
-            );
-            const result = createKey({
-              privateKey: hexToBytes(encryptionPrivateKey),
-              publicKey: hexToBytes(encryptionPublicKey),
-            });
-
-            const message: RequestCreateSpaceEvent = {
-              type: 'create-space-event',
-              event: spaceEvent,
-              spaceId: spaceEvent.transaction.id,
-              keyId: generateId(),
-              keyBox: {
-                accountId,
-                ciphertext: bytesToHex(result.keyBoxCiphertext),
-                nonce: bytesToHex(result.keyBoxNonce),
-                authorPublicKey: encryptionPublicKey,
-              },
-            };
-            websocketConnection?.send(serialize(message));
+          onClick={() => {
+            createSpace({ encryptionPublicKey, encryptionPrivateKey, signaturePrivateKey });
           }}
         >
           Create space
@@ -373,8 +74,7 @@ const App = ({
 
         <Button
           onClick={() => {
-            const message: RequestListSpaces = { type: 'list-spaces' };
-            websocketConnection?.send(serialize(message));
+            listSpaces();
           }}
         >
           List Spaces
@@ -382,8 +82,7 @@ const App = ({
 
         <Button
           onClick={() => {
-            const message: RequestListInvitations = { type: 'list-invitations' };
-            websocketConnection?.send(serialize(message));
+            listInvitations();
           }}
         >
           List Invitations
@@ -392,34 +91,10 @@ const App = ({
       <h2 className="text-lg">Invitations</h2>
       <DebugInvitations
         invitations={invitations}
-        accept={async (invitation) => {
-          const spaceEvent = await Effect.runPromiseExit(
-            acceptInvitation({
-              author: {
-                signaturePublicKey: accountId,
-                encryptionPublicKey,
-                signaturePrivateKey,
-              },
-              previousEventHash: invitation.previousEventHash,
-            }),
-          );
-          if (Exit.isFailure(spaceEvent)) {
-            console.error('Failed to accept invitation', spaceEvent);
-            return;
-          }
-          const message: RequestAcceptInvitationEvent = {
-            type: 'accept-invitation-event',
-            event: spaceEvent.value,
-            spaceId: invitation.spaceId,
-          };
-          websocketConnection?.send(serialize(message));
-
-          // temporary until we have define a strategy for accepting invitations response
-          setTimeout(() => {
-            const message2: RequestListInvitations = { type: 'list-invitations' };
-            websocketConnection?.send(serialize(message2));
-          }, 1000);
-        }}
+        accept={acceptInvitation}
+        encryptionPublicKey={encryptionPublicKey}
+        encryptionPrivateKey={encryptionPrivateKey}
+        signaturePrivateKey={signaturePrivateKey}
       />
       <h2 className="text-lg">Spaces</h2>
       <ul>
@@ -431,8 +106,7 @@ const App = ({
               <pre className="text-xs">{JSON.stringify(space.keys)}</pre>
               <Button
                 onClick={() => {
-                  const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: space.id };
-                  websocketConnection?.send(serialize(message));
+                  subscribeToSpace({ spaceId: space.id });
                 }}
               >
                 Get data and subscribe to Space
@@ -442,52 +116,14 @@ const App = ({
                 return (
                   <Button
                     key={invitee.accountId}
-                    onClick={async () => {
-                      if (!space.state) {
-                        console.error('No state found for space');
-                        return;
-                      }
-                      const spaceEvent = await Effect.runPromiseExit(
-                        createInvitation({
-                          author: {
-                            signaturePublicKey: accountId,
-                            encryptionPublicKey,
-                            signaturePrivateKey,
-                          },
-                          previousEventHash: space.state.lastEventHash,
-                          invitee: {
-                            signaturePublicKey: invitee.accountId,
-                            encryptionPublicKey,
-                          },
-                        }),
-                      );
-                      if (Exit.isFailure(spaceEvent)) {
-                        console.error('Failed to create invitation', spaceEvent);
-                        return;
-                      }
-
-                      const keyBoxes = space.keys.map((key) => {
-                        const keyBox = encryptKey({
-                          key: hexToBytes(key.key),
-                          publicKey: hexToBytes(invitee.encryptionPublicKey),
-                          privateKey: hexToBytes(encryptionPrivateKey),
-                        });
-                        return {
-                          id: key.id,
-                          ciphertext: bytesToHex(keyBox.keyBoxCiphertext),
-                          nonce: bytesToHex(keyBox.keyBoxNonce),
-                          authorPublicKey: encryptionPublicKey,
-                          accountId: invitee.accountId,
-                        };
+                    onClick={() => {
+                      inviteToSpace({
+                        encryptionPublicKey,
+                        encryptionPrivateKey,
+                        signaturePrivateKey,
+                        space,
+                        invitee,
                       });
-
-                      const message: RequestCreateInvitationEvent = {
-                        type: 'create-invitation-event',
-                        event: spaceEvent.value,
-                        spaceId: space.id,
-                        keyBoxes,
-                      };
-                      websocketConnection?.send(serialize(message));
                     }}
                   >
                     Invite {invitee.accountId.substring(0, 4)}
@@ -496,7 +132,7 @@ const App = ({
               })}
               <h3>Updates</h3>
               <RepoContext.Provider value={repo}>
-                {automergeHandle && <AutomergeApp url={automergeHandle.url} />}
+                <AutomergeApp url={automergeHandle.url} />
               </RepoContext.Provider>
               <h3>Last update clock: {space.lastUpdateClock}</h3>
               <h3>Updates in flight</h3>
@@ -574,14 +210,16 @@ export const ChooseAccount = () => {
       Account: {account?.accountId ? account.accountId : 'none'}
       <hr />
       {account && (
-        <App
-          // forcing a remount of the App component when the accountId changes
-          key={account.accountId}
-          accountId={account.accountId}
-          signaturePrivateKey={account.signaturePrivateKey}
-          encryptionPrivateKey={account.encryptionPrivateKey}
-          encryptionPublicKey={account.encryptionPublicKey}
-        />
+        <GraphFramework accountId={account.accountId}>
+          <App
+            // forcing a remount of the App component when the accountId changes
+            key={account.accountId}
+            accountId={account.accountId}
+            signaturePrivateKey={account.signaturePrivateKey}
+            encryptionPrivateKey={account.encryptionPrivateKey}
+            encryptionPublicKey={account.encryptionPublicKey}
+          />
+        </GraphFramework>
       )}
     </div>
   );
