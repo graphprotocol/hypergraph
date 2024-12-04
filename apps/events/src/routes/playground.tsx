@@ -1,9 +1,8 @@
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { createFileRoute } from '@tanstack/react-router';
-import { useSelector } from '@xstate/store/react';
 import { useState } from 'react';
 
-import { GraphFramework, store, useGraphFramework } from '@graphprotocol/graph-framework';
+import { GraphFramework, store, useGraphFramework, useSelector } from '@graphprotocol/graph-framework';
 
 import { AutomergeApp } from '@/components/automerge-app';
 import { DebugInvitations } from '@/components/debug-invitations';

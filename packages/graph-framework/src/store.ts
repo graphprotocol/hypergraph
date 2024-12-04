@@ -1,4 +1,4 @@
-import type { Updates } from '@graph-framework/messages';
+import type { Invitation, Updates } from '@graph-framework/messages';
 import type { SpaceEvent, SpaceState } from '@graph-framework/space-events';
 import { createStore } from '@xstate/store';
 
@@ -15,6 +15,7 @@ export type SpaceStorageEntry = {
 interface StoreContext {
   spaces: SpaceStorageEntry[];
   updatesInFlight: string[];
+  invitations: Invitation[];
   encryptionPrivateKey: string;
   automergeDocumentId: string;
 }
@@ -22,6 +23,7 @@ interface StoreContext {
 const initialStoreContext: StoreContext = {
   spaces: [],
   updatesInFlight: [],
+  invitations: [],
   encryptionPrivateKey: '',
   automergeDocumentId: '',
 };
@@ -29,6 +31,12 @@ const initialStoreContext: StoreContext = {
 export const store = createStore({
   context: initialStoreContext,
   on: {
+    setInvitations: (context, event: { invitations: Invitation[] }) => {
+      return {
+        ...context,
+        invitations: event.invitations,
+      };
+    },
     setAutomergeDocumentId: (context, event: { automergeDocumentId: string }) => {
       return {
         ...context,
