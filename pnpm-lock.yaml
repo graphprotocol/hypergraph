@@ -232,9 +232,15 @@ importers:
       '@graph-framework/utils':
         specifier: workspace:*
         version: link:../graph-framework-utils
+      '@xstate/store':
+        specifier: ^2.6.1
+        version: 2.6.1(react@18.3.1)
       react:
         specifier: ^18
         version: 18.3.1
+      xstate:
+        specifier: ^5.19.0
+        version: 5.19.0
     devDependencies:
       '@automerge/automerge':
         specifier: ^2.2.8
@@ -5062,6 +5068,9 @@ packages:
   xstate@5.18.1:
     resolution: {integrity: sha512-m02IqcCQbaE/kBQLunwub/5i8epvkD2mFutnL17Oeg1eXTShe1sRF4D5mhv1dlaFO4vbW5gRGRhraeAD5c938g==}
 
+  xstate@5.19.0:
+    resolution: {integrity: sha512-Juh1MjeRaVWr1IRxXYvQMMRFMrei6vq6+AfP6Zk9D9YV0ZuvubN0aM6s2ITwUrq+uWtP1NTO8kOZmsM/IqeOiQ==}
+
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
@@ -5183,7 +5192,7 @@ snapshots:
       tiny-typed-emitter: 2.1.0
       ts-node: 10.9.2(@swc/core@1.7.26(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)
       uuid: 9.0.1
-      xstate: 5.18.1
+      xstate: 5.19.0
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -10563,6 +10572,8 @@ snapshots:
   xmlchars@2.2.0: {}
 
   xstate@5.18.1: {}
+
+  xstate@5.19.0: {}
 
   xtend@4.0.2: {}
 

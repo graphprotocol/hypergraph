@@ -69,11 +69,13 @@
     "jsdom": "^25.0.1"
   },
   "dependencies": {
-    "@graph-framework/utils": "workspace:*",
-    "@graph-framework/space-events": "workspace:*",
     "@graph-framework/identity": "workspace:*",
-    "@graph-framework/schema": "workspace:*",
+    "@graph-framework/key": "workspace:*",
     "@graph-framework/messages": "workspace:*",
-    "@graph-framework/key": "workspace:*"
+    "@graph-framework/schema": "workspace:*",
+    "@graph-framework/space-events": "workspace:*",
+    "@graph-framework/utils": "workspace:*",
+    "@xstate/store": "^2.6.1",
+    "xstate": "^5.19.0"
   }
 }

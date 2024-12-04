@@ -1,6 +1,16 @@
-import type { SpaceEvent, SpaceState, Updates } from '@graphprotocol/graph-framework';
+import type { Updates } from '@graph-framework/messages';
+import type { SpaceEvent, SpaceState } from '@graph-framework/space-events';
 import { createStore } from '@xstate/store';
-import type { SpaceStorageEntry } from '../types';
+
+export type SpaceStorageEntry = {
+  id: string;
+  events: SpaceEvent[];
+  state: SpaceState | undefined;
+  keys: { id: string; key: string }[];
+  updates: Uint8Array[];
+  lastUpdateClock: number;
+  automergeDocumentId: string;
+};
 
 interface StoreContext {
   spaces: SpaceStorageEntry[];

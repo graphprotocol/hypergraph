@@ -36,6 +36,7 @@ import {
   encryptMessage,
   generateId,
   serialize,
+  store,
 } from '@graphprotocol/graph-framework';
 
 import { AutomergeApp } from '@/components/automerge-app';
@@ -44,7 +45,6 @@ import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
 import { Button } from '@/components/ui/button';
 import { assertExhaustive } from '@/lib/assertExhaustive';
-import { store } from '@/lib/store';
 
 const availableAccounts = [
   {
