@@ -7,4 +7,9 @@ export type SpaceStorageEntry = {
   keys: { id: string; key: string }[];
   updates: Uint8Array[];
   lastUpdateClock: number;
+  automergeDocumentId: string;
 };
+
+export interface Doc {
+  count: number;
+}
