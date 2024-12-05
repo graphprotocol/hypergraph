@@ -2,6 +2,7 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { type AutomergeUrl, type DocHandle, Repo } from '@automerge/automerge-repo';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
+import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -23,7 +24,6 @@ import type { SpaceEvent, SpaceState } from '@graph-framework/space-events';
 import { acceptInvitation, applyEvent, createInvitation, createSpace } from '@graph-framework/space-events';
 import { generateId } from '@graph-framework/utils';
 
-import { useSelector } from '@xstate/store/react';
 import { assertExhaustive } from './assertExhaustive.js';
 import type { SpaceStorageEntry } from './store.js';
 import { store } from './store.js';
@@ -82,11 +82,9 @@ const GraphFrameworkContext = createContext<{
 export function GraphFramework({ children, accountId }: Props) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [repo] = useState<Repo>(() => new Repo({}));
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [automergeHandle] = useState<DocHandle<unknown>>(() => repo.find(hardcodedUrl));
-  const storeState = useSelector(store, (state) => state.context);
-  const spaces = storeState.spaces;
-
+  const spaces = useSelectorStore(store, (state) => state.context.spaces);
+  const invitations = useSelectorStore(store, (state) => state.context.invitations);
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     const websocketConnection = new WebSocket(`ws://localhost:3030/?accountId=${accountId}`);
@@ -266,7 +264,10 @@ export function GraphFramework({ children, accountId }: Props) {
             break;
           }
           case 'list-invitations': {
-            setInvitations(response.invitations.map((invitation) => invitation));
+            store.send({
+              type: 'setInvitations',
+              invitations: response.invitations.map((invitation) => invitation),
+            });
             break;
           }
           case 'update-confirmed': {
@@ -499,3 +500,5 @@ export function GraphFramework({ children, accountId }: Props) {
 export const useGraphFramework = () => {
   return useContext(GraphFrameworkContext);
 };
+
+export const useSelector = useSelectorStore;
