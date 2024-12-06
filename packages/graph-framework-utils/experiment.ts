@@ -96,3 +96,20 @@ for (let i = 0; i < iterations; i++) {
   const id = generateId3();
   console.log(id.length);
 }
+
+const iterations2 = 100000;
+
+const t1 = performance.now();
+
+for (let i = 0; i < iterations2; i++) {
+  generateId2();
+}
+const t2 = performance.now();
+console.log(`Time taken: ${t2 - t1}ms`);
+
+const t3 = t2 - t1;
+for (let i = 0; i < iterations2; i++) {
+  generateId3();
+}
+const t4 = performance.now();
+console.log(`Time taken: ${t4 - t3}ms`);
