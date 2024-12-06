@@ -1,15 +1,18 @@
+import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
+import { Repo } from '@automerge/automerge-repo';
+import { createStore } from '@xstate/store';
+
 import type { Invitation, Updates } from '@graph-framework/messages';
 import type { SpaceEvent, SpaceState } from '@graph-framework/space-events';
-import { createStore } from '@xstate/store';
+import { idToAutomergeId } from '@graph-framework/utils';
 
 export type SpaceStorageEntry = {
   id: string;
   events: SpaceEvent[];
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
-  updates: Uint8Array[];
   lastUpdateClock: number;
-  automergeDocumentId: string;
+  automergeDocHandle: DocHandle<unknown> | undefined;
 };
 
 interface StoreContext {
@@ -17,7 +20,7 @@ interface StoreContext {
   updatesInFlight: string[];
   invitations: Invitation[];
   encryptionPrivateKey: string;
-  automergeDocumentId: string;
+  repo: Repo;
 }
 
 const initialStoreContext: StoreContext = {
@@ -25,7 +28,7 @@ const initialStoreContext: StoreContext = {
   updatesInFlight: [],
   invitations: [],
   encryptionPrivateKey: '',
-  automergeDocumentId: '',
+  repo: new Repo({}),
 };
 
 export const store = createStore({
@@ -35,12 +38,6 @@ export const store = createStore({
       return {
         ...context,
         invitations: event.invitations,
-      };
-    },
-    setAutomergeDocumentId: (context, event: { automergeDocumentId: string }) => {
-      return {
-        ...context,
-        automergeDocumentId: event.automergeDocumentId,
       };
     },
     setEncryptionPrivateKey: (context, event: { encryptionPrivateKey: string }) => {
@@ -66,6 +63,10 @@ export const store = createStore({
     },
     setSpaceFromList: (context, event: { spaceId: string }) => {
       const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
+      const automergeDocHandle = context.repo.find(idToAutomergeId(event.spaceId) as AnyDocumentId);
+
+      // set it to ready to interact with the document
+      automergeDocHandle.doneLoading();
 
       if (existingSpace) {
         return {
@@ -77,9 +78,8 @@ export const store = createStore({
                 events: existingSpace.events ?? [],
                 state: existingSpace.state,
                 keys: existingSpace.keys ?? [],
-                updates: existingSpace.updates ?? [],
                 lastUpdateClock: existingSpace.lastUpdateClock ?? -1,
-                automergeDocumentId: existingSpace.automergeDocumentId ?? '',
+                automergeDocHandle,
               };
               return newSpace;
             }
@@ -98,7 +98,7 @@ export const store = createStore({
             keys: [],
             updates: [],
             lastUpdateClock: -1,
-            automergeDocumentId: '',
+            automergeDocHandle,
           },
         ],
       };
@@ -158,14 +158,17 @@ export const store = createStore({
     ) => {
       const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
       if (!existingSpace) {
+        const automergeDocHandle = context.repo.find(idToAutomergeId(event.spaceId) as AnyDocumentId);
+        // set it to ready to interact with the document
+        automergeDocHandle.doneLoading();
+
         const newSpace: SpaceStorageEntry = {
           id: event.spaceId,
           events: event.events,
           state: event.spaceState,
           lastUpdateClock: -1,
           keys: event.keys,
-          updates: [],
-          automergeDocumentId: '',
+          automergeDocHandle,
         };
         return {
           ...context,

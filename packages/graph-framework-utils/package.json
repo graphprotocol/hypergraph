@@ -28,10 +28,14 @@
     "check:fix": "pnpm biome check --write src/*"
   },
   "devDependencies": {
+    "@automerge/automerge-repo": "^1.2.1",
     "@types/uuid": "^10.0.0",
     "uuid": "^11.0.3"
   },
   "peerDependencies": {
     "uuid": "^11"
+  },
+  "dependencies": {
+    "bs58check": "^4.0.0"
   }
 }
