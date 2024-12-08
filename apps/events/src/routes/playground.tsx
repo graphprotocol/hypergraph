@@ -45,20 +45,11 @@ const App = ({
   encryptionPrivateKey: string;
   encryptionPublicKey: string;
 }) => {
-  const storeState = useSelector(store, (state) => state.context);
-  const spaces = storeState.spaces;
-  const updatesInFlight = storeState.updatesInFlight;
-  const {
-    createSpace,
-    listSpaces,
-    listInvitations,
-    invitations,
-    acceptInvitation,
-    subscribeToSpace,
-    inviteToSpace,
-    repo,
-    automergeHandle,
-  } = useGraphFramework();
+  const repo = useSelector(store, (state) => state.context.repo);
+  const spaces = useSelector(store, (state) => state.context.spaces);
+  const updatesInFlight = useSelector(store, (state) => state.context.updatesInFlight);
+  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, subscribeToSpace, inviteToSpace } =
+    useGraphFramework();
 
   return (
     <>
@@ -131,7 +122,7 @@ const App = ({
               })}
               <h3>Updates</h3>
               <RepoContext.Provider value={repo}>
-                <AutomergeApp url={automergeHandle.url} />
+                {space.automergeDocHandle && <AutomergeApp url={space.automergeDocHandle.url} />}
               </RepoContext.Provider>
               <h3>Last update clock: {space.lastUpdateClock}</h3>
               <h3>Updates in flight</h3>

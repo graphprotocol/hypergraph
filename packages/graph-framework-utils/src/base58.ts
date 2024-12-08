@@ -1,4 +1,4 @@
-const BASE58_ALLOWED_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+import { BASE58_ALLOWED_CHARS } from './internal/base58Utils.js';
 
 export type Base58 = string;
 

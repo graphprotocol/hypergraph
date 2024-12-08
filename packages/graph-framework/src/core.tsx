@@ -1,6 +1,5 @@
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
-import { type AutomergeUrl, type DocHandle, Repo } from '@automerge/automerge-repo';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
@@ -27,8 +26,6 @@ import { generateId } from '@graph-framework/utils';
 import { assertExhaustive } from './assertExhaustive.js';
 import type { SpaceStorageEntry } from './store.js';
 import { store } from './store.js';
-
-const hardcodedUrl = 'automerge:2JWupfYZBBm7s2NCy1VnvQa4Vdvf' as AutomergeUrl;
 
 const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
 
@@ -63,8 +60,6 @@ const GraphFrameworkContext = createContext<{
       encryptionPublicKey: string;
     };
   }) => Promise<unknown>;
-  repo: Repo;
-  automergeHandle: DocHandle<unknown>;
 }>({
   invitations: [],
   createSpace: async () => {},
@@ -73,59 +68,16 @@ const GraphFrameworkContext = createContext<{
   acceptInvitation: async () => {},
   subscribeToSpace: () => {},
   inviteToSpace: async () => {},
-  // @ts-expect-error repo is always set
-  repo: undefined,
-  // @ts-expect-error automergeHandle is always set
-  automergeHandle: undefined,
 });
 
 export function GraphFramework({ children, accountId }: Props) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
-  const [repo] = useState<Repo>(() => new Repo({}));
-  const [automergeHandle] = useState<DocHandle<unknown>>(() => repo.find(hardcodedUrl));
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     const websocketConnection = new WebSocket(`ws://localhost:3030/?accountId=${accountId}`);
 
-    const docHandle = automergeHandle;
-    // set it to ready to interact with the document
-    docHandle.doneLoading();
-
-    docHandle.on('change', (result) => {
-      const lastLocalChange = automerge.getLastLocalChange(result.doc);
-      if (!lastLocalChange) {
-        return;
-      }
-
-      try {
-        const storeState = store.getSnapshot();
-        const space = storeState.context.spaces[0];
-
-        const ephemeralId = uuid();
-
-        const nonceAndCiphertext = encryptMessage({
-          message: lastLocalChange,
-          secretKey: hexToBytes(space.keys[0].key),
-        });
-
-        const messageToSend: RequestCreateUpdate = {
-          type: 'create-update',
-          ephemeralId,
-          update: nonceAndCiphertext,
-          spaceId: space.id,
-        };
-        websocketConnection.send(serialize(messageToSend));
-      } catch (error) {
-        console.error('Error sending message', error);
-      }
-    });
-
-    store.send({
-      type: 'setAutomergeDocumentId',
-      automergeDocumentId: docHandle.url.slice(10),
-    });
     setWebsocketConnection(websocketConnection);
 
     const onOpen = () => {
@@ -150,10 +102,9 @@ export function GraphFramework({ children, accountId }: Props) {
       websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
-  }, [accountId, automergeHandle]); // Only recreate when accountId changes
+  }, [accountId]); // Only recreate when accountId changes
 
   // Handle WebSocket messages in a separate effect
-  // biome-ignore lint/correctness/useExhaustiveDependencies: automergeHandle is a mutable object
   useEffect(() => {
     if (!websocketConnection) return;
 
@@ -189,7 +140,7 @@ export function GraphFramework({ children, accountId }: Props) {
 
             const newState = state as SpaceState;
 
-            const storeState = store.getSnapshot();
+            let storeState = store.getSnapshot();
 
             const keys = response.keyBoxes.map((keyBox) => {
               const key = decryptKey({
@@ -210,6 +161,13 @@ export function GraphFramework({ children, accountId }: Props) {
               keys,
             });
 
+            storeState = store.getSnapshot();
+            const automergeDocHandle = storeState.context.spaces.find((s) => s.id === response.id)?.automergeDocHandle;
+            if (!automergeDocHandle) {
+              console.error('No automergeDocHandle found', response.id);
+              return;
+            }
+
             if (response.updates) {
               const updates = response.updates?.updates.map((update) => {
                 return decryptMessage({
@@ -219,11 +177,7 @@ export function GraphFramework({ children, accountId }: Props) {
               });
 
               for (const update of updates) {
-                if (!automergeHandle) {
-                  return;
-                }
-
-                automergeHandle.update((existingDoc) => {
+                automergeDocHandle.update((existingDoc) => {
                   const [newDoc] = automerge.applyChanges(existingDoc, [update]);
                   return newDoc;
                 });
@@ -236,6 +190,36 @@ export function GraphFramework({ children, accountId }: Props) {
                 lastUpdateClock: response.updates?.lastUpdateClock,
               });
             }
+
+            automergeDocHandle.on('change', (result) => {
+              const lastLocalChange = automerge.getLastLocalChange(result.doc);
+              if (!lastLocalChange) {
+                return;
+              }
+
+              try {
+                const storeState = store.getSnapshot();
+                const space = storeState.context.spaces[0];
+
+                const ephemeralId = uuid();
+
+                const nonceAndCiphertext = encryptMessage({
+                  message: lastLocalChange,
+                  secretKey: hexToBytes(space.keys[0].key),
+                });
+
+                const messageToSend: RequestCreateUpdate = {
+                  type: 'create-update',
+                  ephemeralId,
+                  update: nonceAndCiphertext,
+                  spaceId: space.id,
+                };
+                websocketConnection.send(serialize(messageToSend));
+              } catch (error) {
+                console.error('Error sending message', error);
+              }
+            });
+
             break;
           }
           case 'space-event': {
@@ -298,7 +282,7 @@ export function GraphFramework({ children, accountId }: Props) {
               });
             });
 
-            automergeHandle?.update((existingDoc) => {
+            space?.automergeDocHandle?.update((existingDoc) => {
               const [newDoc] = automerge.applyChanges(existingDoc, automergeUpdates);
               return newDoc;
             });
@@ -488,8 +472,6 @@ export function GraphFramework({ children, accountId }: Props) {
         acceptInvitation: acceptInvitationForContext,
         subscribeToSpace,
         inviteToSpace,
-        repo,
-        automergeHandle,
       }}
     >
       {children}
