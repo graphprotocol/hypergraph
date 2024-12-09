@@ -40,14 +40,14 @@ This section describes the different use cases for schema development including 
 ## Rules
 
 - Each entity can have multiple types.
-- All fields can be undefined
+- Custom fields can be undefined.
 - A relation is only valid of a from, to and index exists.
 - All relations are many to many. They can have a hint with the `one max` field about the cardinality.
 - Relation can have additional fields.
+- System properties e.g. `Created by` can't be undefined.
 
 ## Open Questions
 
-- Can system properties also be undefined e.g. `Created by`? What to do in such a case?
 - Does every mapping include the space ID as well or only the type ID, attribute ID and relation ID? This depends of we want sync entities and relations from only one or multiple spaces.
 - Can a local schema type/field map to multiple public schema types/fields? e.g. local `User` maps to the public schema type `User` and `Person`. Therefor the email field should be mapped to the attribute `email` of the `User` type and the attribute `email` of the `Person` type which both might have the same ID, but can be two different fields as well.
 - What to do in case there are conflicting attributes e.g. `Location` and `Sensor` both have an `temperature` field and one is a number and the other a string. Do we merge them or how to map them to different fields? The most reasonable solution I can think of is to map them manually in the mappings file.
@@ -58,7 +58,7 @@ This section describes the different use cases for schema development including 
 - We want immediate feedback on invalid relations.
 - Handling invalid Relations
   - In case the from or to is missing we ignore the relation completely.
-  - In case the index is missing, we set an index at the end of the list. Later we can provide a callback to choose different behavior.
+  - In case the index is missing, we set an index at the end of the list. Later we can provide a callback to choose different behavior. Note: he data service should be validating this already, but can happen in case of end-to-end encrypted sync.
   - In case the index is not unique we pick one of them and move it between this and the next item.
 
 ### Design A
@@ -192,7 +192,7 @@ class Organization {
 
 ## Mappings
 
-- Mappings are optional.
+- Mappings are optional. Context: So developers can start with a local schema and only create the mappings when they feel confident about the schema and publish it.
 - When syncing from public schema we must match the type ID, attribute ID and relation ID.
 
 ### Design 1
