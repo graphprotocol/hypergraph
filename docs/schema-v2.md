@@ -3,7 +3,7 @@
 - **Space**: A place for grouping information.
 - **Private Space**: Information of a space that is not publicly accessible, but only accessible to members of a space.
 - **Public Space**: Information of a space that is publicly accessible.
-- **Personal Space**: A space controlled by a single person.
+- **Personal Space**: A space controlled by a single person or organization.
 
 ## Relationship between Schema and Code
 
@@ -185,7 +185,7 @@ Version 2:
 ```ts
 const entity = createEntity({
   types: ['User', 'Event'],
-  attributes: {
+  data: {
     name: "John Doe",
   },
   spaceId: 'abc',  // optional space ID where the entity should be published in
@@ -221,7 +221,7 @@ const entity = createEntity({
 This will automatically retrieve the latest public version of the entity, create a diff and based on that create an OPS to publish the difference.
 
 ```ts
-publishEdit(entity.id);
+publish(entity.id);
 ```
 
 ### Update an entity
