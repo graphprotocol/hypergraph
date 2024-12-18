@@ -1,9 +1,33 @@
 ## Glossary
 
 - **Space**: A place for grouping information.
-- **Private Space**: Information of a space that is not publicly accessible, but only accessible to members of a space.
-- **Public Space**: Information of a space that is publicly accessible.
-- **Personal Space**: A space controlled by a single person or organization.
+- **Private Space**: Information is only accessible to it's members and is directly governed by it's members.
+- **Personal Space**: Information is publicly available and is directly governed by it's members.
+- **Public Space**: Information is publicly available and is governed by the community.
+
+The table below should help to understand the relationship between the different space types.
+
+<table>
+  <tr>
+    <td colspan="2" rowspan="2"></td>
+    <td colspan="2">Visibility</td>
+  </tr>
+  <tr>
+    <td>Private</td>
+    <td>Public</td>
+  </tr>
+  <tr>
+    <td rowspan="2">Governance</td>
+    <td>Private</td>
+    <td>Private</td>
+    <td>Personal</td>
+  </tr>
+  <tr>
+    <td>Public</td>
+    <td>(does not exist)</td>
+    <td>Public</td>
+  </tr>
+</table>
 
 ## Relationship between Schema and Code
 
@@ -35,9 +59,9 @@ For the public schemas there is a global index and we need to specify to an inde
   - In case the index is missing, we set an index at the end of the list. Later we can provide a callback to choose different behavior. Note: he data service should be validating this already, but can happen in case of end-to-end encrypted sync.
   - In case the index is not unique we pick one of them and move it between this and the next item.
 
-### Design A
+### Design
 
-An object based schema definition where relations must be defined on the entity type. This design assumes that the local schema doesn't deal with entities having multiple types. This fact is only dealt with in the mappings file and therefor the local schema stays a lot simpler.
+An object based schema definition where relations must be defined on the entity type.
 
 ```ts
 export const schema = {
@@ -65,22 +89,22 @@ export const schema = {
     name: type.Text,
     email: type.Text,
     ownedEvents: type.Relation({
-      map: 'user_owned_events',
+      key: 'user_owned_events',
       types: 'Event',
     }),
     participatingEvents: type.Relation({
-      map: 'event_participants',
+      key: 'event_participants',
       types: 'Event',
     }),
   },
   Event: {
     name: type.Text,
     owners: type.Relation({
-      map: 'user_owned_events',
+      key: 'user_owned_events',
       types: 'User',
     }),
     participants: type.Relation({
-      map: 'event_participants',
+      key: 'event_participants',
       types: 'User',
     }),
   },
@@ -168,27 +192,13 @@ Note: if a function uses an spaceId that is not set as the default space ID or o
 
 ### Create a new entity
 
-Version 1:
-
-```ts
-const item = createEntity(
-  ['User', 'Event'],
-  {
-    name: "John Doe",
-  },
-  'abc' // optional space ID where the entity should be published in
-)
-```
-
-Version 2:
-
 ```ts
 const entity = createEntity({
   types: ['User', 'Event'],
   data: {
     name: "John Doe",
   },
-  spaceId: 'abc',  // optional space ID where the entity should be published in
+  space: 'abc',  // optional space ID where the entity should be published in
 })
 ```
 
@@ -216,12 +226,33 @@ const entity = createEntity({
 })
 ```
 
-### Publishing an entity
+### Publishing edits
 
-This will automatically retrieve the latest public version of the entity, create a diff and based on that create an OPS to publish the difference.
+The idea behind it is that users will do several operations on various entities and then publish them all at once. We assume publishing operations per space is the most common use-case. That's why we want to provide a review process where the user can review the operations and remove parts that should not be published.
+
+The result is a multi-step process with 2 API calls:
+
+Step 1: `createEdit` calculates the `ops` based on the diff between the local and the latest public version, allows to add meta data e.g. name, additional authors
+Step 2: user can review the `ops` and remove parts that should not be published
+Step 3: `publish` submit the `edit`
+
+In case the app knows the exact intentions manual review could be skipped or ops removed from the edit before presented to the user for review.
 
 ```ts
-publish(entity.id);
+const edit = createEdit({
+  name: 'Add a new event',
+  authors: ["7UiGr3qnjZfRuKs3F3CX61", …]
+});
+
+const edit = createEdit({
+  name: 'Add a new event',
+  authors: ["7UiGr3qnjZfRuKs3F3CX61", …],
+  space: 'abc', // optional spaceId to define the space where the edit should be published in
+});
+```
+
+```ts
+publish(edit);
 ```
 
 ### Update an entity
@@ -250,21 +281,23 @@ updateEntity({
 });
 ```
 
-### Setting an attribute on an entity
+### Setting an attribute/relation on an entity without a schema
 
-It's possible to set an attribute on an entity and publish it directly. Since there is no entry in the schema or mappings file we need to set and publish the attribute directly. If we only store the attribute locally on the next publish the attribute would not be taken into account since we don't know what's the public attribute ID.
+It's possible to set an attribute on an entity and publish it directly. Since there is no entry in the mappings file we use the attribute ID as key and set the value as value. This way with the next `createEdit` the attribute will be taken into account.
 
 ```ts
-setAndPublishEntityAttribute({
-  id: entity.id,
-  key: 'name',
+setTriple({
+  entity: entity.id,
+  attribute: 'abc',
   value: 'John Doe',
-  attributeId: 'abc',
 });
 ```
+
+Adding/removing relations that are not defined in the schema still needs to be defined.
 
 ### Querying entities
 
 Here we want to match the SDK for the public GraphQL. Still in progress here: https://www.notion.so/Data-block-query-strings-152273e214eb808898dac2d6b1b3820c
 
 TODO how do we distinguish between local and public queries?
+
