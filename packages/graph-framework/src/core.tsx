@@ -1,5 +1,6 @@
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
@@ -74,6 +75,8 @@ export function GraphFramework({ children, accountId }: Props) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
+  const repo = useSelector(store, (state) => state.context.repo);
+
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     const websocketConnection = new WebSocket(`ws://localhost:3030/?accountId=${accountId}`);
@@ -474,7 +477,7 @@ export function GraphFramework({ children, accountId }: Props) {
         inviteToSpace,
       }}
     >
-      {children}
+      <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>
     </GraphFrameworkContext.Provider>
   );
 }

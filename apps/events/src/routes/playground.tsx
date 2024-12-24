@@ -1,4 +1,3 @@
-import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 
@@ -45,7 +44,6 @@ const App = ({
   encryptionPrivateKey: string;
   encryptionPublicKey: string;
 }) => {
-  const repo = useSelector(store, (state) => state.context.repo);
   const spaces = useSelector(store, (state) => state.context.spaces);
   const updatesInFlight = useSelector(store, (state) => state.context.updatesInFlight);
   const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, subscribeToSpace, inviteToSpace } =
@@ -121,9 +119,7 @@ const App = ({
                 );
               })}
               <h3>Updates</h3>
-              <RepoContext.Provider value={repo}>
-                {space.automergeDocHandle && <AutomergeApp url={space.automergeDocHandle.url} />}
-              </RepoContext.Provider>
+              {space.automergeDocHandle && <AutomergeApp url={space.automergeDocHandle.url} />}
               <h3>Last update clock: {space.lastUpdateClock}</h3>
               <h3>Updates in flight</h3>
               <ul className="text-xs">
