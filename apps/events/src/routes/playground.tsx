@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { GraphFramework, store, useGraphFramework, useSelector } from '@graphprotocol/graph-framework';
+import { GraphFramework, SpacesProvider, store, useGraphFramework, useSelector } from '@graphprotocol/graph-framework';
 
-import { AutomergeApp } from '@/components/automerge-app';
 import { DebugInvitations } from '@/components/debug-invitations';
 import { DebugSpaceEvents } from '@/components/debug-space-events';
 import { DebugSpaceState } from '@/components/debug-space-state';
+import { TodosApp } from '@/components/todos-app';
 import { Button } from '@/components/ui/button';
 
 const availableAccounts = [
@@ -89,55 +89,58 @@ const App = ({
         {spaces.map((space) => {
           return (
             <li key={space.id}>
-              <h3>Space id: {space.id}</h3>
-              <p>Keys:</p>
-              <pre className="text-xs">{JSON.stringify(space.keys)}</pre>
-              <Button
-                onClick={() => {
-                  subscribeToSpace({ spaceId: space.id });
-                }}
-              >
-                Get data and subscribe to Space
-              </Button>
-              <br />
-              {availableAccounts.map((invitee) => {
-                return (
-                  <Button
-                    key={invitee.accountId}
-                    onClick={() => {
-                      inviteToSpace({
-                        encryptionPublicKey,
-                        encryptionPrivateKey,
-                        signaturePrivateKey,
-                        space,
-                        invitee,
-                      });
-                    }}
-                  >
-                    Invite {invitee.accountId.substring(0, 4)}
-                  </Button>
-                );
-              })}
-              <h3>Updates</h3>
-              {space.automergeDocHandle && <AutomergeApp url={space.automergeDocHandle.url} />}
-              <h3>Last update clock: {space.lastUpdateClock}</h3>
-              <h3>Updates in flight</h3>
-              <ul className="text-xs">
-                {updatesInFlight.map((updateInFlight) => {
+              <SpacesProvider defaultSpace={space.id}>
+                <h3>Space id: {space.id}</h3>
+                <p>Keys:</p>
+                <pre className="text-xs">{JSON.stringify(space.keys)}</pre>
+                <Button
+                  onClick={() => {
+                    subscribeToSpace({ spaceId: space.id });
+                  }}
+                >
+                  Get data and subscribe to Space
+                </Button>
+                <br />
+                {availableAccounts.map((invitee) => {
                   return (
-                    <li key={updateInFlight} className="border border-gray-300">
-                      {updateInFlight}
-                    </li>
+                    <Button
+                      key={invitee.accountId}
+                      onClick={() => {
+                        inviteToSpace({
+                          encryptionPublicKey,
+                          encryptionPrivateKey,
+                          signaturePrivateKey,
+                          space,
+                          invitee,
+                        });
+                      }}
+                    >
+                      Invite {invitee.accountId.substring(0, 4)}
+                    </Button>
                   );
                 })}
-              </ul>
-              <hr />
-              <h3>State</h3>
-              <DebugSpaceState state={space.state} />
-              <hr />
-              <h3>Events</h3>
-              <DebugSpaceEvents events={space.events} />
-              <hr />
+                <h3>Updates</h3>
+
+                <TodosApp />
+                <h3>Last update clock: {space.lastUpdateClock}</h3>
+                <h3>Updates in flight</h3>
+                <ul className="text-xs">
+                  {updatesInFlight.map((updateInFlight) => {
+                    return (
+                      <li key={updateInFlight} className="border border-gray-300">
+                        {updateInFlight}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <hr />
+                <h3>State</h3>
+                <DebugSpaceState state={space.state} />
+                <hr />
+                <h3>Events</h3>
+                <DebugSpaceEvents events={space.events} />
+                <hr />
+              </SpacesProvider>
             </li>
           );
         })}

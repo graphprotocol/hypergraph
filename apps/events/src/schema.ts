@@ -1,35 +1,12 @@
-import { createFunctions, type } from '@graphprotocol/graph-framework';
+import { createSchemaHooks, type } from '@graphprotocol/graph-framework';
 
-export const schema = {
+const schema = createSchemaHooks({
   types: {
-    Person: {
-      name: type.Text,
-      age: type.Number,
-      badge: type.Relation({
-        types: ['Badge'] as const,
-        cardinality: 'one',
-      }),
-    },
-    User: {
-      name: type.Text,
-      email: type.Text,
-    },
-    Badge: {
-      name: type.Text,
-    },
-    Event: {
-      name: type.Text,
-      participants: type.Relation({
-        types: ['Person'] as const,
-        cardinality: 'many',
-      }),
-      author: type.Relation({
-        types: ['User', 'Person'] as const,
-        cardinality: 'one',
-      }),
+    Todo: {
+      title: type.Text,
+      completed: type.Checkbox,
     },
   },
-};
+});
 
-export const { SpaceProvider, useCreateEntity, useDeleteEntity, useSpaceId, createDocumentId, useQuery } =
-  createFunctions(schema);
+export const { useCreateEntity, useDeleteEntity, useQuery } = schema;
