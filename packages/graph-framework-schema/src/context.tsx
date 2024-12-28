@@ -251,12 +251,16 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
     const id = useDefaultAutomergeDocId();
     const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
 
-    function updateEntity<K extends readonly EntityKeys<T>[]>(
-      entityId: string,
-      types: [...K],
+    function updateEntity<K extends readonly EntityKeys<T>[]>({
+      id: entityId,
+      types,
+      data: updates,
+    }: {
+      id: string;
+      types: [...K];
       // biome-ignore lint/complexity/noBannedTypes: in this case an empty object is fine
-      updates: Partial<MergedEntityType<T, K, {}>>, // allow partial updates
-    ): boolean {
+      data: Partial<MergedEntityType<T, K, {}>>;
+    }): boolean {
       if (types.length === 0) {
         throw new Error('Entity must have at least one type');
       }
@@ -265,7 +269,6 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
 
       let success = false;
 
-      console.log('updateEntity', entityId, types, updates);
       changeDoc((doc) => {
         if (!doc.entities || !doc.entities[entityId]) {
           return;

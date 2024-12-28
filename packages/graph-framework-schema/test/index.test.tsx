@@ -35,7 +35,7 @@ describe('Library Tests', () => {
   const spaceId = '52gTkePWSoGdXmgZF3nRU';
 
   // Create functions from the schema
-  const { useCreateEntity, useDeleteEntity, useQuery } = createSchemaHooks(schema);
+  const { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } = createSchemaHooks(schema);
 
   let repo = new Repo({});
   let wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -117,6 +117,65 @@ describe('Library Tests', () => {
     act(() => {
       const badgesAfterDelete = queryResult.current;
       expect(badgesAfterDelete).toHaveLength(0);
+    });
+  });
+
+  it('should update an entity', () => {
+    const { result: createResult } = renderHook(() => useCreateEntity(), {
+      wrapper,
+    });
+
+    const { result: updateResult } = renderHook(() => useUpdateEntity(), {
+      wrapper,
+    });
+
+    const { result: queryResult } = renderHook(() => useQuery({ types: ['Person'] }), { wrapper });
+
+    // Create a person
+    act(() => {
+      createResult.current({
+        types: ['Person'],
+        data: {
+          name: 'John',
+          age: 25,
+        },
+      });
+    });
+
+    let personId: string | undefined;
+
+    // Get the created person's ID
+    act(() => {
+      const people = queryResult.current;
+      expect(people).toHaveLength(1);
+      expect(people[0]?.name).toBe('John');
+      expect(people[0]?.age).toBe(25);
+      personId = people[0]?.id;
+    });
+
+    // Update the person
+    act(() => {
+      expect(personId).not.toBeNull();
+      expect(personId).not.toBeUndefined();
+      if (personId) {
+        const success = updateResult.current({
+          id: personId,
+          types: ['Person'],
+          data: {
+            name: 'John Doe',
+            age: 26,
+          },
+        });
+        expect(success).toBe(true);
+      }
+    });
+
+    // Verify the update
+    act(() => {
+      const peopleAfterUpdate = queryResult.current;
+      expect(peopleAfterUpdate).toHaveLength(1);
+      expect(peopleAfterUpdate[0]?.name).toBe('John Doe');
+      expect(peopleAfterUpdate[0]?.age).toBe(26);
     });
   });
 });

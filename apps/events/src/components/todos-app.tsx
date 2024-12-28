@@ -33,7 +33,13 @@ export const TodosApp = () => {
           <input
             type="checkbox"
             checked={todo.completed}
-            onChange={(e) => updateEntity(todo.id, ['Todo'], { completed: e.target.checked })}
+            onChange={(e) =>
+              updateEntity({
+                id: todo.id,
+                types: ['Todo'],
+                data: { completed: e.target.checked },
+              })
+            }
           />
           <Button onClick={() => deleteEntity(todo.id)}>Delete</Button>
         </div>
