@@ -1,6 +1,6 @@
 import { createSchemaHooks, type } from '@graphprotocol/graph-framework';
 
-const schema = createSchemaHooks({
+export const { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } = createSchemaHooks({
   types: {
     Todo: {
       title: type.Text,
@@ -8,5 +8,3 @@ const schema = createSchemaHooks({
     },
   },
 });
-
-export const { useCreateEntity, useDeleteEntity, useQuery } = schema;

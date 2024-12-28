@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useCreateEntity, useQuery } from '../schema';
+import { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const TodosApp = () => {
   const createEntity = useCreateEntity();
+  const updateEntity = useUpdateEntity();
+  const deleteEntity = useDeleteEntity();
   const todos = useQuery({ types: ['Todo'] });
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
@@ -23,9 +25,14 @@ export const TodosApp = () => {
         </Button>
       </div>
       {todos.map((todo) => (
-        <div key={todo.id} className="flex flex-row gap-2">
+        <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.title}</h2>
-          <input type="checkbox" checked={todo.completed} />
+          <input
+            type="checkbox"
+            checked={todo.completed}
+            onChange={(e) => updateEntity(todo.id, ['Todo'], { completed: e.target.checked })}
+          />
+          <Button onClick={() => deleteEntity(todo.id)}>Delete</Button>
         </div>
       ))}
     </div>

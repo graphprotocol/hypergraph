@@ -119,8 +119,6 @@ const App = ({
                     </Button>
                   );
                 })}
-                <h3>Updates</h3>
-
                 <TodosApp />
                 <h3>Last update clock: {space.lastUpdateClock}</h3>
                 <h3>Updates in flight</h3>

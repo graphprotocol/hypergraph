@@ -226,12 +226,12 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
         }
       }
 
-      // Create filteredEntities object with only entities that include all the types
+      // Create filteredEntities object with only entities that include all the types and attach the entity id
       const filteredEntities: Record<string, MergedEntityType<T, K, BaseEntity>> = {};
       for (const entityId in doc.entities) {
         const entity = doc.entities[entityId];
-        if (types.every((type) => entity.types.includes(type as string))) {
-          filteredEntities[entityId] = entity as MergedEntityType<T, K, BaseEntity>;
+        if (types.every((type) => entity.types?.includes(type as string))) {
+          filteredEntities[entityId] = { ...entity, id: entityId } as MergedEntityType<T, K, BaseEntity>;
         }
       }
 
@@ -249,9 +249,64 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
     return entities;
   }
 
+  function useUpdateEntity() {
+    const id = useDefaultAutomergeDocId();
+    const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
+
+    function updateEntity<K extends readonly EntityKeys<T>[]>(
+      entityId: string,
+      types: [...K],
+      // biome-ignore lint/complexity/noBannedTypes: in this case an empty object is fine
+      updates: Partial<MergedEntityType<T, K, {}>>, // allow partial updates
+    ): boolean {
+      if (types.length === 0) {
+        throw new Error('Entity must have at least one type');
+      }
+
+      const mergedSchema = buildMergedSchema(types);
+
+      let success = false;
+
+      console.log('updateEntity', entityId, types, updates);
+      changeDoc((doc) => {
+        if (!doc.entities || !doc.entities[entityId]) {
+          return;
+        }
+
+        const existingEntity = doc.entities[entityId];
+        // verify that the entity has all the required types
+        if (!types.every((type) => existingEntity.types.includes(type))) {
+          return;
+        }
+
+        // Merge updates with existing entity data to validate it against the schema
+        const updatedData = {
+          ...existingEntity,
+          ...updates,
+          types: existingEntity.types, // Preserve types
+        };
+
+        try {
+          S.decodeUnknownSync(mergedSchema)(updatedData);
+          for (const key in updates) {
+            doc.entities[entityId][key] = updates[key];
+          }
+          success = true;
+        } catch (error) {
+          console.error('Schema validation failed:', error);
+        }
+      });
+
+      return success;
+    }
+
+    return updateEntity;
+  }
+
   return {
     useCreateEntity,
     useDeleteEntity,
+    useUpdateEntity,
     useQuery,
   };
 }
