@@ -33,12 +33,10 @@ type BaseEntity = {
 type SchemaType<T> = T extends S.Schema<SchemaTypeUnknown, infer A> ? A : never;
 
 // Type for the schema structure
-export type SchemaDefinition = {
-  types: Record<string, Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>>>;
-};
+export type SchemaDefinition = Record<string, Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>>>;
 
 // Extract all possible keys from schema types
-type EntityKeys<T extends SchemaDefinition> = keyof T['types'] & string;
+type EntityKeys<T extends SchemaDefinition> = keyof T & string;
 
 // Get merged type from array of keys
 type MergedEntityType<
@@ -48,7 +46,7 @@ type MergedEntityType<
 > = UnionToIntersection<
   {
     [K in Keys[number]]: {
-      [P in keyof T['types'][K]]: SchemaType<T['types'][K][P]>;
+      [P in keyof T[K]]: SchemaType<T[K][P]>;
     };
   }[Keys[number]]
 > &
@@ -96,15 +94,13 @@ const useDefaultAutomergeDocId = () => {
 export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
   function buildMergedSchema<K extends readonly EntityKeys<T>[]>(
     types: [...K],
-    // biome-ignore lint/complexity/noBannedTypes: <explanation>
+    // biome-ignore lint/complexity/noBannedTypes: empty object is fine
   ): S.Schema<SchemaTypeUnknown, MergedEntityType<T, K, {}>> {
-    // Create a record of all properties and their schemas
     const propertySchemas = types.reduce(
       (acc, type) => {
-        const typeSchema = schema.types[type];
+        const typeSchema = schema[type];
 
         for (const [key, prop] of Object.entries(typeSchema)) {
-          // Regular property
           acc[key] = prop as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
         }
 
@@ -113,8 +109,7 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
       {} as Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>>,
     );
 
-    // Convert the record to a struct schema
-    // biome-ignore lint/complexity/noBannedTypes: <explanation>
+    // biome-ignore lint/complexity/noBannedTypes: empty object is fine
     return S.Struct(propertySchemas) as unknown as S.Schema<SchemaTypeUnknown, MergedEntityType<T, K, {}>>;
   }
 

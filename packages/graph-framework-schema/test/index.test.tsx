@@ -16,21 +16,19 @@ afterEach(() => {
 
 describe('Library Tests', () => {
   const schema = {
-    types: {
-      Person: {
-        name: type.Text,
-        age: type.Number,
-      },
-      User: {
-        name: type.Text,
-        email: type.Text,
-      },
-      Badge: {
-        name: type.Text,
-      },
-      Event: {
-        name: type.Text,
-      },
+    Person: {
+      name: type.Text,
+      age: type.Number,
+    },
+    User: {
+      name: type.Text,
+      email: type.Text,
+    },
+    Badge: {
+      name: type.Text,
+    },
+    Event: {
+      name: type.Text,
     },
   };
 
