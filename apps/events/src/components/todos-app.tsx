@@ -17,7 +17,10 @@ export const TodosApp = () => {
         <Input type="text" value={newTodoTitle} onChange={(e) => setNewTodoTitle(e.target.value)} />
         <Button
           onClick={() => {
-            createEntity(['Todo'], { title: newTodoTitle, completed: false });
+            createEntity({
+              types: ['Todo'],
+              data: { title: newTodoTitle, completed: false },
+            });
             setNewTodoTitle('');
           }}
         >

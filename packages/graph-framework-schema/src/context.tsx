@@ -117,12 +117,15 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
     const id = useDefaultAutomergeDocId();
     const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
 
-    function createEntity<K extends readonly EntityKeys<T>[]>(
-      types: [...K],
-      // biome-ignore lint/complexity/noBannedTypes: <explanation>
-      data: MergedEntityType<T, K, {}>,
-      // biome-ignore lint/complexity/noBannedTypes: <explanation>
-    ): MergedEntityType<T, K, {}> {
+    function createEntity<K extends readonly EntityKeys<T>[]>({
+      types,
+      data,
+    }: {
+      types: [...K];
+      // biome-ignore lint/complexity/noBannedTypes: empty object is fine
+      data: MergedEntityType<T, K, {}>;
+      // biome-ignore lint/complexity/noBannedTypes: empty object is fine
+    }): MergedEntityType<T, K, {}> {
       if (types.length === 0) {
         throw new Error('Entity must have at least one type');
       }

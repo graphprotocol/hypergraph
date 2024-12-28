@@ -67,8 +67,11 @@ describe('Library Tests', () => {
     const { result: queryResult } = renderHook(() => useQuery({ types: ['Event'] }), { wrapper });
 
     act(() => {
-      createResult.current(['Event'], {
-        name: 'Conference',
+      createResult.current({
+        types: ['Event'],
+        data: {
+          name: 'Conference',
+        },
       });
     });
 
@@ -90,7 +93,10 @@ describe('Library Tests', () => {
     let badgeId: string | undefined;
 
     act(() => {
-      createResult.current(['Badge'], { name: 'Exclusive' });
+      createResult.current({
+        types: ['Badge'],
+        data: { name: 'Exclusive' },
+      });
     });
 
     act(() => {
