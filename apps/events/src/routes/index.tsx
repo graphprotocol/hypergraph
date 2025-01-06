@@ -1,8 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-
-import { repo } from '@graphprotocol/graph-framework';
-
-import { Button } from '@/components/ui/button';
+import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -22,21 +18,5 @@ export const Route = createFileRoute('/')({
 });
 
 export function Index() {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-1 justify-center items-center flex-col gap-4">
-      <Button
-        onClick={() => {
-          const result = repo.create();
-          navigate({
-            to: '/space/$spaceId',
-            params: { spaceId: result.documentId },
-          });
-        }}
-      >
-        Create Space
-      </Button>
-      {/* <Logout /> */}
-    </div>
-  );
+  return <div className="flex flex-1 justify-center items-center flex-col gap-4">{/* <Logout /> */}</div>;
 }

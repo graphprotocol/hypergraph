@@ -29,15 +29,15 @@
   },
   "peerDependencies": {
     "@automerge/automerge": "^2",
-    "@automerge/automerge-repo": "^1",
-    "@automerge/automerge-repo-react-hooks": "^1",
+    "@automerge/automerge-repo": "^2",
+    "@automerge/automerge-repo-react-hooks": "^2",
     "effect": "^3.10.19",
     "react": "^18"
   },
   "devDependencies": {
-    "@automerge/automerge": "^2.2.8",
-    "@automerge/automerge-repo": "^1.2.1",
-    "@automerge/automerge-repo-react-hooks": "^1.2.1",
+    "@automerge/automerge": "^v2.2.9-alpha.3",
+    "@automerge/automerge-repo": "^2.0.0-alpha.14",
+    "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
     "effect": "^3.10.19",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
