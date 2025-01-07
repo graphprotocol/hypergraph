@@ -180,7 +180,7 @@ describe('Library Tests', () => {
   });
 });
 
-describe.only('Relations Tests', () => {
+describe('Relations Tests', () => {
   const schema = {
     User: {
       name: type.Text,
@@ -221,57 +221,60 @@ describe.only('Relations Tests', () => {
     );
   });
 
-  // it('should create entities with relations', () => {
-  //   const { result: createResult } = renderHook(() => useCreateEntity(), {
-  //     wrapper,
-  //   });
+  it('should create entities with relations', () => {
+    const { result: createResult } = renderHook(() => useCreateEntity(), {
+      wrapper,
+    });
 
-  //   const { result: queryUsersResult } = renderHook(() => useQuery({ types: ['User'], include: { events: true } }), {
-  //     wrapper,
-  //   });
+    const { result: queryUsersResult } = renderHook(() => useQuery({ types: ['User'] }), {
+      wrapper,
+    });
 
-  //   const { result: queryEventsResult } = renderHook(
-  //     () => useQuery({ types: ['Event'], include: { attendees: true } }),
-  //     { wrapper },
-  //   );
+    renderHook(() => useQuery({ types: ['Event'] }), {
+      wrapper,
+    });
 
-  //   // Create an event
-  //   let eventId: string;
-  //   act(() => {
-  //     const { id } = createResult.current({
-  //       types: ['Event'],
-  //       data: {
-  //         name: 'Tech Conference',
-  //       },
-  //     });
-  //     console.log('eventId', id);
-  //     eventId = queryEventsResult.current[0].id;
-  //   });
+    const { result: queryRelationsResult } = renderHook(() => useQuery({ types: ['AttendeeOf'] }), {
+      wrapper,
+    });
 
-  //   // Create a user with relation to the event
-  //   act(() => {
-  //     createResult.current({
-  //       types: ['User'],
-  //       data: {
-  //         name: 'John Doe',
-  //         email: 'john@example.com',
-  //         events: [eventId],
-  //       },
-  //     });
-  //   });
+    // Create a user first
+    act(() => {
+      createResult.current({
+        types: ['User'],
+        data: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          events: [],
+        },
+      });
+    });
 
-  //   // Verify relations
-  //   act(() => {
-  //     const users = queryUsersResult.current;
-  //     const events = queryEventsResult.current;
+    let userId: string;
+    act(() => {
+      const users = queryUsersResult.current;
+      expect(users).toHaveLength(1);
+      userId = users[0].id;
+    });
 
-  //     expect(users).toHaveLength(1);
-  //     expect(users[0].events).toHaveLength(1);
-  //     expect(users[0].events[0].name).toBe('Tech Conference');
+    // Create an event with relation to the user
+    act(() => {
+      createResult.current({
+        types: ['Event'],
+        data: {
+          name: 'Tech Conference',
+          attendees: [userId],
+        },
+      });
+    });
 
-  //     expect(events).toHaveLength(1);
-  //     expect(events[0].attendees).toHaveLength(1);
-  //     expect(events[0].attendees[0].name).toBe('John Doe');
-  //   });
-  // });
+    // Verify relations
+    act(() => {
+      const relations = queryRelationsResult.current;
+      expect(relations).toHaveLength(1);
+      expect(relations[0].types).toContain('AttendeeOf');
+      expect(relations[0].from).toBeDefined();
+      expect(relations[0].to).toBe(userId);
+    });
+  });
 });

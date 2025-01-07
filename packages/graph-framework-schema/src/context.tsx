@@ -158,9 +158,38 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
         if (!doc.entities) {
           doc.entities = {};
         }
-        // Add the main entity
+
+        // Generate ID for the main entity
         const entityId = generateId();
-        doc.entities[entityId] = { ...result, types };
+
+        // Create a copy of the data without relation fields
+        const entityData = { ...result };
+        const entityType = types[0]; // Get the primary type
+        const typeSchema = schema[entityType];
+
+        // Handle relations
+        for (const [key, prop] of Object.entries(typeSchema)) {
+          if (typeof prop === 'object' && '_tag' in prop && prop._tag === 'Relation') {
+            const relationIds = result[key] as string[];
+            if (relationIds) {
+              // Remove relation field from main entity data
+              delete entityData[key];
+
+              // Create relation entities
+              for (const targetId of relationIds) {
+                const relationId = generateId();
+                doc.entities[relationId] = {
+                  types: [prop.key],
+                  from: entityId,
+                  to: targetId,
+                };
+              }
+            }
+          }
+        }
+
+        // Add the main entity
+        doc.entities[entityId] = { ...entityData, types };
       });
 
       return result as MergedEntityType<T, K, BaseEntity>;
