@@ -22,6 +22,11 @@ export const type = {
   Text: S.String,
   Number: S.Number,
   Checkbox: S.Boolean,
+  Relation: (config: { key: string; type: string }) => ({
+    _tag: 'Relation' as const,
+    key: config.key,
+    type: config.type,
+  }),
 };
 
 type BaseEntity = {
@@ -32,8 +37,18 @@ type BaseEntity = {
 // Helper type to extract schema type
 type SchemaType<T> = T extends S.Schema<SchemaTypeUnknown, infer A> ? A : never;
 
-// Type for the schema structure
-export type SchemaDefinition = Record<string, Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>>>;
+// Add a type for Relations
+type RelationType = {
+  _tag: 'Relation';
+  key: string;
+  type: string;
+};
+
+// Update SchemaDefinition to accept both Schema and RelationType
+export type SchemaDefinition = Record<
+  string,
+  Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown> | RelationType>
+>;
 
 // Extract all possible keys from schema types
 type EntityKeys<T extends SchemaDefinition> = keyof T & string;
@@ -101,7 +116,13 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
         const typeSchema = schema[type];
 
         for (const [key, prop] of Object.entries(typeSchema)) {
-          acc[key] = prop as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
+          // Check if the property is a relation
+          if (typeof prop === 'object' && '_tag' in prop && prop._tag === 'Relation') {
+            // For relations, we'll use a string array schema
+            acc[key] = S.Array(S.String) as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
+          } else {
+            acc[key] = prop as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
+          }
         }
 
         return acc;

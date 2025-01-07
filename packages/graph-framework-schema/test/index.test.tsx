@@ -179,3 +179,99 @@ describe('Library Tests', () => {
     });
   });
 });
+
+describe.only('Relations Tests', () => {
+  const schema = {
+    User: {
+      name: type.Text,
+      email: type.Text,
+      events: type.Relation({
+        key: 'AttendeeOf',
+        type: 'Event',
+      }),
+    },
+    Event: {
+      name: type.Text,
+      attendees: type.Relation({
+        key: 'AttendeeOf',
+        type: 'User',
+      }),
+    },
+  };
+
+  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+  const { useCreateEntity, useQuery } = createSchemaHooks(schema);
+
+  let repo = new Repo({});
+  let wrapper = ({ children }: { children: React.ReactNode }) => (
+    <RepoContext.Provider value={repo}>
+      <SpacesProvider defaultSpace={spaceId}>{children}</SpacesProvider>
+    </RepoContext.Provider>
+  );
+
+  beforeEach(() => {
+    repo = new Repo({});
+    const automergeDocHandle = repo.find(idToAutomergeId(spaceId) as AnyDocumentId);
+    automergeDocHandle.doneLoading();
+
+    wrapper = ({ children }: { children: React.ReactNode }) => (
+      <RepoContext.Provider value={repo}>
+        <SpacesProvider defaultSpace={spaceId}>{children}</SpacesProvider>
+      </RepoContext.Provider>
+    );
+  });
+
+  // it('should create entities with relations', () => {
+  //   const { result: createResult } = renderHook(() => useCreateEntity(), {
+  //     wrapper,
+  //   });
+
+  //   const { result: queryUsersResult } = renderHook(() => useQuery({ types: ['User'], include: { events: true } }), {
+  //     wrapper,
+  //   });
+
+  //   const { result: queryEventsResult } = renderHook(
+  //     () => useQuery({ types: ['Event'], include: { attendees: true } }),
+  //     { wrapper },
+  //   );
+
+  //   // Create an event
+  //   let eventId: string;
+  //   act(() => {
+  //     const { id } = createResult.current({
+  //       types: ['Event'],
+  //       data: {
+  //         name: 'Tech Conference',
+  //       },
+  //     });
+  //     console.log('eventId', id);
+  //     eventId = queryEventsResult.current[0].id;
+  //   });
+
+  //   // Create a user with relation to the event
+  //   act(() => {
+  //     createResult.current({
+  //       types: ['User'],
+  //       data: {
+  //         name: 'John Doe',
+  //         email: 'john@example.com',
+  //         events: [eventId],
+  //       },
+  //     });
+  //   });
+
+  //   // Verify relations
+  //   act(() => {
+  //     const users = queryUsersResult.current;
+  //     const events = queryEventsResult.current;
+
+  //     expect(users).toHaveLength(1);
+  //     expect(users[0].events).toHaveLength(1);
+  //     expect(users[0].events[0].name).toBe('Tech Conference');
+
+  //     expect(events).toHaveLength(1);
+  //     expect(events[0].attendees).toHaveLength(1);
+  //     expect(events[0].attendees[0].name).toBe('John Doe');
+  //   });
+  // });
+});
