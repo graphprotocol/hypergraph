@@ -19,7 +19,7 @@ export const TodosApp = () => {
           onClick={() => {
             createEntity({
               types: ['Todo'],
-              data: { title: newTodoTitle, completed: false },
+              data: { name: newTodoTitle, completed: false },
             });
             setNewTodoTitle('');
           }}
@@ -29,7 +29,7 @@ export const TodosApp = () => {
       </div>
       {todos.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
-          <h2>{todo.title}</h2>
+          <h2>{todo.name}</h2>
           <input
             type="checkbox"
             checked={todo.completed}
