@@ -18,13 +18,17 @@
     "check:fix": "pnpm biome check --write src/*"
   },
   "dependencies": {
+    "@graph-framework/identity": "workspace:*",
+    "@graph-framework/messages": "workspace:*",
+    "@graph-framework/space-events": "workspace:*",
+    "@noble/ciphers": "^1.0.0",
     "@prisma/client": "5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "effect": "^3.10.19",
     "express": "^5.0.1",
-    "@graph-framework/space-events": "workspace:*",
-    "@graph-framework/messages": "workspace:*",
+    "siwe": "^2.3.2",
+    "viem": "^2.21.56",
     "ws": "^8.17.1"
   },
   "devDependencies": {

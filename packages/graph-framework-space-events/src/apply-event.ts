@@ -1,4 +1,4 @@
-import { canonicalize, stringToUint8Array } from '@graph-framework/utils';
+import { canonicalize, hexToBytes, stringToUint8Array } from '@graph-framework/utils';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect, Schema } from 'effect';
 import type { ParseError } from 'effect/ParseResult';
@@ -40,9 +40,14 @@ export const applyEvent = ({
 
   const encodedTransaction = stringToUint8Array(canonicalize(event.transaction));
 
-  const isValidSignature = secp256k1.verify(event.author.signature, encodedTransaction, event.author.publicKey, {
-    prehash: true,
-  });
+  const isValidSignature = secp256k1.verify(
+    event.author.signature,
+    encodedTransaction,
+    hexToBytes(event.author.publicKey),
+    {
+      prehash: true,
+    },
+  );
 
   if (!isValidSignature) {
     return Effect.fail(new VerifySignatureError());
@@ -56,6 +61,7 @@ export const applyEvent = ({
   if (event.transaction.type === 'create-space') {
     id = event.transaction.id;
     members[event.transaction.creatorSignaturePublicKey] = {
+      accountId: event.transaction.creatorAccountId,
       signaturePublicKey: event.transaction.creatorSignaturePublicKey,
       encryptionPublicKey: event.transaction.creatorEncryptionPublicKey,
       role: 'admin',
@@ -82,6 +88,7 @@ export const applyEvent = ({
       const [id, invitation] = result;
 
       members[event.author.publicKey] = {
+        accountId: event.author.accountId,
         signaturePublicKey: event.author.publicKey,
         encryptionPublicKey: invitation.encryptionPublicKey,
         role: 'member',
@@ -111,6 +118,7 @@ export const applyEvent = ({
         }
 
         invitations[event.transaction.id] = {
+          inviteeAccountId: event.transaction.inviteeAccountId,
           signaturePublicKey: event.transaction.signaturePublicKey,
           encryptionPublicKey: event.transaction.encryptionPublicKey,
         };

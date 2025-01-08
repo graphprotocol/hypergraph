@@ -1,16 +1,16 @@
-import { wipeKeys } from '@/lib/keyStorage';
-import { redirect } from '@tanstack/react-router';
+import { useGraphLogin } from '@graph-framework/identity';
+import { usePrivy } from '@privy-io/react-auth';
+import { useRouter } from '@tanstack/react-router';
 import { Button } from './ui/button';
 
 export function Logout() {
+  const { logout: graphLogout } = useGraphLogin();
+  const { logout: privyLogout } = usePrivy();
+  const router = useRouter();
   const disconnectWallet = () => {
-    const localStorageSignerAddress = localStorage.getItem('signerAddress');
-    localStorage.removeItem('signerAddress');
-    if (!localStorageSignerAddress) {
-      return;
-    }
-    wipeKeys(localStorageSignerAddress);
-    redirect({
+    graphLogout();
+    privyLogout();
+    router.navigate({
       to: '/login',
     });
   };

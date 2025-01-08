@@ -1,7 +1,7 @@
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
+import { bytesToHex, hexToBytes } from '@graph-framework/utils';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -19,11 +19,19 @@ import type {
   RequestSubscribeToSpace,
   Updates,
 } from '@graph-framework/messages';
-import { ResponseMessage, decryptMessage, deserialize, encryptMessage, serialize } from '@graph-framework/messages';
+import {
+  ResponseIdentity,
+  ResponseMessage,
+  decryptMessage,
+  deserialize,
+  encryptMessage,
+  serialize,
+} from '@graph-framework/messages';
 import type { SpaceEvent, SpaceState } from '@graph-framework/space-events';
 import { acceptInvitation, applyEvent, createInvitation, createSpace } from '@graph-framework/space-events';
 import { generateId } from '@graph-framework/utils';
 
+import { verifyIdentityOwnership } from '@graph-framework/identity';
 import { assertExhaustive } from './assertExhaustive.js';
 import type { SpaceStorageEntry } from './store.js';
 import { store } from './store.js';
@@ -33,32 +41,32 @@ const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
 type Props = {
   children: React.ReactNode;
   accountId: string;
+  syncServer?: string;
+  sessionToken?: string | null;
+  encryptionPrivateKey?: string | null;
+  encryptionPublicKey?: string | null;
+  signaturePrivateKey?: string | null;
+  signaturePublicKey?: string | null;
 };
 
 const GraphFrameworkContext = createContext<{
   invitations: Invitation[];
-  createSpace: (params: {
-    encryptionPublicKey: string;
-    encryptionPrivateKey: string;
-    signaturePrivateKey: string;
-  }) => Promise<unknown>;
+  createSpace: () => Promise<unknown>;
   listSpaces: () => void;
   listInvitations: () => void;
   acceptInvitation: (params: {
-    encryptionPublicKey: string;
-    encryptionPrivateKey: string;
-    signaturePrivateKey: string;
     invitation: Invitation;
   }) => Promise<unknown>;
   subscribeToSpace: (params: { spaceId: string }) => void;
-  inviteToSpace: (params: {
+  getUserIdentity: (accountId: string) => Promise<{
+    accountId: string;
     encryptionPublicKey: string;
-    encryptionPrivateKey: string;
-    signaturePrivateKey: string;
+    signaturePublicKey: string;
+  }>;
+  inviteToSpace: (params: {
     space: SpaceStorageEntry;
     invitee: {
       accountId: string;
-      encryptionPublicKey: string;
     };
   }) => Promise<unknown>;
 }>({
@@ -68,18 +76,41 @@ const GraphFrameworkContext = createContext<{
   listInvitations: () => {},
   acceptInvitation: async () => {},
   subscribeToSpace: () => {},
+  getUserIdentity: async () => ({
+    accountId: '',
+    encryptionPublicKey: '',
+    signaturePublicKey: '',
+  }),
   inviteToSpace: async () => {},
 });
 
-export function GraphFramework({ children, accountId }: Props) {
+export function GraphFramework({
+  children,
+  accountId,
+  syncServer = 'http://localhost:3030',
+  sessionToken,
+  encryptionPrivateKey,
+  encryptionPublicKey,
+  signaturePrivateKey,
+  signaturePublicKey,
+}: Props) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelector(store, (state) => state.context.repo);
 
+  console.log('Sync server:', syncServer);
+  const syncServerUrl = new URL(syncServer);
+  const syncServerWsUrl = new URL(`/?token=${sessionToken}`, syncServerUrl.toString());
+  syncServerWsUrl.protocol = 'ws:';
+  const syncServerWsUrlString = syncServerWsUrl.toString();
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
-    const websocketConnection = new WebSocket(`ws://localhost:3030/?accountId=${accountId}`);
+    if (!sessionToken) {
+      return;
+    }
+
+    const websocketConnection = new WebSocket(syncServerWsUrlString);
 
     setWebsocketConnection(websocketConnection);
 
@@ -105,7 +136,7 @@ export function GraphFramework({ children, accountId }: Props) {
       websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
-  }, [accountId]); // Only recreate when accountId changes
+  }, [sessionToken, syncServerWsUrlString]);
 
   // Handle WebSocket messages in a separate effect
   useEffect(() => {
@@ -298,8 +329,9 @@ export function GraphFramework({ children, accountId }: Props) {
             });
             break;
           }
-          default:
+          default: {
             assertExhaustive(response);
+          }
         }
       }
     };
@@ -311,21 +343,17 @@ export function GraphFramework({ children, accountId }: Props) {
     };
   }, [websocketConnection, spaces]);
 
-  const createSpaceForContext = async ({
-    encryptionPublicKey,
-    encryptionPrivateKey,
-    signaturePrivateKey,
-  }: {
-    encryptionPublicKey: string;
-    encryptionPrivateKey: string;
-    signaturePrivateKey: string;
-  }) => {
+  const createSpaceForContext = async () => {
+    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+      throw new Error('Missing keys');
+    }
     const spaceEvent = await Effect.runPromise(
       createSpace({
         author: {
+          accountId,
           encryptionPublicKey,
           signaturePrivateKey,
-          signaturePublicKey: accountId,
+          signaturePublicKey,
         },
       }),
     );
@@ -360,19 +388,18 @@ export function GraphFramework({ children, accountId }: Props) {
   };
 
   const acceptInvitationForContext = async ({
-    encryptionPublicKey,
-    signaturePrivateKey,
     invitation,
   }: {
-    encryptionPublicKey: string;
-    encryptionPrivateKey: string;
-    signaturePrivateKey: string;
     invitation: Invitation;
   }) => {
+    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+      throw new Error('Missing keys');
+    }
     const spaceEvent = await Effect.runPromiseExit(
       acceptInvitation({
         author: {
-          signaturePublicKey: accountId,
+          accountId,
+          signaturePublicKey,
           encryptionPublicKey,
           signaturePrivateKey,
         },
@@ -402,38 +429,81 @@ export function GraphFramework({ children, accountId }: Props) {
     websocketConnection?.send(serialize(message));
   };
 
+  const getUserIdentity = async (
+    accountId: string,
+  ): Promise<{
+    accountId: string;
+    encryptionPublicKey: string;
+    signaturePublicKey: string;
+  }> => {
+    const storeState = store.getSnapshot();
+    const identity = storeState.context.userIdentities[accountId];
+    if (identity) {
+      return {
+        accountId,
+        encryptionPublicKey: identity.encryptionPublicKey,
+        signaturePublicKey: identity.signaturePublicKey,
+      };
+    }
+    const res = await fetch(`${syncServer}/identity?accountId=${accountId}`);
+    if (res.status !== 200) {
+      throw new Error('Failed to fetch identity');
+    }
+    const resDecoded = Schema.decodeUnknownSync(ResponseIdentity)(await res.json());
+
+    if (
+      !(await verifyIdentityOwnership(
+        resDecoded.accountId,
+        resDecoded.signaturePublicKey,
+        resDecoded.accountProof,
+        resDecoded.keyProof,
+      ))
+    ) {
+      throw new Error('Invalid identity');
+    }
+
+    store.send({
+      type: 'addUserIdentity',
+      accountId: resDecoded.accountId,
+      encryptionPublicKey: resDecoded.encryptionPublicKey,
+      signaturePublicKey: resDecoded.signaturePublicKey,
+      accountProof: resDecoded.accountProof,
+      keyProof: resDecoded.keyProof,
+    });
+    return {
+      accountId: resDecoded.accountId,
+      encryptionPublicKey: resDecoded.encryptionPublicKey,
+      signaturePublicKey: resDecoded.signaturePublicKey,
+    };
+  };
+
   const inviteToSpace = async ({
-    encryptionPublicKey,
-    encryptionPrivateKey,
-    signaturePrivateKey,
     space,
     invitee,
   }: {
-    encryptionPublicKey: string;
-    encryptionPrivateKey: string;
-    signaturePrivateKey: string;
     space: SpaceStorageEntry;
     invitee: {
       accountId: string;
-      encryptionPublicKey: string;
     };
   }) => {
+    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+      throw new Error('Missing keys');
+    }
     if (!space.state) {
       console.error('No state found for space');
       return;
     }
+    const inviteeWithKeys = await getUserIdentity(invitee.accountId);
     const spaceEvent = await Effect.runPromiseExit(
       createInvitation({
         author: {
-          signaturePublicKey: accountId,
+          accountId,
+          signaturePublicKey,
           encryptionPublicKey,
           signaturePrivateKey,
         },
         previousEventHash: space.state.lastEventHash,
-        invitee: {
-          signaturePublicKey: invitee.accountId,
-          encryptionPublicKey,
-        },
+        invitee: inviteeWithKeys,
       }),
     );
     if (Exit.isFailure(spaceEvent)) {
@@ -444,7 +514,7 @@ export function GraphFramework({ children, accountId }: Props) {
     const keyBoxes = space.keys.map((key) => {
       const keyBox = encryptKey({
         key: hexToBytes(key.key),
-        publicKey: hexToBytes(invitee.encryptionPublicKey),
+        publicKey: hexToBytes(inviteeWithKeys.encryptionPublicKey),
         privateKey: hexToBytes(encryptionPrivateKey),
       });
       return {
@@ -474,6 +544,7 @@ export function GraphFramework({ children, accountId }: Props) {
         listInvitations,
         acceptInvitation: acceptInvitationForContext,
         subscribeToSpace,
+        getUserIdentity,
         inviteToSpace,
       }}
     >

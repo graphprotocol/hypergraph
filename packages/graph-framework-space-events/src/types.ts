@@ -1,6 +1,7 @@
 import * as Schema from 'effect/Schema';
 
 export const SpaceMember = Schema.Struct({
+  accountId: Schema.String,
   signaturePublicKey: Schema.String,
   encryptionPublicKey: Schema.String,
   role: Schema.Union(Schema.Literal('admin'), Schema.Literal('member')),
@@ -9,6 +10,7 @@ export const SpaceMember = Schema.Struct({
 export type SpaceMember = Schema.Schema.Type<typeof SpaceMember>;
 
 export const SpaceInvitation = Schema.Struct({
+  inviteeAccountId: Schema.String,
   signaturePublicKey: Schema.String,
   encryptionPublicKey: Schema.String,
 });
@@ -29,10 +31,12 @@ export const CreateSpaceEvent = Schema.Struct({
   transaction: Schema.Struct({
     type: Schema.Literal('create-space'),
     id: Schema.String,
+    creatorAccountId: Schema.String,
     creatorSignaturePublicKey: Schema.String,
     creatorEncryptionPublicKey: Schema.String,
   }),
   author: Schema.Struct({
+    accountId: Schema.String,
     publicKey: Schema.String,
     signature: Schema.String,
   }),
@@ -47,6 +51,7 @@ export const DeleteSpaceEvent = Schema.Struct({
     previousEventHash: Schema.String,
   }),
   author: Schema.Struct({
+    accountId: Schema.String,
     publicKey: Schema.String,
     signature: Schema.String,
   }),
@@ -60,11 +65,13 @@ export const CreateInvitationEvent = Schema.Struct({
     id: Schema.String,
     ciphertext: Schema.String,
     nonce: Schema.String,
+    inviteeAccountId: Schema.String,
     signaturePublicKey: Schema.String,
     encryptionPublicKey: Schema.String,
     previousEventHash: Schema.String,
   }),
   author: Schema.Struct({
+    accountId: Schema.String,
     publicKey: Schema.String,
     signature: Schema.String,
   }),
@@ -79,6 +86,7 @@ export const AcceptInvitationEvent = Schema.Struct({
     previousEventHash: Schema.String,
   }),
   author: Schema.Struct({
+    accountId: Schema.String,
     publicKey: Schema.String,
     signature: Schema.String,
   }),
@@ -96,6 +104,7 @@ export const SpaceEvent = Schema.Union(
 export type SpaceEvent = Schema.Schema.Type<typeof SpaceEvent>;
 
 export const Author = Schema.Struct({
+  accountId: Schema.String,
   signaturePublicKey: Schema.String,
   signaturePrivateKey: Schema.String,
   encryptionPublicKey: Schema.String,

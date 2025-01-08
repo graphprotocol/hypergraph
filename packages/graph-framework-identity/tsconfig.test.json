@@ -1,7 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "include": ["test"],
-  "references": [{ "path": "tsconfig.src.json" }, { "path": "../graph-framework-utils" }],
+  "references": [
+    { "path": "tsconfig.src.json" },
+    { "path": "../graph-framework-utils" },
+    { "path": "../graph-framework-messages" },
+    { "path": "../graph-framework-key" }
+  ],
   "compilerOptions": {
     "tsBuildInfoFile": ".tsbuildinfo/test.tsbuildinfo",
     "rootDir": "test",

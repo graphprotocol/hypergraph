@@ -22,7 +22,7 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
     if (event.transaction.type === 'accept-invitation') {
       // verify that the account is the invitee
       await transaction.invitation.findFirstOrThrow({
-        where: { inviteeAccountId: event.author.publicKey },
+        where: { inviteeAccountId: event.author.accountId },
       });
     } else {
       // verify that the account is a member of the space
@@ -44,12 +44,12 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
     }
 
     if (event.transaction.type === 'create-invitation') {
-      const inviteeAccountId = event.transaction.signaturePublicKey;
+      const inviteeAccountId = event.transaction.inviteeAccountId;
       await transaction.invitation.create({
         data: {
           id: event.transaction.id,
           spaceId,
-          accountId: event.transaction.signaturePublicKey,
+          accountId: event.author.accountId,
           inviteeAccountId,
         },
       });
@@ -66,12 +66,12 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
     }
     if (event.transaction.type === 'accept-invitation') {
       await transaction.invitation.delete({
-        where: { spaceId_inviteeAccountId: { spaceId, inviteeAccountId: event.author.publicKey } },
+        where: { spaceId_inviteeAccountId: { spaceId, inviteeAccountId: event.author.accountId } },
       });
 
       await transaction.space.update({
         where: { id: spaceId },
-        data: { members: { connect: { id: event.author.publicKey } } },
+        data: { members: { connect: { id: event.author.accountId } } },
       });
     }
 

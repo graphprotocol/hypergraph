@@ -13,7 +13,7 @@ const decodeSpaceState = Schema.decodeUnknownEither(SpaceState);
 export const listInvitations = async ({ accountId }: Params) => {
   const result = await prisma.invitation.findMany({
     where: {
-      accountId,
+      inviteeAccountId: accountId,
     },
     include: {
       space: {
