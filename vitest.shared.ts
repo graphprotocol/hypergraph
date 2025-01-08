@@ -1,12 +1,15 @@
 import * as path from 'node:path';
 import type { ViteUserConfig } from 'vitest/config';
 
-const alias = (pkg: string, dir = pkg) => {
-  const name = pkg === 'graph-framework' ? '@graphprotocol/graph-framework' : `@graph-framework/${pkg}`;
+const graphFrameworkAlias = {
+  '@graphprotocol/graph-framework/test': path.join(__dirname, 'packages', 'graph-framework', 'test'),
+  '@graphprotocol/graph-framework': path.join(__dirname, 'packages', 'graph-framework', 'src'),
+};
 
+const graphFrameworkPkgAlias = (name: string) => {
   return {
-    [`${name}/test`]: path.join(__dirname, 'packages', dir, 'test'),
-    [`${name}`]: path.join(__dirname, 'packages', dir, 'src'),
+    [`@graph-framework/${name}/test`]: path.join(__dirname, 'packages', `graph-framework-${name}`, 'test'),
+    [`@graph-framework/${name}`]: path.join(__dirname, 'packages', `graph-framework-${name}`, 'src'),
   };
 };
 
@@ -14,13 +17,13 @@ const alias = (pkg: string, dir = pkg) => {
 const config: ViteUserConfig = {
   test: {
     alias: {
-      ...alias('graph-framework'),
-      ...alias('graph-framework-utils'),
-      ...alias('graph-framework-space-events'),
-      ...alias('graph-framework-schema'),
-      ...alias('graph-framework-identity'),
-      ...alias('graph-framework-key'),
-      ...alias('graph-framework-messages'),
+      ...graphFrameworkAlias,
+      ...graphFrameworkPkgAlias('utils'),
+      ...graphFrameworkPkgAlias('space-events'),
+      ...graphFrameworkPkgAlias('schema'),
+      ...graphFrameworkPkgAlias('identity'),
+      ...graphFrameworkPkgAlias('key'),
+      ...graphFrameworkPkgAlias('messages'),
     },
   },
 };
