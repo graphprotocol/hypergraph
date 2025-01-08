@@ -28,11 +28,11 @@ import {
 } from '@graph-framework/messages';
 import type { SpaceEvent } from '@graph-framework/space-events';
 import { applyEvent } from '@graph-framework/space-events';
-import type { Hex } from '@graph-framework/utils';
 import { publicKeyToAddress } from '@graph-framework/utils';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
 import { SiweMessage } from 'siwe';
+import type { Hex } from 'viem';
 import WebSocket, { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
 import { createIdentity } from './handlers/createIdentity.js';
@@ -166,14 +166,7 @@ app.post('/identity', async (req, res) => {
     res.status(400).send('Expiration time not set');
     return;
   }
-  if (
-    !verifyIdentityOwnership(
-      accountId,
-      message.signaturePublicKey as Hex,
-      message.accountProof as Hex,
-      message.keyProof as Hex,
-    )
-  ) {
+  if (!verifyIdentityOwnership(accountId, message.signaturePublicKey, message.accountProof, message.keyProof)) {
     console.log('Ownership proof is invalid');
     res.status(401).send('Unauthorized');
     return;

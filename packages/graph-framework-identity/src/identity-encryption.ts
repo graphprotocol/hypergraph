@@ -1,7 +1,7 @@
 import { bytesToHex, hexToBytes } from '@graph-framework/utils';
-import type { Hex } from '@graph-framework/utils';
 import { randomBytes } from '@noble/ciphers/webcrypto';
 import { Ciphertext, decrypt, encrypt } from '@xmtp/xmtp-js';
+import type { Hex } from 'viem';
 import { verifyMessage } from 'viem';
 import type { Keys, Signer } from './types.js';
 
@@ -48,8 +48,8 @@ export const encryptIdentity = async (
 export const decryptIdentity = async (
   signer: Signer,
   accountId: string,
-  ciphertext: Hex,
-  nonce: Hex,
+  ciphertext: string,
+  nonce: string,
 ): Promise<Keys> => {
   const message = signatureMessage(hexToBytes(nonce));
   const signature = (await signer.signMessage(message)) as Hex;
@@ -84,10 +84,6 @@ export const decryptIdentity = async (
     keysMsg = await decrypt(ciphertextObj, newSecret);
   }
   const keysTxt = new TextDecoder().decode(keysMsg);
-  const keysArray = keysTxt.split('\n');
-  const encryptionPublicKey = keysArray[0] as Hex;
-  const encryptionPrivateKey = keysArray[1] as Hex;
-  const signaturePublicKey = keysArray[2] as Hex;
-  const signaturePrivateKey = keysArray[3] as Hex;
+  const [encryptionPublicKey, encryptionPrivateKey, signaturePublicKey, signaturePrivateKey] = keysTxt.split('\n');
   return { encryptionPublicKey, encryptionPrivateKey, signaturePublicKey, signaturePrivateKey };
 };

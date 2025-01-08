@@ -1,4 +1,3 @@
-import type { Hex } from '@graph-framework/utils';
 import { Schema } from 'effect';
 
 export type Storage = {
@@ -15,10 +14,10 @@ export type Signer = {
 };
 
 export type Keys = {
-  encryptionPublicKey: Hex;
-  encryptionPrivateKey: Hex;
-  signaturePublicKey: Hex;
-  signaturePrivateKey: Hex;
+  encryptionPublicKey: string;
+  encryptionPrivateKey: string;
+  signaturePublicKey: string;
+  signaturePrivateKey: string;
 };
 
 export const KeysSchema = Schema.Struct({
@@ -32,8 +31,8 @@ export type KeysSchema = Schema.Schema.Type<typeof KeysSchema>;
 
 export type Identity = {
   accountId: string;
-  encryptionPublicKey: Hex;
-  encryptionPrivateKey: Hex;
-  signaturePublicKey: Hex;
-  signaturePrivateKey: Hex;
+  encryptionPublicKey: string;
+  encryptionPrivateKey: string;
+  signaturePublicKey: string;
+  signaturePrivateKey: string;
 };

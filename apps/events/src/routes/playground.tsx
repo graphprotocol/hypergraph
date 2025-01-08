@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 
 import {
   GraphFramework,
-  type Hex,
   SpacesProvider,
   store,
   useGraphFramework,
@@ -19,10 +18,10 @@ import { Button } from '@/components/ui/button';
 
 const availableAccounts: Array<{
   accountId: string;
-  signaturePublicKey: Hex;
-  signaturePrivateKey: Hex;
-  encryptionPrivateKey: Hex;
-  encryptionPublicKey: Hex;
+  signaturePublicKey: string;
+  signaturePrivateKey: string;
+  encryptionPrivateKey: string;
+  encryptionPublicKey: string;
   sessionToken: string;
 }> = [
   {
@@ -165,10 +164,10 @@ export const ChooseAccount = () => {
   const { authenticated, getIdentity, getSessionToken } = useGraphLogin();
   const [account, setAccount] = useState<{
     accountId: string;
-    signaturePrivateKey: Hex;
-    signaturePublicKey: Hex;
-    encryptionPrivateKey: Hex;
-    encryptionPublicKey: Hex;
+    signaturePrivateKey: string;
+    signaturePublicKey: string;
+    encryptionPrivateKey: string;
+    encryptionPublicKey: string;
     sessionToken: string | null;
   } | null>();
   const graphIdentity = getIdentity();

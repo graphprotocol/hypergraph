@@ -8,12 +8,12 @@ import {
   ResponseLogin,
   ResponseLoginNonce,
 } from '@graph-framework/messages';
-import type { Hex } from '@graph-framework/utils';
 import { Schema } from 'effect';
 import { createContext, useContext } from 'react';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { SiweMessage } from 'siwe';
+import type { Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import {
   loadAccountId,
@@ -198,7 +198,7 @@ export function GraphLogin({
         const resDecoded = Schema.decodeUnknownSync(ResponseIdentityEncrypted)(await res.json());
         const { keyBox } = resDecoded;
         const { ciphertext, nonce } = keyBox;
-        const keys = await decryptIdentity(signer, accountId, ciphertext as Hex, nonce as Hex);
+        const keys = await decryptIdentity(signer, accountId, ciphertext, nonce);
         storeKeys(storage, accountId, keys);
       } else {
         // TODO: what's the best way to handle this?
@@ -219,7 +219,7 @@ export function GraphLogin({
     const { ciphertext, nonce } = await encryptIdentity(signer, accountId, keys);
     const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountId, keys);
 
-    const account = privateKeyToAccount(keys.signaturePrivateKey);
+    const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
     const sessionNonce = await getSessionNonce(accountId);
     const message = prepareSiweMessage(account.address, sessionNonce);
     const signature = await account.signMessage({ message });
@@ -252,7 +252,7 @@ export function GraphLogin({
   const loginWithKeys = async (keys: Keys, accountId: string) => {
     const sessionToken = loadSyncServerSessionToken(storage, accountId);
     if (!sessionToken) {
-      const account = privateKeyToAccount(keys.signaturePrivateKey);
+      const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
       const sessionNonce = await getSessionNonce(accountId);
       const message = prepareSiweMessage(account.address, sessionNonce);
       const signature = await account.signMessage({ message });

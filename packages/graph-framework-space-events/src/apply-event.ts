@@ -1,4 +1,4 @@
-import { type Hex, canonicalize, hexToBytes, stringToUint8Array } from '@graph-framework/utils';
+import { canonicalize, hexToBytes, stringToUint8Array } from '@graph-framework/utils';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect, Schema } from 'effect';
 import type { ParseError } from 'effect/ParseResult';
@@ -43,7 +43,7 @@ export const applyEvent = ({
   const isValidSignature = secp256k1.verify(
     event.author.signature,
     encodedTransaction,
-    hexToBytes(event.author.publicKey as Hex),
+    hexToBytes(event.author.publicKey),
     {
       prehash: true,
     },

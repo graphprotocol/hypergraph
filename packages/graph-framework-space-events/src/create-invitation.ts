@@ -1,7 +1,7 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Effect } from 'effect';
 
-import { type Hex, canonicalize, generateId, hexToBytes, stringToUint8Array } from '@graph-framework/utils';
+import { canonicalize, generateId, hexToBytes, stringToUint8Array } from '@graph-framework/utils';
 
 import type { Author, CreateInvitationEvent } from './types.js';
 
@@ -32,7 +32,7 @@ export const createInvitation = ({
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
   const signature = secp256k1
-    .sign(encodedTransaction, hexToBytes(author.signaturePrivateKey as Hex), { prehash: true })
+    .sign(encodedTransaction, hexToBytes(author.signaturePrivateKey), { prehash: true })
     .toCompactHex();
 
   return Effect.succeed({

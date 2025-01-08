@@ -1,18 +1,17 @@
 import { bytesToHex as nobleBytesToHex, hexToBytes as nobleHexToBytes } from '@noble/ciphers/utils';
 import { ProjectivePoint } from '@noble/secp256k1';
+import type { Hex } from 'viem';
 import { publicKeyToAddress as viemPublicKeyToAddress } from 'viem/accounts';
 
-export type Hex = `0x${string}`;
-
-export const bytesToHex = (bytes: Uint8Array): Hex => {
+export const bytesToHex = (bytes: Uint8Array): string => {
   return `0x${nobleBytesToHex(bytes)}`;
 };
 
-export const hexToBytes = (hex: Hex): Uint8Array => {
+export const hexToBytes = (hex: string): Uint8Array => {
   return nobleHexToBytes(hex.slice(2));
 };
 
-function decompressPublicKey(compressedKey: Hex): Hex {
+function decompressPublicKey(compressedKey: string): string {
   // Decompress the public key
   const point = ProjectivePoint.fromHex(compressedKey.slice(2));
 
@@ -20,7 +19,7 @@ function decompressPublicKey(compressedKey: Hex): Hex {
   const uncompressedKey = point.toRawBytes(false); // `false` = uncompressed format
   return bytesToHex(uncompressedKey);
 }
-export const publicKeyToAddress = (publicKey: Hex): string => {
+export const publicKeyToAddress = (publicKey: string): string => {
   const uncompressedKey = decompressPublicKey(publicKey);
-  return viemPublicKeyToAddress(uncompressedKey);
+  return viemPublicKeyToAddress(uncompressedKey as Hex);
 };

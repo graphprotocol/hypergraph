@@ -32,7 +32,6 @@ import { acceptInvitation, applyEvent, createInvitation, createSpace } from '@gr
 import { generateId } from '@graph-framework/utils';
 
 import { verifyIdentityOwnership } from '@graph-framework/identity';
-import type { Hex } from '@graph-framework/utils';
 import { assertExhaustive } from './assertExhaustive.js';
 import type { SpaceStorageEntry } from './store.js';
 import { store } from './store.js';
@@ -179,10 +178,10 @@ export function GraphFramework({
 
             const keys = response.keyBoxes.map((keyBox) => {
               const key = decryptKey({
-                keyBoxCiphertext: hexToBytes(keyBox.ciphertext as Hex),
-                keyBoxNonce: hexToBytes(keyBox.nonce as Hex),
-                publicKey: hexToBytes(keyBox.authorPublicKey as Hex),
-                privateKey: hexToBytes(storeState.context.encryptionPrivateKey as Hex),
+                keyBoxCiphertext: hexToBytes(keyBox.ciphertext),
+                keyBoxNonce: hexToBytes(keyBox.nonce),
+                publicKey: hexToBytes(keyBox.authorPublicKey),
+                privateKey: hexToBytes(storeState.context.encryptionPrivateKey),
               });
               return { id: keyBox.id, key: bytesToHex(key) };
             });
@@ -207,7 +206,7 @@ export function GraphFramework({
               const updates = response.updates?.updates.map((update) => {
                 return decryptMessage({
                   nonceAndCiphertext: update,
-                  secretKey: hexToBytes(keys[0].key as Hex),
+                  secretKey: hexToBytes(keys[0].key),
                 });
               });
 
@@ -240,7 +239,7 @@ export function GraphFramework({
 
                 const nonceAndCiphertext = encryptMessage({
                   message: lastLocalChange,
-                  secretKey: hexToBytes(space.keys[0].key as Hex),
+                  secretKey: hexToBytes(space.keys[0].key),
                 });
 
                 const messageToSend: RequestCreateUpdate = {
@@ -313,7 +312,7 @@ export function GraphFramework({
             const automergeUpdates = response.updates.updates.map((update) => {
               return decryptMessage({
                 nonceAndCiphertext: update,
-                secretKey: hexToBytes(space.keys[0].key as Hex),
+                secretKey: hexToBytes(space.keys[0].key),
               });
             });
 
@@ -359,8 +358,8 @@ export function GraphFramework({
       }),
     );
     const result = createKey({
-      privateKey: hexToBytes(encryptionPrivateKey as Hex),
-      publicKey: hexToBytes(encryptionPublicKey as Hex),
+      privateKey: hexToBytes(encryptionPrivateKey),
+      publicKey: hexToBytes(encryptionPublicKey),
     });
 
     const message: RequestCreateSpaceEvent = {
@@ -455,9 +454,9 @@ export function GraphFramework({
     if (
       !(await verifyIdentityOwnership(
         resDecoded.accountId,
-        resDecoded.signaturePublicKey as Hex,
-        resDecoded.accountProof as Hex,
-        resDecoded.keyProof as Hex,
+        resDecoded.signaturePublicKey,
+        resDecoded.accountProof,
+        resDecoded.keyProof,
       ))
     ) {
       throw new Error('Invalid identity');
@@ -514,9 +513,9 @@ export function GraphFramework({
 
     const keyBoxes = space.keys.map((key) => {
       const keyBox = encryptKey({
-        key: hexToBytes(key.key as Hex),
-        publicKey: hexToBytes(inviteeWithKeys.encryptionPublicKey as Hex),
-        privateKey: hexToBytes(encryptionPrivateKey as Hex),
+        key: hexToBytes(key.key),
+        publicKey: hexToBytes(inviteeWithKeys.encryptionPublicKey),
+        privateKey: hexToBytes(encryptionPrivateKey),
       });
       return {
         id: key.id,

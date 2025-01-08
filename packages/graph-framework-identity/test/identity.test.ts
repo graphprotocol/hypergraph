@@ -1,6 +1,5 @@
 import { decryptKeyBox, encryptKeyBox } from '@graph-framework/key';
 import { bytesToHex, hexToBytes } from '@graph-framework/utils';
-import type { Hex } from '@graph-framework/utils';
 import { randomBytes } from '@noble/ciphers/webcrypto';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { type PrivateKeyAccount, privateKeyToAccount } from 'viem/accounts';
@@ -99,7 +98,7 @@ describe('identity encryption', () => {
     const accountId = await signer.getAddress();
     const keys = createIdentity();
     const { ciphertext, nonce } = await encryptIdentity(signer, accountId, keys);
-    const decrypted = await decryptIdentity(signer, accountId, ciphertext as Hex, nonce as Hex);
+    const decrypted = await decryptIdentity(signer, accountId, ciphertext, nonce);
 
     expect(decrypted.encryptionPublicKey).toEqual(keys.encryptionPublicKey);
     expect(decrypted.encryptionPrivateKey).toEqual(keys.encryptionPrivateKey);
@@ -145,12 +144,7 @@ describe('identity ownership proofs', () => {
     const keys = createIdentity();
     const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountId, keys);
 
-    const valid = await verifyIdentityOwnership(
-      accountId,
-      keys.signaturePublicKey,
-      accountProof as Hex,
-      keyProof as Hex,
-    );
+    const valid = await verifyIdentityOwnership(accountId, keys.signaturePublicKey, accountProof, keyProof);
     expect(valid).toBe(true);
   });
   it('should fail to verify ownership proofs with invalid proofs', async () => {

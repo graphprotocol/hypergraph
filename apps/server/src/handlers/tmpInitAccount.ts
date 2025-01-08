@@ -1,5 +1,5 @@
 import { proveIdentityOwnership } from '@graph-framework/identity';
-import type { Hex } from '@graph-framework/utils';
+import type { Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { prisma } from '../prisma.js';
 
@@ -34,9 +34,9 @@ export const tmpInitAccount = async ({
       },
       accountId,
       {
-        signaturePublicKey: signaturePublicKey as Hex,
-        signaturePrivateKey: signaturePrivateKey as Hex,
-        encryptionPublicKey: encryptionPublicKey as Hex,
+        signaturePublicKey: signaturePublicKey,
+        signaturePrivateKey: signaturePrivateKey,
+        encryptionPublicKey: encryptionPublicKey,
         encryptionPrivateKey: '0x',
       },
     );

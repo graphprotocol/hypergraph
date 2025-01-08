@@ -1,5 +1,4 @@
 import { deserialize, serialize } from '@graph-framework/messages';
-import type { Hex } from '@graph-framework/utils';
 import { Schema } from 'effect';
 import { type Keys, KeysSchema, type Storage } from './types.js';
 
@@ -23,10 +22,10 @@ export const loadKeys = (storage: Storage, walletAddress: string): Keys | null =
   }
   const deserialized = Schema.decodeUnknownSync(KeysSchema)(deserialize(val));
   return {
-    encryptionPublicKey: deserialized.encryptionPublicKey as Hex,
-    encryptionPrivateKey: deserialized.encryptionPrivateKey as Hex,
-    signaturePublicKey: deserialized.signaturePublicKey as Hex,
-    signaturePrivateKey: deserialized.signaturePrivateKey as Hex,
+    encryptionPublicKey: deserialized.encryptionPublicKey,
+    encryptionPrivateKey: deserialized.encryptionPrivateKey,
+    signaturePublicKey: deserialized.signaturePublicKey,
+    signaturePrivateKey: deserialized.signaturePrivateKey,
   };
 };
 
