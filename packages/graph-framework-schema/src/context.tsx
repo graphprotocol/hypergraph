@@ -8,6 +8,11 @@ import { type ReactNode, createContext, useCallback, useContext, useRef, useSync
 // biome-ignore lint/suspicious/noExplicitAny: typedefs are unknown and determined by the schema. todo: figure out a way to make generic?
 type SchemaTypeUnknown = any;
 
+// Helper type to convert union to intersection
+type UnionToIntersection<U> = (U extends SchemaTypeUnknown ? (k: U) => void : never) extends (k: infer I) => void
+  ? I
+  : never;
+
 interface SpacesProviderProps {
   children: ReactNode;
   defaultSpace: string;
@@ -18,15 +23,19 @@ type DocumentContent = {
   entities: Record<string, SchemaTypeUnknown>;
 };
 
+function Relation<TKey extends string>(config: { key: string; type: TKey }) {
+  return {
+    _tag: 'Relation' as const,
+    key: config.key,
+    type: config.type,
+  };
+}
+
 export const type = {
   Text: S.String,
   Number: S.Number,
   Checkbox: S.Boolean,
-  Relation: (config: { key: string; type: string }) => ({
-    _tag: 'Relation' as const,
-    key: config.key,
-    type: config.type,
-  }),
+  Relation,
 };
 
 type BaseEntity = {
@@ -34,27 +43,44 @@ type BaseEntity = {
   types: string[];
 };
 
-// Helper type to extract schema type
-type SchemaType<T> = T extends S.Schema<SchemaTypeUnknown, infer A> ? A : never;
+type SchemaType<T> = T extends S.Schema<SchemaTypeUnknown, infer A> ? A : T extends RelationType ? string[] : never;
 
-// Add a type for Relations
 type RelationType = {
   _tag: 'Relation';
   key: string;
   type: string;
 };
 
-// Update SchemaDefinition to accept both Schema and RelationType
 export type SchemaDefinition = Record<
   string,
   Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown> | RelationType>
 >;
 
-// Extract all possible keys from schema types
 type EntityKeys<T extends SchemaDefinition> = keyof T & string;
 
-// Get merged type from array of keys
+type ResolveRelationType<
+  T extends SchemaDefinition,
+  K extends keyof T,
+  P extends keyof T[K],
+> = T[K][P] extends RelationType
+  ? Array<MergedEntityType<T, [T[K][P] extends RelationType ? T[K][P]['type'] : never], BaseEntity>>
+  : SchemaType<T[K][P]>;
+
+// MergedEntityType for query results uses ResolveRelationType
 type MergedEntityType<
+  T extends SchemaDefinition,
+  Keys extends readonly EntityKeys<T>[],
+  Additional,
+> = UnionToIntersection<
+  {
+    [K in Keys[number]]: {
+      [P in keyof T[K]]: ResolveRelationType<T, K, P>;
+    };
+  }[Keys[number]]
+> &
+  Additional;
+
+type CreateEntityType<
   T extends SchemaDefinition,
   Keys extends readonly EntityKeys<T>[],
   Additional,
@@ -67,10 +93,18 @@ type MergedEntityType<
 > &
   Additional;
 
-// Helper type to convert union to intersection
-type UnionToIntersection<U> = (U extends SchemaTypeUnknown ? (k: U) => void : never) extends (k: infer I) => void
-  ? I
-  : never;
+// collect all `Relation["type"]` values from each entity's fields
+type ExtractAllRelationTargets<T extends SchemaDefinition> = {
+  [EntityKey in keyof T]: {
+    [Field in keyof T[EntityKey]]: T[EntityKey][Field] extends RelationType ? T[EntityKey][Field]['type'] : never;
+  }[keyof T[EntityKey]];
+}[keyof T];
+
+// a "target" is invalid if it's not one of the keys in T
+type InvalidRelationTargets<T extends SchemaDefinition> = Exclude<ExtractAllRelationTargets<T>, keyof T>;
+
+// if no invalid targets, T remains T. Otherwise T collapses to never.
+type ValidateSchema<T extends SchemaDefinition> = [InvalidRelationTargets<T>] extends [never] ? T : never;
 
 type SpaceContextProps = {
   defaultSpace: string;
@@ -106,7 +140,11 @@ const useDefaultAutomergeDocId = () => {
   return context?.defaultAutomergeDocId;
 };
 
-export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
+type IncludeConfig = {
+  [key: string]: IncludeConfig;
+};
+
+export function createSchemaHooks<T extends SchemaDefinition>(schema: ValidateSchema<T>) {
   function buildMergedSchema<K extends readonly EntityKeys<T>[]>(
     types: [...K],
     // biome-ignore lint/complexity/noBannedTypes: empty object is fine
@@ -116,9 +154,7 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
         const typeSchema = schema[type];
 
         for (const [key, prop] of Object.entries(typeSchema)) {
-          // Check if the property is a relation
           if (typeof prop === 'object' && '_tag' in prop && prop._tag === 'Relation') {
-            // For relations, we'll use a string array schema
             acc[key] = S.Array(S.String) as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
           } else {
             acc[key] = prop as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
@@ -144,9 +180,8 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
     }: {
       types: [...K];
       // biome-ignore lint/complexity/noBannedTypes: empty object is fine
-      data: MergedEntityType<T, K, {}>;
-      // biome-ignore lint/complexity/noBannedTypes: empty object is fine
-    }): MergedEntityType<T, K, {}> {
+      data: CreateEntityType<T, K, {}>;
+    }): MergedEntityType<T, K, BaseEntity> {
       if (types.length === 0) {
         throw new Error('Entity must have at least one type');
       }
@@ -154,28 +189,27 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
       const mergedSchema = buildMergedSchema(types);
       const result = S.decodeUnknownSync(mergedSchema)(data);
 
+      const entityId = generateId();
+
       changeDoc((doc) => {
         if (!doc.entities) {
           doc.entities = {};
         }
 
-        // Generate ID for the main entity
-        const entityId = generateId();
-
-        // Create a copy of the data without relation fields
+        // create a copy of the data without relation fields
         const entityData = { ...result };
-        const entityType = types[0]; // Get the primary type
+        const entityType = types[0]; // get the primary type
         const typeSchema = schema[entityType];
 
-        // Handle relations
+        // handle relations
         for (const [key, prop] of Object.entries(typeSchema)) {
           if (typeof prop === 'object' && '_tag' in prop && prop._tag === 'Relation') {
             const relationIds = result[key] as string[];
             if (relationIds) {
-              // Remove relation field from main entity data
+              // remove relation field from main entity data
               delete entityData[key];
 
-              // Create relation entities
+              // create relation entities
               for (const targetId of relationIds) {
                 const relationId = generateId();
                 doc.entities[relationId] = {
@@ -188,11 +222,11 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
           }
         }
 
-        // Add the main entity
+        // add the main entity
         doc.entities[entityId] = { ...entityData, types };
       });
 
-      return result as MergedEntityType<T, K, BaseEntity>;
+      return { ...result, id: entityId } as MergedEntityType<T, K, BaseEntity>;
     }
 
     return createEntity;
@@ -231,10 +265,49 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
     return deleteEntity;
   }
 
+  function resolveRelations<T extends SchemaDefinition>(
+    doc: DocumentContent,
+    entity: BaseEntity,
+    include: IncludeConfig,
+    schema: T,
+    entityType: keyof T,
+  ): void {
+    for (const [relationKey, nestedInclude] of Object.entries(include)) {
+      const typeSchema = schema[entityType];
+      const relationDef = typeSchema[relationKey];
+
+      if (relationDef && '_tag' in relationDef && relationDef._tag === 'Relation') {
+        const relations = Object.entries(doc.entities)
+          .filter(([, relEntity]) => relEntity.types?.includes(relationDef.key) && relEntity.from === entity.id)
+          .map(([, relEntity]) => relEntity.to);
+
+        const relatedEntities = relations
+          .map((targetId) => {
+            const targetEntity = doc.entities[targetId];
+            if (!targetEntity) return null;
+
+            const enrichedEntity = { ...targetEntity, id: targetId };
+
+            if (Object.keys(nestedInclude).length > 0) {
+              resolveRelations(doc, enrichedEntity, nestedInclude, schema, relationDef.type);
+            }
+
+            return enrichedEntity;
+          })
+          .filter((entity) => entity !== null);
+
+        // @ts-expect-error fine to extend the entity with the relation key
+        entity[relationKey] = relatedEntities;
+      }
+    }
+  }
+
   function useQuery<K extends readonly EntityKeys<T>[]>({
     types,
+    include = {},
   }: {
     types: [...K];
+    include?: IncludeConfig;
   }) {
     const prevEntitiesRef = useRef<MergedEntityType<T, K, BaseEntity>[]>([]);
     const id = useDefaultAutomergeDocId();
@@ -274,12 +347,19 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
         }
       }
 
-      // Create filteredEntities object with only entities that include all the types and attach the entity id
+      // create filteredEntities object with only entities that include all the types and attach the entity id
       const filteredEntities: Record<string, MergedEntityType<T, K, BaseEntity>> = {};
       for (const entityId in doc.entities) {
         const entity = doc.entities[entityId];
         if (types.every((type) => entity.types?.includes(type as string))) {
-          filteredEntities[entityId] = { ...entity, id: entityId } as MergedEntityType<T, K, BaseEntity>;
+          const enrichedEntity = { ...entity, id: entityId } as MergedEntityType<T, K, BaseEntity>;
+
+          // Handle includes if specified using the new helper function
+          if (Object.keys(include).length > 0) {
+            resolveRelations(doc, enrichedEntity, include, schema, types[0]);
+          }
+
+          filteredEntities[entityId] = enrichedEntity;
         }
       }
 
@@ -330,11 +410,11 @@ export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
           return;
         }
 
-        // Merge updates with existing entity data to validate it against the schema
+        // merge updates with existing entity data to validate it against the schema
         const updatedData = {
           ...existingEntity,
           ...updates,
-          types: existingEntity.types, // Preserve types
+          types: existingEntity.types, // preserve types
         };
 
         try {

@@ -60,14 +60,14 @@ describe('Library Tests', () => {
   it('should create one entity successfully', () => {
     expect([1]).toHaveLength(1);
 
-    const { result: createResult } = renderHook(() => useCreateEntity(), {
+    const { result: createEntity } = renderHook(() => useCreateEntity(), {
       wrapper,
     });
 
     const { result: queryResult } = renderHook(() => useQuery({ types: ['Event'] }), { wrapper });
 
     act(() => {
-      createResult.current({
+      createEntity.current({
         types: ['Event'],
         data: {
           name: 'Conference',
@@ -80,7 +80,7 @@ describe('Library Tests', () => {
   });
 
   it('should delete an entity', () => {
-    const { result: createResult } = renderHook(() => useCreateEntity(), {
+    const { result: createEntity } = renderHook(() => useCreateEntity(), {
       wrapper,
     });
 
@@ -93,7 +93,7 @@ describe('Library Tests', () => {
     let badgeId: string | undefined;
 
     act(() => {
-      createResult.current({
+      createEntity.current({
         types: ['Badge'],
         data: { name: 'Exclusive' },
       });
@@ -121,7 +121,7 @@ describe('Library Tests', () => {
   });
 
   it('should update an entity', () => {
-    const { result: createResult } = renderHook(() => useCreateEntity(), {
+    const { result: createEntity } = renderHook(() => useCreateEntity(), {
       wrapper,
     });
 
@@ -133,7 +133,7 @@ describe('Library Tests', () => {
 
     // Create a person
     act(() => {
-      createResult.current({
+      createEntity.current({
         types: ['Person'],
         data: {
           name: 'John',
@@ -180,27 +180,40 @@ describe('Library Tests', () => {
   });
 });
 
-describe('Relations Tests', () => {
-  const schema = {
+describe('Simple relation Tests', () => {
+  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+
+  createSchemaHooks({
+    User: {
+      name: type.Text,
+      email: type.Text,
+    },
+    Event: {
+      name: type.Text,
+      attendees: type.Relation({
+        key: 'AttendeeOf',
+        type: 'User' as const,
+      }),
+    },
+  });
+
+  const { useCreateEntity, useQuery } = createSchemaHooks({
     User: {
       name: type.Text,
       email: type.Text,
       events: type.Relation({
         key: 'AttendeeOf',
-        type: 'Event',
+        type: 'Event' as const,
       }),
     },
     Event: {
       name: type.Text,
       attendees: type.Relation({
         key: 'AttendeeOf',
-        type: 'User',
+        type: 'User' as const,
       }),
     },
-  };
-
-  const spaceId = '52gTkePWSoGdXmgZF3nRU';
-  const { useCreateEntity, useQuery } = createSchemaHooks(schema);
+  });
 
   let repo = new Repo({});
   let wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -221,8 +234,29 @@ describe('Relations Tests', () => {
     );
   });
 
+  it('should throw a type error if the type is not defined as entity', () => {
+    // @ts-expect-error should have a type error as expected
+    createSchemaHooks({
+      User: {
+        name: type.Text,
+        email: type.Text,
+        events: type.Relation({
+          key: 'AttendeeOf',
+          type: 'Event' as const,
+        }),
+      },
+      Event: {
+        name: type.Text,
+        attendees: type.Relation({
+          key: 'AttendeeOf',
+          type: 'Person' as const,
+        }),
+      },
+    });
+  });
+
   it('should create entities with relations', () => {
-    const { result: createResult } = renderHook(() => useCreateEntity(), {
+    const { result: createEntity } = renderHook(() => useCreateEntity(), {
       wrapper,
     });
 
@@ -230,17 +264,24 @@ describe('Relations Tests', () => {
       wrapper,
     });
 
-    renderHook(() => useQuery({ types: ['Event'] }), {
-      wrapper,
-    });
+    renderHook(
+      () =>
+        useQuery({
+          types: ['Event'],
+        }),
+      {
+        wrapper,
+      },
+    );
 
+    // @ts-expect-error to query relations it must be defined in the schema
     const { result: queryRelationsResult } = renderHook(() => useQuery({ types: ['AttendeeOf'] }), {
       wrapper,
     });
 
     // Create a user first
     act(() => {
-      createResult.current({
+      createEntity.current({
         types: ['User'],
         data: {
           name: 'John Doe',
@@ -259,7 +300,7 @@ describe('Relations Tests', () => {
 
     // Create an event with relation to the user
     act(() => {
-      createResult.current({
+      createEntity.current({
         types: ['Event'],
         data: {
           name: 'Tech Conference',
@@ -273,8 +314,181 @@ describe('Relations Tests', () => {
       const relations = queryRelationsResult.current;
       expect(relations).toHaveLength(1);
       expect(relations[0].types).toContain('AttendeeOf');
+      // @ts-expect-error to query relations it must be defined in the schema
       expect(relations[0].from).toBeDefined();
+      // @ts-expect-error to query relations it must be defined in the schema
       expect(relations[0].to).toBe(userId);
+    });
+  });
+
+  it('should query relations', () => {
+    const { result: createEntity } = renderHook(() => useCreateEntity(), {
+      wrapper,
+    });
+
+    const { result: eventsQueryResult } = renderHook(
+      () =>
+        useQuery({
+          types: ['Event'],
+          include: {
+            attendees: {},
+          },
+        }),
+      {
+        wrapper,
+      },
+    );
+
+    let userId = '';
+    act(() => {
+      const user = createEntity.current({
+        types: ['User'],
+        data: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          events: [],
+        },
+      });
+      userId = user.id;
+    });
+
+    // Create an event with relation to the user
+    act(() => {
+      createEntity.current({
+        types: ['Event'],
+        data: {
+          name: 'Tech Conference',
+          attendees: [userId],
+        },
+      });
+    });
+
+    // Verify relations
+    act(() => {
+      const events = eventsQueryResult.current;
+      expect(events).toHaveLength(1);
+      expect(events[0].attendees).toHaveLength(1);
+      expect(events[0].attendees[0].id).toBe(userId);
+      expect(events[0].attendees[0].name).toBe('John Doe');
+    });
+  });
+});
+
+describe('Nested relation Tests', () => {
+  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+  const { useCreateEntity, useQuery } = createSchemaHooks({
+    Company: {
+      name: type.Text,
+      employees: type.Relation({
+        key: 'EmployedBy',
+        type: 'User' as const,
+      }),
+    },
+    User: {
+      name: type.Text,
+      email: type.Text,
+      events: type.Relation({
+        key: 'AttendeeOf',
+        type: 'Event' as const,
+      }),
+      employers: type.Relation({
+        key: 'EmployedBy',
+        type: 'Company' as const,
+      }),
+    },
+    Event: {
+      name: type.Text,
+      attendees: type.Relation({
+        key: 'AttendeeOf',
+        type: 'User' as const,
+      }),
+    },
+  });
+
+  let repo = new Repo({});
+  let wrapper = ({ children }: { children: React.ReactNode }) => (
+    <RepoContext.Provider value={repo}>
+      <SpacesProvider defaultSpace={spaceId}>{children}</SpacesProvider>
+    </RepoContext.Provider>
+  );
+
+  beforeEach(() => {
+    repo = new Repo({});
+    const automergeDocHandle = repo.find(idToAutomergeId(spaceId) as AnyDocumentId);
+    automergeDocHandle.doneLoading();
+
+    wrapper = ({ children }: { children: React.ReactNode }) => (
+      <RepoContext.Provider value={repo}>
+        <SpacesProvider defaultSpace={spaceId}>{children}</SpacesProvider>
+      </RepoContext.Provider>
+    );
+  });
+
+  it('should query nested relations', () => {
+    const { result: createEntity } = renderHook(() => useCreateEntity(), {
+      wrapper,
+    });
+
+    const { result: eventsQueryResult } = renderHook(
+      () =>
+        useQuery({
+          types: ['Event'],
+          include: {
+            attendees: {
+              employers: {},
+            },
+          },
+        }),
+      {
+        wrapper,
+      },
+    );
+
+    let companyId = '';
+    act(() => {
+      const company = createEntity.current({
+        types: ['Company'],
+        data: {
+          name: 'Acme',
+          employees: [],
+        },
+      });
+      companyId = company.id;
+    });
+
+    let userId = '';
+    act(() => {
+      const user = createEntity.current({
+        types: ['User'],
+        data: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          events: [],
+          employers: [companyId],
+        },
+      });
+      userId = user.id;
+    });
+
+    // Create an event with relation to the user
+    act(() => {
+      createEntity.current({
+        types: ['Event'],
+        data: {
+          name: 'Tech Conference',
+          attendees: [userId],
+        },
+      });
+    });
+
+    // Verify relations
+    act(() => {
+      const events = eventsQueryResult.current;
+      expect(events).toHaveLength(1);
+      expect(events[0].attendees).toHaveLength(1);
+      expect(events[0].attendees[0].id).toBe(userId);
+      expect(events[0].attendees[0].employers).toHaveLength(1);
+      expect(events[0].attendees[0].employers[0].id).toBe(companyId);
     });
   });
 });
