@@ -26,6 +26,10 @@
     "./schema": {
       "default": "./build/esm/schema/index.js",
       "types": "./build/dts/schema/index.d.ts"
+    },
+    "./space-events": {
+      "default": "./build/esm/space-events/index.js",
+      "types": "./build/dts/space-events/index.d.ts"
     }
   },
   "scripts": {
