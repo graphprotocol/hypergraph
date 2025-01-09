@@ -1,3 +1,4 @@
+export * from './identity/index.js';
 export * from './key/index.js';
 export * from './messages/index.js';
 export * from './schema/index.js';

@@ -3,13 +3,13 @@ import { ProjectivePoint } from '@noble/secp256k1';
 import type { Hex } from 'viem';
 import { publicKeyToAddress as viemPublicKeyToAddress } from 'viem/accounts';
 
-export const bytesToHex = (bytes: Uint8Array): string => {
+export function bytesToHex(bytes: Uint8Array): Hex {
   return `0x${nobleBytesToHex(bytes)}`;
-};
+}
 
-export const hexToBytes = (hex: string): Uint8Array => {
+export function hexToBytes(hex: Hex | string): Uint8Array {
   return nobleHexToBytes(hex.slice(2));
-};
+}
 
 function decompressPublicKey(compressedKey: string): string {
   // Decompress the public key
