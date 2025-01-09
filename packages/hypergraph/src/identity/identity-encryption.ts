@@ -47,12 +47,12 @@ export async function encryptIdentity(
   return { ciphertext, nonce: bytesToHex(nonce) };
 }
 
-export const decryptIdentity = async (
+export async function decryptIdentity(
   signer: Signer,
   accountId: string,
   ciphertext: string,
   nonce: string,
-): Promise<Keys> => {
+): Promise<Keys> {
   const message = signatureMessage(hexToBytes(nonce));
   const signature = (await signer.signMessage(message)) as Hex;
 
@@ -88,4 +88,4 @@ export const decryptIdentity = async (
   const keysTxt = new TextDecoder().decode(keysMsg);
   const [encryptionPublicKey, encryptionPrivateKey, signaturePublicKey, signaturePrivateKey] = keysTxt.split('\n');
   return { encryptionPublicKey, encryptionPrivateKey, signaturePublicKey, signaturePrivateKey };
-};
+}

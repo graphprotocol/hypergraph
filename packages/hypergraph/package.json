@@ -2,6 +2,7 @@
   "name": "@graphprotocol/hypergraph",
   "version": "0.0.1",
   "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
+  "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "Hypergraph"],
   "repository": {
     "type": "git",
     "url": "https://github.com/geobrowser/graph-framework.git",
@@ -52,12 +53,11 @@
     "check": "pnpm biome check src/*",
     "check:fix": "pnpm biome check --write src/*"
   },
-  "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "Hypergraph"],
   "peerDependencies": {
     "@automerge/automerge": "^2",
     "@automerge/automerge-repo": "^2",
     "@automerge/automerge-repo-react-hooks": "^2",
-    "react": "^19"
+    "react": "^18"
   },
   "devDependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
@@ -67,18 +67,17 @@
     "@automerge/automerge-repo-storage-indexeddb": "^2.0.0-alpha.14",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
-    "@types/react": "^19.0.4",
+    "@types/react": "^18.3.7",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "jsdom": "^26.0.0",
-    "react": "^19.0.0"
+    "jsdom": "^26.0.0"
   },
   "dependencies": {
     "@noble/ciphers": "^1.2.0",
     "@noble/curves": "^1.8.0",
     "@noble/hashes": "^1.7.0",
     "@noble/secp256k1": "^2.2.3",
-    "@xmtp/xmtp-js": "^13.0.4",
+    "@xmtp/xmtp-js": "^13.0.0",
     "@xstate/store": "^2.6.2",
     "bs58check": "^4.0.0",
     "effect": "^3.12.1",
