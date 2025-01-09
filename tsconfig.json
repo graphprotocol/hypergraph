@@ -9,6 +9,7 @@
     { "path": "packages/graph-framework-utils" },
     { "path": "packages/graph-framework-messages" },
     { "path": "packages/graph-framework-key" },
+    { "path": "packages/hypergraph" },
     { "path": "apps/events" }
   ]
 }

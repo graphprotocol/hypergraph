@@ -1,0 +1,51 @@
+{
+  "name": "@graphprotocol/hypergraph",
+  "version": "0.0.1",
+  "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geobrowser/graph-framework.git",
+    "directory": "packages/hypergraph"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "pnpm build-esm && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
+    "test": "vitest run --typecheck",
+    "ts:check": "tsc -b tsconfig.json",
+    "lint": "pnpm biome lint src/*",
+    "lint:fix": "pnpm biome lint --write src/*",
+    "format": "pnpm biome format src/*",
+    "format:fix": "pnpm biome format --write src/*",
+    "check": "pnpm biome check src/*",
+    "check:fix": "pnpm biome check --write src/*"
+  },
+  "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "Hypergraph"],
+  "peerDependencies": {
+    "@automerge/automerge": "^2",
+    "@automerge/automerge-repo": "^2",
+    "@automerge/automerge-repo-react-hooks": "^2",
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@automerge/automerge": "^v2.2.9-alpha.3",
+    "@automerge/automerge-repo": "^2.0.0-alpha.14",
+    "@automerge/automerge-repo-network-websocket": "^2.0.0-alpha.14",
+    "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
+    "@automerge/automerge-repo-storage-indexeddb": "^2.0.0-alpha.14",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.4",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^26.0.0"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.7.0",
+    "@xstate/store": "^2.6.2",
+    "effect": "^3.12.1",
+    "xstate": "^5.19.1"
+  }
+}

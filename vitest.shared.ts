@@ -4,6 +4,8 @@ import type { ViteUserConfig } from 'vitest/config';
 const graphFrameworkAlias = {
   '@graphprotocol/graph-framework/test': path.join(__dirname, 'packages', 'graph-framework', 'test'),
   '@graphprotocol/graph-framework': path.join(__dirname, 'packages', 'graph-framework', 'src'),
+  '@graphprotocol/hypergraph/test': path.join(__dirname, 'packages', 'hypergraph', 'test'),
+  '@graphprotocol/hypergraph': path.join(__dirname, 'packages', 'hypergraph', 'src'),
 };
 
 const graphFrameworkPkgAlias = (name: string) => {
