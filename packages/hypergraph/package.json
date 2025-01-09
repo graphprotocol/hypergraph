@@ -18,6 +18,10 @@
     "./utils": {
       "default": "./build/esm/utils/index.js",
       "types": "./build/dts/utils/index.d.ts"
+    },
+    "./key": {
+      "default": "./build/esm/key/index.js",
+      "types": "./build/dts/key/index.d.ts"
     }
   },
   "scripts": {
