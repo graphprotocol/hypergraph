@@ -22,6 +22,10 @@
     "./key": {
       "default": "./build/esm/key/index.js",
       "types": "./build/dts/key/index.d.ts"
+    },
+    "./schema": {
+      "default": "./build/esm/schema/index.js",
+      "types": "./build/dts/schema/index.d.ts"
     }
   },
   "scripts": {
