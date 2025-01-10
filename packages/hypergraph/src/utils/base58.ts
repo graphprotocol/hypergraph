@@ -21,7 +21,7 @@ export type Base58 = string;
 export function encodeBase58(val: string): Base58 {
   const hex = BigInt(`0x${val}`);
   let remainder = hex;
-  const result: string[] = []; // Use an array to store encoded characters
+  const result: Array<string> = []; // Use an array to store encoded characters
 
   while (remainder > 0n) {
     const mod = remainder % 58n;
