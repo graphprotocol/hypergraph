@@ -1,9 +1,10 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { useDocument, useRepo } from '@automerge/automerge-repo-react-hooks';
+import type * as Model from '@effect/sql/Model';
 import { generateId, idToAutomergeId } from '@graph-framework/utils';
-import * as Model from '@effect/sql/Model';
 import * as Schema from 'effect/Schema';
-import { createContext, ReactNode, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
 
 interface SpacesProviderProps {
   children: ReactNode;
@@ -38,7 +39,7 @@ export const useDefaultSpaceId = () => {
 };
 
 type DocumentContent = {
-  entities?: Record<string, any>;
+  entities?: Record<string, unknown>;
 };
 
 const useDefaultAutomergeDocId = () => {
@@ -61,35 +62,39 @@ export const useCreateEntity = <S extends Model.AnyNoContext>(type: S) => {
       doc.entities[entityId] = encode(data);
     });
 
-    return entityId
+    return entityId;
   }
 
   return createEntity;
-}
+};
 
 export const useUpdateEntity = <S extends Model.AnyNoContext>(type: S) => {
-    const id = useDefaultAutomergeDocId();
-    const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
-    const encode = Schema.encodeSync(Schema.partial(type.update))
+  const id = useDefaultAutomergeDocId();
+  const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
+  const encode = Schema.encodeSync(Schema.partial(type.update));
 
-    function updateEntity(entityId: string, data: Schema.Simplify<Partial<Omit<Schema.Schema.Type<S['update']>, "id">>>): boolean {
-      let success = false;
-      changeDoc((doc) => {
-        const existingEntity = doc.entities?.[entityId];
-        if (existingEntity === undefined) {
-          return;
-        }
+  function updateEntity(
+    entityId: string,
+    data: Schema.Simplify<Partial<Omit<Schema.Schema.Type<S['update']>, 'id'>>>,
+  ): boolean {
+    let success = false;
+    changeDoc((doc) => {
+      const existingEntity = doc.entities?.[entityId];
+      if (existingEntity === undefined) {
+        return;
+      }
 
-        const updatedData = encode({ ...existingEntity, ...data });
-        doc.entities![entityId] = updatedData;
-        success = true;
-      });
+      const updatedData = encode({ ...existingEntity, ...data });
+      // @ts-expect-error doc.entities was checked above
+      doc.entities[entityId] = updatedData;
+      success = true;
+    });
 
-      return success;
-    }
+    return success;
+  }
 
   return updateEntity;
-}
+};
 
 export const useDeleteEntity = () => {
   const id = useDefaultAutomergeDocId();
@@ -118,60 +123,61 @@ export const useDeleteEntity = () => {
     [id],
   );
 
-
   return deleteEntity;
-}
+};
 
 export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
-    const prevEntitiesRef = useRef<Array<Schema.Schema.Type<S>>>([]);
-    const id = useDefaultAutomergeDocId();
-    const repo = useRepo();
-    const equal = isEqual(type);
-    const decode = Schema.decodeUnknownSync(type);
-    const handle = repo.find<DocumentContent>(id as AnyDocumentId)
+  const prevEntitiesRef = useRef<Array<Schema.Schema.Type<S>>>([]);
+  const id = useDefaultAutomergeDocId();
+  const repo = useRepo();
+  const equal = isEqual(type);
+  const decode = Schema.decodeUnknownSync(type);
+  const handle = repo.find<DocumentContent>(id as AnyDocumentId);
 
-    const subscribe = (callback: () => void) => {
-      const handleChange = () => {
-        callback();
-      };
-
-      const handleDelete = () => {
-        callback();
-      };
-
-      handle?.on('change', handleChange);
-      handle?.on('delete', handleDelete);
-
-      return () => {
-        handle?.off('change', handleChange);
-        handle?.off('delete', handleDelete);
-      };
+  const subscribe = (callback: () => void) => {
+    const handleChange = () => {
+      callback();
     };
 
-    const entities = useSyncExternalStore(subscribe, () => {
-      const doc = handle?.docSync();
-      if (doc === undefined) {
-        return prevEntitiesRef.current;
-      }
+    const handleDelete = () => {
+      callback();
+    };
 
-      const filtered: Array<Schema.Schema.Type<S>> = [];
-      for (const entityId in doc.entities) {
-        const entity = doc.entities[entityId];
+    handle?.on('change', handleChange);
+    handle?.on('delete', handleDelete);
+
+    return () => {
+      handle?.off('change', handleChange);
+      handle?.off('delete', handleDelete);
+    };
+  };
+
+  const entities = useSyncExternalStore(subscribe, () => {
+    const doc = handle?.docSync();
+    if (doc === undefined) {
+      return prevEntitiesRef.current;
+    }
+
+    const filtered: Array<Schema.Schema.Type<S>> = [];
+    for (const entityId in doc.entities) {
+      const entity = doc.entities[entityId];
+      if (typeof entity === 'object') {
         filtered.push(decode({ ...entity, id: entityId }));
       }
+    }
 
-      if (!equal(filtered, prevEntitiesRef.current)) {
-        prevEntitiesRef.current = filtered;
-      }
+    if (!equal(filtered, prevEntitiesRef.current)) {
+      prevEntitiesRef.current = filtered;
+    }
 
-      return prevEntitiesRef.current;
-    });
+    return prevEntitiesRef.current;
+  });
 
-    return entities;
-}
+  return entities;
+};
 
 const isEqual = <A, E>(type: Schema.Schema<A, E, never>) => {
-  const equals = Schema.equivalence(type)
+  const equals = Schema.equivalence(type);
 
   return (a: Array<A>, b: Array<A>) => {
     if (a.length !== b.length) {
@@ -185,5 +191,5 @@ const isEqual = <A, E>(type: Schema.Schema<A, E, never>) => {
     }
 
     return true;
-  }
-}
+  };
+};
