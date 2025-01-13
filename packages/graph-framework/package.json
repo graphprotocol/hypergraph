@@ -79,7 +79,7 @@
     "@graph-framework/utils": "workspace:*",
     "@noble/hashes": "^1.5.0",
     "@xstate/store": "^2.6.1",
-    "effect": "^3.10.19",
+    "effect": "^3.12.2",
     "xstate": "^5.19.0"
   }
 }

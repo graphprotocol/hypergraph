@@ -1,6 +1,6 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { useDocument, useRepo } from '@automerge/automerge-repo-react-hooks';
-import type * as Model from '@effect/sql/Model';
+import type * as Model from './model.js';
 import { generateId, idToAutomergeId } from '@graph-framework/utils';
 import * as Schema from 'effect/Schema';
 import type { ReactNode } from 'react';
@@ -59,7 +59,7 @@ export const useCreateEntity = <S extends Model.AnyNoContext>(type: S) => {
   // @ts-expect-error name is defined
   const typeName = type.name;
 
-  function createEntity(data: Schema.Schema.Type<S['insert']>): string {
+  function createEntity(data: Schema.Schema.Type<Model.Insert<S>>): string {
     const entityId = generateId();
     changeDoc((doc) => {
       doc.entities ??= {};
@@ -73,28 +73,25 @@ export const useCreateEntity = <S extends Model.AnyNoContext>(type: S) => {
 };
 
 export const useUpdateEntity = <S extends Model.AnyNoContext>(type: S) => {
-  const id = useDefaultAutomergeDocId();
-  const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
+  const docId = useDefaultAutomergeDocId();
+  const [, changeDoc] = useDocument<DocumentContent>(docId as AnyDocumentId);
   const encode = Schema.encodeSync(Schema.partial(type.update));
 
   // TODO: what's the right way to get the name of the type?
   // @ts-expect-error name is defined
   const typeName = type.name;
 
-  function updateEntity(
-    entityId: string,
-    data: Schema.Simplify<Partial<Omit<Schema.Schema.Type<S['update']>, 'id'>>>,
-  ): boolean {
+  function updateEntity(id: string, data: Schema.Simplify<Partial<Schema.Schema.Type<Model.Update<S>>>>): boolean {
     let success = false;
     changeDoc((doc) => {
-      const existingEntity = doc.entities?.[entityId];
+      const existingEntity = doc.entities?.[id];
       if (existingEntity === undefined) {
         return;
       }
 
       const updatedData = encode({ ...existingEntity, ...data });
       // @ts-expect-error doc.entities was checked above
-      doc.entities[entityId] = { ...updatedData, '@@types@@': [typeName] };
+      doc.entities[id] = { ...updatedData, '@@types@@': [typeName] };
       success = true;
     });
 
@@ -105,11 +102,10 @@ export const useUpdateEntity = <S extends Model.AnyNoContext>(type: S) => {
 };
 
 export const useDeleteEntity = () => {
-  const id = useDefaultAutomergeDocId();
-
+  const docId = useDefaultAutomergeDocId();
   // can't use useDocument here because it would trigger a re-render every time the document changes
   const repo = useRepo();
-  const handle = repo.find<DocumentContent>(id as AnyDocumentId);
+  const handle = repo.find<DocumentContent>(docId as AnyDocumentId);
   const handleRef = useRef<DocHandle<DocumentContent>>(handle);
   if (handle !== handleRef.current) {
     handleRef.current = handle;
@@ -117,18 +113,18 @@ export const useDeleteEntity = () => {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const deleteEntity = useCallback(
-    function deleteEntity(entityId: string): boolean {
+    (id: string): boolean => {
       let result = false;
       handle.change((doc) => {
-        if (doc.entities?.[entityId] !== undefined) {
-          delete doc.entities[entityId];
+        if (doc.entities?.[id] !== undefined) {
+          delete doc.entities[id];
           result = true;
         }
       });
 
       return result;
     },
-    [id],
+    [docId],
   );
 
   return deleteEntity;
@@ -136,11 +132,11 @@ export const useDeleteEntity = () => {
 
 export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
   const prevEntitiesRef = useRef<Array<Schema.Schema.Type<S>>>([]);
-  const id = useDefaultAutomergeDocId();
+  const docId = useDefaultAutomergeDocId();
   const repo = useRepo();
   const equal = isEqual(type);
   const decode = Schema.decodeUnknownSync(type);
-  const handle = repo.find<DocumentContent>(id as AnyDocumentId);
+  const handle = repo.find<DocumentContent>(docId as AnyDocumentId);
 
   // TODO: what's the right way to get the name of the type?
   // @ts-expect-error name is defined
@@ -170,9 +166,11 @@ export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
       return prevEntitiesRef.current;
     }
 
+    // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
+    // an index and store the decoded valeus instead of re-decoding over and over again.
     const filtered: Array<Schema.Schema.Type<S>> = [];
-    for (const entityId in doc.entities) {
-      const entity = doc.entities[entityId];
+    for (const id in doc.entities) {
+      const entity = doc.entities[id];
       if (
         typeof entity === 'object' &&
         entity !== null &&
@@ -180,7 +178,7 @@ export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
         Array.isArray(entity['@@types@@']) &&
         entity['@@types@@'].includes(typeName)
       ) {
-        filtered.push(decode({ ...entity, id: entityId }));
+        filtered.push(decode({ ...entity, id: id }));
       }
     }
 
