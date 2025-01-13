@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } from '../schema';
+import { Todo } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { useCreateEntity, useQuery, useUpdateEntity, useDeleteEntity } from '@graph-framework/schema';
 
 export const TodosApp = () => {
-  const createEntity = useCreateEntity();
-  const updateEntity = useUpdateEntity();
+  const todos = useQuery(Todo);
+  const createEntity = useCreateEntity(Todo);
+  const updateEntity = useUpdateEntity(Todo);
   const deleteEntity = useDeleteEntity();
-  const todos = useQuery({ types: ['Todo'] });
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
   return (
@@ -17,10 +18,7 @@ export const TodosApp = () => {
         <Input type="text" value={newTodoTitle} onChange={(e) => setNewTodoTitle(e.target.value)} />
         <Button
           onClick={() => {
-            createEntity({
-              types: ['Todo'],
-              data: { name: newTodoTitle, completed: false },
-            });
+            createEntity({ name: newTodoTitle, completed: false });
             setNewTodoTitle('');
           }}
         >
@@ -33,13 +31,7 @@ export const TodosApp = () => {
           <input
             type="checkbox"
             checked={todo.completed}
-            onChange={(e) =>
-              updateEntity({
-                id: todo.id,
-                types: ['Todo'],
-                data: { completed: e.target.checked },
-              })
-            }
+            onChange={(e) => updateEntity(todo.id, { completed: e.target.checked })}
           />
           <Button onClick={() => deleteEntity(todo.id)}>Delete</Button>
         </div>
