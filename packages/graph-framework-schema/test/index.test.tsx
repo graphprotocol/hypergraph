@@ -168,4 +168,26 @@ describe('Library Tests', () => {
       expect(peopleAfterUpdate[0]?.age).toBe(26);
     });
   });
+
+  it('should only query entities of the specified type', () => {
+    const { result: createResult } = renderHook(() => useCreateEntity(Person), {
+      wrapper,
+    });
+
+    const { result: createResult2 } = renderHook(() => useCreateEntity(User), {
+      wrapper,
+    });
+
+    const { result: queryResult } = renderHook(() => useQuery(Person), { wrapper });
+
+    act(() => {
+      createResult.current({ name: 'John', age: 25 });
+      createResult2.current({ name: 'Jane', email: 'jane@example.com' });
+    });
+
+    const people = queryResult.current;
+    expect(people).toHaveLength(1);
+    expect(people[0]?.name).toBe('John');
+    expect(people[0]?.age).toBe(25);
+  });
 });

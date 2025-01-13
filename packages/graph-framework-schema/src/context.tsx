@@ -55,11 +55,15 @@ export const useCreateEntity = <S extends Model.AnyNoContext>(type: S) => {
   const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
   const encode = Schema.encodeSync(type.insert);
 
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
+
   function createEntity(data: Schema.Schema.Type<S['insert']>): string {
     const entityId = generateId();
     changeDoc((doc) => {
       doc.entities ??= {};
-      doc.entities[entityId] = encode(data);
+      doc.entities[entityId] = { ...encode(data), '@@types@@': [typeName] };
     });
 
     return entityId;
@@ -72,6 +76,10 @@ export const useUpdateEntity = <S extends Model.AnyNoContext>(type: S) => {
   const id = useDefaultAutomergeDocId();
   const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
   const encode = Schema.encodeSync(Schema.partial(type.update));
+
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
 
   function updateEntity(
     entityId: string,
@@ -86,7 +94,7 @@ export const useUpdateEntity = <S extends Model.AnyNoContext>(type: S) => {
 
       const updatedData = encode({ ...existingEntity, ...data });
       // @ts-expect-error doc.entities was checked above
-      doc.entities[entityId] = updatedData;
+      doc.entities[entityId] = { ...updatedData, '@@types@@': [typeName] };
       success = true;
     });
 
@@ -134,6 +142,10 @@ export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
   const decode = Schema.decodeUnknownSync(type);
   const handle = repo.find<DocumentContent>(id as AnyDocumentId);
 
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
+
   const subscribe = (callback: () => void) => {
     const handleChange = () => {
       callback();
@@ -161,7 +173,13 @@ export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
     const filtered: Array<Schema.Schema.Type<S>> = [];
     for (const entityId in doc.entities) {
       const entity = doc.entities[entityId];
-      if (typeof entity === 'object') {
+      if (
+        typeof entity === 'object' &&
+        entity !== null &&
+        '@@types@@' in entity &&
+        Array.isArray(entity['@@types@@']) &&
+        entity['@@types@@'].includes(typeName)
+      ) {
         filtered.push(decode({ ...entity, id: entityId }));
       }
     }
