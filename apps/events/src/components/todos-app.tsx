@@ -1,8 +1,10 @@
 import { useState } from 'react';
+
+import { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } from '@graph-framework/schema';
+
 import { Todo } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { useCreateEntity, useQuery, useUpdateEntity, useDeleteEntity } from '@graph-framework/schema';
 
 export const TodosApp = () => {
   const todos = useQuery(Todo);
