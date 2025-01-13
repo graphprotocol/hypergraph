@@ -1,5 +1,5 @@
 import * as VariantSchema from '@effect/experimental/VariantSchema';
-import * as Schema from 'effect/Schema';
+import type * as Schema from 'effect/Schema';
 
 const {
   Class,

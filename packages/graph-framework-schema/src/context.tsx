@@ -1,10 +1,10 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { useDocument, useRepo } from '@automerge/automerge-repo-react-hooks';
-import type * as Model from './model.js';
 import { generateId, idToAutomergeId } from '@graph-framework/utils';
 import * as Schema from 'effect/Schema';
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+import type * as Model from './model.js';
 
 interface SpacesProviderProps {
   children: ReactNode;
