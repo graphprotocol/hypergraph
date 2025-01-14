@@ -168,7 +168,7 @@ import {
   acceptInvite,
   createSpace,
   listSpaces,
-} from "@graphprotocol/graph-framework";
+} from "@graphprotocol/hypergraph";
 
 export const {
   SpaceProvider,

@@ -1,34 +1,7 @@
+import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import cors from 'cors';
 import 'dotenv/config';
 import { parse } from 'node:url';
-import { verifyIdentityOwnership } from '@graph-framework/identity';
-import type {
-  ResponseCreateIdentity,
-  ResponseIdentity,
-  ResponseIdentityEncrypted,
-  ResponseIdentityExistsError,
-  ResponseIdentityNotFoundError,
-  ResponseListInvitations,
-  ResponseListSpaces,
-  ResponseLogin,
-  ResponseLoginNonce,
-  ResponseSpace,
-  ResponseSpaceEvent,
-  ResponseUpdateConfirmed,
-  ResponseUpdatesNotification,
-  Updates,
-} from '@graph-framework/messages';
-import {
-  RequestCreateIdentity,
-  RequestLogin,
-  RequestLoginNonce,
-  RequestMessage,
-  deserialize,
-  serialize,
-} from '@graph-framework/messages';
-import type { SpaceEvent } from '@graph-framework/space-events';
-import { applyEvent } from '@graph-framework/space-events';
-import { publicKeyToAddress } from '@graph-framework/utils';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
 import { SiweMessage } from 'siwe';
@@ -45,13 +18,12 @@ import { listSpaces } from './handlers/listSpaces.js';
 import { createSessionNonce, getSessionNonce } from './handlers/sessionNonce.js';
 import { createSessionToken, getAccountIdBySessionToken } from './handlers/sessionToken.js';
 import { tmpInitAccount } from './handlers/tmpInitAccount.js';
-import { assertExhaustive } from './utils/assertExhaustive.js';
 interface CustomWebSocket extends WebSocket {
   accountId: string;
   subscribedSpaces: Set<string>;
 }
 
-const decodeRequestMessage = Schema.decodeUnknownEither(RequestMessage);
+const decodeRequestMessage = Schema.decodeUnknownEither(Messages.RequestMessage);
 
 tmpInitAccount({
   accountId: '0x098B742F2696AFC37724887cf999e1cFdB8f4b55',
@@ -111,10 +83,10 @@ app.get('/', (_req, res) => {
 
 app.post('/login/nonce', async (req, res) => {
   console.log('POST login/nonce');
-  const message = Schema.decodeUnknownSync(RequestLoginNonce)(req.body);
+  const message = Schema.decodeUnknownSync(Messages.RequestLoginNonce)(req.body);
   const accountId = message.accountId;
   const sessionNonce = await createSessionNonce({ accountId });
-  const outgoingMessage: ResponseLoginNonce = {
+  const outgoingMessage: Messages.ResponseLoginNonce = {
     sessionNonce,
   };
   res.status(200).send(outgoingMessage);
@@ -123,7 +95,7 @@ app.post('/login/nonce', async (req, res) => {
 app.post('/login', async (req, res) => {
   console.log('POST login');
   try {
-    const message = Schema.decodeUnknownSync(RequestLogin)(req.body);
+    const message = Schema.decodeUnknownSync(Messages.RequestLogin)(req.body);
     const accountId = message.accountId;
     const nonce = await getSessionNonce({ accountId });
     const siweObject = new SiweMessage(message.message);
@@ -138,7 +110,7 @@ app.post('/login', async (req, res) => {
     }
     const sessionTokenExpires = new Date(siweMessage.expirationTime);
     const sessionToken = await createSessionToken({ accountId, sessionTokenExpires });
-    const outgoingMessage: ResponseLogin = {
+    const outgoingMessage: Messages.ResponseLogin = {
       sessionToken,
     };
     res.status(200).send(outgoingMessage);
@@ -150,12 +122,12 @@ app.post('/login', async (req, res) => {
 
 app.post('/identity', async (req, res) => {
   console.log('POST identity');
-  const message = Schema.decodeUnknownSync(RequestCreateIdentity)(req.body);
+  const message = Schema.decodeUnknownSync(Messages.RequestCreateIdentity)(req.body);
   const accountId = message.keyBox.accountId;
 
   const nonce = await getSessionNonce({ accountId });
   const siweObject = new SiweMessage(message.message);
-  const signatureAddress = publicKeyToAddress(message.signaturePublicKey as Hex);
+  const signatureAddress = Utils.publicKeyToAddress(message.signaturePublicKey as Hex);
   if (siweObject.address !== signatureAddress) {
     console.log('Address mismatch');
     res.status(401).send('Unauthorized');
@@ -166,7 +138,9 @@ app.post('/identity', async (req, res) => {
     res.status(400).send('Expiration time not set');
     return;
   }
-  if (!verifyIdentityOwnership(accountId, message.signaturePublicKey, message.accountProof, message.keyProof)) {
+  if (
+    !Identity.verifyIdentityOwnership(accountId, message.signaturePublicKey, message.accountProof, message.keyProof)
+  ) {
     console.log('Ownership proof is invalid');
     res.status(401).send('Unauthorized');
     return;
@@ -183,7 +157,7 @@ app.post('/identity', async (req, res) => {
     });
   } catch (error) {
     console.log('Error creating identity: ', error);
-    const outgoingMessage: ResponseIdentityExistsError = {
+    const outgoingMessage: Messages.ResponseIdentityExistsError = {
       accountId,
     };
     res.status(400).send(outgoingMessage);
@@ -191,7 +165,7 @@ app.post('/identity', async (req, res) => {
   }
   const sessionTokenExpires = new Date(siweMessage.expirationTime);
   const sessionToken = await createSessionToken({ accountId, sessionTokenExpires });
-  const outgoingMessage: ResponseCreateIdentity = {
+  const outgoingMessage: Messages.ResponseCreateIdentity = {
     sessionToken,
   };
   res.status(200).send(outgoingMessage);
@@ -221,7 +195,7 @@ app.get('/identity/encrypted', verifyAuth, async (req: AuthenticatedRequest, res
   }
   try {
     const identity = await getIdentity({ accountId });
-    const outgoingMessage: ResponseIdentityEncrypted = {
+    const outgoingMessage: Messages.ResponseIdentityEncrypted = {
       keyBox: {
         accountId,
         ciphertext: identity.ciphertext,
@@ -230,7 +204,7 @@ app.get('/identity/encrypted', verifyAuth, async (req: AuthenticatedRequest, res
     };
     res.status(200).send(outgoingMessage);
   } catch (error) {
-    const outgoingMessage: ResponseIdentityNotFoundError = {
+    const outgoingMessage: Messages.ResponseIdentityNotFoundError = {
       accountId,
     };
     res.status(404).send(outgoingMessage);
@@ -246,7 +220,7 @@ app.get('/identity/by-public-key', async (req, res) => {
   }
   try {
     const identity = await getIdentity({ signaturePublicKey: publicKey });
-    const outgoingMessage: ResponseIdentity = {
+    const outgoingMessage: Messages.ResponseIdentity = {
       accountId: identity.accountId,
       signaturePublicKey: identity.signaturePublicKey,
       encryptionPublicKey: identity.encryptionPublicKey,
@@ -255,7 +229,7 @@ app.get('/identity/by-public-key', async (req, res) => {
     };
     res.status(200).send(outgoingMessage);
   } catch (error) {
-    const outgoingMessage: ResponseIdentityNotFoundError = {
+    const outgoingMessage: Messages.ResponseIdentityNotFoundError = {
       accountId: 'unknown',
     };
     res.status(404).send(outgoingMessage);
@@ -271,7 +245,7 @@ app.get('/identity', async (req, res) => {
   }
   try {
     const identity = await getIdentity({ accountId });
-    const outgoingMessage: ResponseIdentity = {
+    const outgoingMessage: Messages.ResponseIdentity = {
       accountId,
       signaturePublicKey: identity.signaturePublicKey,
       encryptionPublicKey: identity.encryptionPublicKey,
@@ -280,7 +254,7 @@ app.get('/identity', async (req, res) => {
     };
     res.status(200).send(outgoingMessage);
   } catch (error) {
-    const outgoingMessage: ResponseIdentityNotFoundError = {
+    const outgoingMessage: Messages.ResponseIdentityNotFoundError = {
       accountId,
     };
     res.status(404).send(outgoingMessage);
@@ -295,17 +269,17 @@ function broadcastSpaceEvents({
   spaceId,
   event,
   currentClient,
-}: { spaceId: string; event: SpaceEvent; currentClient: CustomWebSocket }) {
+}: { spaceId: string; event: SpaceEvents.SpaceEvent; currentClient: CustomWebSocket }) {
   for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
     if (currentClient === client) continue;
 
-    const outgoingMessage: ResponseSpaceEvent = {
+    const outgoingMessage: Messages.ResponseSpaceEvent = {
       type: 'space-event',
       spaceId,
       event,
     };
     if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
-      client.send(serialize(outgoingMessage));
+      client.send(Messages.serialize(outgoingMessage));
     }
   }
 }
@@ -314,17 +288,17 @@ function broadcastUpdates({
   spaceId,
   updates,
   currentClient,
-}: { spaceId: string; updates: Updates; currentClient: CustomWebSocket }) {
+}: { spaceId: string; updates: Messages.Updates; currentClient: CustomWebSocket }) {
   for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
     if (currentClient === client) continue;
 
-    const outgoingMessage: ResponseUpdatesNotification = {
+    const outgoingMessage: Messages.ResponseUpdatesNotification = {
       type: 'updates-notification',
       updates,
       spaceId,
     };
     if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
-      client.send(serialize(outgoingMessage));
+      client.send(Messages.serialize(outgoingMessage));
     }
   }
 }
@@ -351,43 +325,48 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
 
   console.log('Connection established', accountId);
   webSocket.on('message', async (message) => {
-    const rawData = deserialize(message.toString());
+    const rawData = Messages.deserialize(message.toString());
     const result = decodeRequestMessage(rawData);
     if (result._tag === 'Right') {
       const data = result.right;
       switch (data.type) {
         case 'subscribe-space': {
           const space = await getSpace({ accountId, spaceId: data.id });
-          const outgoingMessage: ResponseSpace = {
+          const outgoingMessage: Messages.ResponseSpace = {
             ...space,
             type: 'space',
           };
           webSocket.subscribedSpaces.add(data.id);
-          webSocket.send(serialize(outgoingMessage));
+          webSocket.send(Messages.serialize(outgoingMessage));
           break;
         }
         case 'list-spaces': {
           const spaces = await listSpaces({ accountId });
-          const outgoingMessage: ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
-          webSocket.send(serialize(outgoingMessage));
+          const outgoingMessage: Messages.ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
+          webSocket.send(Messages.serialize(outgoingMessage));
           break;
         }
         case 'list-invitations': {
           const invitations = await listInvitations({ accountId });
-          const outgoingMessage: ResponseListInvitations = { type: 'list-invitations', invitations: invitations };
-          webSocket.send(serialize(outgoingMessage));
+          const outgoingMessage: Messages.ResponseListInvitations = {
+            type: 'list-invitations',
+            invitations: invitations,
+          };
+          webSocket.send(Messages.serialize(outgoingMessage));
           break;
         }
         case 'create-space-event': {
-          const applyEventResult = await Effect.runPromiseExit(applyEvent({ event: data.event, state: undefined }));
+          const applyEventResult = await Effect.runPromiseExit(
+            SpaceEvents.applyEvent({ event: data.event, state: undefined }),
+          );
           if (Exit.isSuccess(applyEventResult)) {
             const space = await createSpace({ accountId, event: data.event, keyBox: data.keyBox, keyId: data.keyId });
             const spaceWithEvents = await getSpace({ accountId, spaceId: space.id });
-            const outgoingMessage: ResponseSpace = {
+            const outgoingMessage: Messages.ResponseSpace = {
               ...spaceWithEvents,
               type: 'space',
             };
-            webSocket.send(serialize(outgoingMessage));
+            webSocket.send(Messages.serialize(outgoingMessage));
           } else {
             console.log('Failed to apply create space event');
             console.log(applyEventResult);
@@ -404,20 +383,23 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           });
           const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
           // TODO send back confirmation instead of the entire space
-          const outgoingMessage: ResponseSpace = {
+          const outgoingMessage: Messages.ResponseSpace = {
             ...spaceWithEvents,
             type: 'space',
           };
-          webSocket.send(serialize(outgoingMessage));
+          webSocket.send(Messages.serialize(outgoingMessage));
           for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
             if (
               client.readyState === WebSocket.OPEN &&
               client.accountId === data.event.transaction.signaturePublicKey
             ) {
               const invitations = await listInvitations({ accountId: client.accountId });
-              const outgoingMessage: ResponseListInvitations = { type: 'list-invitations', invitations: invitations };
+              const outgoingMessage: Messages.ResponseListInvitations = {
+                type: 'list-invitations',
+                invitations: invitations,
+              };
               // for now sending the entire list of invitations to the client - we could send only a single one
-              client.send(serialize(outgoingMessage));
+              client.send(Messages.serialize(outgoingMessage));
             }
           }
 
@@ -427,23 +409,23 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
         case 'accept-invitation-event': {
           await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
           const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
-          const outgoingMessage: ResponseSpace = {
+          const outgoingMessage: Messages.ResponseSpace = {
             ...spaceWithEvents,
             type: 'space',
           };
-          webSocket.send(serialize(outgoingMessage));
+          webSocket.send(Messages.serialize(outgoingMessage));
           broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
           break;
         }
         case 'create-update': {
           const update = await createUpdate({ accountId, spaceId: data.spaceId, update: data.update });
-          const outgoingMessage: ResponseUpdateConfirmed = {
+          const outgoingMessage: Messages.ResponseUpdateConfirmed = {
             type: 'update-confirmed',
             ephemeralId: data.ephemeralId,
             clock: update.clock,
             spaceId: data.spaceId,
           };
-          webSocket.send(serialize(outgoingMessage));
+          webSocket.send(Messages.serialize(outgoingMessage));
 
           broadcastUpdates({
             spaceId: data.spaceId,
@@ -457,7 +439,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           break;
         }
         default:
-          assertExhaustive(data);
+          Utils.assertExhaustive(data);
           break;
       }
     }

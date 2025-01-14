@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { useGraphLogin } from '@graph-framework/identity';
+import { Identity } from '@graphprotocol/hypergraph';
 import { usePrivy } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { useEffect } from 'react';
@@ -12,7 +12,7 @@ function Login() {
   const { ready, authenticated, login } = usePrivy();
   // Disable login when Privy is not ready or the user is already authenticated
   const disableLogin = !ready || (ready && authenticated);
-  const { authenticated: graphAuthenticated } = useGraphLogin();
+  const { authenticated: graphAuthenticated } = Identity.useGraphLogin();
   const router = useRouter();
   const redirectToPlayground = () => {
     router.navigate({

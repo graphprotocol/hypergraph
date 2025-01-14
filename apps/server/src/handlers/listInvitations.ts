@@ -1,6 +1,6 @@
 import { Schema } from 'effect';
 
-import { SpaceState } from '@graph-framework/space-events';
+import { SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
 
@@ -8,7 +8,7 @@ type Params = {
   accountId: string;
 };
 
-const decodeSpaceState = Schema.decodeUnknownEither(SpaceState);
+const decodeSpaceState = Schema.decodeUnknownEither(SpaceEvents.SpaceState);
 
 export const listInvitations = async ({ accountId }: Params) => {
   const result = await prisma.invitation.findMany({

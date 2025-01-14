@@ -1,14 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
-import {
-  GraphFramework,
-  SpacesProvider,
-  store,
-  useGraphFramework,
-  useGraphLogin,
-  useSelector,
-} from '@graphprotocol/graph-framework';
+import { GraphFramework, Identity, Schema, store, useGraphFramework, useSelector } from '@graphprotocol/hypergraph';
 
 import { DebugInvitations } from '@/components/debug-invitations';
 import { DebugSpaceEvents } from '@/components/debug-space-events';
@@ -64,7 +57,7 @@ const App = ({
   const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, subscribeToSpace, inviteToSpace } =
     useGraphFramework();
 
-  const { isAuthenticated, getSessionToken, getIdentity } = useGraphLogin();
+  const { isAuthenticated, getSessionToken, getIdentity } = Identity.useGraphLogin();
   useEffect(() => {
     console.log('accountId: ', accountId);
     console.log('Authenticated: ', isAuthenticated());
@@ -105,7 +98,7 @@ const App = ({
         {spaces.map((space) => {
           return (
             <li key={space.id}>
-              <SpacesProvider defaultSpace={space.id}>
+              <Schema.SpacesProvider defaultSpace={space.id}>
                 <h3>Space id: {space.id}</h3>
                 <p>Keys:</p>
                 <pre className="text-xs">{JSON.stringify(space.keys)}</pre>
@@ -151,7 +144,7 @@ const App = ({
                 <h3>Events</h3>
                 <DebugSpaceEvents events={space.events} />
                 <hr />
-              </SpacesProvider>
+              </Schema.SpacesProvider>
             </li>
           );
         })}
@@ -161,7 +154,7 @@ const App = ({
 };
 
 export const ChooseAccount = () => {
-  const { authenticated, getIdentity, getSessionToken } = useGraphLogin();
+  const { authenticated, getIdentity, getSessionToken } = Identity.useGraphLogin();
   const [account, setAccount] = useState<{
     accountId: string;
     signaturePrivateKey: string;

@@ -1,16 +1,15 @@
 import { Effect, Exit } from 'effect';
 
-import type { KeyBoxWithKeyId } from '@graph-framework/messages';
-import type { SpaceEvent } from '@graph-framework/space-events';
-import { applyEvent } from '@graph-framework/space-events';
+import type { Messages } from '@graphprotocol/hypergraph';
+import { SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
 
 type Params = {
   accountId: string;
   spaceId: string;
-  event: SpaceEvent;
-  keyBoxes: KeyBoxWithKeyId[];
+  event: SpaceEvents.SpaceEvent;
+  keyBoxes: Messages.KeyBoxWithKeyId[];
 };
 
 export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: Params) {
@@ -37,7 +36,7 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
       orderBy: { counter: 'desc' },
     });
 
-    const result = await Effect.runPromiseExit(applyEvent({ event, state: JSON.parse(lastEvent.state) }));
+    const result = await Effect.runPromiseExit(SpaceEvents.applyEvent({ event, state: JSON.parse(lastEvent.state) }));
     if (Exit.isFailure(result)) {
       console.log('Failed to apply event', result);
       throw new Error('Invalid event');

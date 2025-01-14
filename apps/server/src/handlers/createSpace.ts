@@ -1,19 +1,20 @@
 import { Effect, Exit } from 'effect';
 
-import type { KeyBox } from '@graph-framework/messages';
-import { type CreateSpaceEvent, applyEvent } from '@graph-framework/space-events';
+import type { Messages } from '@graphprotocol/hypergraph';
+
+import { SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
 
 type Params = {
   accountId: string;
-  event: CreateSpaceEvent;
-  keyBox: KeyBox;
+  event: SpaceEvents.CreateSpaceEvent;
+  keyBox: Messages.KeyBox;
   keyId: string;
 };
 
 export const createSpace = async ({ accountId, event, keyBox, keyId }: Params) => {
-  const result = await Effect.runPromiseExit(applyEvent({ event, state: undefined }));
+  const result = await Effect.runPromiseExit(SpaceEvents.applyEvent({ event, state: undefined }));
   if (Exit.isFailure(result)) {
     throw new Error('Invalid event');
   }

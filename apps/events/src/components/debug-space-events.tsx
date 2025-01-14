@@ -1,6 +1,6 @@
-import type { SpaceEvent } from '@graphprotocol/graph-framework';
+import type { SpaceEvents } from '@graphprotocol/hypergraph';
 
-export function DebugSpaceEvents({ events }: { events: SpaceEvent[] }) {
+export function DebugSpaceEvents({ events }: { events: SpaceEvents.SpaceEvent[] }) {
   return (
     <ul className="text-xs">
       {events.map((event) => {
