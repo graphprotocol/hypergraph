@@ -8,34 +8,37 @@ import type { AnyDocumentId } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { idToAutomergeId } from '@graph-framework/utils';
-import { SpacesProvider, createSchemaHooks, type } from '../src/context.js';
+import { SpacesProvider, useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } from '../src/context.js';
+import { Model, Types } from '../src/index.js';
 
 afterEach(() => {
   cleanup();
 });
 
 describe('Library Tests', () => {
-  const schema = {
-    Person: {
-      name: type.Text,
-      age: type.Number,
-    },
-    User: {
-      name: type.Text,
-      email: type.Text,
-    },
-    Badge: {
-      name: type.Text,
-    },
-    Event: {
-      name: type.Text,
-    },
-  };
+  class Person extends Model.Class<Person>('Person')({
+    id: Model.Generated(Types.Text),
+    name: Types.Text,
+    age: Types.Number,
+  }) {}
+
+  class User extends Model.Class<User>('User')({
+    id: Model.Generated(Types.Text),
+    name: Types.Text,
+    email: Types.Text,
+  }) {}
+
+  class Badge extends Model.Class<Badge>('Badge')({
+    id: Model.Generated(Types.Text),
+    name: Types.Text,
+  }) {}
+
+  class Event extends Model.Class<Event>('Event')({
+    id: Model.Generated(Types.Text),
+    name: Types.Text,
+  }) {}
 
   const spaceId = '52gTkePWSoGdXmgZF3nRU';
-
-  // Create functions from the schema
-  const { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } = createSchemaHooks(schema);
 
   let repo = new Repo({});
   let wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -60,18 +63,15 @@ describe('Library Tests', () => {
   it('should create one entity successfully', () => {
     expect([1]).toHaveLength(1);
 
-    const { result: createResult } = renderHook(() => useCreateEntity(), {
+    const { result: createResult } = renderHook(() => useCreateEntity(Event), {
       wrapper,
     });
 
-    const { result: queryResult } = renderHook(() => useQuery({ types: ['Event'] }), { wrapper });
+    const { result: queryResult } = renderHook(() => useQuery(Event), { wrapper });
 
     act(() => {
       createResult.current({
-        types: ['Event'],
-        data: {
-          name: 'Conference',
-        },
+        name: 'Conference',
       });
     });
 
@@ -80,7 +80,7 @@ describe('Library Tests', () => {
   });
 
   it('should delete an entity', () => {
-    const { result: createResult } = renderHook(() => useCreateEntity(), {
+    const { result: createResult } = renderHook(() => useCreateEntity(Badge), {
       wrapper,
     });
 
@@ -88,15 +88,12 @@ describe('Library Tests', () => {
       wrapper,
     });
 
-    const { result: queryResult } = renderHook(() => useQuery({ types: ['Badge'] }), { wrapper });
+    const { result: queryResult } = renderHook(() => useQuery(Badge), { wrapper });
 
     let badgeId: string | undefined;
 
     act(() => {
-      createResult.current({
-        types: ['Badge'],
-        data: { name: 'Exclusive' },
-      });
+      createResult.current({ name: 'Exclusive' });
     });
 
     act(() => {
@@ -121,24 +118,21 @@ describe('Library Tests', () => {
   });
 
   it('should update an entity', () => {
-    const { result: createResult } = renderHook(() => useCreateEntity(), {
+    const { result: createResult } = renderHook(() => useCreateEntity(Person), {
       wrapper,
     });
 
-    const { result: updateResult } = renderHook(() => useUpdateEntity(), {
+    const { result: updateResult } = renderHook(() => useUpdateEntity(Person), {
       wrapper,
     });
 
-    const { result: queryResult } = renderHook(() => useQuery({ types: ['Person'] }), { wrapper });
+    const { result: queryResult } = renderHook(() => useQuery(Person), { wrapper });
 
     // Create a person
     act(() => {
       createResult.current({
-        types: ['Person'],
-        data: {
-          name: 'John',
-          age: 25,
-        },
+        name: 'John',
+        age: 25,
       });
     });
 
@@ -158,13 +152,9 @@ describe('Library Tests', () => {
       expect(personId).not.toBeNull();
       expect(personId).not.toBeUndefined();
       if (personId) {
-        const success = updateResult.current({
-          id: personId,
-          types: ['Person'],
-          data: {
-            name: 'John Doe',
-            age: 26,
-          },
+        const success = updateResult.current(personId, {
+          name: 'John Doe',
+          age: 26,
         });
         expect(success).toBe(true);
       }
@@ -177,5 +167,27 @@ describe('Library Tests', () => {
       expect(peopleAfterUpdate[0]?.name).toBe('John Doe');
       expect(peopleAfterUpdate[0]?.age).toBe(26);
     });
+  });
+
+  it('should only query entities of the specified type', () => {
+    const { result: createResult } = renderHook(() => useCreateEntity(Person), {
+      wrapper,
+    });
+
+    const { result: createResult2 } = renderHook(() => useCreateEntity(User), {
+      wrapper,
+    });
+
+    const { result: queryResult } = renderHook(() => useQuery(Person), { wrapper });
+
+    act(() => {
+      createResult.current({ name: 'John', age: 25 });
+      createResult2.current({ name: 'Jane', email: 'jane@example.com' });
+    });
+
+    const people = queryResult.current;
+    expect(people).toHaveLength(1);
+    expect(people[0]?.name).toBe('John');
+    expect(people[0]?.age).toBe(25);
   });
 });

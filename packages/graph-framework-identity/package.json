@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.7",
-    "effect": "^3.10.19"
+    "effect": "^3.12.2"
   },
   "dependencies": {
     "@graph-framework/key": "workspace:*",

@@ -1,61 +1,16 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { useDocument, useRepo } from '@automerge/automerge-repo-react-hooks';
 import { generateId, idToAutomergeId } from '@graph-framework/utils';
-import * as S from 'effect/Schema';
-import fastDeepEqual from 'fast-deep-equal';
-import { type ReactNode, createContext, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
-
-// biome-ignore lint/suspicious/noExplicitAny: typedefs are unknown and determined by the schema. todo: figure out a way to make generic?
-type SchemaTypeUnknown = any;
+import * as Schema from 'effect/Schema';
+import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+import type * as Model from './model.js';
 
 interface SpacesProviderProps {
   children: ReactNode;
   defaultSpace: string;
   spaces?: string[];
 }
-
-type DocumentContent = {
-  entities: Record<string, SchemaTypeUnknown>;
-};
-
-export const type = {
-  Text: S.String,
-  Number: S.Number,
-  Checkbox: S.Boolean,
-};
-
-type BaseEntity = {
-  id: string;
-  types: string[];
-};
-
-// Helper type to extract schema type
-type SchemaType<T> = T extends S.Schema<SchemaTypeUnknown, infer A> ? A : never;
-
-// Type for the schema structure
-export type SchemaDefinition = Record<string, Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>>>;
-
-// Extract all possible keys from schema types
-type EntityKeys<T extends SchemaDefinition> = keyof T & string;
-
-// Get merged type from array of keys
-type MergedEntityType<
-  T extends SchemaDefinition,
-  Keys extends readonly EntityKeys<T>[],
-  Additional,
-> = UnionToIntersection<
-  {
-    [K in Keys[number]]: {
-      [P in keyof T[K]]: SchemaType<T[K][P]>;
-    };
-  }[Keys[number]]
-> &
-  Additional;
-
-// Helper type to convert union to intersection
-type UnionToIntersection<U> = (U extends SchemaTypeUnknown ? (k: U) => void : never) extends (k: infer I) => void
-  ? I
-  : never;
 
 type SpaceContextProps = {
   defaultSpace: string;
@@ -80,7 +35,11 @@ export const useDefaultSpaceId = () => {
   if (!context) {
     throw new Error('This hook must be used within a SpacesProvider');
   }
-  return context?.defaultSpace;
+  return context.defaultSpace;
+};
+
+type DocumentContent = {
+  entities?: Record<string, unknown>;
 };
 
 const useDefaultAutomergeDocId = () => {
@@ -88,226 +47,165 @@ const useDefaultAutomergeDocId = () => {
   if (!context) {
     throw new Error('This hook must be used within a SpacesProvider');
   }
-  return context?.defaultAutomergeDocId;
+  return context.defaultAutomergeDocId;
 };
 
-export function createSchemaHooks<T extends SchemaDefinition>(schema: T) {
-  function buildMergedSchema<K extends readonly EntityKeys<T>[]>(
-    types: [...K],
-    // biome-ignore lint/complexity/noBannedTypes: empty object is fine
-  ): S.Schema<SchemaTypeUnknown, MergedEntityType<T, K, {}>> {
-    const propertySchemas = types.reduce(
-      (acc, type) => {
-        const typeSchema = schema[type];
+export const useCreateEntity = <S extends Model.AnyNoContext>(type: S) => {
+  const id = useDefaultAutomergeDocId();
+  const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
+  const encode = Schema.encodeSync(type.insert);
 
-        for (const [key, prop] of Object.entries(typeSchema)) {
-          acc[key] = prop as S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>;
-        }
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
 
-        return acc;
-      },
-      {} as Record<string, S.Schema<SchemaTypeUnknown, SchemaTypeUnknown>>,
-    );
-
-    // biome-ignore lint/complexity/noBannedTypes: empty object is fine
-    return S.Struct(propertySchemas) as unknown as S.Schema<SchemaTypeUnknown, MergedEntityType<T, K, {}>>;
-  }
-
-  function useCreateEntity() {
-    const id = useDefaultAutomergeDocId();
-    const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
-
-    function createEntity<K extends readonly EntityKeys<T>[]>({
-      types,
-      data,
-    }: {
-      types: [...K];
-      // biome-ignore lint/complexity/noBannedTypes: empty object is fine
-      data: MergedEntityType<T, K, {}>;
-      // biome-ignore lint/complexity/noBannedTypes: empty object is fine
-    }): MergedEntityType<T, K, {}> {
-      if (types.length === 0) {
-        throw new Error('Entity must have at least one type');
-      }
-
-      const mergedSchema = buildMergedSchema(types);
-      const result = S.decodeUnknownSync(mergedSchema)(data);
-
-      changeDoc((doc) => {
-        if (!doc.entities) {
-          doc.entities = {};
-        }
-        // Add the main entity
-        const entityId = generateId();
-        doc.entities[entityId] = { ...result, types };
-      });
-
-      return result as MergedEntityType<T, K, BaseEntity>;
-    }
-
-    return createEntity;
-  }
-
-  function useDeleteEntity() {
-    const id = useDefaultAutomergeDocId();
-
-    // can't use useDocument here because it would trigger a re-render every time the document changes
-    const repo = useRepo();
-    const handle = id ? repo.find<DocumentContent>(id as AnyDocumentId) : null;
-    const handleRef = useRef<DocHandle<DocumentContent> | null>(handle);
-    if (handle !== handleRef.current) {
-      handleRef.current = handle;
-    }
-
-    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-    const deleteEntity = useCallback(
-      function deleteEntity(entityId: string) {
-        let result = false;
-        if (!handle) return result;
-        handle.change((doc) => {
-          if (doc.entities) {
-            if (doc.entities[entityId]) {
-              delete doc.entities[entityId];
-              result = true;
-            }
-          }
-        });
-
-        return result;
-      },
-      [id],
-    );
-
-    return deleteEntity;
-  }
-
-  function useQuery<K extends readonly EntityKeys<T>[]>({
-    types,
-  }: {
-    types: [...K];
-  }) {
-    const prevEntitiesRef = useRef<MergedEntityType<T, K, BaseEntity>[]>([]);
-    const id = useDefaultAutomergeDocId();
-    const repo = useRepo();
-
-    const handle = id
-      ? repo.find<DocumentContent>(id as AnyDocumentId)
-      : repo.create<DocumentContent>({ entities: {} });
-
-    const subscribe = (callback: () => void) => {
-      const handleChange = () => {
-        callback();
-      };
-
-      const handleDelete = () => {
-        callback();
-      };
-
-      handle?.on('change', handleChange);
-      handle?.on('delete', handleDelete);
-
-      return () => {
-        handle?.off('change', handleChange);
-        handle?.off('delete', handleDelete);
-      };
-    };
-
-    const entities = useSyncExternalStore(subscribe, (): MergedEntityType<T, K, BaseEntity>[] => {
-      const doc = handle?.docSync();
-      if (!doc) {
-        if (fastDeepEqual(prevEntitiesRef.current, [])) {
-          return prevEntitiesRef.current;
-          // biome-ignore lint/style/noUselessElse: <explanation>
-        } else {
-          prevEntitiesRef.current = [];
-          return prevEntitiesRef.current;
-        }
-      }
-
-      // Create filteredEntities object with only entities that include all the types and attach the entity id
-      const filteredEntities: Record<string, MergedEntityType<T, K, BaseEntity>> = {};
-      for (const entityId in doc.entities) {
-        const entity = doc.entities[entityId];
-        if (types.every((type) => entity.types?.includes(type as string))) {
-          filteredEntities[entityId] = { ...entity, id: entityId } as MergedEntityType<T, K, BaseEntity>;
-        }
-      }
-
-      const filteredEntitiesArray = Object.values(filteredEntities);
-
-      if (fastDeepEqual(prevEntitiesRef.current, filteredEntitiesArray)) {
-        return prevEntitiesRef.current;
-        // biome-ignore lint/style/noUselessElse: <explanation>
-      } else {
-        prevEntitiesRef.current = filteredEntitiesArray;
-        return prevEntitiesRef.current;
-      }
+  function createEntity(data: Schema.Schema.Type<Model.Insert<S>>): string {
+    const entityId = generateId();
+    changeDoc((doc) => {
+      doc.entities ??= {};
+      doc.entities[entityId] = { ...encode(data), '@@types@@': [typeName] };
     });
 
-    return entities;
+    return entityId;
   }
 
-  function useUpdateEntity() {
-    const id = useDefaultAutomergeDocId();
-    const [, changeDoc] = useDocument<DocumentContent>(id as AnyDocumentId);
+  return createEntity;
+};
 
-    function updateEntity<K extends readonly EntityKeys<T>[]>({
-      id: entityId,
-      types,
-      data: updates,
-    }: {
-      id: string;
-      types: [...K];
-      // biome-ignore lint/complexity/noBannedTypes: in this case an empty object is fine
-      data: Partial<MergedEntityType<T, K, {}>>;
-    }): boolean {
-      if (types.length === 0) {
-        throw new Error('Entity must have at least one type');
+export const useUpdateEntity = <S extends Model.AnyNoContext>(type: S) => {
+  const docId = useDefaultAutomergeDocId();
+  const [, changeDoc] = useDocument<DocumentContent>(docId as AnyDocumentId);
+  const encode = Schema.encodeSync(Schema.partial(type.update));
+
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
+
+  function updateEntity(id: string, data: Schema.Simplify<Partial<Schema.Schema.Type<Model.Update<S>>>>): boolean {
+    let success = false;
+    changeDoc((doc) => {
+      const existingEntity = doc.entities?.[id];
+      if (existingEntity === undefined) {
+        return;
       }
 
-      const mergedSchema = buildMergedSchema(types);
+      const updatedData = encode({ ...existingEntity, ...data });
+      // @ts-expect-error doc.entities was checked above
+      doc.entities[id] = { ...updatedData, '@@types@@': [typeName] };
+      success = true;
+    });
 
-      let success = false;
+    return success;
+  }
 
-      changeDoc((doc) => {
-        if (!doc.entities || !doc.entities[entityId]) {
-          return;
-        }
+  return updateEntity;
+};
 
-        const existingEntity = doc.entities[entityId];
-        // verify that the entity has all the required types
-        if (!types.every((type) => existingEntity.types.includes(type))) {
-          return;
-        }
+export const useDeleteEntity = () => {
+  const docId = useDefaultAutomergeDocId();
+  // can't use useDocument here because it would trigger a re-render every time the document changes
+  const repo = useRepo();
+  const handle = repo.find<DocumentContent>(docId as AnyDocumentId);
+  const handleRef = useRef<DocHandle<DocumentContent>>(handle);
+  if (handle !== handleRef.current) {
+    handleRef.current = handle;
+  }
 
-        // Merge updates with existing entity data to validate it against the schema
-        const updatedData = {
-          ...existingEntity,
-          ...updates,
-          types: existingEntity.types, // Preserve types
-        };
-
-        try {
-          S.decodeUnknownSync(mergedSchema)(updatedData);
-          for (const key in updates) {
-            doc.entities[entityId][key] = updates[key];
-          }
-          success = true;
-        } catch (error) {
-          console.error('Schema validation failed:', error);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  const deleteEntity = useCallback(
+    (id: string): boolean => {
+      let result = false;
+      handle.change((doc) => {
+        if (doc.entities?.[id] !== undefined) {
+          delete doc.entities[id];
+          result = true;
         }
       });
 
-      return success;
+      return result;
+    },
+    [docId],
+  );
+
+  return deleteEntity;
+};
+
+export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
+  const prevEntitiesRef = useRef<Array<Schema.Schema.Type<S>>>([]);
+  const docId = useDefaultAutomergeDocId();
+  const repo = useRepo();
+  const equal = isEqual(type);
+  const decode = Schema.decodeUnknownSync(type);
+  const handle = repo.find<DocumentContent>(docId as AnyDocumentId);
+
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
+
+  const subscribe = (callback: () => void) => {
+    const handleChange = () => {
+      callback();
+    };
+
+    const handleDelete = () => {
+      callback();
+    };
+
+    handle?.on('change', handleChange);
+    handle?.on('delete', handleDelete);
+
+    return () => {
+      handle?.off('change', handleChange);
+      handle?.off('delete', handleDelete);
+    };
+  };
+
+  const entities = useSyncExternalStore(subscribe, () => {
+    const doc = handle?.docSync();
+    if (doc === undefined) {
+      return prevEntitiesRef.current;
     }
 
-    return updateEntity;
-  }
+    // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
+    // an index and store the decoded valeus instead of re-decoding over and over again.
+    const filtered: Array<Schema.Schema.Type<S>> = [];
+    for (const id in doc.entities) {
+      const entity = doc.entities[id];
+      if (
+        typeof entity === 'object' &&
+        entity !== null &&
+        '@@types@@' in entity &&
+        Array.isArray(entity['@@types@@']) &&
+        entity['@@types@@'].includes(typeName)
+      ) {
+        filtered.push(decode({ ...entity, id: id }));
+      }
+    }
 
-  return {
-    useCreateEntity,
-    useDeleteEntity,
-    useUpdateEntity,
-    useQuery,
+    if (!equal(filtered, prevEntitiesRef.current)) {
+      prevEntitiesRef.current = filtered;
+    }
+
+    return prevEntitiesRef.current;
+  });
+
+  return entities;
+};
+
+const isEqual = <A, E>(type: Schema.Schema<A, E, never>) => {
+  const equals = Schema.equivalence(type);
+
+  return (a: Array<A>, b: Array<A>) => {
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    for (let i = 0; i < a.length; i++) {
+      if (!equals(a[i], b[i])) {
+        return false;
+      }
+    }
+
+    return true;
   };
-}
+};

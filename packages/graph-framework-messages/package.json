@@ -28,9 +28,9 @@
     "check:fix": "pnpm biome check --write src/*"
   },
   "dependencies": {
+    "@graph-framework/space-events": "workspace:*",
     "@noble/ciphers": "^1.0.0",
     "@noble/curves": "^1.6.0",
-    "effect": "^3.10.19",
-    "@graph-framework/space-events": "workspace:*"
+    "effect": "^3.12.2"
   }
 }
