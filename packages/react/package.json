@@ -1,0 +1,50 @@
+{
+  "name": "@graphprotocol/hypergraph-react",
+  "version": "0.0.1",
+  "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
+  "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "react"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geobrowser/graph-framework.git",
+    "directory": "packages/react"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "pnpm build-esm && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
+    "test": "vitest run --typecheck",
+    "ts:check": "tsc -b tsconfig.json",
+    "lint": "pnpm biome lint src/*",
+    "lint:fix": "pnpm biome lint --write src/*",
+    "format": "pnpm biome format src/*",
+    "format:fix": "pnpm biome format --write src/*",
+    "check": "pnpm biome check src/*",
+    "check:fix": "pnpm biome check --write src/*"
+  },
+  "peerDependencies": {
+    "@automerge/automerge": "^2",
+    "@automerge/automerge-repo": "^2",
+    "@automerge/automerge-repo-react-hooks": "^2",
+    "@graphprotocol/hypergraph": "workspace:*",
+    "@tanstack/react-query": "^5",
+    "react": "^18"
+  },
+  "devDependencies": {
+    "@automerge/automerge": "^v2.2.9-alpha.3",
+    "@automerge/automerge-repo": "^2.0.0-alpha.14",
+    "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
+    "@graphprotocol/hypergraph": "workspace:*",
+    "@tanstack/react-query": "^5.64.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^18.3.7",
+    "react": "^18",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^26.0.0"
+  },
+  "dependencies": {
+    "@tanstack/react-query-devtools": "^5.63.0"
+  }
+}

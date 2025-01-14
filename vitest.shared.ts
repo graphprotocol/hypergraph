@@ -7,6 +7,8 @@ const config: ViteUserConfig = {
     alias: {
       '@graphprotocol/hypergraph/test': path.join(__dirname, 'packages', 'hypergraph', 'test'),
       '@graphprotocol/hypergraph': path.join(__dirname, 'packages', 'hypergraph', 'src'),
+      '@graphprotocol/hypergraph-react/test': path.join(__dirname, 'packages', 'react', 'test'),
+      '@graphprotocol/hypergraph-react': path.join(__dirname, 'packages', 'react', 'src'),
     },
   },
 };
