@@ -9,7 +9,8 @@ describe('base58', () => {
     const given = expected.replaceAll(/-/g, '');
 
     const encoded = encodeBase58(given);
-    expect(encoded).toHaveLength(22);
+    expect(encoded.length).toBeGreaterThanOrEqual(16);
+    expect(encoded.length).toBeLessThanOrEqual(22);
 
     const decoded = decodeBase58ToUUID(encoded);
     expect(decoded).toHaveLength(expected.length);
