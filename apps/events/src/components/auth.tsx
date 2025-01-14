@@ -1,11 +1,10 @@
-import { GraphLogin, useGraphLogin } from '@graph-framework/identity';
-import type { Signer } from '@graph-framework/identity/types';
+import { Identity } from '@graphprotocol/hypergraph';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 function DoGraphLogin() {
-  const { login } = useGraphLogin();
+  const { login } = Identity.useGraphLogin();
   useEffect(() => {
     console.log('Logging in to The Graph');
     login();
@@ -16,7 +15,7 @@ function DoGraphLogin() {
 function Auth({ children }: { children: React.ReactNode }) {
   const { signMessage, authenticated } = usePrivy();
   const { wallets } = useWallets();
-  const [signer, setSigner] = useState<Signer | null>(null);
+  const [signer, setSigner] = useState<Identity.Signer | null>(null);
 
   useEffect(() => {
     const getSigner = async () => {
@@ -43,10 +42,10 @@ function Auth({ children }: { children: React.ReactNode }) {
   return (
     <>
       {signer && authenticated ? (
-        <GraphLogin storage={localStorage} signer={signer}>
+        <Identity.GraphLogin storage={localStorage} signer={signer}>
           <DoGraphLogin />
           {children}
-        </GraphLogin>
+        </Identity.GraphLogin>
       ) : (
         children
       )}
@@ -79,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { authenticated } = usePrivy();
-  const { authenticated: graphAuthenticated } = useGraphLogin();
+  const { authenticated: graphAuthenticated } = Identity.useGraphLogin();
   const router = useRouter();
   if (!authenticated || !graphAuthenticated) {
     router.navigate({

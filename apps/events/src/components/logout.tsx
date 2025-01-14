@@ -1,10 +1,10 @@
-import { useGraphLogin } from '@graph-framework/identity';
+import { Identity } from '@graphprotocol/hypergraph';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from '@tanstack/react-router';
 import { Button } from './ui/button';
 
 export function Logout() {
-  const { logout: graphLogout } = useGraphLogin();
+  const { logout: graphLogout } = Identity.useGraphLogin();
   const { logout: privyLogout } = usePrivy();
   const router = useRouter();
   const disconnectWallet = () => {

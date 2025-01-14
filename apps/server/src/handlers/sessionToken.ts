@@ -1,4 +1,4 @@
-import { bytesToHex } from '@graph-framework/utils';
+import { Utils } from '@graphprotocol/hypergraph';
 import { randomBytes } from '@noble/ciphers/webcrypto';
 import { prisma } from '../prisma.js';
 
@@ -12,7 +12,7 @@ type GetParams = {
 };
 
 export const createSessionToken = async ({ accountId, sessionTokenExpires }: CreateParams) => {
-  const sessionToken = bytesToHex(randomBytes(32));
+  const sessionToken = Utils.bytesToHex(randomBytes(32));
   await prisma.account.update({
     where: {
       id: accountId,

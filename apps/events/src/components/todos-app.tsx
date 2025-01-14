@@ -1,16 +1,16 @@
 import { useState } from 'react';
 
-import { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } from '@graph-framework/schema';
+import { Schema } from '@graphprotocol/hypergraph';
 
 import { Todo } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const TodosApp = () => {
-  const todos = useQuery(Todo);
-  const createEntity = useCreateEntity(Todo);
-  const updateEntity = useUpdateEntity(Todo);
-  const deleteEntity = useDeleteEntity();
+  const todos = Schema.useQuery(Todo);
+  const createEntity = Schema.useCreateEntity(Todo);
+  const updateEntity = Schema.useUpdateEntity(Todo);
+  const deleteEntity = Schema.useDeleteEntity();
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
   return (

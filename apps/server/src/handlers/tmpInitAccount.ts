@@ -1,4 +1,4 @@
-import { proveIdentityOwnership } from '@graph-framework/identity';
+import { Identity } from '@graphprotocol/hypergraph';
 import type { Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { prisma } from '../prisma.js';
@@ -27,7 +27,7 @@ export const tmpInitAccount = async ({
 
     const wallet = privateKeyToAccount(walletPrivateKey as Hex);
 
-    const { accountProof, keyProof } = await proveIdentityOwnership(
+    const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
       {
         signMessage: async (message: string) => wallet.signMessage({ message }),
         getAddress: async () => wallet.address,

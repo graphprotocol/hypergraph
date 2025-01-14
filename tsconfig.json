@@ -1,14 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "include": [],
-  "references": [
-    { "path": "packages/graph-framework" },
-    { "path": "packages/graph-framework-identity" },
-    { "path": "packages/graph-framework-schema" },
-    { "path": "packages/graph-framework-space-events" },
-    { "path": "packages/graph-framework-utils" },
-    { "path": "packages/graph-framework-messages" },
-    { "path": "packages/graph-framework-key" },
-    { "path": "apps/events" }
-  ]
+  "references": [{ "path": "packages/hypergraph" }, { "path": "apps/events" }]
 }

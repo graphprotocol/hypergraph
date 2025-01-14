@@ -1,11 +1,11 @@
-import type { Invitation } from '@graphprotocol/graph-framework';
+import type { Messages } from '@graphprotocol/hypergraph';
 
 import { Button } from './ui/button';
 
 type Props = {
-  invitations: Invitation[];
+  invitations: Messages.Invitation[];
   accept: (params: {
-    invitation: Invitation;
+    invitation: Messages.Invitation;
   }) => Promise<unknown>;
 };
 

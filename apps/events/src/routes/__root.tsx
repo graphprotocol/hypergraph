@@ -1,12 +1,12 @@
 import { Logout } from '@/components/logout';
-import { useGraphLogin } from '@graph-framework/identity';
+import { Identity } from '@graphprotocol/hypergraph';
 import { Link, Outlet, createRootRoute } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { CalendarDays } from 'lucide-react';
 
 export const Route = createRootRoute({
   component: () => {
-    const { authenticated } = useGraphLogin();
+    const { authenticated } = Identity.useGraphLogin();
     return (
       <>
         <div className="flex flex-col min-h-screen">
