@@ -7,6 +7,52 @@ import type { ParseOptions } from 'effect/SchemaAST';
 import { idToAutomergeId } from './utils/automergeId.js';
 import { generateId } from './utils/generateId.js';
 
+/**
+ * Export the Schema filters to be able to pipe additional checking on schema types.
+ * This is not the full list of filters, but the filters that can be applied to the Number and Text type we expose.
+ * @see https://effect.website/docs/schema/filters/#built-in-filters
+ */
+export {
+  between,
+  capitalized,
+  endsWith,
+  filter,
+  finite,
+  Finite,
+  greaterThan,
+  greaterThanOrEqualTo,
+  includes,
+  int,
+  Int,
+  length,
+  lessThan,
+  lessThanOrEqualTo,
+  lowercased,
+  maxLength,
+  minLength,
+  multipleOf,
+  negative,
+  Negative,
+  nonEmptyString,
+  NonEmptyString,
+  NonEmptyTrimmedString,
+  nonNaN,
+  NonNaN,
+  nonNegative,
+  NonNegative,
+  NonNegativeInt,
+  nonPositive,
+  NonPositive,
+  pattern,
+  positive,
+  Positive,
+  startsWith,
+  trimmed,
+  Uint8,
+  uncapitalized,
+  uppercased,
+} from 'effect/Schema';
+
 const {
   Class,
   Field,
@@ -70,6 +116,11 @@ export class InvalidQueryMissingTypesError extends Data.TaggedError('InvalidQuer
   cause: unknown;
 }> {}
 
+export type CreateEntityData<S extends AnyNoContext> = Schema.Schema.Type<Insert<S>>;
+export type UpdateEntityData<S extends AnyNoContext> = Schema.Simplify<Partial<Schema.Schema.Type<Update<S>>>>;
+
+export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & { type: string };
+
 export type HypergraphSpaceEntitiesService = {
   /** Reference to the automerge repo instance */
   repo: Repo;
@@ -95,10 +146,7 @@ export type HypergraphSpaceEntitiesService = {
    * @param data the entity model data to create
    * @returns the created Entity
    */
-  createEntity<S extends AnyNoContext>(
-    type: S,
-    data: Schema.Schema.Type<Insert<S>>,
-  ): Schema.Schema.Type<S> & { type: string };
+  createEntity<const S extends AnyNoContext>(type: S, data: CreateEntityData<S>): Entity<S>;
   /**
    * Update an existing entity model of given type in the repo.
    *
@@ -121,11 +169,7 @@ export type HypergraphSpaceEntitiesService = {
    * @param data data of the fields in the model to update
    * @throws EntityDoesNotExistError if no entity can be find in the repo of the given type, with the given id
    */
-  updateEntity<S extends AnyNoContext>(
-    type: S,
-    id: string,
-    data: Schema.Simplify<Partial<Schema.Schema.Type<Update<S>>>>,
-  ): Schema.Schema.Type<S> & { type: string };
+  updateEntity<const S extends AnyNoContext>(type: S, id: string, data: UpdateEntityData<S>): Entity<S>;
   /**
    * Deletes the exiting entity from the repo.
    *
@@ -185,9 +229,7 @@ export type HypergraphSpaceEntitiesService = {
    * @param type entity model type, or an array of entity types to find
    * @throws [InvalidQueryMissingTypesError] if no types are passed in to query
    */
-  findMany<S extends AnyNoContext | readonly [S, ...S[]]>(
-    type: S | Readonly<Array<S>>,
-  ): Array<Schema.Schema.Type<S> & { type: string }>;
+  findMany<const S extends AnyNoContext>(type: S | Readonly<Array<S>>): Array<Entity<S>>;
   /**
    * Find the entity of the given type, with the given id, from the repo.
    *
@@ -209,7 +251,7 @@ export type HypergraphSpaceEntitiesService = {
    * @param id id of the entity to find
    * @returns the found entity, or null if no entity exists with the given id
    */
-  findOne<S extends AnyNoContext>(type: S, id: string): (Schema.Schema.Type<S> & { type: string }) | null;
+  findOne<const S extends AnyNoContext>(type: S, id: string): Entity<S> | null;
 };
 
 export type BuildHypergraphSpaceEntitiesServiceArgs = Readonly<{
@@ -225,7 +267,7 @@ export function buildHypergraphSpaceEntitiesService(
   return {
     repo,
 
-    createEntity<S extends AnyNoContext>(type: S, data: Schema.Schema.Type<Insert<S>>) {
+    createEntity<const S extends AnyNoContext>(type: S, data: CreateEntityData<S>) {
       const encode = Schema.encodeSync(type.insert);
       // TODO: what's the right way to get the name of the type?
       // @ts-expect-error name is defined
@@ -242,13 +284,9 @@ export function buildHypergraphSpaceEntitiesService(
         doc.entities[entityId] = { ...encoded, '@@types@@': [typeName] };
       });
 
-      return { id: entityId, ...encoded, type: typeName } as const satisfies Schema.Schema.Type<S> & { type: string };
+      return { id: entityId, ...encoded, type: typeName } as const satisfies Entity<S>;
     },
-    updateEntity<S extends AnyNoContext>(
-      type: S,
-      id: string,
-      data: Schema.Simplify<Partial<Schema.Schema.Type<Update<S>>>>,
-    ): Schema.Schema.Type<S> & { type: S } {
+    updateEntity<const S extends AnyNoContext>(type: S, id: string, data: UpdateEntityData<S>) {
       const encode = Schema.encodeSync(Schema.partial(type.update));
       // TODO: what's the right way to get the name of the type?
       // @ts-expect-error name is defined
@@ -274,7 +312,7 @@ export function buildHypergraphSpaceEntitiesService(
         throw new EntityNotFoundError({ id, type, cause: `Entity [${id}] of type [${typeName}] not found` });
       }
 
-      return { id, type: typeName, ...updatedData } as const satisfies Schema.Schema.Type<S> & { type: string };
+      return { id, type: typeName, ...updatedData } as const satisfies Entity<S>;
     },
     deleteEntity(id) {
       let result = false;
@@ -290,9 +328,7 @@ export function buildHypergraphSpaceEntitiesService(
 
       return result;
     },
-    findMany<S extends AnyNoContext | readonly [S, ...S[]]>(
-      type: S | Readonly<Array<S>>,
-    ): Array<Schema.Schema.Type<S> & { type: string }> {
+    findMany<const S extends AnyNoContext>(type: S | Readonly<Array<S>>): Array<Entity<S>> {
       const types = Array.isArray(type) ? type : [type];
       if (types.length === 0) {
         throw new InvalidQueryMissingTypesError({ cause: 'Received query must specify at least one entity type' });
@@ -314,7 +350,7 @@ export function buildHypergraphSpaceEntitiesService(
 
       // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
       // an index and store the decoded valeus instead of re-decoding over and over again.
-      const filtered: Array<Schema.Schema.Type<S> & { type: string }> = [];
+      const filtered: Array<Entity<S>> = [];
       for (const id in doc.entities) {
         const entity = doc.entities[id];
         if (
@@ -334,7 +370,7 @@ export function buildHypergraphSpaceEntitiesService(
 
       return filtered;
     },
-    findOne<S extends AnyNoContext>(type: S, id: string): (Schema.Schema.Type<S> & { type: string }) | null {
+    findOne<const S extends AnyNoContext>(type: S, id: string) {
       const decode = Schema.decodeUnknownSync(type);
       const handle = repo.find<DocumentContent>(defaultAutomergeDocId as AnyDocumentId);
 
@@ -347,7 +383,7 @@ export function buildHypergraphSpaceEntitiesService(
         return null;
       }
 
-      let entity: (Schema.Schema.Type<S> & { type: string }) | null = null;
+      let entity: Entity<S> | null = null;
       // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
       // an index and store the decoded valeus instead of re-decoding over and over again.
       const maybeFoundEntity = doc.entities?.[id] ?? null;
