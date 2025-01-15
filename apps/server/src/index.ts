@@ -18,6 +18,7 @@ import { listSpaces } from './handlers/listSpaces.js';
 import { createSessionNonce, getSessionNonce } from './handlers/sessionNonce.js';
 import { createSessionToken, getAccountIdBySessionToken } from './handlers/sessionToken.js';
 import { tmpInitAccount } from './handlers/tmpInitAccount.js';
+
 interface CustomWebSocket extends WebSocket {
   accountId: string;
   subscribedSpaces: Set<string>;

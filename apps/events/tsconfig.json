@@ -1,13 +1,8 @@
 {
-  "files": [],
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
-  "compilerOptions": {
-    /* Shadcn */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@graphprotocol/hypergraph": ["../../packages/hypergraph/src/index.js"],
-      "@graphprotocol/hypergraph/*": ["../../packages/hypergraph/src/*.js"]
-    }
-  }
+  "extends": "../../tsconfig.base.json",
+  "include": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }

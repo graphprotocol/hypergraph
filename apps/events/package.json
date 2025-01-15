@@ -5,16 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --force",
-    "build": "tsc -b && vite build",
-    "lint": "pnpm biome lint src/*",
-    "lint:fix": "pnpm biome lint --write src/*",
-    "format": "pnpm biome format src/*",
-    "format:fix": "pnpm biome format --write src/*",
-    "check": "pnpm biome check src/*",
-    "check:fix": "pnpm biome check --write src/*",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "ts:check": "tsc --noEmit"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
@@ -39,8 +30,7 @@
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.3",
-    "viem": "^2.21.56",
-    "vite-plugin-node-polyfills": "^0.22.0"
+    "viem": "^2.21.56"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -55,6 +45,7 @@
     "globals": "^15.10.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "vite-plugin-top-level-await": "^1.4.4",
     "vite-plugin-wasm": "^3.3.0"
   }

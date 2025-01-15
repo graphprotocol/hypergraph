@@ -1,5 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
+  "include": ["vite.config.ts"],
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],
@@ -24,6 +25,5 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
-  },
-  "include": ["vite.config.ts"]
+  }
 }

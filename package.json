@@ -1,28 +1,21 @@
 {
-  "name": "hypergraph-monorepo",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@9.14.4",
   "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "build": "tsc -b tsconfig.build.json && pnpm --recursive --parallel --filter ./packages/* run build",
+    "test": "vitest",
+    "lint": "biome check --write --unsafe",
+    "format": "biome check --write --unsafe",
+    "check": "tsc --noEmit"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@effect/build-utils": "^0.7.8",
-    "escape-string-regexp": "^5.0.0",
     "glob": "^11.0.0",
     "typescript": "^5.6.3",
-    "vite": "^5.4.10",
     "vitest": "^2.1.4"
-  },
-  "scripts": {
-    "clean": "node scripts/clean.mjs",
-    "build": "tsc -b tsconfig.build.json && pnpm --recursive --parallel run build",
-    "ts:check": "pnpm -r ts:check",
-    "test": "vitest",
-    "lint": "pnpm -r lint",
-    "format": "pnpm -r format",
-    "check": "pnpm -r check"
-  },
-  "packageManager": "pnpm@9.14.4",
-  "engines": {
-    "node": ">=22"
   }
 }
