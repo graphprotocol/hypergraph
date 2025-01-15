@@ -3,7 +3,7 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 import { type PrivateKeyAccount, privateKeyToAccount } from 'viem/accounts';
 import { describe, expect, it } from 'vitest';
 
-import { Hex } from 'viem';
+import type { Hex } from 'viem';
 import {
   loadAccountId,
   loadKeys,

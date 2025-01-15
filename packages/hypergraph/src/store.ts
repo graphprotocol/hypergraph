@@ -19,7 +19,6 @@ interface StoreContext {
   spaces: SpaceStorageEntry[];
   updatesInFlight: string[];
   invitations: Invitation[];
-  encryptionPrivateKey: string;
   repo: Repo;
   userIdentities: {
     [accountId: string]: {
@@ -35,14 +34,12 @@ const initialStoreContext: StoreContext = {
   spaces: [],
   updatesInFlight: [],
   invitations: [],
-  encryptionPrivateKey: '',
   repo: new Repo({}),
   userIdentities: {},
 };
 
 type StoreEvent =
   | { type: 'setInvitations'; invitations: Invitation[] }
-  | { type: 'setEncryptionPrivateKey'; encryptionPrivateKey: string }
   | { type: 'reset' }
   | { type: 'addUpdateInFlight'; ephemeralId: string }
   | { type: 'removeUpdateInFlight'; ephemeralId: string }
@@ -79,12 +76,6 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
       return {
         ...context,
         invitations: event.invitations,
-      };
-    },
-    setEncryptionPrivateKey: (context, event: { encryptionPrivateKey: string }) => {
-      return {
-        ...context,
-        encryptionPrivateKey: event.encryptionPrivateKey,
       };
     },
     reset: () => {

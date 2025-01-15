@@ -13,7 +13,6 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as PlaygroundImport } from './routes/playground'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
 
@@ -28,12 +27,6 @@ const LoginLazyRoute = LoginLazyImport.update({
   path: '/login',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
-
-const PlaygroundRoute = PlaygroundImport.update({
-  id: '/playground',
-  path: '/playground',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -58,13 +51,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/playground': {
-      id: '/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof PlaygroundImport
-      parentRoute: typeof rootRoute
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -86,14 +72,12 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/playground': typeof PlaygroundRoute
   '/login': typeof LoginLazyRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/playground': typeof PlaygroundRoute
   '/login': typeof LoginLazyRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
@@ -101,30 +85,27 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/playground': typeof PlaygroundRoute
   '/login': typeof LoginLazyRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/playground' | '/login' | '/space/$spaceId'
+  fullPaths: '/' | '/login' | '/space/$spaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/playground' | '/login' | '/space/$spaceId'
-  id: '__root__' | '/' | '/playground' | '/login' | '/space/$spaceId'
+  to: '/' | '/login' | '/space/$spaceId'
+  id: '__root__' | '/' | '/login' | '/space/$spaceId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PlaygroundRoute: typeof PlaygroundRoute
   LoginLazyRoute: typeof LoginLazyRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PlaygroundRoute: PlaygroundRoute,
   LoginLazyRoute: LoginLazyRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRoute,
 }
@@ -140,16 +121,12 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/playground",
         "/login",
         "/space/$spaceId"
       ]
     },
     "/": {
       "filePath": "index.tsx"
-    },
-    "/playground": {
-      "filePath": "playground.tsx"
     },
     "/login": {
       "filePath": "login.lazy.tsx"

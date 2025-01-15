@@ -1,6 +1,5 @@
 import { Identity } from '@graphprotocol/hypergraph';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
-import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 function DoGraphLogin() {
@@ -47,7 +46,8 @@ function Auth({ children }: { children: React.ReactNode }) {
           {children}
         </Identity.GraphLogin>
       ) : (
-        children
+        // @ts-expect-error signer is not required should be fixed in GraphLogin
+        <Identity.GraphLogin storage={localStorage}>{children}</Identity.GraphLogin>
       )}
     </>
   );
@@ -74,17 +74,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       <Auth>{children}</Auth>
     </PrivyProvider>
   );
-}
-
-export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { authenticated } = usePrivy();
-  const { authenticated: graphAuthenticated } = Identity.useGraphLogin();
-  const router = useRouter();
-  if (!authenticated || !graphAuthenticated) {
-    router.navigate({
-      to: '/login',
-    });
-    return <div />;
-  }
-  return <>{children}</>;
 }
