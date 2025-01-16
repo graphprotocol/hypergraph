@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
   "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "react"],
+  "publishConfig": {
+    "access": "public",
+    "directory": "publish",
+    "provenance": true
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/geobrowser/graph-framework.git",
@@ -10,25 +15,11 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "src/index.ts",
-  "exports": {
-    ".": {
-      "default": "./build/esm/index.js",
-      "types": "./build/dts/index.d.ts"
-    }
-  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [],
   "scripts": {
-    "build": "pnpm build-esm && build-utils pack-v2",
-    "build-esm": "tsc -b tsconfig.build.json",
-    "test": "vitest run --typecheck",
-    "test:watch": "vitest",
-    "ts:check": "tsc -b tsconfig.json",
-    "lint": "pnpm biome lint src/*",
-    "lint:fix": "pnpm biome lint --write src/*",
-    "format": "pnpm biome format src/*",
-    "format:fix": "pnpm biome format --write src/*",
-    "check": "pnpm biome check src/*",
-    "check:fix": "pnpm biome check --write src/*"
+    "build": "tsc -b tsconfig.build.json && node ../../scripts/package.mjs"
   },
   "peerDependencies": {
     "@automerge/automerge": "^2",
