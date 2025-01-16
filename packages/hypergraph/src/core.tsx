@@ -4,7 +4,7 @@ import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { verifyIdentityOwnership } from './identity/prove-ownership.js';
 import { createKey, decryptKey, encryptKey } from './key/index.js';
@@ -68,6 +68,7 @@ const GraphFrameworkContext = createContext<{
       accountId: string;
     };
   }) => Promise<unknown>;
+  isLoading: boolean;
 }>({
   invitations: [],
   createSpace: async () => {},
@@ -81,6 +82,7 @@ const GraphFrameworkContext = createContext<{
     signaturePublicKey: '',
   }),
   inviteToSpace: async () => {},
+  isLoading: true,
 });
 
 export function GraphFramework({
@@ -94,6 +96,7 @@ export function GraphFramework({
   signaturePublicKey,
 }: Props) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
+  const [isLoading, setIsLoading] = useState(true);
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelector(store, (state) => state.context.repo);
@@ -106,6 +109,7 @@ export function GraphFramework({
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     if (!sessionToken) {
+      setIsLoading(false);
       return;
     }
 
@@ -115,14 +119,17 @@ export function GraphFramework({
 
     const onOpen = () => {
       console.log('websocket connected');
+      setIsLoading(false);
     };
 
     const onError = (event: Event) => {
       console.log('websocket error', event);
+      setIsLoading(false);
     };
 
     const onClose = (event: CloseEvent) => {
       console.log('websocket close', event);
+      setIsLoading(false);
     };
 
     websocketConnection.addEventListener('open', onOpen);
@@ -154,14 +161,13 @@ export function GraphFramework({
                 spaceId: space.id,
               });
             });
-            // fetch all spaces (for debugging purposes)
-            for (const space of response.spaces) {
-              const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: space.id };
-              websocketConnection?.send(serialize(message));
-            }
             break;
           }
           case 'space': {
+            if (!encryptionPrivateKey) {
+              console.error('No encryption private key found');
+              return;
+            }
             let state: SpaceState | undefined = undefined;
 
             for (const event of response.events) {
@@ -180,7 +186,7 @@ export function GraphFramework({
                 keyBoxCiphertext: hexToBytes(keyBox.ciphertext),
                 keyBoxNonce: hexToBytes(keyBox.nonce),
                 publicKey: hexToBytes(keyBox.authorPublicKey),
-                privateKey: hexToBytes(storeState.context.encryptionPrivateKey),
+                privateKey: hexToBytes(encryptionPrivateKey),
               });
               return { id: keyBox.id, key: bytesToHex(key) };
             });
@@ -340,7 +346,7 @@ export function GraphFramework({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, spaces]);
+  }, [websocketConnection, spaces, encryptionPrivateKey]);
 
   const createSpaceForContext = async () => {
     if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
@@ -376,15 +382,15 @@ export function GraphFramework({
     websocketConnection?.send(serialize(message));
   };
 
-  const listSpaces = async () => {
+  const listSpaces = useCallback(() => {
     const message: RequestListSpaces = { type: 'list-spaces' };
     websocketConnection?.send(serialize(message));
-  };
+  }, [websocketConnection]);
 
-  const listInvitations = async () => {
+  const listInvitations = useCallback(() => {
     const message: RequestListInvitations = { type: 'list-invitations' };
     websocketConnection?.send(serialize(message));
-  };
+  }, [websocketConnection]);
 
   const acceptInvitationForContext = async ({
     invitation,
@@ -423,10 +429,13 @@ export function GraphFramework({
     }, 1000);
   };
 
-  const subscribeToSpace = (params: { spaceId: string }) => {
-    const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: params.spaceId };
-    websocketConnection?.send(serialize(message));
-  };
+  const subscribeToSpace = useCallback(
+    (params: { spaceId: string }) => {
+      const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: params.spaceId };
+      websocketConnection?.send(serialize(message));
+    },
+    [websocketConnection],
+  );
 
   const getUserIdentity = async (
     accountId: string,
@@ -545,6 +554,7 @@ export function GraphFramework({
         subscribeToSpace,
         getUserIdentity,
         inviteToSpace,
+        isLoading,
       }}
     >
       <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>

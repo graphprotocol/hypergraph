@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -14,6 +14,7 @@ import {
   ResponseLogin,
   ResponseLoginNonce,
 } from '../messages/index.js';
+import { store } from '../store.js';
 import {
   loadAccountId,
   loadKeys,
@@ -36,7 +37,6 @@ export type LoginProps = {
   signer: Signer | null;
   syncServer?: string;
   chainId?: number;
-  onLogin?: () => void;
 };
 
 type GraphLoginState = {
@@ -54,6 +54,7 @@ const GraphLoginContext = createContext<{
   login: () => void;
   logout: () => void;
   authenticated: boolean;
+  setIdentityAndSessionToken: (account: Identity & { sessionToken: string }) => void;
 }>({
   getSessionToken: () => null,
   getAccountId: () => null,
@@ -62,6 +63,7 @@ const GraphLoginContext = createContext<{
   login: () => {},
   logout: () => {},
   authenticated: false,
+  setIdentityAndSessionToken: () => {},
 });
 
 // 1) a) Get session token from local storage, or
@@ -73,7 +75,6 @@ export function GraphLogin({
   children,
   storage,
   signer,
-  onLogin,
   syncServer = 'http://localhost:3030',
   chainId = 80451,
 }: LoginProps) {
@@ -313,10 +314,7 @@ export function GraphLogin({
       sessionToken: loadSyncServerSessionToken(storage, accountId),
       keys: loadKeys(storage, accountId),
     });
-    if (onLogin) {
-      console.log('Running onLogin');
-      onLogin();
-    }
+    store.send({ type: 'reset' });
   };
 
   useEffect(() => {
@@ -333,6 +331,33 @@ export function GraphLogin({
     }
   }, [storage]);
 
+  const setIdentityAndSessionToken = useCallback(
+    (identity: Identity & { sessionToken: string }) => {
+      storeAccountId(storage, identity.accountId);
+      storeSyncServerSessionToken(storage, identity.accountId, identity.sessionToken);
+      storeKeys(storage, identity.accountId, {
+        encryptionPublicKey: identity.encryptionPublicKey,
+        encryptionPrivateKey: identity.encryptionPrivateKey,
+        signaturePublicKey: identity.signaturePublicKey,
+        signaturePrivateKey: identity.signaturePrivateKey,
+      });
+      store.send({ type: 'reset' });
+      setState({
+        authenticated: true,
+        accountId: identity.accountId,
+        sessionToken: identity.sessionToken,
+        keys: {
+          encryptionPublicKey: identity.encryptionPublicKey,
+          encryptionPrivateKey: identity.encryptionPrivateKey,
+          signaturePublicKey: identity.signaturePublicKey,
+          signaturePrivateKey: identity.signaturePrivateKey,
+        },
+      });
+      console.log('Identity set');
+    },
+    [storage],
+  );
+
   return (
     <GraphLoginContext.Provider
       value={{
@@ -342,6 +367,7 @@ export function GraphLogin({
         isAuthenticated,
         login,
         logout,
+        setIdentityAndSessionToken,
         authenticated: isAuthenticated(),
       }}
     >
