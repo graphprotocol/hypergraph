@@ -11,7 +11,6 @@
     "@noble/ciphers": "^1.0.0",
     "@prisma/client": "5.22.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
     "effect": "^3.12.2",
     "express": "^5.0.1",
     "siwe": "^2.3.2",

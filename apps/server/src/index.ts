@@ -1,9 +1,8 @@
 import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import cors from 'cors';
-import 'dotenv/config';
-import { parse } from 'node:url';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import WebSocket, { WebSocketServer } from 'ws';
