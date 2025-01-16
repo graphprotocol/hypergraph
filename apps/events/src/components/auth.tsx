@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 
 function DoGraphLogin() {
   const { login } = Identity.useGraphLogin();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: this is an issue and will make sure login is not run in a useEffect
   useEffect(() => {
     console.log('Logging in to The Graph');
     login();
-  }, [login]);
+  }, []);
   return <div />;
 }
 
