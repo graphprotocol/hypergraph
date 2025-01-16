@@ -1,5 +1,6 @@
 import { Identity } from '@graphprotocol/hypergraph';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
+import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 
 function DoGraphLogin() {
@@ -22,13 +23,14 @@ function Auth({ children }: { children: React.ReactNode }) {
     if (wallets.length > 0) {
       (async () => {
         const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
-        const provider = await embeddedWallet.getEthersProvider();
-        const newSigner = provider.getSigner();
+        const privyProvider = await embeddedWallet.getEthereumProvider();
+        const ethersProvider = new ethers.providers.Web3Provider(privyProvider);
+        const newSigner = await ethersProvider.getSigner();
 
         if (embeddedWallet.walletClientType === 'privy') {
           newSigner.signMessage = async (message) => {
             // @ts-expect-error signMessage is a string in this case
-            const signature = await signMessage(message); //, uiConfig);
+            const { signature } = await signMessage({ message }); //, uiConfig);
             return signature;
           };
         }
