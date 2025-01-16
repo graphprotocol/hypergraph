@@ -35,9 +35,7 @@
     "baseUrl": ".",
     "incremental": true,
     "removeComments": false,
-
     "jsx": "react-jsx",
-
     "paths": {
       "@graphprotocol/hypergraph": ["./packages/hypergraph/src/index.js"],
       "@graphprotocol/hypergraph/*": ["./packages/hypergraph/src/*.js"],

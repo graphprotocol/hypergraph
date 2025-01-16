@@ -1,5 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
+  "include": ["src"],
   "compilerOptions": {
     "target": "ES2021",
     "useDefineForClassFields": true,
@@ -34,6 +35,5 @@
       "@graphprotocol/hypergraph": ["../../packages/hypergraph/src/index.js"],
       "@graphprotocol/hypergraph/*": ["../../packages/hypergraph/src/*.js"]
     }
-  },
-  "include": ["src"]
+  }
 }

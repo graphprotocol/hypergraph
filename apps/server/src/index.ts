@@ -1,9 +1,8 @@
 import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import cors from 'cors';
-import 'dotenv/config';
-import { parse } from 'node:url';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import WebSocket, { WebSocketServer } from 'ws';
@@ -18,6 +17,7 @@ import { listSpaces } from './handlers/listSpaces.js';
 import { createSessionNonce, getSessionNonce } from './handlers/sessionNonce.js';
 import { createSessionToken, getAccountIdBySessionToken } from './handlers/sessionToken.js';
 import { tmpInitAccount } from './handlers/tmpInitAccount.js';
+
 interface CustomWebSocket extends WebSocket {
   accountId: string;
   subscribedSpaces: Set<string>;

@@ -25,8 +25,8 @@ jobs:
       - name: Generate Prisma Types
         run: cd apps/server && pnpm prisma generate
       - name: Typecheck
-        run: pnpm ts:check
-      - name: Linting & Formatting
         run: pnpm check
+      - name: Linting & Formatting
+        run: pnpm lint
       - name: Test
         run: pnpm test

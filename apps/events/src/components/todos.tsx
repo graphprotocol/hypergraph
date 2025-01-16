@@ -6,7 +6,7 @@ import { Todo } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
-export const TodosApp = () => {
+export const Todos = () => {
   const todos = Schema.useQuery(Todo);
   const createEntity = Schema.useCreateEntity(Todo);
   const updateEntity = Schema.useUpdateEntity(Todo);
@@ -14,8 +14,8 @@ export const TodosApp = () => {
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
   return (
-    <div>
-      <h1>Todos</h1>
+    <>
+      <h1 className="text-2xl font-bold">Todos</h1>
       <div className="flex flex-row gap-2">
         <Input type="text" value={newTodoTitle} onChange={(e) => setNewTodoTitle(e.target.value)} />
         <Button
@@ -38,6 +38,6 @@ export const TodosApp = () => {
           <Button onClick={() => deleteEntity(todo.id)}>Delete</Button>
         </div>
       ))}
-    </div>
+    </>
   );
 };

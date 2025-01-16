@@ -1,6 +1,5 @@
 import { Identity } from '@graphprotocol/hypergraph';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
-import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 function DoGraphLogin() {
@@ -8,7 +7,7 @@ function DoGraphLogin() {
   useEffect(() => {
     console.log('Logging in to The Graph');
     login();
-  }, []);
+  }, [login]);
   return <div />;
 }
 
@@ -17,27 +16,26 @@ function Auth({ children }: { children: React.ReactNode }) {
   const { wallets } = useWallets();
   const [signer, setSigner] = useState<Identity.Signer | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: todo [this is kinda ugly]
   useEffect(() => {
-    const getSigner = async () => {
-      const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
-      const provider = await embeddedWallet.getEthersProvider();
-      const newSigner = provider.getSigner();
-      if (embeddedWallet.walletClientType === 'privy') {
-        newSigner.signMessage = async (message) => {
-          // @ts-expect-error signMessage is a string in this case
-          const signature = await signMessage(message); //, uiConfig);
-
-          return signature;
-        };
-      }
-      setSigner(newSigner);
-    };
-
     if (wallets.length > 0) {
-      getSigner();
+      (async () => {
+        const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
+        const provider = await embeddedWallet.getEthersProvider();
+        const newSigner = provider.getSigner();
+
+        if (embeddedWallet.walletClientType === 'privy') {
+          newSigner.signMessage = async (message) => {
+            // @ts-expect-error signMessage is a string in this case
+            const signature = await signMessage(message); //, uiConfig);
+            return signature;
+          };
+        }
+
+        setSigner(newSigner);
+      })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallets]);
+  }, [wallets, setSigner, signMessage]);
 
   return (
     <>
@@ -47,7 +45,8 @@ function Auth({ children }: { children: React.ReactNode }) {
           {children}
         </Identity.GraphLogin>
       ) : (
-        children
+        // @ts-expect-error signer is not required should be fixed in GraphLogin
+        <Identity.GraphLogin storage={localStorage}>{children}</Identity.GraphLogin>
       )}
     </>
   );
@@ -74,17 +73,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       <Auth>{children}</Auth>
     </PrivyProvider>
   );
-}
-
-export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { authenticated } = usePrivy();
-  const { authenticated: graphAuthenticated } = Identity.useGraphLogin();
-  const router = useRouter();
-  if (!authenticated || !graphAuthenticated) {
-    router.navigate({
-      to: '/login',
-    });
-    return <div />;
-  }
-  return <>{children}</>;
 }
