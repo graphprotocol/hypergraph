@@ -1,21 +1,10 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run ./src/index.ts",
-    "build:ts": "rm -rf dist && pnpm tsc --project tsconfig.json",
-    "build:deploy": "rm -rf build && pnpm deploy --filter=server --prod build",
-    "build": "pnpm run build:ts && pnpm build:deploy",
-    "start:prod": "PORT=$PORT NODE_ENV=production node ./dist/index.js",
-    "ts:check": "tsc --noEmit",
-    "test": "echo \"Error: no test specified\"",
-    "lint": "pnpm biome lint src/*",
-    "lint:fix": "pnpm biome lint --write src/*",
-    "format": "pnpm biome format src/*",
-    "format:fix": "pnpm biome format --write src/*",
-    "check": "pnpm biome check src/*",
-    "check:fix": "pnpm biome check --write src/*"
+    "dev": "bun run --watch ./src/index.ts"
   },
   "dependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
@@ -32,12 +21,10 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.10.7",
     "@types/pg": "^8.11.6",
     "@types/ws": "^8.5.13",
-    "nodemon": "^3.1.7",
     "prisma": "^5.22.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.3"
   }
 }

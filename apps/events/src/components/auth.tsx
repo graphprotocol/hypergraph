@@ -7,7 +7,7 @@ function DoGraphLogin() {
   useEffect(() => {
     console.log('Logging in to The Graph');
     login();
-  }, []);
+  }, [login]);
   return <div />;
 }
 
@@ -16,27 +16,26 @@ function Auth({ children }: { children: React.ReactNode }) {
   const { wallets } = useWallets();
   const [signer, setSigner] = useState<Identity.Signer | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: todo [this is kinda ugly]
   useEffect(() => {
-    const getSigner = async () => {
-      const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
-      const provider = await embeddedWallet.getEthersProvider();
-      const newSigner = provider.getSigner();
-      if (embeddedWallet.walletClientType === 'privy') {
-        newSigner.signMessage = async (message) => {
-          // @ts-expect-error signMessage is a string in this case
-          const signature = await signMessage(message); //, uiConfig);
-
-          return signature;
-        };
-      }
-      setSigner(newSigner);
-    };
-
     if (wallets.length > 0) {
-      getSigner();
+      (async () => {
+        const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
+        const provider = await embeddedWallet.getEthersProvider();
+        const newSigner = provider.getSigner();
+
+        if (embeddedWallet.walletClientType === 'privy') {
+          newSigner.signMessage = async (message) => {
+            // @ts-expect-error signMessage is a string in this case
+            const signature = await signMessage(message); //, uiConfig);
+            return signature;
+          };
+        }
+
+        setSigner(newSigner);
+      })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallets]);
+  }, [wallets, setSigner, signMessage]);
 
   return (
     <>

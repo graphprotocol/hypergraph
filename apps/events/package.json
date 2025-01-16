@@ -5,16 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --force",
-    "build": "tsc -b && vite build",
-    "lint": "pnpm biome lint src/*",
-    "lint:fix": "pnpm biome lint --write src/*",
-    "format": "pnpm biome format src/*",
-    "format:fix": "pnpm biome format --write src/*",
-    "check": "pnpm biome check src/*",
-    "check:fix": "pnpm biome check --write src/*",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "ts:check": "tsc --noEmit"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
@@ -40,22 +31,23 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.3",
     "viem": "^2.21.56",
-    "vite-plugin-node-polyfills": "^0.22.0"
+    "vite": "^6.0.7"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@tanstack/router-devtools": "^1.62.1",
     "@tanstack/router-plugin": "^1.62.0",
-    "@types/node": "^22.7.4",
+    "@types/node": "^22.10.7",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-react": "^4.3.2",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "globals": "^15.10.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "vite-plugin-top-level-await": "^1.4.4",
-    "vite-plugin-wasm": "^3.3.0"
+    "vite-plugin-wasm": "^3.4.1"
   }
 }
