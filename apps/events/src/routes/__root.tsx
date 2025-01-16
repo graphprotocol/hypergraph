@@ -1,6 +1,6 @@
 import { Logout } from '@/components/logout';
 import { GraphFramework, Identity } from '@graphprotocol/hypergraph';
-import { Link, Outlet, createRootRoute } from '@tanstack/react-router';
+import { Link, Outlet, createRootRoute, useLayoutEffect, useRouter } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 
 export const Route = createRootRoute({
@@ -9,6 +9,20 @@ export const Route = createRootRoute({
 
     const graphIdentity = getIdentity();
     const loggedInSessionToken = getSessionToken();
+
+    const router = useRouter();
+
+    useLayoutEffect(() => {
+      if (router.state.location.href.startsWith('/login')) {
+        return;
+      }
+
+      if (!authenticated) {
+        router.navigate({
+          to: '/login',
+        });
+      }
+    }, [authenticated]);
 
     return (
       <>

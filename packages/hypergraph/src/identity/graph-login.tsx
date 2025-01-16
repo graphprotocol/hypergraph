@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -317,7 +317,9 @@ export function GraphLogin({
     store.send({ type: 'reset' });
   };
 
-  useEffect(() => {
+  // using a layout effect to set the state before the component is mounted and
+  // avoid a flash of unauthenticated content
+  useLayoutEffect(() => {
     const accountId = loadAccountId(storage);
     if (accountId) {
       const sessionToken = loadSyncServerSessionToken(storage, accountId);

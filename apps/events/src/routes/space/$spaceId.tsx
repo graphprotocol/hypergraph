@@ -1,5 +1,5 @@
-import { Identity, Schema, store, useGraphFramework, useSelector } from '@graphprotocol/hypergraph';
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Schema, store, useGraphFramework, useSelector } from '@graphprotocol/hypergraph';
+import { createFileRoute } from '@tanstack/react-router';
 
 import { DevTool } from '@/components/dev-tool';
 import { Todos } from '@/components/todos';
@@ -15,12 +15,11 @@ function Space() {
   const { spaceId } = Route.useParams();
   const spaces = useSelector(store, (state) => state.context.spaces);
   const { subscribeToSpace, inviteToSpace, isLoading } = useGraphFramework();
-  const { authenticated } = Identity.useGraphLogin();
   useEffect(() => {
-    if (!isLoading && authenticated) {
+    if (!isLoading) {
       subscribeToSpace({ spaceId });
     }
-  }, [isLoading, subscribeToSpace, spaceId, authenticated]);
+  }, [isLoading, subscribeToSpace, spaceId]);
 
   const space = spaces.find((space) => space.id === spaceId);
 
@@ -30,17 +29,6 @@ function Space() {
 
   if (!space) {
     return <div className="flex justify-center items-center h-screen">Space not found</div>;
-  }
-
-  if (!authenticated) {
-    return (
-      <div className="flex flex-col gap-4 justify-center items-center h-screen">
-        <h1 className="text-2xl font-bold">Not authenticated</h1>
-        <Link to="/login" className="text-blue-500 hover:text-blue-600 underline">
-          Go to Login
-        </Link>
-      </div>
-    );
   }
 
   return (

@@ -1,4 +1,4 @@
-import { Identity, store, useGraphFramework, useSelector } from '@graphprotocol/hypergraph';
+import { store, useGraphFramework, useSelector } from '@graphprotocol/hypergraph';
 import { Link, createFileRoute } from '@tanstack/react-router';
 
 import { Button } from '@/components/ui/button';
@@ -12,28 +12,16 @@ export const Route = createFileRoute('/')({
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
   const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, isLoading } = useGraphFramework();
-  const { authenticated } = Identity.useGraphLogin();
 
   useEffect(() => {
-    if (authenticated && !isLoading) {
+    if (!isLoading) {
       listSpaces();
       listInvitations();
     }
-  }, [authenticated, listSpaces, listInvitations, isLoading]);
+  }, [listSpaces, listInvitations, isLoading]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
-  }
-
-  if (!authenticated) {
-    return (
-      <div className="flex flex-col gap-4 justify-center items-center h-screen">
-        <h1 className="text-2xl font-bold">Not authenticated</h1>
-        <Link to="/login" className="text-blue-500 hover:text-blue-600 underline">
-          Go to Login
-        </Link>
-      </div>
-    );
   }
 
   return (
