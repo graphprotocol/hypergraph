@@ -36,7 +36,8 @@
     "@automerge/automerge-repo-react-hooks": "^2",
     "@graphprotocol/hypergraph": "workspace:*",
     "@tanstack/react-query": "^5",
-    "react": "^18"
+    "react": "^18",
+    "viem": "^2.22.8"
   },
   "devDependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
@@ -49,9 +50,11 @@
     "@types/react": "^18.3.7",
     "react": "^18",
     "@vitejs/plugin-react": "^4.3.4",
-    "jsdom": "^26.0.0"
+    "jsdom": "^26.0.0",
+    "viem": "^2.22.8"
   },
   "dependencies": {
-    "@tanstack/react-query-devtools": "^5.63.0"
+    "effect": "^3.12.4",
+    "siwe": "^2.3.2"
   }
 }

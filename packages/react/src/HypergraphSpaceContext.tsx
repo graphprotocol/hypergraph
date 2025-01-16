@@ -1,7 +1,7 @@
 'use client';
 
 import { Repo } from '@automerge/automerge-repo';
-import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { RepoContext, useRepo } from '@automerge/automerge-repo-react-hooks';
 import {
   QueryClient,
   QueryClientProvider,
@@ -57,7 +57,6 @@ export type HypergraphSpaceCtx = {
   defaultSpaceId: string;
   defaultAutomergeDocId: string;
   spaces: Readonly<Array<string>>;
-  hypergraphSpaceService: Schema.HypergraphSpaceEntitiesService;
 };
 
 export const HypergraphSpaceContext = createContext<HypergraphSpaceCtx | null>(null);
@@ -86,11 +85,6 @@ export function useHypergraphDefaultAutomergeDocId() {
   return context.defaultAutomergeDocId;
 }
 
-export function useHypergraphSpaceService() {
-  const context = useHypergraphSpace();
-  return context.hypergraphSpaceService;
-}
-
 export type HypergraphSpaceProviderProps = Readonly<{
   queryClient?: QueryClient;
   repo?: Repo;
@@ -100,10 +94,6 @@ export type HypergraphSpaceProviderProps = Readonly<{
 }>;
 export function HypergraphSpaceProvider(props: HypergraphSpaceProviderProps) {
   const repo = props.repo ?? new Repo({});
-  const hypergraphSpaceService = Schema.buildHypergraphSpaceEntitiesService({
-    repo,
-    spaceId: props.defaultSpaceId,
-  });
 
   return (
     <QueryClientProvider client={props.queryClient ?? getQueryClient()}>
@@ -114,7 +104,6 @@ export function HypergraphSpaceProvider(props: HypergraphSpaceProviderProps) {
             defaultSpaceId: props.defaultSpaceId,
             defaultAutomergeDocId: Utils.idToAutomergeId(props.defaultSpaceId),
             spaces: props.spaces ?? [],
-            hypergraphSpaceService,
           }}
         >
           {props.children}
@@ -162,11 +151,9 @@ export function buildHypergraphQueryKey<const S extends Schema.AnyNoContext>({
   return ['Space', spaceId, 'entities', entityId, typeNames] as const;
 }
 
-export type UseCreateEntityVariables<S extends Schema.AnyNoContext> = Readonly<{
-  type: S;
-  data: Schema.CreateEntityData<S>;
-}>;
+export type UseCreateEntityVariables<S extends Schema.AnyNoContext> = Readonly<Schema.CreateEntityArgs<S>>;
 export function useCreateEntity<const S extends Schema.AnyNoContext>(
+  type: S,
   options: Omit<
     UseMutationOptions<Schema.Entity<S>, Error, UseCreateEntityVariables<S>>,
     'mutationKey' | 'mutationFn'
@@ -174,32 +161,36 @@ export function useCreateEntity<const S extends Schema.AnyNoContext>(
 ) {
   const client = useQueryClient();
 
+  const repo = useRepo();
   const spaceId = useHypergraphDefaultSpaceId();
-  const service = useHypergraphSpaceService();
+  const autoMergeDocId = useHypergraphDefaultAutomergeDocId();
 
   return useMutation<Schema.Entity<S>, Error, UseCreateEntityVariables<S>>({
     mutationKey: ['Space', spaceId, 'entities', 'create'] as const,
     async mutationFn(vars) {
-      return Promise.resolve(service.createEntity(vars.type, vars.data));
+      return Promise.resolve(Schema.createEntity(repo, autoMergeDocId, type, vars));
     },
-    async onSuccess(data, vars) {
-      await client.invalidateQueries({
-        queryKey: buildHypergraphQueryKey<S>({ spaceId, type: vars.type }),
-        exact: false,
+    async onSuccess(data) {
+      // add the created entity to the array of entities at the derived given query key
+      client.setQueryData<Readonly<Array<Schema.Entity<S>>>>(buildHypergraphQueryKey<S>({ spaceId, type }), (curr) => {
+        if (curr == null || curr.length === 0) {
+          return [data] as const;
+        }
+        return [...curr, data] as const;
       });
       // optimistically updates the useQueryEntity query for the newly created entity
-      await client.setQueryData(buildHypergraphQueryKey<S>({ spaceId, type: vars.type, entityId: data.id }), data);
+      await client.setQueryData<Schema.Entity<S>, HypergraphQueryKey>(
+        buildHypergraphQueryKey<S>({ spaceId, type, entityId: data.id }),
+        data,
+      );
     },
     ...options,
   });
 }
 
-export type UseUpdateEntityVariables<S extends Schema.AnyNoContext> = Readonly<{
-  id: string;
-  type: S;
-  data: Schema.UpdateEntityData<S>;
-}>;
+export type UseUpdateEntityVariables<S extends Schema.AnyNoContext> = Schema.UpdateEntityArgs<S>;
 export function useUpdateEntity<const S extends Schema.AnyNoContext>(
+  type: S,
   options: Omit<
     UseMutationOptions<Schema.Entity<S>, Error, UseUpdateEntityVariables<S>>,
     'mutationKey' | 'mutationFn'
@@ -207,20 +198,30 @@ export function useUpdateEntity<const S extends Schema.AnyNoContext>(
 ) {
   const client = useQueryClient();
 
+  const repo = useRepo();
   const spaceId = useHypergraphDefaultSpaceId();
-  const service = useHypergraphSpaceService();
+  const autoMergeDocId = useHypergraphDefaultAutomergeDocId();
 
   return useMutation<Schema.Entity<S>, Error, UseUpdateEntityVariables<S>>({
     mutationKey: ['Space', spaceId, 'entities', 'update'] as const,
     async mutationFn(vars) {
-      return Promise.resolve(service.updateEntity(vars.type, vars.id, vars.data));
+      return Promise.resolve(Schema.updateEntity(repo, autoMergeDocId, type, vars));
     },
-    async onSuccess(data, vars) {
-      await client.invalidateQueries({
-        queryKey: buildHypergraphQueryKey<S>({ spaceId, type: vars.type }),
+    async onSuccess(data) {
+      // update the entity in the array of entities at the derived query key
+      client.setQueryData<Readonly<Array<Schema.Entity<S>>>>(buildHypergraphQueryKey<S>({ spaceId, type }), (curr) => {
+        if (curr == null || curr.length === 0) {
+          return [data] as const;
+        }
+        const found = curr.find((entity) => entity.id === data.id);
+        if (!found) {
+          return [...curr, data] as const;
+        }
+
+        return curr.map((entity) => (entity.id === data.id ? data : entity));
       });
       // optimistically updates the useQueryEntity query with the updated entity
-      await client.setQueryData(buildHypergraphQueryKey<S>({ spaceId, type: vars.type, entityId: data.id }), data);
+      await client.setQueryData(buildHypergraphQueryKey<S>({ spaceId, type, entityId: data.id }), data);
     },
     ...options,
   });
@@ -229,22 +230,28 @@ export function useUpdateEntity<const S extends Schema.AnyNoContext>(
 export type UseDeleteEntityVariables = Readonly<{
   id: string;
 }>;
-export function useDeleteEntity(
+export function useDeleteEntity<const S extends Schema.AnyNoContext>(
+  type: S,
   options: Omit<UseMutationOptions<boolean, Error, UseDeleteEntityVariables>, 'mutationKey' | 'mutationFn'> = {},
 ) {
   const client = useQueryClient();
 
+  const repo = useRepo();
   const spaceId = useHypergraphDefaultSpaceId();
-  const service = useHypergraphSpaceService();
+  const autoMergeDocId = useHypergraphDefaultAutomergeDocId();
 
   return useMutation<boolean, Error, UseDeleteEntityVariables>({
     mutationKey: ['Space', spaceId, 'entities', 'delete'],
-    async mutationFn(args) {
-      return Promise.resolve(service.deleteEntity(args.id));
+    async mutationFn(vars) {
+      return Promise.resolve(Schema.deleteEntity(repo, autoMergeDocId, vars.id));
     },
     async onSuccess(_, vars) {
-      await client.invalidateQueries({ queryKey: ['Space', spaceId, 'entities'], exact: false });
-      await client.invalidateQueries({ queryKey: ['Space', spaceId, 'entities', vars.id], exact: false });
+      // removes the entity from the current entities at the query key
+      client.setQueryData<Readonly<Array<Schema.Entity<S>>>>(buildHypergraphQueryKey<S>({ spaceId, type }), (curr) => {
+        return (curr ?? []).filter((entity) => entity.id !== vars.id);
+      });
+      // update the QueryClient cache to return null for the entity with the given id
+      await client.setQueryData(buildHypergraphQueryKey({ spaceId, type, entityId: vars.id }), null);
     },
     ...options,
   });
@@ -252,18 +259,19 @@ export function useDeleteEntity(
 
 export type UseQueryEntitiesResultType<S extends Schema.AnyNoContext> = Readonly<Array<Schema.Entity<S>>>;
 export function useQueryEntities<const S extends Schema.AnyNoContext>(
-  args: Readonly<{ type: S | Readonly<Array<S>> }>,
+  type: S | Readonly<Array<S>>,
   options: Omit<UseQueryOptions<UseQueryEntitiesResultType<S>>, 'queryKey' | 'queryFn'> = {},
 ) {
+  const repo = useRepo();
   const spaceId = useHypergraphDefaultSpaceId();
-  const service = useHypergraphSpaceService();
+  const autoMergeDocId = useHypergraphDefaultAutomergeDocId();
 
-  const queryKey = buildHypergraphQueryKey<S>({ spaceId, type: args.type });
+  const queryKey = buildHypergraphQueryKey<S>({ spaceId, type });
 
   return useQuery<UseQueryEntitiesResultType<S>>({
     queryKey,
     async queryFn() {
-      return Promise.resolve(service.findMany(args.type));
+      return Promise.resolve(Schema.findMany(repo, autoMergeDocId, type));
     },
     ...options,
   });
@@ -271,18 +279,20 @@ export function useQueryEntities<const S extends Schema.AnyNoContext>(
 
 export type UseQueryEntityResultType<S extends Schema.AnyNoContext> = Readonly<Schema.Entity<S> | null>;
 export function useQueryEntity<const S extends Schema.AnyNoContext>(
-  args: Readonly<{ id: string; type: S }>,
+  type: S,
+  id: string,
   options: Omit<UseQueryOptions<UseQueryEntityResultType<S>>, 'queryKey' | 'queryFn'> = {},
 ) {
+  const repo = useRepo();
   const spaceId = useHypergraphDefaultSpaceId();
-  const service = useHypergraphSpaceService();
+  const autoMergeDocId = useHypergraphDefaultAutomergeDocId();
 
-  const queryKey = buildHypergraphQueryKey<S>({ spaceId, type: args.type, entityId: args.id });
+  const queryKey = buildHypergraphQueryKey<S>({ spaceId, type, entityId: id });
 
   return useQuery<UseQueryEntityResultType<S>>({
     queryKey,
     async queryFn() {
-      return Promise.resolve(service.findOne(args.type, args.id));
+      return Promise.resolve(Schema.findOne(repo, autoMergeDocId, type, id));
     },
     ...options,
   });

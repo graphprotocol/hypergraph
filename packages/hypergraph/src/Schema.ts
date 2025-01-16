@@ -1,10 +1,9 @@
-import { type AnyDocumentId, Repo } from '@automerge/automerge-repo';
+import type { AnyDocumentId, Repo } from '@automerge/automerge-repo';
 import * as VariantSchema from '@effect/experimental/VariantSchema';
 import { Data } from 'effect';
 import * as Schema from 'effect/Schema';
 import type { ParseOptions } from 'effect/SchemaAST';
 
-import { idToAutomergeId } from './utils/automergeId.js';
 import { generateId } from './utils/generateId.js';
 
 /**
@@ -116,290 +115,310 @@ export class InvalidQueryMissingTypesError extends Data.TaggedError('InvalidQuer
   cause: unknown;
 }> {}
 
-export type CreateEntityData<S extends AnyNoContext> = Schema.Schema.Type<Insert<S>>;
-export type UpdateEntityData<S extends AnyNoContext> = Schema.Simplify<Partial<Schema.Schema.Type<Update<S>>>>;
-
 export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & { type: string };
 
-export type HypergraphSpaceEntitiesService = {
-  /** Reference to the automerge repo instance */
-  repo: Repo;
+export type CreateEntityArgs<S extends AnyNoContext> = Readonly<Schema.Schema.Type<Insert<S>>>;
+/**
+ * Creates an entity model of given type and stores it in the repo.
+ *
+ * @example <caption>Creates the Event entity and returns the created entity record</caption>
+ * ```ts
+ * import { Repo } from '@automerge/automerge-repo'
+ * import { Schema } from '@graphprotocol/hypergraph'
+ *
+ * class Event extends Schema.Class<Event>('Event')({
+ *  id: Schema.Generated(Schema.Text),
+ *  name: Schema.Text.pipe(Schema.NonEmptyTrimmedString)
+ * }){}
+ *
+ * const repo = new Repo({})
+ *
+ * const created = Schema.createEntity(repo, 'abc123', { type: Event, name: 'Conference' })
+ * ```
+ *
+ * @param repo automerge repo for the space where the entity will be created
+ * @param automergeDocId document id in the repo where to create the entity
+ * @param type Entity model type of the entity being created
+ * @param data the entity model data to create
+ * @returns the created Entity
+ */
+export function createEntity<const S extends AnyNoContext>(
+  repo: Repo,
+  automergeDocId: string | AnyDocumentId,
+  type: S,
+  data: CreateEntityArgs<S>,
+): Entity<S> {
+  const encode = Schema.encodeSync(type.insert);
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
 
-  /**
-   * Creates an entity model of given type and stores it in the repo.
-   *
-   * @example <caption>Created the Event entity and returns the created entity record</caption>
-   * ```ts
-   * import { Schema } from '@graphprotocol/hypergraph'
-   *
-   * class Event extends Schema.Class<Event>('Event')({
-   *  id: Schema.Generated(Schema.Text),
-   *  name: Schema.Text
-   * }){}
-   *
-   * const service = Schema.buildHypergraphSpaceEntitiesService({ spaceId: 'space__1' })
-   *
-   * const created = service.updateEntity(Event, { name: 'Conference' })
-   * ```
-   *
-   * @param type entity model type
-   * @param data the entity model data to create
-   * @returns the created Entity
-   */
-  createEntity<const S extends AnyNoContext>(type: S, data: CreateEntityData<S>): Entity<S>;
-  /**
-   * Update an existing entity model of given type in the repo.
-   *
-   * @example <caption>Updates the existing entity and returns the updated entity record</caption>
-   * ```ts
-   * import { Schema } from '@graphprotocol/hypergraph'
-   *
-   * class Event extends Schema.Class<Event>('Event')({
-   *  id: Schema.Generated(Schema.Text),
-   *  name: Schema.Text
-   * }){}
-   *
-   * const service = Schema.buildHypergraphSpaceEntitiesService({ spaceId: 'space__1' })
-   *
-   * const updated = service.updateEntity(Event, 'event_id__1', { name: 'Updated' })
-   * ```
-   *
-   * @param type entity model type
-   * @param id id of the already existing entity in the repo
-   * @param data data of the fields in the model to update
-   * @throws EntityDoesNotExistError if no entity can be find in the repo of the given type, with the given id
-   */
-  updateEntity<const S extends AnyNoContext>(type: S, id: string, data: UpdateEntityData<S>): Entity<S>;
-  /**
-   * Deletes the exiting entity from the repo.
-   *
-   * @example <caption>Returns the Event entity found by the ID</caption>
-   * ```ts
-   * import { Schema } from '@graphprotocol/hypergraph'
-   *
-   * class Event extends Schema.Class<Event>('Event')({
-   *  id: Schema.Generated(Schema.Text),
-   *  name: Schema.Text
-   * }){}
-   *
-   * const service = Schema.buildHypergraphSpaceEntitiesService({ spaceId: 'space__1' })
-   *
-   * const deleted = service.deleteEntity(Event, 'event_id__1')
-   * ```
-   *
-   * @param id id of the existing entity in the repo
-   */
-  deleteEntity(id: string): boolean;
-  /**
-   * Queries for a list of entities of the given type from the repo.
-   *
-   * @example <caption>Returns a list of entities of type Event</caption>
-   * ```ts
-   * import { Schema } from '@graphprotocol/hypergraph'
-   *
-   * class Event extends Schema.Class<Event>('Event')({
-   *  id: Schema.Generated(Schema.Text),
-   *  name: Schema.Text
-   * }){}
-   *
-   * const service = Schema.buildHypergraphSpaceEntitiesService({ spaceId: 'space__1' })
-   *
-   * const events = service.findMany(Event)
-   * ```
-   *
-   * @example <caption>Returns a list of entities of type Event and User</caption>
-   * ```ts
-   * import { Schema } from '@graphprotocol/hypergraph'
-   *
-   * class Event extends Schema.Class<Event>('Event')({
-   *  id: Schema.Generated(Schema.Text),
-   *  name: Schema.Text
-   * }){}
-   * class User extends Schema.Class<User>('User')({
-   *  id: Schema.Generated(Schema.Text),
-   *  name: Schema.Text,
-   *  email: Schema.Text
-   * }){}
-   *
-   * const service = Schema.buildHypergraphSpaceEntitiesService({ spaceId: 'space__1' })
-   *
-   * const entities = service.findMany([Event, User])
-   * ```
-   *
-   * @param type entity model type, or an array of entity types to find
-   * @throws [InvalidQueryMissingTypesError] if no types are passed in to query
-   */
-  findMany<const S extends AnyNoContext>(type: S | Readonly<Array<S>>): Array<Entity<S>>;
-  /**
-   * Find the entity of the given type, with the given id, from the repo.
-   *
-   * @example <caption>Returns the Event entity found by the ID</caption>
-   * ```ts
-   * import { Schema } from '@graphprotocol/hypergraph'
-   *
-   * class Event extends Schema.Class<Event>('Event')({
-   *  id: Schema.Generated(Schema.Text),
-   *  name: Schema.Text
-   * }){}
-   *
-   * const service = Schema.buildHypergraphSpaceEntitiesService({ spaceId: 'space__1' })
-   *
-   * const events = service.findOne(Event, 'event_id__1')
-   * ```
-   *
-   * @param type entity model type
-   * @param id id of the entity to find
-   * @returns the found entity, or null if no entity exists with the given id
-   */
-  findOne<const S extends AnyNoContext>(type: S, id: string): Entity<S> | null;
-};
+  const entityId = generateId();
 
-export type BuildHypergraphSpaceEntitiesServiceArgs = Readonly<{
-  repo?: Repo;
-  spaceId: string;
+  const encoded = { ...encode(data) };
+
+  const handle = repo.find<DocumentContent>(automergeDocId as AnyDocumentId);
+  // apply changes to the repo -> adds the entity to the repo entites document
+  handle.change((doc) => {
+    doc.entities ??= {};
+    doc.entities[entityId] = { ...encoded, '@@types@@': [typeName] };
+  });
+
+  return { id: entityId, ...encoded, type: typeName } as const satisfies Entity<S>;
+}
+
+export type UpdateEntityArgs<S extends AnyNoContext> = Readonly<{
+  id: string;
+  data: Schema.Simplify<Partial<Schema.Schema.Type<Update<S>>>>;
 }>;
-export function buildHypergraphSpaceEntitiesService(
-  args: BuildHypergraphSpaceEntitiesServiceArgs,
-): HypergraphSpaceEntitiesService {
-  const repo = args.repo ?? new Repo({});
-  const defaultAutomergeDocId = idToAutomergeId(args.spaceId);
+/**
+ * Update an existing entity model of given type in the repo.
+ *
+ * @example <caption>Updates the existing entity and returns the updated entity record</caption>
+ * ```ts
+ * import { Repo } from '@automerge/automerge-repo'
+ * import { Schema } from '@graphprotocol/hypergraph'
+ *
+ * class Event extends Schema.Class<Event>('Event')({
+ *  id: Schema.Generated(Schema.Text),
+ *  name: Schema.Text
+ * }){}
+ *
+ * const repo = new Repo({})
+ *
+ * const updated = Schema.updateEntity(repo, 'abc123', { type: Event, id: 'space_event_id__1', name: 'Updated' })
+ * ```
+ *
+ * @param repo automerge repo for the space where the entity will be update
+ * @param automergeDocId document id in the repo where to update the entity
+ * @param type type of the Entity being updated
+ * @param args id of the entity, and data of the fields in the model to update
+ * @throws EntityDoesNotExistError if no entity can be find in the repo of the given type, with the given id
+ */
+export function updateEntity<const S extends AnyNoContext>(
+  repo: Repo,
+  automergeDocId: string | AnyDocumentId,
+  type: S,
+  args: UpdateEntityArgs<S>,
+): Entity<S> {
+  const encode = Schema.encodeSync(Schema.partial(type.update));
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
 
-  return {
-    repo,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  let updatedData: any = {};
 
-    createEntity<const S extends AnyNoContext>(type: S, data: CreateEntityData<S>) {
-      const encode = Schema.encodeSync(type.insert);
-      // TODO: what's the right way to get the name of the type?
-      // @ts-expect-error name is defined
-      const typeName = type.name;
+  const handle = repo.find<DocumentContent>(automergeDocId as AnyDocumentId);
+  // apply changes to the repo -> updates the existing entity to the repo entites document
+  handle.change((doc) => {
+    const existingEntity = doc.entities?.[args.id];
+    if (existingEntity === undefined) {
+      return;
+    }
 
-      const entityId = generateId();
+    updatedData = encode({ ...existingEntity, ...args.data });
+    // @ts-expect-error doc.entities was checked above
+    doc.entities[args.id] = { ...updatedData, '@@types@@': [typeName] };
+  });
+  // if no entity found, updatedData is not updated
+  if (Object.keys(updatedData).length === 0) {
+    throw new EntityNotFoundError({
+      id: args.id,
+      type,
+      cause: `Entity [${args.id}] of type [${typeName}] not found`,
+    });
+  }
 
-      const encoded = { ...encode(data) };
+  return { id: args.id, type: typeName, ...updatedData } as const satisfies Entity<S>;
+}
 
-      const handle = repo.find<DocumentContent>(defaultAutomergeDocId as AnyDocumentId);
-      // apply changes to the repo -> adds the entity to the repo entites document
-      handle.change((doc) => {
-        doc.entities ??= {};
-        doc.entities[entityId] = { ...encoded, '@@types@@': [typeName] };
-      });
+/**
+ * Deletes the exiting entity from the repo.
+ *
+ * @example <caption>Deletes the entity, with the given id, from the repo document</caption>
+ * ```ts
+ * import { Repo } from '@automerge/automerge-repo'
+ * import { Schema } from '@graphprotocol/hypergraph'
+ *
+ * class Event extends Schema.Class<Event>('Event')({
+ *  id: Schema.Generated(Schema.Text),
+ *  name: Schema.Text
+ * }){}
+ *
+ * const repo = new Repo({})
+ *
+ * const deleted = Schema.deleteEntity(repo, 'abc123', 'event_id__1')
+ * ```
+ *
+ * @param repo automerge repo for the space where the entity will be deleted
+ * @param automergeDocId document id in the repo where to remove the entity from
+ * @param entityId id of the existing entity in the repo
+ * @returns true if the entity was found and removed; otherwise, false
+ */
+export function deleteEntity(repo: Repo, automergeDocId: string | AnyDocumentId, entityId: string): boolean {
+  let result = false;
 
-      return { id: entityId, ...encoded, type: typeName } as const satisfies Entity<S>;
-    },
-    updateEntity<const S extends AnyNoContext>(type: S, id: string, data: UpdateEntityData<S>) {
-      const encode = Schema.encodeSync(Schema.partial(type.update));
-      // TODO: what's the right way to get the name of the type?
-      // @ts-expect-error name is defined
-      const typeName = type.name;
+  const handle = repo.find<DocumentContent>(automergeDocId as AnyDocumentId);
+  // apply changes to the repo -> removes the existing entity by its id
+  handle.change((doc) => {
+    if (doc.entities?.[entityId] !== undefined) {
+      delete doc.entities[entityId];
+      result = true;
+    }
+  });
 
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      let updatedData: any = {};
+  return result;
+}
 
-      const handle = repo.find<DocumentContent>(defaultAutomergeDocId as AnyDocumentId);
-      // apply changes to the repo -> updates the existing entity to the repo entites document
-      handle.change((doc) => {
-        const existingEntity = doc.entities?.[id];
-        if (existingEntity === undefined) {
-          return;
-        }
+/**
+ * Queries for a list of entities of the given type from the repo.
+ *
+ * @example <caption>Returns a list of entities of type Event</caption>
+ * ```ts
+ * import { Repo } from '@automerge/automerge-repo'
+ * import { Schema } from '@graphprotocol/hypergraph'
+ *
+ * class Event extends Schema.Class<Event>('Event')({
+ *  id: Schema.Generated(Schema.Text),
+ *  name: Schema.Text
+ * }){}
+ *
+ * const repo = new Repo({})
+ *
+ * const events = Schema.findMany(repo, 'abc123', Event)
+ * ```
+ *
+ * @example <caption>Returns a list of entities of type Event and User</caption>
+ * ```ts
+ * import { Repo } from '@automerge/automerge-repo'
+ * import { Schema } from '@graphprotocol/hypergraph'
+ *
+ * class Event extends Schema.Class<Event>('Event')({
+ *  id: Schema.Generated(Schema.Text),
+ *  name: Schema.Text
+ * }){}
+ * class User extends Schema.Class<User>('User')({
+ *  id: Schema.Generated(Schema.Text),
+ *  name: Schema.Text,
+ *  email: Schema.Text
+ * }){}
+ *
+ * const repo = new Repo({})
+ *
+ * const entities = Schema.findMany(repo, 'abc123', [Event, User])
+ * ```
+ *
+ * @param repo automerge repo for the space where to query the entities from
+ * @param automergeDocId document id in the repo where to query the entities
+ * @param type entity model type, or an array of entity types, to find
+ * @throws [InvalidQueryMissingTypesError] if no types are passed in to query
+ */
+export function findMany<const S extends AnyNoContext>(
+  repo: Repo,
+  automergeDocId: string | AnyDocumentId,
+  type: S | Readonly<Array<S>>,
+): Readonly<Array<Entity<S>>> {
+  const types = Array.isArray(type) ? type : [type];
+  if (types.length === 0) {
+    throw new InvalidQueryMissingTypesError({ cause: 'Received query must specify at least one entity type' });
+  }
+  // biome-ignore lint/suspicious/noExplicitAny: unknown type since passed in
+  const decodeMap: Record<string, (u: unknown, overrideOptions?: ParseOptions) => any> = {};
+  for (const _type of types) {
+    decodeMap[_type.name] = Schema.decodeUnknownSync(_type);
+  }
+  const handle = repo.find<DocumentContent>(automergeDocId as AnyDocumentId);
 
-        updatedData = encode({ ...existingEntity, ...data });
-        // @ts-expect-error doc.entities was checked above
-        doc.entities[id] = { ...updatedData, '@@types@@': [typeName] };
-      });
-      // if no entity found, updatedData is not updated
-      if (Object.keys(updatedData).length === 0) {
-        throw new EntityNotFoundError({ id, type, cause: `Entity [${id}] of type [${typeName}] not found` });
+  // TODO: what's the right way to get the name of the type?
+  const typeNames = types.map((t) => t.name);
+
+  const doc = handle.docSync();
+  if (!doc) {
+    console.log('docsync not found. exiting');
+    return [];
+  }
+
+  // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
+  // an index and store the decoded valeus instead of re-decoding over and over again.
+  const filtered: Array<Entity<S>> = [];
+  for (const id in doc.entities) {
+    const entity = doc.entities[id];
+    if (
+      typeof entity === 'object' &&
+      entity !== null &&
+      '@@types@@' in entity &&
+      Array.isArray(entity['@@types@@']) &&
+      entity['@@types@@'].some((_typeName) => typeNames.includes(_typeName))
+    ) {
+      const decode = decodeMap[entity['@@types@@'][0]];
+      if (!decode) {
+        continue;
       }
+      filtered.push({ ...decode({ ...entity, id }), type: entity['@@types@@'][0] });
+    }
+  }
 
-      return { id, type: typeName, ...updatedData } as const satisfies Entity<S>;
-    },
-    deleteEntity(id) {
-      let result = false;
+  return filtered;
+}
 
-      const handle = repo.find<DocumentContent>(defaultAutomergeDocId as AnyDocumentId);
-      // apply changes to the repo -> removes the existing entity by its id
-      handle.change((doc) => {
-        if (doc.entities?.[id] !== undefined) {
-          delete doc.entities[id];
-          result = true;
-        }
-      });
+/**
+ * Find the entity of the given type, with the given id, from the repo.
+ *
+ * @example <caption>Returns the Event entity found by the ID</caption>
+ * ```ts
+ * import { Repo } from '@automerge/automerge-repo'
+ * import { Schema } from '@graphprotocol/hypergraph'
+ *
+ * class Event extends Schema.Class<Event>('Event')({
+ *  id: Schema.Generated(Schema.Text),
+ *  name: Schema.Text
+ * }){}
+ *
+ * const repo = new Repo({})
+ *
+ * const event = Schema.findOne(repo, 'abc123', { type: Event, id: 'event_id__1' })
+ * ```
+ *
+ * @param repo automerge repo for the space where to query the entity from
+ * @param automergeDocId document id in the repo where to query the entity
+ * @param type type of the Entity being queried
+ * @param id id of the Entity being queried
+ * @returns the found entity, or null if no entity exists with the given id
+ */
+export function findOne<const S extends AnyNoContext>(
+  repo: Repo,
+  automergeDocId: string | AnyDocumentId,
+  type: S,
+  id: string,
+): Entity<S> | null {
+  const decode = Schema.decodeUnknownSync(type);
+  const handle = repo.find<DocumentContent>(automergeDocId as AnyDocumentId);
 
-      return result;
-    },
-    findMany<const S extends AnyNoContext>(type: S | Readonly<Array<S>>): Array<Entity<S>> {
-      const types = Array.isArray(type) ? type : [type];
-      if (types.length === 0) {
-        throw new InvalidQueryMissingTypesError({ cause: 'Received query must specify at least one entity type' });
-      }
-      // biome-ignore lint/suspicious/noExplicitAny: unknown type since passed in
-      const decodeMap: Record<string, (u: unknown, overrideOptions?: ParseOptions) => any> = {};
-      for (const _type of types) {
-        decodeMap[_type.name] = Schema.decodeUnknownSync(_type);
-      }
-      const handle = repo.find<DocumentContent>(defaultAutomergeDocId as AnyDocumentId);
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
 
-      // TODO: what's the right way to get the name of the type?
-      const typeNames = types.map((t) => t.name);
+  const doc = handle.docSync();
+  if (!doc) {
+    return null;
+  }
 
-      const doc = handle.docSync();
-      if (!doc) {
-        return [];
-      }
+  let entity: Entity<S> | null = null;
+  // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
+  // an index and store the decoded valeus instead of re-decoding over and over again.
+  const maybeFoundEntity = doc.entities?.[id] ?? null;
+  if (maybeFoundEntity != null) {
+    if (
+      typeof maybeFoundEntity === 'object' &&
+      maybeFoundEntity !== null &&
+      '@@types@@' in maybeFoundEntity &&
+      Array.isArray(maybeFoundEntity['@@types@@']) &&
+      maybeFoundEntity['@@types@@'].includes(typeName)
+    ) {
+      entity = { ...decode({ ...maybeFoundEntity, id }), type: typeName };
+    }
+  }
 
-      // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
-      // an index and store the decoded valeus instead of re-decoding over and over again.
-      const filtered: Array<Entity<S>> = [];
-      for (const id in doc.entities) {
-        const entity = doc.entities[id];
-        if (
-          typeof entity === 'object' &&
-          entity !== null &&
-          '@@types@@' in entity &&
-          Array.isArray(entity['@@types@@']) &&
-          entity['@@types@@'].some((_typeName) => typeNames.includes(_typeName))
-        ) {
-          const decode = decodeMap[entity['@@types@@'][0]];
-          if (!decode) {
-            continue;
-          }
-          filtered.push({ ...decode({ ...entity, id }), type: entity['@@types@@'][0] });
-        }
-      }
-
-      return filtered;
-    },
-    findOne<const S extends AnyNoContext>(type: S, id: string) {
-      const decode = Schema.decodeUnknownSync(type);
-      const handle = repo.find<DocumentContent>(defaultAutomergeDocId as AnyDocumentId);
-
-      // TODO: what's the right way to get the name of the type?
-      // @ts-expect-error name is defined
-      const typeName = type.name;
-
-      const doc = handle.docSync();
-      if (!doc) {
-        return null;
-      }
-
-      let entity: Entity<S> | null = null;
-      // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
-      // an index and store the decoded valeus instead of re-decoding over and over again.
-      const maybeFoundEntity = doc.entities?.[id] ?? null;
-      if (maybeFoundEntity != null) {
-        if (
-          typeof maybeFoundEntity === 'object' &&
-          maybeFoundEntity !== null &&
-          '@@types@@' in maybeFoundEntity &&
-          Array.isArray(maybeFoundEntity['@@types@@']) &&
-          maybeFoundEntity['@@types@@'].includes(typeName)
-        ) {
-          entity = { ...decode({ ...maybeFoundEntity, id: id, type }), type: typeName };
-        }
-      }
-
-      return entity;
-    },
-  } as const satisfies HypergraphSpaceEntitiesService;
+  return entity;
 }

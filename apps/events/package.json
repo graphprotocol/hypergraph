@@ -29,7 +29,7 @@
     "@tanstack/react-router": "^1.62.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "effect": "^3.12.2",
+    "effect": "^3.12.4",
     "ethers": "^6.13.3",
     "isomorphic-ws": "^5.0.0",
     "lucide-react": "^0.441.0",

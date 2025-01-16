@@ -29,79 +29,77 @@ describe('Schema', () => {
   }) {}
 
   const spaceId = '52gTkePWSoGdXmgZF3nRU';
+  const automergeDocId = idToAutomergeId(spaceId);
   let repo = new Repo({});
-  let service = Schema.buildHypergraphSpaceEntitiesService({
-    repo,
-    spaceId,
-  });
 
   beforeEach(() => {
     repo = new Repo({}); // reset to new Repo instance to clear created entities in tests
-    const automergeDocHandle = repo.find(idToAutomergeId(spaceId) as AnyDocumentId);
+    const automergeDocHandle = repo.find(automergeDocId as AnyDocumentId);
     // set it to ready to interact with the document
     automergeDocHandle.doneLoading();
-
-    service = Schema.buildHypergraphSpaceEntitiesService({
-      repo,
-      spaceId,
-    });
   });
 
   describe('createEntity', () => {
     it('should create an entity in the repo and be discoverable by querying', () => {
-      const created = service.createEntity(Event, { name: 'Conference' });
+      const created = Schema.createEntity(repo, automergeDocId, Event, { name: 'Conference' });
       expect(created).toEqual(expect.objectContaining({ type: Event.name, name: 'Conference' }));
 
       const id = created.id;
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = service.findMany(Event);
+      const entities = Schema.findMany(repo, automergeDocId, Event);
       expect(entities).toHaveLength(1);
       expect(entities[0]).toEqual({ id, type: Event.name, name: 'Conference' });
 
-      const found = service.findOne(Event, id);
+      const found = Schema.findOne(repo, automergeDocId, Event, id);
       expect(found).not.toBeNull();
       expect(found).toEqual({ id, type: Event.name, name: 'Conference' });
     });
   });
   describe('updateEntity', () => {
     it('should update an existing entity and see the updates when querying', () => {
-      const created = service.createEntity(Person, { name: 'Test', age: 1 });
+      const created = Schema.createEntity(repo, automergeDocId, Person, { name: 'Test', age: 1 });
       expect(created).toEqual(expect.objectContaining({ type: Person.name, name: 'Test', age: 1 }));
 
       const id = created.id;
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = service.findMany(Person);
+      const entities = Schema.findMany(repo, automergeDocId, Person);
       expect(entities).toHaveLength(1);
       expect(entities[0]).toEqual({ id, type: Person.name, name: 'Test', age: 1 });
 
-      const found = service.findOne(Person, id);
+      const found = Schema.findOne(repo, automergeDocId, Person, id);
       expect(found).not.toBeNull();
       expect(found).toEqual({ id, type: Person.name, name: 'Test', age: 1 });
 
       // update the entity, validate we see the updates
-      const updated = service.updateEntity(Person, id, { name: 'Test Updated', age: 2112 });
+      const updated = Schema.updateEntity(repo, automergeDocId, Person, {
+        id,
+        data: { name: 'Test Updated', age: 2112 },
+      });
       expect(updated).toEqual({ id, type: Person.name, name: 'Test Updated', age: 2112 });
 
-      const updatedEntities = service.findMany(Person);
+      const updatedEntities = Schema.findMany(repo, automergeDocId, Person);
       expect(updatedEntities).toHaveLength(1);
       expect(updatedEntities[0]).toEqual({ id, type: Person.name, name: 'Test Updated', age: 2112 });
-      const foundUpdated = service.findOne(Person, id);
+      const foundUpdated = Schema.findOne(repo, automergeDocId, Person, id);
       expect(foundUpdated).not.toBeNull();
       expect(foundUpdated).toEqual({ id, type: Person.name, name: 'Test Updated', age: 2112 });
     });
     it('should throw an error if attempting to update an entity that does not exist in the repo', () => {
       expect(() => {
-        service.updateEntity(Person, 'entity_dne', { name: 'does not exist' });
+        Schema.updateEntity(repo, automergeDocId, Person, { id: 'person_dne', data: { name: 'does not exist' } });
       }).toThrowError(Schema.EntityNotFoundError);
     });
   });
   describe('deleteEntity', () => {
     it('should be able to delete a created entity and no longer be found by querying', () => {
-      const created = service.createEntity(User, { name: 'Test', email: 'test.user@thegraph.com' });
+      const created = Schema.createEntity(repo, automergeDocId, User, {
+        name: 'Test',
+        email: 'test.user@thegraph.com',
+      });
       expect(created).toEqual(
         expect.objectContaining({ type: User.name, name: 'Test', email: 'test.user@thegraph.com' }),
       );
@@ -110,55 +108,61 @@ describe('Schema', () => {
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = service.findMany(User);
+      const entities = Schema.findMany(repo, automergeDocId, User);
       expect(entities).toHaveLength(1);
       expect(entities[0]).toEqual({ id, type: User.name, name: 'Test', email: 'test.user@thegraph.com' });
 
-      const found = service.findOne(User, id);
+      const found = Schema.findOne(repo, automergeDocId, User, id);
       expect(found).not.toBeNull();
       expect(found).toEqual({ id, type: User.name, name: 'Test', email: 'test.user@thegraph.com' });
 
-      const deleted = service.deleteEntity(id);
+      const deleted = Schema.deleteEntity(repo, automergeDocId, id);
       expect(deleted).toBe(true);
 
-      expect(service.findMany(User)).toHaveLength(0);
-      expect(service.findOne(User, id)).toBeNull();
+      expect(Schema.findMany(repo, automergeDocId, User)).toHaveLength(0);
+      expect(Schema.findOne(repo, automergeDocId, User, id)).toBeNull();
     });
     it('should return false if no entity exists with the given id', () => {
-      expect(service.deleteEntity('entity_dne')).toBe(false);
+      expect(Schema.deleteEntity(repo, automergeDocId, 'entity_dne')).toBe(false);
     });
   });
   describe('findMany', () => {
     it('should only query entities of the given type', () => {
-      const createdUser = service.createEntity(User, { name: 'Test', email: 'test.user@thegraph.com' });
+      const createdUser = Schema.createEntity(repo, automergeDocId, User, {
+        name: 'Test',
+        email: 'test.user@thegraph.com',
+      });
       expect(createdUser).toEqual(
         expect.objectContaining({ type: User.name, name: 'Test', email: 'test.user@thegraph.com' }),
       );
-      const createdBadge = service.createEntity(Badge, { name: 'WeDidIt' });
+      const createdBadge = Schema.createEntity(repo, automergeDocId, Badge, { name: 'WeDidIt' });
       expect(createdBadge).toEqual(expect.objectContaining({ type: Badge.name, name: 'WeDidIt' }));
 
       // should only return users
-      const users = service.findMany(User);
+      const users = Schema.findMany(repo, automergeDocId, User);
       expect(users).toHaveLength(1);
       for (const user of users) {
         expect(user.type).toEqual(User.name);
       }
       // should only return badges
-      const badges = service.findMany(Badge);
+      const badges = Schema.findMany(repo, automergeDocId, Badge);
       expect(badges).toHaveLength(1);
       for (const badge of badges) {
         expect(badge.type).toEqual(Badge.name);
       }
     });
     it('should be able to query for multiple entity types', () => {
-      const createdUser = service.createEntity(User, { name: 'Test', email: 'test.user@thegraph.com' });
+      const createdUser = Schema.createEntity(repo, automergeDocId, User, {
+        name: 'Test',
+        email: 'test.user@thegraph.com',
+      });
       expect(createdUser).toEqual(
         expect.objectContaining({ type: User.name, name: 'Test', email: 'test.user@thegraph.com' }),
       );
-      const createdBadge = service.createEntity(Badge, { name: 'WeDidIt' });
+      const createdBadge = Schema.createEntity(repo, automergeDocId, Badge, { name: 'WeDidIt' });
       expect(createdBadge).toEqual(expect.objectContaining({ type: Badge.name, name: 'WeDidIt' }));
 
-      const entities = service.findMany([User, Badge] as const);
+      const entities = Schema.findMany(repo, automergeDocId, [User, Badge] as const);
       expect(entities).toHaveLength(2);
       const users = entities.filter((e) => e.type === User.name);
       expect(users).toHaveLength(1);
@@ -167,13 +171,13 @@ describe('Schema', () => {
     });
     it('should throw an error if no types specified', () => {
       expect(() => {
-        service.findMany([]);
+        Schema.findMany(repo, automergeDocId, []);
       }).toThrowError(Schema.InvalidQueryMissingTypesError);
     });
   });
   describe('findOne', () => {
     it('should return null if not entity found', () => {
-      expect(service.findOne(User, 'dne')).toBeNull();
+      expect(Schema.findOne(repo, automergeDocId, User, 'dne')).toBeNull();
     });
   });
 });
