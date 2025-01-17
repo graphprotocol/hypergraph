@@ -1,7 +1,8 @@
 import { Identity } from '@graphprotocol/hypergraph';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
-import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
+import { createWalletClient, custom } from 'viem';
+import { mainnet } from 'viem/chains';
 
 function DoGraphLogin() {
   const { login } = Identity.useGraphLogin();
@@ -24,16 +25,27 @@ function Auth({ children }: { children: React.ReactNode }) {
       (async () => {
         const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
         const privyProvider = await embeddedWallet.getEthereumProvider();
-        const ethersProvider = new ethers.providers.Web3Provider(privyProvider);
-        const newSigner = await ethersProvider.getSigner();
 
-        if (embeddedWallet.walletClientType === 'privy') {
-          newSigner.signMessage = async (message) => {
-            // @ts-expect-error signMessage is a string in this case
-            const { signature } = await signMessage({ message }); //, uiConfig);
-            return signature;
-          };
-        }
+        const walletClient = createWalletClient({
+          chain: mainnet,
+          transport: custom(privyProvider),
+        });
+
+        // create a signer-like interface compatible with Identity.Signer
+        const newSigner: Identity.Signer = {
+          getAddress: async () => {
+            const [address] = await walletClient.getAddresses();
+            return address;
+          },
+          signMessage: async (message: string) => {
+            if (embeddedWallet.walletClientType === 'privy') {
+              const { signature } = await signMessage({ message });
+              return signature;
+            }
+            const [address] = await walletClient.getAddresses();
+            return await walletClient.signMessage({ account: address, message });
+          },
+        };
 
         setSigner(newSigner);
       })();
