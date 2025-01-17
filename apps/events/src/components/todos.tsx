@@ -12,6 +12,7 @@ export const Todos = () => {
   const updateEntity = Schema.useUpdateEntity(Todo);
   const deleteEntity = Schema.useDeleteEntity();
   const [newTodoTitle, setNewTodoTitle] = useState('');
+  Schema.useChanges();
 
   return (
     <>

@@ -101,7 +101,6 @@ export function GraphFramework({
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelector(store, (state) => state.context.repo);
 
-  console.log('Sync server:', syncServer);
   const syncServerUrl = new URL(syncServer);
   const syncServerWsUrl = new URL(`/?token=${sessionToken}`, syncServerUrl.toString());
   syncServerWsUrl.protocol = 'ws:';

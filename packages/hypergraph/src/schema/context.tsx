@@ -1,8 +1,9 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { useDocument, useRepo } from '@automerge/automerge-repo-react-hooks';
+import { Utils } from '@graphprotocol/hypergraph';
 import * as Schema from 'effect/Schema';
 import type { ReactNode } from 'react';
-import { createContext, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useSyncExternalStore } from 'react';
 import { generateId, idToAutomergeId } from '../utils/index.js';
 import type * as Model from './model.js';
 
@@ -190,6 +191,102 @@ export const useQuery = <S extends Model.AnyNoContext>(type: S) => {
   });
 
   return entities;
+};
+
+export const useChanges = () => {
+  const docId = useDefaultAutomergeDocId();
+  // can't use useDocument here because it would trigger a re-render every time the document changes
+  const repo = useRepo();
+  const handle = repo.find<DocumentContent>(docId as AnyDocumentId);
+  const handleRef = useRef<DocHandle<DocumentContent>>(handle);
+  if (handle !== handleRef.current) {
+    handleRef.current = handle;
+  }
+
+  // biome-ignore lint/suspicious/noExplicitAny: todo
+  const data = useRef<{ [key: string]: any }>({});
+
+  console.log('data', data.current);
+
+  useEffect(() => {
+    if (handle) {
+      const doc = handle.docSync();
+      data.current = JSON.parse(JSON.stringify(doc));
+
+      handle.on('change', ({ patches }) => {
+        for (const patch of patches) {
+          console.log('patch', patch);
+          switch (patch.action) {
+            case 'put': {
+              let reference = data.current;
+              for (const key of patch.path.slice(0, -1)) {
+                if (reference[key] === undefined) {
+                  reference[key] = {};
+                }
+                reference = reference[key];
+              }
+              reference[patch.path[patch.path.length - 1]] = patch.value;
+              break;
+            }
+            case 'del': {
+              let reference = data.current;
+              for (const key of patch.path.slice(0, -1)) {
+                reference = reference[key];
+              }
+              console.log('del', reference);
+              delete reference[patch.path[patch.path.length - 1]];
+              break;
+            }
+            case 'insert': {
+              let reference = data.current;
+              for (const key of patch.path.slice(0, -1)) {
+                reference = reference[key];
+              }
+              reference[patch.path[patch.path.length - 1]] = patch.values;
+              break;
+            }
+            // only seen for strings and therefor only handling this case so far
+            case 'splice': {
+              let reference = data.current;
+              for (const key of patch.path.slice(0, -2)) {
+                reference = reference[key];
+              }
+
+              const currentString = reference[patch.path[patch.path.length - 2]] as string;
+              const index = patch.path[patch.path.length - 2] as number;
+              const newString =
+                currentString.slice(0, index) + patch.value + currentString.slice(index + patch.value.length);
+              reference[patch.path[patch.path.length - 1]] = newString;
+              break;
+            }
+            case 'inc': {
+              let reference = data.current;
+              for (const key of patch.path.slice(0, -1)) {
+                reference = reference[key];
+              }
+              reference[patch.path[patch.path.length - 1]] += patch.value;
+              break;
+            }
+            // can be ignored since it's no value change and only used for info that there is a conflict
+
+            case 'conflict':
+              break;
+            // can be ignored until we use the native automerge Text type
+            case 'unmark':
+              break;
+            case 'mark':
+              break;
+
+            default:
+              Utils.assertExhaustive(patch);
+              break;
+          }
+        }
+
+        console.log('data', data.current);
+      });
+    }
+  }, [handle]);
 };
 
 const isEqual = <A, E>(type: Schema.Schema<A, E, never>) => {
