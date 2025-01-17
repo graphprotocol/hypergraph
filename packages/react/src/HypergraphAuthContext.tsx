@@ -41,6 +41,23 @@ export function useHypergraphAuth() {
   return useContext<HypergraphAuthCtx>(HypergraphAuthContext);
 }
 
+export function useAuthenticated() {
+  const ctx = useHypergraphAuth();
+  return ctx.authenticated();
+}
+export function useHypergraphAccountId() {
+  const ctx = useHypergraphAuth();
+  return ctx.getAccountId();
+}
+export function useHypergraphIdentity() {
+  const ctx = useHypergraphAuth();
+  return ctx.getIdentity();
+}
+export function useHypergraphSessionToken() {
+  const ctx = useHypergraphAuth();
+  return ctx.getSessionToken();
+}
+
 export type HypergraphAuthProviderProps = Readonly<{
   storage: Identity.Storage;
   signer: Identity.Signer | null;
