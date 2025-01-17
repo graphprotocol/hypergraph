@@ -13,6 +13,7 @@ lerna-debug.log*
 
 # Local database
 *.db
+*.db-journal
 
 # Runtime data
 pids
