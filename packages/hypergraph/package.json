@@ -33,14 +33,14 @@
     "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
     "@automerge/automerge-repo-storage-indexeddb": "^2.0.0-alpha.14",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
-    "@types/react": "^18.3.7",
+    "@testing-library/react": "^16.2.0",
+    "@types/react": "^19.0.7",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "jsdom": "^26.0.0"
   },
   "dependencies": {
-    "@effect/experimental": "^0.36.2",
+    "@effect/experimental": "^0.37.1",
     "@noble/ciphers": "^1.2.0",
     "@noble/curves": "^1.8.0",
     "@noble/hashes": "^1.7.0",
@@ -48,9 +48,9 @@
     "@xmtp/xmtp-js": "^13.0.4",
     "@xstate/store": "^2.6.2",
     "bs58check": "^4.0.0",
-    "effect": "^3.12.1",
+    "effect": "^3.12.4",
     "siwe": "^2.3.2",
-    "uuid": "^11.0.4",
+    "uuid": "^11.0.5",
     "viem": "^2.22.9"
   }
 }
