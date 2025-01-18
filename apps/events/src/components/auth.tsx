@@ -1,11 +1,12 @@
-import { Identity } from '@graphprotocol/hypergraph';
+import type { Identity } from '@graphprotocol/hypergraph';
+import { Auth as HypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { createWalletClient, custom } from 'viem';
 import { mainnet } from 'viem/chains';
 
 function DoGraphLogin() {
-  const { login } = Identity.useGraphLogin();
+  const { login } = HypergraphAuth.useHypergraphAuth();
   // biome-ignore lint/correctness/useExhaustiveDependencies: this is an issue and will make sure login is not run in a useEffect
   useEffect(() => {
     console.log('Logging in to The Graph');
@@ -55,13 +56,13 @@ function Auth({ children }: { children: React.ReactNode }) {
   return (
     <>
       {signer && authenticated ? (
-        <Identity.GraphLogin storage={localStorage} signer={signer}>
+        <HypergraphAuth.HypergraphAuthProvider storage={localStorage} signer={signer}>
           <DoGraphLogin />
           {children}
-        </Identity.GraphLogin>
+        </HypergraphAuth.HypergraphAuthProvider>
       ) : (
         // @ts-expect-error signer is not required should be fixed in GraphLogin
-        <Identity.GraphLogin storage={localStorage}>{children}</Identity.GraphLogin>
+        <HypergraphAuth.HypergraphAuthProvider storage={localStorage}>{children}</HypergraphAuth.HypergraphAuthProvider>
       )}
     </>
   );

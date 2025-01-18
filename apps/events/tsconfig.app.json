@@ -33,7 +33,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@graphprotocol/hypergraph": ["../../packages/hypergraph/src/index.js"],
-      "@graphprotocol/hypergraph/*": ["../../packages/hypergraph/src/*.js"]
+      "@graphprotocol/hypergraph/*": ["../../packages/hypergraph/src/*.js"],
+      "@graphprotocol/hypergraph-react": ["../../packages/react/src/index.js"],
+      "@graphprotocol/hypergraph-react/*": ["../../packages/react/src/*.js"]
     }
   }
 }

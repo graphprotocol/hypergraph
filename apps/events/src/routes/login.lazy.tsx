@@ -1,8 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { availableAccounts } from '@/lib/availableAccounts';
-import { Identity } from '@graphprotocol/hypergraph';
+import { Auth } from '@graphprotocol/hypergraph-react';
 import { usePrivy } from '@privy-io/react-auth';
 import { Link, createLazyFileRoute } from '@tanstack/react-router';
+
+import { Button } from '@/components/ui/button';
+import { availableAccounts } from '@/lib/availableAccounts';
 
 export const Route = createLazyFileRoute('/login')({
   component: () => <Login />,
@@ -12,7 +13,7 @@ function Login() {
   const { ready, authenticated, login } = usePrivy();
   // Disable login when Privy is not ready or the user is already authenticated
   const disableLogin = !ready || (ready && authenticated);
-  const { setIdentityAndSessionToken, authenticated: graphAuthenticated } = Identity.useGraphLogin();
+  const { setIdentityAndSessionToken, authenticated: graphAuthenticated } = Auth.useHypergraphAuth();
 
   return (
     <div className="flex flex-1 justify-center items-center flex-col gap-4">
