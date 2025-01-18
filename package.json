@@ -2,10 +2,7 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.14.4",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "build": "tsc -b tsconfig.build.json && pnpm --recursive --parallel --filter ./packages/* run build",
