@@ -106,6 +106,7 @@ export function GraphFramework({
   const syncServerWsUrl = new URL(`/?token=${sessionToken}`, syncServerUrl.toString());
   syncServerWsUrl.protocol = 'ws:';
   const syncServerWsUrlString = syncServerWsUrl.toString();
+
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     if (!sessionToken) {
