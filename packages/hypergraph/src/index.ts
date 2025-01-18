@@ -1,4 +1,3 @@
-export * from './core.js';
 export * as Identity from './identity/index.js';
 export * as Key from './key/index.js';
 export * as Messages from './messages/index.js';
