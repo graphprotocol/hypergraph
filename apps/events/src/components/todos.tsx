@@ -8,7 +8,12 @@ import { Input } from './ui/input';
 
 export const Todos = () => {
   const todos = Space.useQueryEntities(Todo);
-  const createEntity = Space.useCreateEntity(Todo);
+  const createEntity = Space.useCreateEntity(Todo, {
+    throwOnError(error) {
+      console.error(error);
+      return true;
+    },
+  });
   const updateEntity = Space.useUpdateEntity(Todo);
   const deleteEntity = Space.useDeleteEntity(Todo);
   const [newTodoTitle, setNewTodoTitle] = useState('');
@@ -26,6 +31,7 @@ export const Todos = () => {
         >
           Create Todo
         </Button>
+        <div>{JSON.stringify(createEntity.error ?? {})}</div>
       </div>
       {(todos.data ?? []).map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">

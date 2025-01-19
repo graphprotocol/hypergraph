@@ -13,7 +13,7 @@ export type HypergraphAuthCtx = {
   getSessionToken(): string | null;
   getAccountId(): string | null;
   getIdentity(): Identity.Identity | null;
-  authenticated(): boolean;
+  authenticated: boolean;
   login(): void;
   logout(): void;
   setIdentityAndSessionToken(account: Identity.Identity & { sessionToken: string }): void;
@@ -29,9 +29,7 @@ export const HypergraphAuthContext = createContext<HypergraphAuthCtx>({
   getSessionToken() {
     return null;
   },
-  authenticated() {
-    return false;
-  },
+  authenticated: false,
   login() {},
   logout() {},
   setIdentityAndSessionToken() {},
@@ -43,7 +41,7 @@ export function useHypergraphAuth() {
 
 export function useAuthenticated() {
   const ctx = useHypergraphAuth();
-  return ctx.authenticated();
+  return ctx.authenticated;
 }
 export function useHypergraphAccountId() {
   const ctx = useHypergraphAuth();
@@ -358,9 +356,7 @@ export function HypergraphAuthProvider({
           }
           return null;
         },
-        authenticated() {
-          return authState.authenticated;
-        },
+        authenticated: authState.authenticated,
         login,
         logout,
         setIdentityAndSessionToken,

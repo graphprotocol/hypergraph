@@ -19,6 +19,8 @@ function Index() {
   const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } =
     Hypergraph.useHypergraphApp();
 
+  console.log('Home page', { loading });
+
   useEffect(() => {
     if (!loading) {
       listSpaces();

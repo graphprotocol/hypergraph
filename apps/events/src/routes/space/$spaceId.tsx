@@ -1,5 +1,6 @@
 import { store } from '@graphprotocol/hypergraph';
 import { Hypergraph, Space as HypergraphSpace } from '@graphprotocol/hypergraph-react';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 
@@ -59,6 +60,7 @@ function Space() {
         <div className="mt-12">
           <DevTool spaceId={spaceId} />
         </div>
+        <ReactQueryDevtools />
       </HypergraphSpace.HypergraphSpaceProvider>
     </div>
   );

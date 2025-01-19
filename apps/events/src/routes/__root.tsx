@@ -32,7 +32,7 @@ export const Route = createRootRoute({
               Home
             </Link>
             <nav className="ml-auto flex gap-4 sm:gap-6">
-              {authenticated() ? (
+              {authenticated ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {graphIdentity?.accountId.substring(0, 6)}
@@ -44,7 +44,7 @@ export const Route = createRootRoute({
           </header>
           <hr />
 
-          {authenticated() && graphIdentity && loggedInSessionToken ? (
+          {authenticated && graphIdentity && loggedInSessionToken ? (
             <Hypergraph.HypergraphAppProvider
               accountId={graphIdentity.accountId}
               sessionToken={loggedInSessionToken}
