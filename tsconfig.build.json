@@ -3,6 +3,6 @@
   "include": [],
   "references": [
     { "path": "packages/hypergraph/tsconfig.build.json" },
-    { "path": "packages/react/tsconfig.build.json" }
+    { "path": "packages/hypergraph-react/tsconfig.build.json" }
   ]
 }

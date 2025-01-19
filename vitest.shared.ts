@@ -10,7 +10,7 @@ const config: ViteUserConfig = {
   test: {
     alias: {
       ...alias('hypergraph'),
-      ...alias('react', '@graphprotocol/hypergraph-react'),
+      ...alias('hypergraph-react'),
     },
   },
 };
