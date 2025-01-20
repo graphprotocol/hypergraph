@@ -70,7 +70,7 @@ function Index() {
         {spaces.map((space) => {
           return (
             <li key={space.id}>
-              <Link to={`/space/${space.id}`}>
+              <Link to="/space/$spaceId" params={{ spaceId: space.id }}>
                 <Card>
                   <CardHeader>
                     <CardTitle>{space.id}</CardTitle>
