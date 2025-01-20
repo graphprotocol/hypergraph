@@ -6,7 +6,6 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 export const Route = createRootRoute({
   component: () => {
     const { authenticated, getIdentity, getSessionToken } = Identity.useGraphLogin();
-
     const graphIdentity = getIdentity();
     const loggedInSessionToken = getSessionToken();
 
@@ -28,7 +27,7 @@ export const Route = createRootRoute({
       <>
         <div className="flex flex-col min-h-screen">
           <header className="px-4 lg:px-6 h-14 flex items-center">
-            <Link to="/" className="flex items-center justify-center">
+            <Link to={authenticated ? '/' : '/login'} className="flex items-center justify-center">
               Home
             </Link>
             <nav className="ml-auto flex gap-4 sm:gap-6">
