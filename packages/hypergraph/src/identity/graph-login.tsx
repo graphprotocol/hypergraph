@@ -34,7 +34,6 @@ import type { Identity, Keys, Signer, Storage } from './types.js';
 export type LoginProps = {
   children: React.ReactNode;
   storage: Storage;
-  signer: Signer | null;
   syncServer?: string;
   chainId?: number;
 };
@@ -51,7 +50,7 @@ const GraphLoginContext = createContext<{
   getAccountId: () => string | null;
   getIdentity: () => Identity | null;
   isAuthenticated: () => boolean;
-  login: () => void;
+  login: (signer: Signer) => Promise<void>;
   logout: () => void;
   authenticated: boolean;
   setIdentityAndSessionToken: (account: Identity & { sessionToken: string }) => void;
@@ -60,7 +59,7 @@ const GraphLoginContext = createContext<{
   getAccountId: () => null,
   getIdentity: () => null,
   isAuthenticated: () => false,
-  login: () => {},
+  login: () => Promise.resolve(),
   logout: () => {},
   authenticated: false,
   setIdentityAndSessionToken: () => {},
@@ -71,19 +70,14 @@ const GraphLoginContext = createContext<{
 // 2) a)Try to get identity from the sync server, or
 //    b) If identity is not found, create a new identity
 //      (and store it in the sync server)
-export function GraphLogin({
-  children,
-  storage,
-  signer,
-  syncServer = 'http://localhost:3030',
-  chainId = 80451,
-}: LoginProps) {
+export function GraphLogin({ children, storage, syncServer = 'http://localhost:3030', chainId = 80451 }: LoginProps) {
   const [state, setState] = useState<GraphLoginState>({
     authenticated: false,
     accountId: null,
     sessionToken: null,
     keys: null,
   });
+
   const getSessionToken = () => {
     return state.sessionToken;
   };
@@ -290,7 +284,7 @@ export function GraphLogin({
     }
   };
 
-  const login = async () => {
+  const login = async (signer: Signer) => {
     if (!signer) {
       return;
     }
