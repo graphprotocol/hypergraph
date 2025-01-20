@@ -18,6 +18,7 @@
     "babel-plugin-annotate-pure-calls": "^0.5.0",
     "@changesets/cli": "^2.27.11",
     "glob": "^11.0.1",
+    "pkg-pr-new": "^0.0.39",
     "typescript": "^5.7.3",
     "vitest": "^3.0.1"
   }

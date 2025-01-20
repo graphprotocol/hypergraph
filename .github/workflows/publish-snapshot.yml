@@ -1,0 +1,28 @@
+name: Publish Snapshot
+
+on:
+  pull_request:
+    branches: [main, ng/changesets-and-publishing]
+
+jobs:
+  snapshot:
+    name: Publish Snapshot
+    if: github.repository_owner == 'geobrowser'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "package.json"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Create snapshot
+        id: snapshot
+        run: pnpx pkg-pr-new@0.0.39 publish --pnpm --comment=off ./packages/*
