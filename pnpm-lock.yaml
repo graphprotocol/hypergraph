@@ -289,9 +289,6 @@ importers:
       '@graphprotocol/hypergraph':
         specifier: workspace:*
         version: link:../hypergraph/publish
-      '@tanstack/react-query':
-        specifier: ^5.64.1
-        version: 5.64.1(react@19.0.0)
       '@testing-library/jest-dom':
         specifier: ^6.6.3
         version: 6.6.3

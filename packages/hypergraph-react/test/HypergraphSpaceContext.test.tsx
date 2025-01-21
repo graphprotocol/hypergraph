@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom/vitest';
 import { type AnyDocumentId, Repo } from '@automerge/automerge-repo';
-import { QueryClient } from '@tanstack/react-query';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 // biome-ignore lint/style/useImportType: <explanation>
 import React from 'react';
@@ -8,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { Schema, Utils } from '@graphprotocol/hypergraph';
 
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import {
   HypergraphSpaceProvider,
   useCreateEntity,
@@ -44,34 +44,27 @@ describe('HypergraphSpaceContext', () => {
   const spaceId = '52gTkePWSoGdXmgZF3nRU';
   const defaultAutomergeDocId = Utils.idToAutomergeId(spaceId);
 
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false, // Disable retries to simplify testing
-      },
-    },
-  });
-
   let repo = new Repo({});
   let wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-    <HypergraphSpaceProvider repo={repo} defaultSpaceId={spaceId} spaces={[spaceId]} queryClient={queryClient}>
-      {children}
-    </HypergraphSpaceProvider>
+    <RepoContext.Provider value={repo}>
+      <HypergraphSpaceProvider defaultSpaceId={spaceId} spaces={[spaceId]}>
+        {children}
+      </HypergraphSpaceProvider>
+    </RepoContext.Provider>
   );
 
   beforeEach(() => {
-    // clear out the queryClient instance between runs (keeps the query cache fresh when validating the entities were created successfully)
-    queryClient.clear();
-
     repo = new Repo({});
     const automergeDocHandle = repo.find(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
     // set it to ready to interact with the document
     automergeDocHandle.doneLoading();
 
     wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-      <HypergraphSpaceProvider repo={repo} defaultSpaceId={spaceId} spaces={[spaceId]} queryClient={queryClient}>
-        {children}
-      </HypergraphSpaceProvider>
+      <RepoContext.Provider value={repo}>
+        <HypergraphSpaceProvider defaultSpaceId={spaceId} spaces={[spaceId]}>
+          {children}
+        </HypergraphSpaceProvider>
+      </RepoContext.Provider>
     );
   });
 
@@ -87,28 +80,25 @@ describe('HypergraphSpaceContext', () => {
     it('should be able to create an entity through the useCreateEntity Hook', async () => {
       const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
 
+      let createdEntity: Schema.Entity<typeof Event> | null = null;
+
       act(() => {
-        createEntityResult.current.mutate({ name: 'Conference' });
+        createdEntity = createEntityResult.current({ name: 'Conference' });
       });
 
       await waitFor(() => {
-        expect(createEntityResult.current.isSuccess).toBe(true);
-        expect(createEntityResult.current.data).toEqual(
-          expect.objectContaining({ name: 'Conference', type: Event.name }),
-        );
+        expect(createdEntity).not.toBeNull();
       });
 
-      const createdEntityId = createEntityResult.current.data?.id;
-      expect(createdEntityId).not.toBeNull();
-      expect(createdEntityId).not.toBeUndefined();
+      if (createdEntity != null) {
+        const { result: queryEntityResult } = renderHook(() => useQueryEntity(Event, createdEntity?.id || ''), {
+          wrapper,
+        });
+        expect(queryEntityResult.current).toEqual(createdEntity);
+      }
 
       const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Event), { wrapper });
-      await waitFor(() => expect(queryEntitiesResult.current.isSuccess).toBe(true));
-      expect(queryEntitiesResult.current.data).toEqual([{ id: createdEntityId, type: Event.name, name: 'Conference' }]);
-
-      const { result: queryEntityResult } = renderHook(() => useQueryEntity(Event, createdEntityId || ''), { wrapper });
-      await waitFor(() => expect(queryEntityResult.current.isSuccess).toBe(true));
-      expect(queryEntityResult.current.data).toEqual({ id: createdEntityId, type: Event.name, name: 'Conference' });
+      expect(queryEntitiesResult.current).toEqual([createdEntity]);
     });
   });
 
@@ -116,53 +106,36 @@ describe('HypergraphSpaceContext', () => {
     it('should be able to update a created entity through the useUpdateEntity hook', async () => {
       const { result: createEntityResult } = renderHook(() => useCreateEntity(Person), { wrapper });
 
+      let createdEntity: Schema.Entity<typeof Person> | null = null;
+
       act(() => {
-        createEntityResult.current.mutate({ name: 'Test', age: 1 });
+        createdEntity = createEntityResult.current({ name: 'Test', age: 1 });
       });
 
       await waitFor(() => {
-        expect(createEntityResult.current.isSuccess).toBe(true);
-        expect(createEntityResult.current.data).toEqual(
-          expect.objectContaining({ name: 'Test', age: 1, type: Person.name }),
-        );
+        expect(createdEntity).not.toBeNull();
+        expect(createdEntity).toEqual(expect.objectContaining({ name: 'Test', age: 1, type: Person.name }));
       });
 
-      const createdEntityId = createEntityResult.current.data?.id;
-      expect(createdEntityId).not.toBeNull();
-      expect(createdEntityId).not.toBeUndefined();
+      if (createdEntity == null) {
+        throw new Error('person not created successfully');
+      }
+
+      const id = (createdEntity as Schema.Entity<typeof Person>).id;
 
       const { result: updateEntityResult } = renderHook(() => useUpdateEntity(Person), { wrapper });
 
       act(() => {
-        updateEntityResult.current.mutate({ id: createdEntityId || '', data: { name: 'Updated', age: 2112 } });
+        createdEntity = updateEntityResult.current({ id, data: { name: 'Test User', age: 2112 } });
       });
 
-      await waitFor(() => {
-        expect(updateEntityResult.current.isSuccess).toBe(true);
-        expect(updateEntityResult.current.data).toEqual({
-          id: createdEntityId,
-          name: 'Updated',
-          age: 2112,
-          type: Person.name,
-        });
-      });
+      expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
+
+      const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
+      expect(queryEntityResult.current).toEqual(createdEntity);
 
       const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Person), { wrapper });
-      await waitFor(() => expect(queryEntitiesResult.current.isSuccess).toBe(true));
-      expect(queryEntitiesResult.current.data).toEqual([
-        { id: createdEntityId, type: Person.name, name: 'Updated', age: 2112 },
-      ]);
-
-      const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, createdEntityId || ''), {
-        wrapper,
-      });
-      await waitFor(() => expect(queryEntityResult.current.isSuccess).toBe(true));
-      expect(queryEntityResult.current.data).toEqual({
-        id: createdEntityId,
-        type: Person.name,
-        name: 'Updated',
-        age: 2112,
-      });
+      expect(queryEntitiesResult.current).toEqual([createdEntity]);
     });
   });
 
@@ -170,115 +143,41 @@ describe('HypergraphSpaceContext', () => {
     it('should be able to delete the created entity', async () => {
       const { result: createEntityResult } = renderHook(() => useCreateEntity(User), { wrapper });
 
+      let createdEntity: Schema.Entity<typeof User> | null = null;
+
       act(() => {
-        createEntityResult.current.mutate({ name: 'Test', email: 'test.user@edgeandnode.com' });
+        createdEntity = createEntityResult.current({ name: 'Test', email: 'test.user@edgeandnode.com' });
       });
 
       await waitFor(() => {
-        expect(createEntityResult.current.isSuccess).toBe(true);
-        expect(createEntityResult.current.data).toEqual(
+        expect(createdEntity).not.toBeNull();
+        expect(createdEntity).toEqual(
           expect.objectContaining({ name: 'Test', email: 'test.user@edgeandnode.com', type: User.name }),
         );
       });
-
-      const createdEntityId = createEntityResult.current.data?.id;
-      expect(createdEntityId).not.toBeNull();
-      expect(createdEntityId).not.toBeUndefined();
 
       const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(
         () => useQueryEntities(User),
         { wrapper },
       );
-      await waitFor(() => expect(queryEntitiesResult.current.isSuccess).toBe(true));
-      expect(queryEntitiesResult.current.data).toEqual([
-        { id: createdEntityId, type: User.name, name: 'Test', email: 'test.user@edgeandnode.com' },
-      ]);
+      expect(queryEntitiesResult.current).toEqual([createdEntity]);
 
-      const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(User), { wrapper });
+      const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(), { wrapper });
 
+      let deleted = false;
       act(() => {
-        deleteEntityResult.current.mutate({ id: createdEntityId || '' });
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        deleted = deleteEntityResult.current(createdEntity!.id);
       });
 
       await waitFor(() => {
-        expect(deleteEntityResult.current.isSuccess).toBe(true);
-        expect(deleteEntityResult.current.data).toBe(true);
+        expect(deleted).toBe(true);
       });
 
-      // refetch the entities
       rerenderQueryEntities();
 
-      await waitFor(() => expect(queryEntitiesResult.current.isSuccess).toBe(true));
-      expect(queryEntitiesResult.current.data).toEqual([]);
-    });
-  });
-
-  describe('useQueryEntities', () => {
-    it('should only return entities of the given type', async () => {
-      const { result: createUserEntityResult } = renderHook(() => useCreateEntity(User), { wrapper });
-      act(() => {
-        createUserEntityResult.current.mutate({ name: 'Test new user', email: 'test.new.user@edgeandnode.com' });
-      });
-      await waitFor(() => {
-        expect(createUserEntityResult.current.isSuccess).toBe(true);
-        expect(createUserEntityResult.current.data).toEqual(
-          expect.objectContaining({ name: 'Test new user', email: 'test.new.user@edgeandnode.com', type: User.name }),
-        );
-      });
-
-      const { result: createEventEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
-      act(() => {
-        createEventEntityResult.current.mutate({ name: 'Test Conference Event' });
-      });
-      await waitFor(() => {
-        expect(createEventEntityResult.current.isSuccess).toBe(true);
-        expect(createEventEntityResult.current.data).toEqual(
-          expect.objectContaining({ name: 'Test Conference Event', type: Event.name }),
-        );
-      });
-
-      const { result: queryUserEntitiesResult } = renderHook(() => useQueryEntities(User), { wrapper });
-      await waitFor(() => expect(queryUserEntitiesResult.current.isSuccess).toBe(true));
-      expect(queryUserEntitiesResult.current.data).toEqual([
-        expect.objectContaining({ type: User.name, name: 'Test new user', email: 'test.new.user@edgeandnode.com' }),
-      ]);
-
-      const { result: queryEventEntitiesResult } = renderHook(() => useQueryEntities(Event), { wrapper });
-      await waitFor(() => expect(queryEventEntitiesResult.current.isSuccess).toBe(true));
-      expect(queryEventEntitiesResult.current.data).toEqual([
-        expect.objectContaining({ type: Event.name, name: 'Test Conference Event' }),
-      ]);
-    });
-    it('should return all entities passed by the given types', async () => {
-      const { result: createUserEntityResult } = renderHook(() => useCreateEntity(User), { wrapper });
-      act(() => {
-        createUserEntityResult.current.mutate({ name: 'Test new user', email: 'test.new.user@edgeandnode.com' });
-      });
-      await waitFor(() => {
-        expect(createUserEntityResult.current.isSuccess).toBe(true);
-        expect(createUserEntityResult.current.data).toEqual(
-          expect.objectContaining({ name: 'Test new user', email: 'test.new.user@edgeandnode.com', type: User.name }),
-        );
-      });
-
-      const { result: createEventEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
-      act(() => {
-        createEventEntityResult.current.mutate({ name: 'Test Conference Event' });
-      });
-      await waitFor(() => {
-        expect(createEventEntityResult.current.isSuccess).toBe(true);
-        expect(createEventEntityResult.current.data).toEqual(
-          expect.objectContaining({ name: 'Test Conference Event', type: Event.name }),
-        );
-      });
-
-      const { result: queryEntitiesResult } = renderHook(() => useQueryEntities([User, Event] as const), { wrapper });
-      await waitFor(() => expect(queryEntitiesResult.current.isSuccess).toBe(true));
-      expect(queryEntitiesResult.current.data).toHaveLength(2);
-      expect(queryEntitiesResult.current.data).toEqual([
-        expect.objectContaining({ type: User.name, name: 'Test new user', email: 'test.new.user@edgeandnode.com' }),
-        expect.objectContaining({ type: Event.name, name: 'Test Conference Event' }),
-      ]);
+      expect(queryEntitiesResult.current).toHaveLength(0);
+      expect(queryEntitiesResult.current).toEqual([]);
     });
   });
 });

@@ -15,6 +15,7 @@ export {
   between,
   capitalized,
   endsWith,
+  equivalence,
   filter,
   finite,
   Finite,
@@ -51,6 +52,8 @@ export {
   uncapitalized,
   uppercased,
 } from 'effect/Schema';
+
+export type EffectSchema<A, E> = Schema.Schema<A, E, never>;
 
 const {
   Class,
@@ -102,7 +105,7 @@ export const Text = Schema.String;
 export const Number = Schema.Number;
 export const Checkbox = Schema.Boolean;
 
-type DocumentContent = {
+export type DocumentContent = {
   entities?: Record<string, unknown>;
 };
 
@@ -317,7 +320,7 @@ export function deleteEntity(repo: Repo, automergeDocId: string | AnyDocumentId,
 export function findMany<const S extends AnyNoContext>(
   repo: Repo,
   automergeDocId: string | AnyDocumentId,
-  type: S | Readonly<Array<S>>,
+  type: S | readonly [S, ...S[]],
 ): Readonly<Array<Entity<S>>> {
   const types = Array.isArray(type) ? type : [type];
   if (types.length === 0) {

@@ -27,7 +27,6 @@
     "@automerge/automerge-repo": "^2",
     "@automerge/automerge-repo-react-hooks": "^2",
     "@graphprotocol/hypergraph": "workspace:*",
-    "@tanstack/react-query": "^5",
     "@xstate/store": "^2.6.2",
     "react": "^19.0.0",
     "viem": "^2.22.8"
@@ -37,7 +36,6 @@
     "@automerge/automerge-repo": "^2.0.0-alpha.14",
     "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
     "@graphprotocol/hypergraph": "workspace:*",
-    "@tanstack/react-query": "^5.64.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/react": "^19.0.7",
