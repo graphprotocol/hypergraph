@@ -4,7 +4,6 @@
   "compilerOptions": {
     "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
     "outDir": "dist",
-    "stripInternal": true,
-    "noEmit": false
+    "stripInternal": true
   }
 }
