@@ -1,7 +1,7 @@
-import { Schema } from '@graphprotocol/hypergraph';
+import { Entity } from '@graphprotocol/hypergraph';
 
-export class Todo extends Schema.Model.Class<Todo>('Todo')({
-  id: Schema.Model.Generated(Schema.Types.Text),
-  name: Schema.Types.Text,
-  completed: Schema.Types.Checkbox,
+export class Todo extends Entity.Class<Todo>('Todo')({
+  id: Entity.Generated(Entity.Text),
+  name: Entity.Text,
+  completed: Entity.Checkbox,
 }) {}

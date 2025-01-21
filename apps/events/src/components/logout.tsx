@@ -1,15 +1,15 @@
-import { Identity } from '@graphprotocol/hypergraph';
+import { Auth } from '@graphprotocol/hypergraph-react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from '@tanstack/react-router';
 import { Button } from './ui/button';
 
 export function Logout() {
-  const { logout: graphLogout } = Identity.useGraphLogin();
+  const { logout: graphLogout } = Auth.useHypergraphAuth();
   const { logout: privyLogout } = usePrivy();
   const router = useRouter();
-  const disconnectWallet = () => {
-    graphLogout();
-    privyLogout();
+  const disconnectWallet = async () => {
+    await privyLogout();
+    graphLogout(); // needs to be called after privy logout since it triggers a re-render
     router.navigate({
       to: '/login',
     });

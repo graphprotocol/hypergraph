@@ -1,0 +1,168 @@
+import '@testing-library/jest-dom/vitest';
+import { type AnyDocumentId, Repo } from '@automerge/automerge-repo';
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { Entity, Utils } from '@graphprotocol/hypergraph';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+// biome-ignore lint/style/useImportType: <explanation>
+import React from 'react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+  HypergraphProvider,
+  useCreateEntity,
+  useDeleteEntity,
+  useQueryEntities,
+  useQueryEntity,
+  useUpdateEntity,
+} from '../src/HypergraphSpaceContext.js';
+
+afterEach(() => {
+  cleanup();
+});
+
+describe('HypergraphSpaceContext', () => {
+  class Person extends Entity.Class<Person>('Person')({
+    id: Entity.Generated(Entity.Text),
+    name: Entity.Text,
+    age: Entity.Number,
+  }) {}
+
+  class User extends Entity.Class<User>('User')({
+    id: Entity.Generated(Entity.Text),
+    name: Entity.Text,
+    email: Entity.Text,
+  }) {}
+
+  class Event extends Entity.Class<Event>('Event')({
+    id: Entity.Generated(Entity.Text),
+    name: Entity.Text,
+  }) {}
+
+  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+
+  let repo = new Repo({});
+  let wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
+    <RepoContext.Provider value={repo}>
+      <HypergraphProvider space={spaceId}>{children}</HypergraphProvider>
+    </RepoContext.Provider>
+  );
+
+  beforeEach(() => {
+    repo = new Repo({});
+    const automergeDocHandle = repo.find(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
+    // set it to ready to interact with the document
+    automergeDocHandle.doneLoading();
+
+    wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
+      <RepoContext.Provider value={repo}>
+        <HypergraphProvider space={spaceId}>{children}</HypergraphProvider>
+      </RepoContext.Provider>
+    );
+  });
+
+  describe('useCreateEntity', () => {
+    it('should be able to create an entity through the useCreateEntity Hook', async () => {
+      const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
+
+      let createdEntity: Entity.Entity<typeof Event> | null = null;
+
+      act(() => {
+        createdEntity = createEntityResult.current({ name: 'Conference' });
+      });
+
+      await waitFor(() => {
+        expect(createdEntity).not.toBeNull();
+      });
+
+      if (createdEntity != null) {
+        const { result: queryEntityResult } = renderHook(() => useQueryEntity(Event, createdEntity?.id || ''), {
+          wrapper,
+        });
+        expect(queryEntityResult.current).toEqual(createdEntity);
+      }
+
+      const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Event), { wrapper });
+      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+    });
+  });
+
+  describe('useUpdateEntity', () => {
+    it('should be able to update a created entity through the useUpdateEntity hook', async () => {
+      const { result: createEntityResult } = renderHook(() => useCreateEntity(Person), { wrapper });
+
+      let createdEntity: Entity.Entity<typeof Person> | null = null;
+
+      act(() => {
+        createdEntity = createEntityResult.current({ name: 'Test', age: 1 });
+      });
+
+      await waitFor(() => {
+        expect(createdEntity).not.toBeNull();
+        expect(createdEntity).toEqual(expect.objectContaining({ name: 'Test', age: 1, type: Person.name }));
+      });
+
+      if (createdEntity == null) {
+        throw new Error('person not created successfully');
+      }
+
+      const id = (createdEntity as Entity.Entity<typeof Person>).id;
+
+      const {
+        result: { current: updateEntity },
+      } = renderHook(() => useUpdateEntity(Person), { wrapper });
+
+      act(() => {
+        createdEntity = updateEntity(id, { name: 'Test User', age: 2112 });
+      });
+
+      expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
+
+      const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
+      expect(queryEntityResult.current).toEqual(createdEntity);
+
+      const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Person), { wrapper });
+      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+    });
+  });
+
+  describe('useDeleteEntity', () => {
+    it('should be able to delete the created entity', async () => {
+      const { result: createEntityResult } = renderHook(() => useCreateEntity(User), { wrapper });
+
+      let createdEntity: Entity.Entity<typeof User> | null = null;
+
+      act(() => {
+        createdEntity = createEntityResult.current({ name: 'Test', email: 'test.user@edgeandnode.com' });
+      });
+
+      await waitFor(() => {
+        expect(createdEntity).not.toBeNull();
+        expect(createdEntity).toEqual(
+          expect.objectContaining({ name: 'Test', email: 'test.user@edgeandnode.com', type: User.name }),
+        );
+      });
+
+      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(
+        () => useQueryEntities(User),
+        { wrapper },
+      );
+      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+
+      const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(), { wrapper });
+
+      let deleted = false;
+      act(() => {
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        deleted = deleteEntityResult.current(createdEntity!.id);
+      });
+
+      await waitFor(() => {
+        expect(deleted).toBe(true);
+      });
+
+      rerenderQueryEntities();
+
+      expect(queryEntitiesResult.current).toHaveLength(0);
+      expect(queryEntitiesResult.current).toEqual([]);
+    });
+  });
+});

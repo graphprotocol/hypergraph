@@ -1,7 +1,8 @@
 {
-  "name": "@graphprotocol/hypergraph",
+  "name": "@graphprotocol/hypergraph-react",
   "version": "0.0.1",
-  "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
+  "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
+  "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "react"],
   "publishConfig": {
     "access": "public",
     "directory": "publish",
@@ -10,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/geobrowser/graph-framework.git",
-    "directory": "packages/hypergraph"
+    "directory": "packages/react"
   },
   "license": "MIT",
   "type": "module",
@@ -24,32 +25,28 @@
   "peerDependencies": {
     "@automerge/automerge": "^2",
     "@automerge/automerge-repo": "^2",
-    "siwe": "^2.3.2",
-    "viem": "^2.22.9"
+    "@automerge/automerge-repo-react-hooks": "^2",
+    "@graphprotocol/hypergraph": "workspace:*",
+    "@xstate/store": "^2.6.2",
+    "react": "^19.0.0",
+    "viem": "^2.22.8"
   },
   "devDependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
     "@automerge/automerge-repo": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-network-websocket": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-storage-indexeddb": "^2.0.0-alpha.14",
-    "@types/uuid": "^10.0.0",
+    "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
+    "@graphprotocol/hypergraph": "workspace:*",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.7",
     "@vitejs/plugin-react": "^4.3.4",
+    "@xstate/store": "^2.6.2",
+    "react": "^19.0.0",
     "jsdom": "^26.0.0",
-    "siwe": "^2.3.2",
-    "viem": "^2.22.9"
+    "viem": "^2.22.8"
   },
   "dependencies": {
-    "@effect/experimental": "^0.37.1",
-    "@noble/ciphers": "^1.2.0",
-    "@noble/curves": "^1.8.0",
-    "@noble/hashes": "^1.7.0",
-    "@noble/secp256k1": "^2.2.3",
-    "@xmtp/xmtp-js": "^13.0.4",
-    "@xstate/store": "^2.6.2",
-    "bs58check": "^4.0.0",
     "effect": "^3.12.4",
-    "siwe": "^2.3.2",
-    "uuid": "^11.0.5",
-    "viem": "^2.22.9"
+    "siwe": "^2.3.2"
   }
 }

@@ -1,11 +1,14 @@
-import { Schema, store, useGraphFramework, useSelector } from '@graphprotocol/hypergraph';
+import { store } from '@graphprotocol/hypergraph';
+import { Hypergraph, Space as HypergraphSpace } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { useSelector } from '@xstate/store/react';
 
 import { DevTool } from '@/components/dev-tool';
 import { Todos } from '@/components/todos';
 import { Button } from '@/components/ui/button';
 import { availableAccounts } from '@/lib/availableAccounts';
 import { useEffect } from 'react';
+import { getAddress } from 'viem';
 
 export const Route = createFileRoute('/space/$spaceId')({
   component: Space,
@@ -14,16 +17,16 @@ export const Route = createFileRoute('/space/$spaceId')({
 function Space() {
   const { spaceId } = Route.useParams();
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { subscribeToSpace, inviteToSpace, isLoading } = useGraphFramework();
+  const { subscribeToSpace, inviteToSpace, loading } = Hypergraph.useHypergraphApp();
   useEffect(() => {
-    if (!isLoading) {
+    if (!loading) {
       subscribeToSpace({ spaceId });
     }
-  }, [isLoading, subscribeToSpace, spaceId]);
+  }, [loading, subscribeToSpace, spaceId]);
 
   const space = spaces.find((space) => space.id === spaceId);
 
-  if (isLoading) {
+  if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 
@@ -33,7 +36,7 @@ function Space() {
 
   return (
     <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
-      <Schema.SpacesProvider defaultSpace={space.id}>
+      <HypergraphSpace.HypergraphProvider space={spaceId}>
         <Todos />
         <h3 className="text-xl font-bold">Invite people</h3>
         <div className="flex flex-row gap-2">
@@ -44,7 +47,7 @@ function Space() {
                 onClick={() => {
                   inviteToSpace({
                     space,
-                    invitee,
+                    invitee: { accountId: getAddress(invitee.accountId) },
                   });
                 }}
               >
@@ -56,7 +59,7 @@ function Space() {
         <div className="mt-12">
           <DevTool spaceId={spaceId} />
         </div>
-      </Schema.SpacesProvider>
+      </HypergraphSpace.HypergraphProvider>
     </div>
   );
 }

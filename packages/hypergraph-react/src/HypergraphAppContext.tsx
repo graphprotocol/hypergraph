@@ -1,44 +1,63 @@
+'use client';
+
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useCallback } from 'react';
+import type { Address } from 'viem';
 
-import { verifyIdentityOwnership } from './identity/prove-ownership.js';
-import { createKey, decryptKey, encryptKey } from './key/index.js';
-import type {
-  Invitation,
-  RequestAcceptInvitationEvent,
-  RequestCreateInvitationEvent,
-  RequestCreateSpaceEvent,
-  RequestCreateUpdate,
-  RequestListInvitations,
-  RequestListSpaces,
-  RequestSubscribeToSpace,
-  Updates,
-} from './messages/index.js';
-import {
-  ResponseIdentity,
-  ResponseMessage,
-  decryptMessage,
-  deserialize,
-  encryptMessage,
-  serialize,
-} from './messages/index.js';
-import type { SpaceEvent, SpaceState } from './space-events/index.js';
-import { acceptInvitation, applyEvent, createInvitation, createSpace } from './space-events/index.js';
-import type { SpaceStorageEntry } from './store.js';
-import { store } from './store.js';
-import { assertExhaustive } from './utils/assertExhaustive.js';
-import { generateId } from './utils/generateId.js';
-import { bytesToHex, hexToBytes } from './utils/hexBytesAddressUtils.js';
+const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
 
-const decodeResponseMessage = Schema.decodeUnknownEither(ResponseMessage);
+export type HypergraphAppCtx = {
+  invitations: Array<Messages.Invitation>;
+  createSpace(): Promise<unknown>;
+  listSpaces(): void;
+  listInvitations(): void;
+  acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
+  subscribeToSpace(params: Readonly<{ spaceId: string }>): void;
+  inviteToSpace(params: Readonly<{ space: SpaceStorageEntry; invitee: { accountId: Address } }>): Promise<unknown>;
+  getUserIdentity(accountId: string): Promise<{
+    accountId: string;
+    encryptionPublicKey: string;
+    signaturePublicKey: string;
+  }>;
+  loading: boolean;
+};
 
-type Props = {
-  children: React.ReactNode;
+export const HypergraphAppContext = createContext<HypergraphAppCtx>({
+  invitations: [],
+  async createSpace() {
+    return {};
+  },
+  listSpaces() {},
+  listInvitations() {},
+  async acceptInvitation() {
+    return {};
+  },
+  subscribeToSpace() {},
+  async inviteToSpace() {
+    return {};
+  },
+  async getUserIdentity() {
+    return {
+      accountId: '',
+      encryptionPublicKey: '',
+      signaturePublicKey: '',
+    };
+  },
+  loading: true,
+});
+
+export function useHypergraphApp() {
+  return useContext<HypergraphAppCtx>(HypergraphAppContext);
+}
+
+export type HypergraphAppProviderProps = Readonly<{
   accountId: string;
   syncServer?: string;
   sessionToken?: string | null;
@@ -46,47 +65,9 @@ type Props = {
   encryptionPublicKey?: string | null;
   signaturePrivateKey?: string | null;
   signaturePublicKey?: string | null;
-};
-
-const GraphFrameworkContext = createContext<{
-  invitations: Invitation[];
-  createSpace: () => Promise<unknown>;
-  listSpaces: () => void;
-  listInvitations: () => void;
-  acceptInvitation: (params: {
-    invitation: Invitation;
-  }) => Promise<unknown>;
-  subscribeToSpace: (params: { spaceId: string }) => void;
-  getUserIdentity: (accountId: string) => Promise<{
-    accountId: string;
-    encryptionPublicKey: string;
-    signaturePublicKey: string;
-  }>;
-  inviteToSpace: (params: {
-    space: SpaceStorageEntry;
-    invitee: {
-      accountId: string;
-    };
-  }) => Promise<unknown>;
-  isLoading: boolean;
-}>({
-  invitations: [],
-  createSpace: async () => {},
-  listSpaces: () => {},
-  listInvitations: () => {},
-  acceptInvitation: async () => {},
-  subscribeToSpace: () => {},
-  getUserIdentity: async () => ({
-    accountId: '',
-    encryptionPublicKey: '',
-    signaturePublicKey: '',
-  }),
-  inviteToSpace: async () => {},
-  isLoading: true,
-});
-
-export function GraphFramework({
-  children,
+  children: React.ReactNode;
+}>;
+export function HypergraphAppProvider({
   accountId,
   syncServer = 'http://localhost:3030',
   sessionToken,
@@ -94,12 +75,13 @@ export function GraphFramework({
   encryptionPublicKey,
   signaturePrivateKey,
   signaturePublicKey,
-}: Props) {
+  children,
+}: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
-  const repo = useSelector(store, (state) => state.context.repo);
+  const repo = useSelectorStore(store, (state) => state.context.repo);
 
   const syncServerUrl = new URL(syncServer);
   const syncServerWsUrl = new URL(`/?token=${sessionToken}`, syncServerUrl.toString());
@@ -109,7 +91,7 @@ export function GraphFramework({
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     if (!sessionToken) {
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
@@ -119,17 +101,17 @@ export function GraphFramework({
 
     const onOpen = () => {
       console.log('websocket connected');
-      setIsLoading(false);
+      setLoading(false);
     };
 
     const onError = (event: Event) => {
       console.log('websocket error', event);
-      setIsLoading(false);
+      setLoading(false);
     };
 
     const onClose = (event: CloseEvent) => {
       console.log('websocket close', event);
-      setIsLoading(false);
+      setLoading(false);
     };
 
     websocketConnection.addEventListener('open', onOpen);
@@ -149,7 +131,7 @@ export function GraphFramework({
     if (!websocketConnection) return;
 
     const onMessage = async (event: MessageEvent) => {
-      const data = deserialize(event.data);
+      const data = Messages.deserialize(event.data);
       const message = decodeResponseMessage(data);
       if (message._tag === 'Right') {
         const response = message.right;
@@ -168,34 +150,34 @@ export function GraphFramework({
               console.error('No encryption private key found');
               return;
             }
-            let state: SpaceState | undefined = undefined;
+            let state: SpaceEvents.SpaceState | undefined = undefined;
 
             for (const event of response.events) {
-              const applyEventResult = await Effect.runPromiseExit(applyEvent({ state: undefined, event }));
+              const applyEventResult = await Effect.runPromiseExit(SpaceEvents.applyEvent({ state: undefined, event }));
               if (Exit.isSuccess(applyEventResult)) {
                 state = applyEventResult.value;
               }
             }
 
-            const newState = state as SpaceState;
+            const newState = state as SpaceEvents.SpaceState;
 
             let storeState = store.getSnapshot();
 
             const keys = response.keyBoxes.map((keyBox) => {
-              const key = decryptKey({
-                keyBoxCiphertext: hexToBytes(keyBox.ciphertext),
-                keyBoxNonce: hexToBytes(keyBox.nonce),
-                publicKey: hexToBytes(keyBox.authorPublicKey),
-                privateKey: hexToBytes(encryptionPrivateKey),
+              const key = Key.decryptKey({
+                keyBoxCiphertext: Utils.hexToBytes(keyBox.ciphertext),
+                keyBoxNonce: Utils.hexToBytes(keyBox.nonce),
+                publicKey: Utils.hexToBytes(keyBox.authorPublicKey),
+                privateKey: Utils.hexToBytes(encryptionPrivateKey),
               });
-              return { id: keyBox.id, key: bytesToHex(key) };
+              return { id: keyBox.id, key: Utils.bytesToHex(key) };
             });
 
             store.send({
               type: 'setSpace',
               spaceId: response.id,
-              updates: response.updates as Updates,
-              events: response.events as SpaceEvent[],
+              updates: response.updates as Messages.Updates,
+              events: response.events as Array<SpaceEvents.SpaceEvent>,
               spaceState: newState,
               keys,
             });
@@ -209,9 +191,9 @@ export function GraphFramework({
 
             if (response.updates) {
               const updates = response.updates?.updates.map((update) => {
-                return decryptMessage({
+                return Messages.decryptMessage({
                   nonceAndCiphertext: update,
-                  secretKey: hexToBytes(keys[0].key),
+                  secretKey: Utils.hexToBytes(keys[0].key),
                 });
               });
 
@@ -242,18 +224,18 @@ export function GraphFramework({
 
                 const ephemeralId = uuid();
 
-                const nonceAndCiphertext = encryptMessage({
+                const nonceAndCiphertext = Messages.encryptMessage({
                   message: lastLocalChange,
-                  secretKey: hexToBytes(space.keys[0].key),
+                  secretKey: Utils.hexToBytes(space.keys[0].key),
                 });
 
-                const messageToSend: RequestCreateUpdate = {
+                const messageToSend = {
                   type: 'create-update',
                   ephemeralId,
                   update: nonceAndCiphertext,
                   spaceId: space.id,
-                };
-                websocketConnection.send(serialize(messageToSend));
+                } as const satisfies Messages.RequestCreateUpdate;
+                websocketConnection.send(Messages.serialize(messageToSend));
               } catch (error) {
                 console.error('Error sending message', error);
               }
@@ -273,7 +255,7 @@ export function GraphFramework({
             }
 
             const applyEventResult = await Effect.runPromiseExit(
-              applyEvent({ event: response.event, state: space.state }),
+              SpaceEvents.applyEvent({ event: response.event, state: space.state }),
             );
             if (Exit.isSuccess(applyEventResult)) {
               store.send({
@@ -315,9 +297,9 @@ export function GraphFramework({
             }
 
             const automergeUpdates = response.updates.updates.map((update) => {
-              return decryptMessage({
+              return Messages.decryptMessage({
                 nonceAndCiphertext: update,
-                secretKey: hexToBytes(space.keys[0].key),
+                secretKey: Utils.hexToBytes(space.keys[0].key),
               });
             });
 
@@ -335,7 +317,7 @@ export function GraphFramework({
             break;
           }
           default: {
-            assertExhaustive(response);
+            Utils.assertExhaustive(response);
           }
         }
       }
@@ -353,7 +335,7 @@ export function GraphFramework({
       throw new Error('Missing keys');
     }
     const spaceEvent = await Effect.runPromise(
-      createSpace({
+      SpaceEvents.createSpace({
         author: {
           accountId,
           encryptionPublicKey,
@@ -362,46 +344,46 @@ export function GraphFramework({
         },
       }),
     );
-    const result = createKey({
-      privateKey: hexToBytes(encryptionPrivateKey),
-      publicKey: hexToBytes(encryptionPublicKey),
+    const result = Key.createKey({
+      privateKey: Utils.hexToBytes(encryptionPrivateKey),
+      publicKey: Utils.hexToBytes(encryptionPublicKey),
     });
 
-    const message: RequestCreateSpaceEvent = {
+    const message = {
       type: 'create-space-event',
       event: spaceEvent,
       spaceId: spaceEvent.transaction.id,
-      keyId: generateId(),
+      keyId: Utils.generateId(),
       keyBox: {
         accountId,
-        ciphertext: bytesToHex(result.keyBoxCiphertext),
-        nonce: bytesToHex(result.keyBoxNonce),
+        ciphertext: Utils.bytesToHex(result.keyBoxCiphertext),
+        nonce: Utils.bytesToHex(result.keyBoxNonce),
         authorPublicKey: encryptionPublicKey,
       },
-    };
-    websocketConnection?.send(serialize(message));
+    } as const satisfies Messages.RequestCreateSpaceEvent;
+    websocketConnection?.send(Messages.serialize(message));
   };
 
   const listSpaces = useCallback(() => {
-    const message: RequestListSpaces = { type: 'list-spaces' };
-    websocketConnection?.send(serialize(message));
+    const message: Messages.RequestListSpaces = { type: 'list-spaces' };
+    websocketConnection?.send(Messages.serialize(message));
   }, [websocketConnection]);
 
   const listInvitations = useCallback(() => {
-    const message: RequestListInvitations = { type: 'list-invitations' };
-    websocketConnection?.send(serialize(message));
+    const message: Messages.RequestListInvitations = { type: 'list-invitations' };
+    websocketConnection?.send(Messages.serialize(message));
   }, [websocketConnection]);
 
   const acceptInvitationForContext = async ({
     invitation,
-  }: {
-    invitation: Invitation;
-  }) => {
+  }: Readonly<{
+    invitation: Messages.Invitation;
+  }>) => {
     if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
       throw new Error('Missing keys');
     }
     const spaceEvent = await Effect.runPromiseExit(
-      acceptInvitation({
+      SpaceEvents.acceptInvitation({
         author: {
           accountId,
           signaturePublicKey,
@@ -415,24 +397,24 @@ export function GraphFramework({
       console.error('Failed to accept invitation', spaceEvent);
       return;
     }
-    const message: RequestAcceptInvitationEvent = {
+    const message: Messages.RequestAcceptInvitationEvent = {
       type: 'accept-invitation-event',
       event: spaceEvent.value,
       spaceId: invitation.spaceId,
     };
-    websocketConnection?.send(serialize(message));
+    websocketConnection?.send(Messages.serialize(message));
 
     // temporary until we have define a strategy for accepting invitations response
     setTimeout(() => {
-      const message2: RequestListInvitations = { type: 'list-invitations' };
-      websocketConnection?.send(serialize(message2));
+      const message2: Messages.RequestListInvitations = { type: 'list-invitations' };
+      websocketConnection?.send(Messages.serialize(message2));
     }, 1000);
   };
 
   const subscribeToSpace = useCallback(
     (params: { spaceId: string }) => {
-      const message: RequestSubscribeToSpace = { type: 'subscribe-space', id: params.spaceId };
-      websocketConnection?.send(serialize(message));
+      const message: Messages.RequestSubscribeToSpace = { type: 'subscribe-space', id: params.spaceId };
+      websocketConnection?.send(Messages.serialize(message));
     },
     [websocketConnection],
   );
@@ -457,10 +439,10 @@ export function GraphFramework({
     if (res.status !== 200) {
       throw new Error('Failed to fetch identity');
     }
-    const resDecoded = Schema.decodeUnknownSync(ResponseIdentity)(await res.json());
+    const resDecoded = Schema.decodeUnknownSync(Messages.ResponseIdentity)(await res.json());
 
     if (
-      !(await verifyIdentityOwnership(
+      !(await Identity.verifyIdentityOwnership(
         resDecoded.accountId,
         resDecoded.signaturePublicKey,
         resDecoded.accountProof,
@@ -488,12 +470,12 @@ export function GraphFramework({
   const inviteToSpace = async ({
     space,
     invitee,
-  }: {
+  }: Readonly<{
     space: SpaceStorageEntry;
     invitee: {
       accountId: string;
     };
-  }) => {
+  }>) => {
     if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
       throw new Error('Missing keys');
     }
@@ -503,7 +485,7 @@ export function GraphFramework({
     }
     const inviteeWithKeys = await getUserIdentity(invitee.accountId);
     const spaceEvent = await Effect.runPromiseExit(
-      createInvitation({
+      SpaceEvents.createInvitation({
         author: {
           accountId,
           signaturePublicKey,
@@ -520,31 +502,31 @@ export function GraphFramework({
     }
 
     const keyBoxes = space.keys.map((key) => {
-      const keyBox = encryptKey({
-        key: hexToBytes(key.key),
-        publicKey: hexToBytes(inviteeWithKeys.encryptionPublicKey),
-        privateKey: hexToBytes(encryptionPrivateKey),
+      const keyBox = Key.encryptKey({
+        key: Utils.hexToBytes(key.key),
+        publicKey: Utils.hexToBytes(inviteeWithKeys.encryptionPublicKey),
+        privateKey: Utils.hexToBytes(encryptionPrivateKey),
       });
       return {
         id: key.id,
-        ciphertext: bytesToHex(keyBox.keyBoxCiphertext),
-        nonce: bytesToHex(keyBox.keyBoxNonce),
+        ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
+        nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
         authorPublicKey: encryptionPublicKey,
         accountId: invitee.accountId,
       };
     });
 
-    const message: RequestCreateInvitationEvent = {
+    const message: Messages.RequestCreateInvitationEvent = {
       type: 'create-invitation-event',
       event: spaceEvent.value,
       spaceId: space.id,
       keyBoxes,
     };
-    websocketConnection?.send(serialize(message));
+    websocketConnection?.send(Messages.serialize(message));
   };
 
   return (
-    <GraphFrameworkContext.Provider
+    <HypergraphAppContext.Provider
       value={{
         invitations,
         createSpace: createSpaceForContext,
@@ -554,16 +536,10 @@ export function GraphFramework({
         subscribeToSpace,
         getUserIdentity,
         inviteToSpace,
-        isLoading,
+        loading,
       }}
     >
       <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>
-    </GraphFrameworkContext.Provider>
+    </HypergraphAppContext.Provider>
   );
 }
-
-export const useGraphFramework = () => {
-  return useContext(GraphFrameworkContext);
-};
-
-export const useSelector = useSelectorStore;

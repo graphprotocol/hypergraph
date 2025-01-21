@@ -1,9 +1,11 @@
-import { store, useGraphFramework, useSelector } from '@graphprotocol/hypergraph';
+import { store } from '@graphprotocol/hypergraph';
+import { Hypergraph } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
+import { useSelector } from '@xstate/store/react';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect } from 'react';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -11,16 +13,19 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, isLoading } = useGraphFramework();
+  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } =
+    Hypergraph.useHypergraphApp();
+
+  console.log('Home page', { loading });
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!loading) {
       listSpaces();
       listInvitations();
     }
-  }, [listSpaces, listInvitations, isLoading]);
+  }, [listSpaces, listInvitations, loading]);
 
-  if (isLoading) {
+  if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 
@@ -70,7 +75,7 @@ function Index() {
         {spaces.map((space) => {
           return (
             <li key={space.id}>
-              <Link to={`/space/${space.id}`}>
+              <Link to="/space/$spaceId" params={{ spaceId: space.id }}>
                 <Card>
                   <CardHeader>
                     <CardTitle>{space.id}</CardTitle>
