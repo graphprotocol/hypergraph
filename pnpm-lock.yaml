@@ -208,6 +208,12 @@ importers:
 
   packages/hypergraph:
     dependencies:
+      '@automerge/automerge':
+        specifier: ^v2.2.9-alpha.3
+        version: 2.2.9-betterpatches.0
+      '@automerge/automerge-repo':
+        specifier: ^2.0.0-alpha.14
+        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(typescript@5.7.3)
       '@effect/experimental':
         specifier: ^0.37.1
         version: 0.37.1(@effect/platform@0.72.2(effect@3.12.4))(effect@3.12.4)(ws@8.13.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
@@ -245,18 +251,6 @@ importers:
         specifier: ^2.22.9
         version: 2.22.9(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)
     devDependencies:
-      '@automerge/automerge':
-        specifier: ^v2.2.9-alpha.3
-        version: 2.2.9-betterpatches.0
-      '@automerge/automerge-repo':
-        specifier: ^2.0.0-alpha.14
-        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(typescript@5.7.3)
-      '@automerge/automerge-repo-network-websocket':
-        specifier: ^2.0.0-alpha.14
-        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)
-      '@automerge/automerge-repo-storage-indexeddb':
-        specifier: ^2.0.0-alpha.14
-        version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(typescript@5.7.3)
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
@@ -270,13 +264,6 @@ importers:
 
   packages/hypergraph-react:
     dependencies:
-      effect:
-        specifier: ^3.12.4
-        version: 3.12.4
-      siwe:
-        specifier: ^2.3.2
-        version: 2.3.2(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-    devDependencies:
       '@automerge/automerge':
         specifier: ^v2.2.9-alpha.3
         version: 2.2.9-betterpatches.0
@@ -286,6 +273,16 @@ importers:
       '@automerge/automerge-repo-react-hooks':
         specifier: ^2.0.0-alpha.14
         version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)
+      effect:
+        specifier: ^3.12.4
+        version: 3.12.4
+      siwe:
+        specifier: ^2.3.2
+        version: 2.3.2(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      viem:
+        specifier: ^2.22.9
+        version: 2.22.9(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)
+    devDependencies:
       '@graphprotocol/hypergraph':
         specifier: workspace:*
         version: link:../hypergraph/publish
@@ -310,9 +307,6 @@ importers:
       react:
         specifier: ^19.0.0
         version: 19.0.0
-      viem:
-        specifier: ^2.22.8
-        version: 2.22.9(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)
     publishDirectory: publish
 
 packages:
@@ -340,17 +334,11 @@ packages:
   '@asamuzakjp/css-color@2.8.2':
     resolution: {integrity: sha512-RtWv9jFN2/bLExuZgFFZ0I3pWWeezAHGgrmjqGGWclATl1aDe3yhCUaI0Ilkp6OCk9zX7+FjvDasEX8Q9Rxc5w==}
 
-  '@automerge/automerge-repo-network-websocket@2.0.0-collectionsync-alpha.1':
-    resolution: {integrity: sha512-AVsh5virUN+mIXPhCPhdVT+5A/WVSk4SBcR//kf4iR2doGKI7zsDXjTIzAHpJaWTe7wFQS/CmwAI7fPnIzdlOQ==}
-
   '@automerge/automerge-repo-react-hooks@2.0.0-collectionsync-alpha.1':
     resolution: {integrity: sha512-7aqn2VwnBJ+ok696Pimod2kxn3d02QrOhAYTCZIKF2DgKtp8lv6mQE1N2zSLuITjS8qud/SlcHckjLaDSA39/w==}
     peerDependencies:
       react: '>16.8.0'
       react-dom: '>16.8.0'
-
-  '@automerge/automerge-repo-storage-indexeddb@2.0.0-collectionsync-alpha.1':
-    resolution: {integrity: sha512-eK9CJLutYGWg0BQGathQjE9bI/h3/HQsiR3OWLluloQkkPOcZHTPG2P9UUTZ2ub/eyVB2GdU8MpXB6iDSiqJUw==}
 
   '@automerge/automerge-repo@2.0.0-collectionsync-alpha.1':
     resolution: {integrity: sha512-IRjwNOHOCL/E+qqKAqyLro/K/MrTCTsBGyXwlvgN19lHV0v2mMngXJUHF3iSGS2DY7nTeP4dSzGR/8+uFXDLSQ==}
@@ -4836,23 +4824,6 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.3
       lru-cache: 11.0.2
 
-  '@automerge/automerge-repo-network-websocket@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@automerge/automerge-repo': 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(typescript@5.7.3)
-      cbor-x: 1.6.0
-      debug: 4.3.7
-      eventemitter3: 5.0.1
-      isomorphic-ws: 5.0.0(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      ws: 8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - bufferutil
-      - supports-color
-      - typescript
-      - utf-8-validate
-
   '@automerge/automerge-repo-react-hooks@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)':
     dependencies:
       '@automerge/automerge': 2.2.8
@@ -4861,16 +4832,6 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
       react-usestateref: 1.0.9(react@19.0.0)
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - supports-color
-      - typescript
-
-  '@automerge/automerge-repo-storage-indexeddb@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(typescript@5.7.3)':
-    dependencies:
-      '@automerge/automerge-repo': 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.15))(@types/node@22.10.7)(typescript@5.7.3)
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
