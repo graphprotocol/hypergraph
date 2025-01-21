@@ -7,7 +7,7 @@ jobs:
     name: Install deps, build required package, typecheck, lint and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v3
         with:
           version: 9
