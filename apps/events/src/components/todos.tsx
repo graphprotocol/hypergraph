@@ -8,14 +8,9 @@ import { Input } from './ui/input';
 
 export const Todos = () => {
   const todos = Space.useQueryEntities(Todo);
-  const createEntity = Space.useCreateEntity(Todo, {
-    throwOnError(error) {
-      console.error(error);
-      return true;
-    },
-  });
+  const createEntity = Space.useCreateEntity(Todo);
   const updateEntity = Space.useUpdateEntity(Todo);
-  const deleteEntity = Space.useDeleteEntity(Todo);
+  const deleteEntity = Space.useDeleteEntity();
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
   return (
@@ -25,23 +20,22 @@ export const Todos = () => {
         <Input type="text" value={newTodoTitle} onChange={(e) => setNewTodoTitle(e.target.value)} />
         <Button
           onClick={() => {
-            createEntity.mutate({ name: newTodoTitle, completed: false });
+            createEntity({ name: newTodoTitle, completed: false });
             setNewTodoTitle('');
           }}
         >
           Create Todo
         </Button>
-        <div>{JSON.stringify(createEntity.error ?? {})}</div>
       </div>
-      {(todos.data ?? []).map((todo) => (
+      {(todos ?? []).map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <input
             type="checkbox"
             checked={todo.completed}
-            onChange={(e) => updateEntity.mutate({ id: todo.id, data: { completed: e.target.checked } })}
+            onChange={(e) => updateEntity({ id: todo.id, data: { completed: e.target.checked } })}
           />
-          <Button onClick={() => deleteEntity.mutate({ id: todo.id })}>Delete</Button>
+          <Button onClick={() => deleteEntity(todo.id)}>Delete</Button>
         </div>
       ))}
     </>
