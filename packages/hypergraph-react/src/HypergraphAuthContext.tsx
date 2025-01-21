@@ -14,7 +14,7 @@ export type HypergraphAuthCtx = {
   getAccountId(): string | null;
   getIdentity(): Identity.Identity | null;
   authenticated: boolean;
-  login(): void;
+  login(signer: Identity.Signer): Promise<void>;
   logout(): void;
   setIdentityAndSessionToken(account: Identity.Identity & { sessionToken: string }): void;
 };
@@ -30,7 +30,7 @@ export const HypergraphAuthContext = createContext<HypergraphAuthCtx>({
     return null;
   },
   authenticated: false,
-  login() {},
+  async login() {},
   logout() {},
   setIdentityAndSessionToken() {},
 });
@@ -250,7 +250,7 @@ export function HypergraphAuthProvider({
     Identity.storeKeys(storage, accountId, keys);
   }
 
-  async function login() {
+  async function login(signer: Identity.Signer) {
     if (!signer) {
       return;
     }

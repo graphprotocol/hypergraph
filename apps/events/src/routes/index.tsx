@@ -2,13 +2,10 @@ import { store } from '@graphprotocol/hypergraph';
 import { Hypergraph } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect } from 'react';
-
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-type UnknownRoute = any;
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -78,7 +75,7 @@ function Index() {
         {spaces.map((space) => {
           return (
             <li key={space.id}>
-              <Link to={`/space/${space.id}` as UnknownRoute}>
+              <Link to="/space/$spaceId" params={{ spaceId: space.id }}>
                 <Card>
                   <CardHeader>
                     <CardTitle>{space.id}</CardTitle>
