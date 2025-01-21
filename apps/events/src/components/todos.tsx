@@ -25,7 +25,7 @@ export const Todos = () => {
           Create Todo
         </Button>
       </div>
-      {(todos ?? []).map((todo) => (
+      {todos.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <input
