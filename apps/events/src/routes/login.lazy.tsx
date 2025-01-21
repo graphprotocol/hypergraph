@@ -1,12 +1,14 @@
-import { Button } from '@/components/ui/button';
-import { availableAccounts } from '@/lib/availableAccounts';
-import { Identity } from '@graphprotocol/hypergraph';
+import type { Identity } from '@graphprotocol/hypergraph';
+import { Auth } from '@graphprotocol/hypergraph-react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createWalletClient, custom } from 'viem';
 import { mainnet } from 'viem/chains';
+
+import { Button } from '@/components/ui/button';
+import { availableAccounts } from '@/lib/availableAccounts';
 
 export const Route = createLazyFileRoute('/login')({
   component: () => <Login />,
@@ -15,7 +17,7 @@ export const Route = createLazyFileRoute('/login')({
 function Login() {
   const { ready: privyReady, login: privyLogin, signMessage, authenticated: privyAuthenticated } = usePrivy();
   const { ready: walletsReady, wallets } = useWallets();
-  const { setIdentityAndSessionToken, login: hypergraphLogin } = Identity.useGraphLogin();
+  const { setIdentityAndSessionToken, login: hypergraphLogin } = Auth.useHypergraphAuth();
   const { navigate } = useRouter();
   const [hypergraphLoginStarted, setHypergraphLoginStarted] = useState(false);
 
