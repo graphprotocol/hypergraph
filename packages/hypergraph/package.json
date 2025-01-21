@@ -21,24 +21,14 @@
     "build": "tsc -b tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
     "test": "vitest"
   },
-  "peerDependencies": {
-    "@automerge/automerge": "^2",
-    "@automerge/automerge-repo": "^2",
-    "siwe": "^2.3.2",
-    "viem": "^2.22.9"
-  },
   "devDependencies": {
-    "@automerge/automerge": "^v2.2.9-alpha.3",
-    "@automerge/automerge-repo": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-network-websocket": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-storage-indexeddb": "^2.0.0-alpha.14",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "jsdom": "^26.0.0",
-    "siwe": "^2.3.2",
-    "viem": "^2.22.9"
+    "jsdom": "^26.0.0"
   },
   "dependencies": {
+    "@automerge/automerge": "^v2.2.9-alpha.3",
+    "@automerge/automerge-repo": "^2.0.0-alpha.14",
     "@effect/experimental": "^0.37.1",
     "@noble/ciphers": "^1.2.0",
     "@noble/curves": "^1.8.0",

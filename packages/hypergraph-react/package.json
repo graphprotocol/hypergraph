@@ -23,18 +23,10 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "@automerge/automerge": "^2",
-    "@automerge/automerge-repo": "^2",
-    "@automerge/automerge-repo-react-hooks": "^2",
     "@graphprotocol/hypergraph": "workspace:*",
-    "@xstate/store": "^2.6.2",
-    "react": "^19.0.0",
-    "viem": "^2.22.8"
+    "react": "^19.0.0"
   },
   "devDependencies": {
-    "@automerge/automerge": "^v2.2.9-alpha.3",
-    "@automerge/automerge-repo": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
     "@graphprotocol/hypergraph": "workspace:*",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
@@ -42,11 +34,14 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@xstate/store": "^2.6.2",
     "react": "^19.0.0",
-    "jsdom": "^26.0.0",
-    "viem": "^2.22.8"
+    "jsdom": "^26.0.0"
   },
   "dependencies": {
+    "@automerge/automerge": "^v2.2.9-alpha.3",
+    "@automerge/automerge-repo": "^2.0.0-alpha.14",
+    "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
     "effect": "^3.12.4",
-    "siwe": "^2.3.2"
+    "siwe": "^2.3.2",
+    "viem": "^2.22.9"
   }
 }
