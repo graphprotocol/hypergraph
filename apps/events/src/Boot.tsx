@@ -1,7 +1,8 @@
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 
-import { Identity } from '@graphprotocol/hypergraph';
+import { Auth } from '@graphprotocol/hypergraph-react';
 import { PrivyProvider } from '@privy-io/react-auth';
+
 import { routeTree } from './routeTree.gen';
 
 // Create a new router instance
@@ -32,9 +33,9 @@ export function Boot() {
         },
       }}
     >
-      <Identity.GraphLogin storage={localStorage}>
+      <Auth.HypergraphAuthProvider storage={localStorage}>
         <RouterProvider router={router} />
-      </Identity.GraphLogin>
+      </Auth.HypergraphAuthProvider>
     </PrivyProvider>
   );
 }

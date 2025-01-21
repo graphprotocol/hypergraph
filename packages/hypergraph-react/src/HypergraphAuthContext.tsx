@@ -58,7 +58,6 @@ export function useHypergraphSessionToken() {
 
 export type HypergraphAuthProviderProps = Readonly<{
   storage: Identity.Storage;
-  signer: Identity.Signer | null;
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
@@ -70,7 +69,6 @@ export type HypergraphAuthProviderProps = Readonly<{
 //      (and store it in the sync server)
 export function HypergraphAuthProvider({
   storage,
-  signer,
   syncServerUri = 'http://localhost:3030',
   chainId = 80451,
   children,
