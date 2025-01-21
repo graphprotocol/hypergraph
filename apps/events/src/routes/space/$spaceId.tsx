@@ -36,7 +36,7 @@ function Space() {
 
   return (
     <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
-      <HypergraphSpace.HypergraphSpaceProvider defaultSpaceId={space.id} spaces={[space.id]}>
+      <HypergraphSpace.HypergraphProvider space={spaceId}>
         <Todos />
         <h3 className="text-xl font-bold">Invite people</h3>
         <div className="flex flex-row gap-2">
@@ -59,7 +59,7 @@ function Space() {
         <div className="mt-12">
           <DevTool spaceId={spaceId} />
         </div>
-      </HypergraphSpace.HypergraphSpaceProvider>
+      </HypergraphSpace.HypergraphProvider>
     </div>
   );
 }

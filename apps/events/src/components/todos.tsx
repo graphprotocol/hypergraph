@@ -1,7 +1,5 @@
-import { useState } from 'react';
-
 import { Space } from '@graphprotocol/hypergraph-react';
-
+import { useState } from 'react';
 import { Todo } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -33,7 +31,7 @@ export const Todos = () => {
           <input
             type="checkbox"
             checked={todo.completed}
-            onChange={(e) => updateEntity({ id: todo.id, data: { completed: e.target.checked } })}
+            onChange={(e) => updateEntity(todo.id, { completed: e.target.checked })}
           />
           <Button onClick={() => deleteEntity(todo.id)}>Delete</Button>
         </div>

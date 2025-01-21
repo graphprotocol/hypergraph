@@ -1,13 +1,12 @@
 'use client';
 
+import { Identity, Messages, store } from '@graphprotocol/hypergraph';
 import * as Schema from 'effect/Schema';
 import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-
-import { Identity, Messages, store } from '@graphprotocol/hypergraph';
 import { type Address, getAddress } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
 export type HypergraphAuthCtx = {
   getSessionToken(): string | null;

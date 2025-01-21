@@ -2,15 +2,14 @@
 
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { Address } from 'viem';
-
-import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
 import { useCallback } from 'react';
+import type { Address } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
 
@@ -84,7 +83,6 @@ export function HypergraphAppProvider({
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelectorStore(store, (state) => state.context.repo);
 
-  console.log('Sync server:', syncServer);
   const syncServerUrl = new URL(syncServer);
   const syncServerWsUrl = new URL(`/?token=${sessionToken}`, syncServerUrl.toString());
   syncServerWsUrl.protocol = 'ws:';
