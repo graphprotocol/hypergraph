@@ -1,9 +1,9 @@
 import type { Identity } from '@graphprotocol/hypergraph';
 import { Auth } from '@graphprotocol/hypergraph-react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createWalletClient, custom } from 'viem';
 import { mainnet } from 'viem/chains';
 
@@ -15,53 +15,51 @@ export const Route = createLazyFileRoute('/login')({
 });
 
 function Login() {
-  const { ready: privyReady, login: privyLogin, signMessage, authenticated: privyAuthenticated } = usePrivy();
-  const { ready: walletsReady, wallets } = useWallets();
   const { setIdentityAndSessionToken, login: hypergraphLogin } = Auth.useHypergraphAuth();
+  const { ready: privyReady, signMessage } = usePrivy();
+  const { ready: walletsReady, wallets } = useWallets();
+  const { login: privyLogin } = useLogin({
+    onComplete: async ({ user }) => {
+      try {
+        if (!walletsReady || !wallets.length) {
+          throw new Error('Wallets not ready');
+        }
+        const wallet = wallets.find((wallet) => wallet.address === user.wallet?.address);
+        if (!wallet) {
+          throw new Error('Embedded wallet not found');
+        }
+        const privyProvider = await wallet.getEthereumProvider();
+        const walletClient = createWalletClient({
+          chain: mainnet,
+          transport: custom(privyProvider),
+        });
+
+        const signer: Identity.Signer = {
+          getAddress: async () => {
+            const [address] = await walletClient.getAddresses();
+            return address;
+          },
+          signMessage: async (message: string) => {
+            if (wallet.walletClientType === 'privy') {
+              const { signature } = await signMessage({ message });
+              return signature;
+            }
+            const [address] = await walletClient.getAddresses();
+            return await walletClient.signMessage({ account: address, message });
+          },
+        };
+
+        await hypergraphLogin(signer);
+        navigate({ to: '/' });
+      } catch (error) {
+        setHypergraphLoginStarted(false);
+        alert('Failed to login');
+        console.error(error);
+      }
+    },
+  });
   const { navigate } = useRouter();
   const [hypergraphLoginStarted, setHypergraphLoginStarted] = useState(false);
-
-  useEffect(() => {
-    if (
-      !hypergraphLoginStarted && // avoid re-running the effect to often
-      privyAuthenticated && // privy must be authenticated to run it
-      walletsReady && // wallets must be ready to run it
-      wallets.length > 0 // wallets must have at least one wallet to run it
-    ) {
-      setHypergraphLoginStarted(true);
-      (async () => {
-        try {
-          const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
-          const privyProvider = await embeddedWallet.getEthereumProvider();
-          const walletClient = createWalletClient({
-            chain: mainnet,
-            transport: custom(privyProvider),
-          });
-
-          const signer: Identity.Signer = {
-            getAddress: async () => {
-              const [address] = await walletClient.getAddresses();
-              return address;
-            },
-            signMessage: async (message: string) => {
-              if (embeddedWallet.walletClientType === 'privy') {
-                const { signature } = await signMessage({ message });
-                return signature;
-              }
-              const [address] = await walletClient.getAddresses();
-              return await walletClient.signMessage({ account: address, message });
-            },
-          };
-
-          await hypergraphLogin(signer);
-          navigate({ to: '/' });
-        } catch (error) {
-          alert('Failed to login');
-          console.error(error);
-        }
-      })();
-    }
-  }, [hypergraphLoginStarted, walletsReady, wallets, signMessage, hypergraphLogin, navigate, privyAuthenticated]);
 
   return (
     <div className="flex flex-1 justify-center items-center flex-col gap-4">
