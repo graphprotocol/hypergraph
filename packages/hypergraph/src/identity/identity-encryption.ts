@@ -1,5 +1,7 @@
+import { gcm } from '@noble/ciphers/aes';
 import { randomBytes } from '@noble/ciphers/webcrypto';
-import { Ciphertext, decrypt, encrypt } from '@xmtp/xmtp-js';
+import { hkdf } from '@noble/hashes/hkdf';
+import { sha256 } from '@noble/hashes/sha256';
 import type { Hex } from 'viem';
 import { verifyMessage } from 'viem';
 
@@ -8,7 +10,43 @@ import type { IdentityKeys, Signer } from './types.js';
 
 // Adapted from the XMTP approach to encrypt keys
 // See: https://github.com/xmtp/xmtp-js/blob/8d6e5a65813902926baac8150a648587acbaad92/sdks/js-sdk/src/keystore/providers/NetworkKeyManager.ts#L79-L116
-// (We use their encrypt/decrypt functions, safer than re-implementing them).
+// (We reimplement their encrypt/decrypt functions using noble).
+
+const hkdfDeriveKey = (secret: Uint8Array, salt: Uint8Array): Uint8Array => {
+  return hkdf(sha256, secret, salt, '', 32);
+};
+
+const encrypt = (msg: Uint8Array, secret: Uint8Array): string => {
+  const hkdfSalt = randomBytes(32);
+  const gcmNonce = randomBytes(12);
+  const derivedKey = hkdfDeriveKey(secret, hkdfSalt);
+
+  const aes = gcm(derivedKey, gcmNonce);
+
+  const ciphertext = aes.encrypt(msg);
+
+  // TODO: Use Effect Schema and better serialization?
+  const ciphertextJson = JSON.stringify({
+    aes256GcmHkdfSha256: {
+      payload: bytesToHex(ciphertext),
+      hkdfSalt: bytesToHex(hkdfSalt),
+      gcmNonce: bytesToHex(gcmNonce),
+    },
+  });
+  return bytesToHex(new TextEncoder().encode(ciphertextJson));
+};
+
+const decrypt = (ciphertext: string, secret: Uint8Array): Uint8Array => {
+  const ciphertextJson = new TextDecoder().decode(hexToBytes(ciphertext));
+  const { aes256GcmHkdfSha256 } = JSON.parse(ciphertextJson);
+  const hkdfSalt = hexToBytes(aes256GcmHkdfSha256.hkdfSalt);
+  const gcmNonce = hexToBytes(aes256GcmHkdfSha256.gcmNonce);
+  const derivedKey = hkdfDeriveKey(secret, hkdfSalt);
+
+  const aes = gcm(derivedKey, gcmNonce);
+
+  return aes.decrypt(hexToBytes(aes256GcmHkdfSha256.payload));
+};
 
 const signatureMessage = (nonce: Uint8Array): string => {
   return `The Graph: sign to encrypt/decrypt identity keys.\nNonce: ${bytesToHex(nonce)}\n`;
@@ -42,7 +80,7 @@ export const encryptIdentity = async (
     keys.signaturePrivateKey,
   ].join('\n');
   const keysMsg = new TextEncoder().encode(keysTxt);
-  const ciphertext = bytesToHex((await encrypt(keysMsg, secretKey)).toBytes());
+  const ciphertext = encrypt(keysMsg, secretKey);
   return { ciphertext, nonce: bytesToHex(nonce) };
 };
 
@@ -66,9 +104,8 @@ export const decryptIdentity = async (
   }
   const secretKey = hexToBytes(signature);
   let keysMsg: Uint8Array;
-  const ciphertextObj = Ciphertext.fromBytes(hexToBytes(ciphertext));
   try {
-    keysMsg = await decrypt(ciphertextObj, secretKey);
+    keysMsg = await decrypt(ciphertext, secretKey);
   } catch (e) {
     // See https://github.com/xmtp/xmtp-js/blob/8d6e5a65813902926baac8150a648587acbaad92/sdks/js-sdk/src/keystore/providers/NetworkKeyManager.ts#L142-L146
     if (secretKey.length !== 65) {
@@ -82,7 +119,7 @@ export const decryptIdentity = async (
     } else {
       newSecret = new Uint8Array([...newSecret, lastByte - 27]);
     }
-    keysMsg = await decrypt(ciphertextObj, newSecret);
+    keysMsg = await decrypt(ciphertext, newSecret);
   }
   const keysTxt = new TextDecoder().decode(keysMsg);
   const [encryptionPublicKey, encryptionPrivateKey, signaturePublicKey, signaturePrivateKey] = keysTxt.split('\n');
