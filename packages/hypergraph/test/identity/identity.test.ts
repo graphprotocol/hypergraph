@@ -15,7 +15,7 @@ import {
   wipeKeys,
   wipeSyncServerSessionToken,
 } from '../../src/identity/auth-storage.js';
-import { createIdentity } from '../../src/identity/create-identity.js';
+import { createIdentityKeys } from '../../src/identity/create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from '../../src/identity/identity-encryption.js';
 import { proveIdentityOwnership, verifyIdentityOwnership } from '../../src/identity/prove-ownership.js';
 import type { Signer } from '../../src/identity/types.js';
@@ -48,7 +48,7 @@ const accountSigner = (account: PrivateKeyAccount): Signer => {
 
 describe('createIdentity', () => {
   it('should generate an identity with signing and encryption keys', () => {
-    const id = createIdentity();
+    const id = createIdentityKeys();
     expect(id).toBeDefined();
     expect(id.encryptionPublicKey).toBeDefined();
     expect(id.encryptionPrivateKey).toBeDefined();
@@ -60,7 +60,7 @@ describe('createIdentity', () => {
   });
   it('should generate an encryption keys able to encrypt and decrypt', () => {
     // Check that we can use the encryption keypair to encrypt and decrypt
-    const id = createIdentity();
+    const id = createIdentityKeys();
     const nonce = randomBytes(24);
     const message = new TextEncoder().encode('Hello, world!');
 
@@ -82,7 +82,7 @@ describe('createIdentity', () => {
   });
   it('should generate a signature keys able to sign and verify', () => {
     // Check that we can use the signature keypair to sign and verify
-    const id = createIdentity();
+    const id = createIdentityKeys();
     const message = new TextEncoder().encode('Hello, world!');
     const sig = secp256k1.sign(message, hexToBytes(id.signaturePrivateKey));
     const valid = secp256k1.verify(sig, message, hexToBytes(id.signaturePublicKey));
@@ -97,7 +97,7 @@ describe('identity encryption', () => {
     const account = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
     const signer = accountSigner(account);
     const accountId = await signer.getAddress();
-    const keys = createIdentity();
+    const keys = createIdentityKeys();
     const { ciphertext, nonce } = await encryptIdentity(signer, accountId, keys);
     const decrypted = await decryptIdentity(signer, accountId, ciphertext, nonce);
 
@@ -119,7 +119,7 @@ describe('auth/identity storage', () => {
   });
   it('stores, loads and wipes keys', () => {
     expect(loadKeys(storageMock, '0x1234')).toBeNull();
-    const keys = createIdentity();
+    const keys = createIdentityKeys();
     storeKeys(storageMock, '0x1234', keys);
     expect(loadKeys(storageMock, '0x1234')).toEqual(keys);
     wipeKeys(storageMock, '0x1234');
@@ -142,7 +142,7 @@ describe('identity ownership proofs', () => {
 
     const signer = accountSigner(account);
     const accountId = await signer.getAddress();
-    const keys = createIdentity();
+    const keys = createIdentityKeys();
     const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountId, keys);
 
     const valid = await verifyIdentityOwnership(accountId, keys.signaturePublicKey, accountProof, keyProof);
@@ -153,14 +153,14 @@ describe('identity ownership proofs', () => {
     const account = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
     const signer = accountSigner(account);
     const accountId = await signer.getAddress();
-    const keys = createIdentity();
+    const keys = createIdentityKeys();
     const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountId, keys);
 
     // Create invalid proofs using a different account
     const account2 = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
     const signer2 = accountSigner(account2);
     const accountId2 = await signer2.getAddress();
-    const keys2 = createIdentity();
+    const keys2 = createIdentityKeys();
     const { accountProof: accountProof2, keyProof: keyProof2 } = await proveIdentityOwnership(
       signer2,
       accountId2,

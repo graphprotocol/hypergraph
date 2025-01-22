@@ -1,6 +1,6 @@
 import { Schema } from 'effect';
 import { deserialize, serialize } from '../messages/index.js';
-import { type Keys, KeysSchema, type Storage } from './types.js';
+import { type IdentityKeys, KeysSchema, type Storage } from './types.js';
 
 export const getEnv = (): 'dev' | 'production' | 'local' => {
   return 'dev';
@@ -14,7 +14,7 @@ export const buildKeysStorageKey = (walletAddress: string) =>
 export const buildSessionTokenStorageKey = (walletAddress: string) =>
   walletAddress ? `hypergraph:${getEnv()}:session-token:${walletAddress}` : '';
 
-export const loadKeys = (storage: Storage, walletAddress: string): Keys | null => {
+export const loadKeys = (storage: Storage, walletAddress: string): IdentityKeys | null => {
   const accessKey = buildKeysStorageKey(walletAddress);
   const val = storage.getItem(accessKey);
   if (!val) {
@@ -29,7 +29,7 @@ export const loadKeys = (storage: Storage, walletAddress: string): Keys | null =
   };
 };
 
-export const storeKeys = (storage: Storage, walletAddress: string, keys: Keys) => {
+export const storeKeys = (storage: Storage, walletAddress: string, keys: IdentityKeys) => {
   const keysMsg = serialize(Schema.encodeSync(KeysSchema)(keys));
   storage.setItem(buildKeysStorageKey(walletAddress), keysMsg);
 };

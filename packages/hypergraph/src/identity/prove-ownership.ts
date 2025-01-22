@@ -2,7 +2,7 @@ import { type Hex, verifyMessage } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
 import { publicKeyToAddress } from '../utils/index.js';
-import type { Keys, Signer } from './types.js';
+import type { IdentityKeys, Signer } from './types.js';
 
 export const getAccountProofMessage = (accountId: string, publicKey: string): string => {
   return `This message proves I am the owner of the account ${accountId} and the public key ${publicKey}`;
@@ -15,7 +15,7 @@ export const getKeyProofMessage = (accountId: string, publicKey: string): string
 export const proveIdentityOwnership = async (
   signer: Signer,
   accountId: string,
-  keys: Keys,
+  keys: IdentityKeys,
 ): Promise<{ accountProof: string; keyProof: string }> => {
   const publicKey = keys.signaturePublicKey;
   const accountProofMessage = getAccountProofMessage(accountId, publicKey);

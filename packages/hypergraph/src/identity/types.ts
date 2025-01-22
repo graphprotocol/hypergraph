@@ -13,7 +13,7 @@ export type Signer = {
   signMessage: SignMessage;
 };
 
-export type Keys = {
+export type IdentityKeys = {
   encryptionPublicKey: string;
   encryptionPrivateKey: string;
   signaturePublicKey: string;
@@ -29,10 +29,6 @@ export const KeysSchema = Schema.Struct({
 
 export type KeysSchema = Schema.Schema.Type<typeof KeysSchema>;
 
-export type Identity = {
+export type Identity = IdentityKeys & {
   accountId: string;
-  encryptionPublicKey: string;
-  encryptionPrivateKey: string;
-  signaturePublicKey: string;
-  signaturePrivateKey: string;
 };
