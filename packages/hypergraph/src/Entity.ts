@@ -1,4 +1,4 @@
-import type { DocHandle } from '@automerge/automerge-repo';
+import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as VariantSchema from '@effect/experimental/VariantSchema';
 import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
@@ -66,6 +66,133 @@ export class EntityNotFoundError extends Data.TaggedError('EntityNotFoundError')
 
 export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & { type: string };
 
+/*
+ * Note: Currently we only use one global cache for all entities.
+ * In the future we probably want a build function that creates a cache and returns the
+ * functions (create, update, findMany, …) that use this specific cache.
+ *
+ * How does it work?
+ *
+ * We store all decoded entities in a cache and for each query we reference the entities relevant to this query.
+ * Whenever a query is registered we add it to the cache and add a listener to the query. Whenever a query is unregistered we remove the listener from the query.
+ *
+ * Handling filters is relatively straight forward as they are uniquely identified by their params.
+ *
+ * Questions:
+ * How do we handle findOne?
+ *  Thoughts: Could be just a special case of findMany limited to a specific id or a separate mechanism.
+ * How do we handle relations?
+ *  Thoughts: We could have a separate query entry for each relation, but when requesting a lot of entities e.g. 1000 only for a nesting one level deep it would result in a lot of cached queries. Not sure this is a good idea.
+ */
+type DecodedEntitiesCache = Map<
+  string, // type name
+  {
+    decoder: (data: unknown) => unknown;
+    entities: Map<string, Entity<AnyNoContext>>; // holds all entities of this type
+    queries: Map<
+      string, // instead of serializedQueryKey as string we could also have the actual params
+      {
+        data: Array<Entity<AnyNoContext>>; // holds the decoded entities of this query and must be a stable reference and use the same reference for the `entities` array
+        listeners: Array<() => void>; // listeners to this query
+      }
+    >;
+  }
+>;
+
+const decodedEntitiesCache: DecodedEntitiesCache = new Map();
+
+export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
+  const onChange = ({ patches, doc }: { patches: Array<Patch>; doc: DocumentContent }) => {
+    const changedEntities = new Set<string>();
+    const deletedEntities = new Set<string>();
+
+    for (const patch of patches) {
+      switch (patch.action) {
+        case 'put':
+        case 'insert':
+        case 'splice': {
+          if (patch.path.length > 2 && patch.path[0] === 'entities' && typeof patch.path[1] === 'string') {
+            changedEntities.add(patch.path[1]);
+          }
+          break;
+        }
+        case 'del': {
+          if (patch.path.length === 2 && patch.path[0] === 'entities' && typeof patch.path[1] === 'string') {
+            deletedEntities.add(patch.path[1]);
+          }
+          break;
+        }
+      }
+    }
+
+    const entityTypes = new Set<string>();
+
+    // loop over all changed entities and update the cache
+    for (const entityId of changedEntities) {
+      const entity = doc.entities?.[entityId];
+      if (!entity || typeof entity !== 'object' || !('@@types@@' in entity) || !Array.isArray(entity['@@types@@']))
+        return;
+      for (const typeName of entity['@@types@@']) {
+        const cacheEntry = decodedEntitiesCache.get(typeName);
+        if (!cacheEntry) continue;
+
+        const decoded = cacheEntry.decoder({ ...entity, id: entityId });
+        cacheEntry.entities.set(entityId, decoded);
+
+        const query = cacheEntry.queries.get('all');
+        if (query) {
+          const index = query.data.findIndex((entity) => entity.id === entityId);
+          if (index !== -1) {
+            query.data[index] = decoded;
+          } else {
+            query.data.push(decoded);
+          }
+        }
+
+        entityTypes.add(typeName);
+      }
+    }
+
+    // loop over all deleted entities and remove them from the cache
+    for (const entityId of deletedEntities) {
+      for (const [affectedTypeName, cacheEntry] of decodedEntitiesCache) {
+        if (cacheEntry.entities.has(entityId)) {
+          entityTypes.add(affectedTypeName);
+          cacheEntry.entities.delete(entityId);
+
+          for (const [, query] of cacheEntry.queries) {
+            // find the entity in the query and remove it using splice
+            const index = query.data.findIndex((entity) => entity.id === entityId);
+            if (index !== -1) {
+              query.data.splice(index, 1);
+            }
+          }
+        }
+      }
+    }
+
+    // invoke all the listeners per type
+    for (const typeName of entityTypes) {
+      const cacheEntry = decodedEntitiesCache.get(typeName);
+      if (!cacheEntry) continue;
+
+      for (const query of cacheEntry.queries.values()) {
+        for (const listener of query.listeners) {
+          listener();
+        }
+      }
+    }
+  };
+
+  handle.on('change', onChange);
+
+  return () => {
+    console.log('unsubscribe document changes');
+    handle.off('change', onChange);
+    decodedEntitiesCache.clear(); // currently we only support exactly one space
+  };
+};
+
 /**
  * Creates an entity model of given type and stores it in the repo.
  */
@@ -78,7 +205,7 @@ export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
 
   return (data: Readonly<Schema.Schema.Type<Insert<S>>>): Entity<S> => {
     const encoded = encode(data);
-    // apply changes to the repo -> adds the entity to the repo entites document
+    // apply changes to the repo -> adds the entity to the repo entities document
     handle.change((doc) => {
       doc.entities ??= {};
       doc.entities[entityId] = { ...encoded, '@@types@@': [typeName] };
@@ -103,7 +230,7 @@ export const update = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
   return (id: string, data: Schema.Simplify<Partial<Schema.Schema.Type<Update<S>>>>): Entity<S> => {
     validate(data);
 
-    // apply changes to the repo -> updates the existing entity to the repo entites document
+    // apply changes to the repo -> updates the existing entity to the repo entities document
     let updated: Schema.Schema.Type<S> | undefined = undefined;
     handle.change((doc) => {
       if (doc.entities === undefined) {
@@ -116,7 +243,7 @@ export const update = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
         return;
       }
 
-      // TODO: Try to get a diff of the entitiy properties and only override the changed ones.
+      // TODO: Try to get a diff of the entity properties and only override the changed ones.
       updated = { ...decode(entity), ...data };
       doc.entities[id] = { ...encode(updated), '@@types@@': [typeName] };
     });
@@ -163,7 +290,7 @@ export function findMany<const S extends AnyNoContext>(
   const typeName = type.name;
 
   // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
-  // an index and store the decoded valeus instead of re-decoding over and over again.
+  // an index and store the decoded values instead of re-decoding over and over again.
   const entities = handle.docSync()?.entities ?? {};
   const filtered: Array<Entity<S>> = [];
   for (const id in entities) {
@@ -179,6 +306,78 @@ export function findMany<const S extends AnyNoContext>(
   return filtered;
 }
 
+export function subscribeToFindMany<const S extends AnyNoContext>(
+  handle: DocHandle<DocumentContent>,
+  type: S,
+): { listener: () => () => void; getEntities: () => Readonly<Array<Entity<S>>>; unsubscribe: () => void } {
+  const queryKey = 'all';
+  const decode = Schema.decodeUnknownSync(type);
+  // TODO: what's the right way to get the name of the type?
+  // @ts-expect-error name is defined
+  const typeName = type.name;
+
+  const getEntities = () => {
+    const entities = decodedEntitiesCache.get(typeName)?.queries.get(queryKey)?.data ?? [];
+    return entities;
+  };
+
+  const listener = () => {
+    return () => undefined;
+  };
+
+  const unsubscribe = () => {
+    const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
+    if (!query || !query.listeners) return;
+    query.listeners = query.listeners.filter((cachedListener) => cachedListener !== listener);
+    console.log('unsubscribe query', query.listeners);
+  };
+
+  const entities = findMany(handle, type);
+
+  if (decodedEntitiesCache.has(typeName)) {
+    // add a listener to the existing query
+    const cacheEntry = decodedEntitiesCache.get(typeName);
+    const query = cacheEntry?.queries.get(queryKey);
+
+    for (const entity of entities) {
+      cacheEntry?.entities.set(entity.id, entity);
+
+      if (!query) continue;
+
+      const index = query.data.findIndex((e) => e.id === entity.id);
+      if (index !== -1) {
+        query.data[index] = entity;
+      } else {
+        query.data.push(entity);
+      }
+    }
+
+    if (query?.listeners) {
+      query.listeners.push(listener);
+    }
+  } else {
+    const entitiesMap = new Map();
+    for (const entity of entities) {
+      entitiesMap.set(entity.id, entity);
+    }
+
+    const queries = new Map();
+
+    queries.set(queryKey, {
+      data: entities,
+      listeners: [listener],
+    });
+
+    decodedEntitiesCache.set(typeName, {
+      decoder: decode,
+      entities: entitiesMap,
+      queries,
+    });
+  }
+
+  return { listener, getEntities, unsubscribe };
+}
+
 /**
  * Find the entity of the given type, with the given id, from the repo.
  */
@@ -192,7 +391,7 @@ export const findOne =
     const typeName = type.name;
 
     // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
-    // an index and store the decoded valeus instead of re-decoding over and over again.
+    // an index and store the decoded values instead of re-decoding over and over again.
     const entity = handle.docSync()?.entities?.[id];
     if (typeof entity === 'object' && entity != null && '@@types@@' in entity) {
       const types = entity['@@types@@'];

@@ -3,14 +3,16 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
+import { type DocumentContent, subscribeToDocumentChanges } from '@graphprotocol/hypergraph/Entity';
 import * as Schema from 'effect/Schema';
-import { type ReactNode, createContext, useContext, useRef, useSyncExternalStore } from 'react';
+import { type ReactNode, createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 export type HypergraphContext = {
   space: string;
   repo: Repo;
   id: AnyDocumentId;
   handle: DocHandle<Entity.DocumentContent>;
+  unsubscribeChangeListener: () => void;
 };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
@@ -30,14 +32,27 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
 
   let current = ref.current;
   if (current === undefined || space !== current.space || repo !== current.repo) {
+    current?.unsubscribeChangeListener(); // unsubscribe from the previous space when switching to a new space
+
     const id = Utils.idToAutomergeId(space) as AnyDocumentId;
+    const handle = repo.find<DocumentContent>(id);
+    const unsubscribeChangeListener = subscribeToDocumentChanges(handle);
+
     current = ref.current = {
       space,
       repo,
       id,
-      handle: repo.find(id),
+      handle,
+      unsubscribeChangeListener,
     };
   }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: no need for dependencies as the unsubscribe is called from the ref
+  useEffect(() => {
+    return () => {
+      current?.unsubscribeChangeListener(); // unsubscribe from the previous space when the component unmounts
+    };
+  }, []);
 
   return <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>;
 }
@@ -59,37 +74,17 @@ export function useDeleteEntity() {
 
 export function useQueryEntities<const S extends Entity.AnyNoContext>(type: S) {
   const hypergraph = useHypergraph();
-  const equal = isEqual(type);
-
-  // store as a map of type to array of entities of the type
-  const prevEntitiesRef = useRef<Readonly<Array<Entity.Entity<S>>>>([]);
-
-  const subscribe = (callback: () => void) => {
-    const handleChange = () => {
-      callback();
-    };
-
-    const handleDelete = () => {
-      callback();
-    };
-
-    hypergraph.handle.on('change', handleChange);
-    hypergraph.handle.on('delete', handleDelete);
-
-    return () => {
-      hypergraph.handle.off('change', handleChange);
-      hypergraph.handle.off('delete', handleDelete);
-    };
-  };
-
-  return useSyncExternalStore<Readonly<Array<Entity.Entity<S>>>>(subscribe, () => {
-    const filtered = Entity.findMany(hypergraph.handle, type);
-    if (!equal(filtered, prevEntitiesRef.current)) {
-      prevEntitiesRef.current = filtered;
-    }
-
-    return prevEntitiesRef.current;
+  const [subscription] = useState(() => {
+    return Entity.subscribeToFindMany(hypergraph.handle, type);
   });
+
+  useEffect(() => {
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [subscription]);
+
+  return useSyncExternalStore(subscription.listener, subscription.getEntities, () => []);
 }
 
 export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id: string) {
@@ -135,22 +130,3 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id:
     return prevEntityRef.current;
   });
 }
-
-/** @internal */
-const isEqual = <A, E>(type: Schema.Schema<A, E, never>) => {
-  const equals = Schema.equivalence(type);
-
-  return (a: ReadonlyArray<A>, b: ReadonlyArray<A>) => {
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    for (let i = 0; i < a.length; i++) {
-      if (!equals(a[i], b[i])) {
-        return false;
-      }
-    }
-
-    return true;
-  };
-};
