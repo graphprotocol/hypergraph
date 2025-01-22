@@ -211,31 +211,6 @@ app.get('/identity/encrypted', verifyAuth, async (req: AuthenticatedRequest, res
   }
 });
 
-app.get('/identity/by-public-key', async (req, res) => {
-  console.log('GET identity/by-public-key');
-  const publicKey = req.query.publicKey as string;
-  if (!publicKey) {
-    res.status(400).send('No publicKey');
-    return;
-  }
-  try {
-    const identity = await getIdentity({ signaturePublicKey: publicKey });
-    const outgoingMessage: Messages.ResponseIdentity = {
-      accountId: identity.accountId,
-      signaturePublicKey: identity.signaturePublicKey,
-      encryptionPublicKey: identity.encryptionPublicKey,
-      accountProof: identity.accountProof,
-      keyProof: identity.keyProof,
-    };
-    res.status(200).send(outgoingMessage);
-  } catch (error) {
-    const outgoingMessage: Messages.ResponseIdentityNotFoundError = {
-      accountId: 'unknown',
-    };
-    res.status(404).send(outgoingMessage);
-  }
-});
-
 app.get('/identity', async (req, res) => {
   console.log('GET identity');
   const accountId = req.query.accountId as string;
