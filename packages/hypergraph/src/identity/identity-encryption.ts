@@ -4,7 +4,7 @@ import type { Hex } from 'viem';
 import { verifyMessage } from 'viem';
 
 import { bytesToHex, hexToBytes } from '../utils/index.js';
-import type { Keys, Signer } from './types.js';
+import type { IdentityKeys, Signer } from './types.js';
 
 // Adapted from the XMTP approach to encrypt keys
 // See: https://github.com/xmtp/xmtp-js/blob/8d6e5a65813902926baac8150a648587acbaad92/sdks/js-sdk/src/keystore/providers/NetworkKeyManager.ts#L79-L116
@@ -17,7 +17,7 @@ const signatureMessage = (nonce: Uint8Array): string => {
 export const encryptIdentity = async (
   signer: Signer,
   accountId: string,
-  keys: Keys,
+  keys: IdentityKeys,
 ): Promise<{ ciphertext: string; nonce: string }> => {
   const nonce = randomBytes(32);
   const message = signatureMessage(nonce);
@@ -51,7 +51,7 @@ export const decryptIdentity = async (
   accountId: string,
   ciphertext: string,
   nonce: string,
-): Promise<Keys> => {
+): Promise<IdentityKeys> => {
   const message = signatureMessage(hexToBytes(nonce));
   const signature = (await signer.signMessage(message)) as Hex;
 

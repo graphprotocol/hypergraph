@@ -145,7 +145,7 @@ export function HypergraphAuthProvider({
     }
   }
 
-  async function loginWithKeys(keys: Identity.Keys, accountId: Address) {
+  async function loginWithKeys(keys: Identity.IdentityKeys, accountId: Address) {
     const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
     if (sessionToken) {
       // use whoami to check if the session token is still valid
@@ -213,7 +213,7 @@ export function HypergraphAuthProvider({
   }
 
   async function signup(signer: Identity.Signer, accountId: Address) {
-    const keys = Identity.createIdentity();
+    const keys = Identity.createIdentityKeys();
     const { ciphertext, nonce } = await Identity.encryptIdentity(signer, accountId, keys);
     const { accountProof, keyProof } = await Identity.proveIdentityOwnership(signer, accountId, keys);
 
@@ -368,5 +368,5 @@ type HypergraphAuthState = {
   authenticated: boolean;
   accountId: Address | null;
   sessionToken: string | null;
-  keys: Identity.Keys | null;
+  keys: Identity.IdentityKeys | null;
 };
