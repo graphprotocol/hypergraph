@@ -22,9 +22,7 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "jsdom": "^26.0.0"
+    "@types/uuid": "^10.0.0"
   },
   "dependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
