@@ -92,7 +92,7 @@ describe('createIdentity', () => {
 });
 
 describe('identity encryption', () => {
-  it.skip('should encrypt and decrypt an identity using a wallet', async () => {
+  it('should encrypt and decrypt an identity using a wallet', async () => {
     // generate a random private key to simulate a user wallet
     const account = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
     const signer = accountSigner(account);
