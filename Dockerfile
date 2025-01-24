@@ -7,6 +7,9 @@ RUN apk add --update --no-cache openssl python3 make g++
 # Install pnpm.
 ADD package.json .
 RUN corepack enable && corepack prepare --activate
+# Skip prisma code generation during install.
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
+ENV CI=true
 # Fetch all node modules purely based on the pnpm lock file.
 COPY pnpm-lock.yaml .
 RUN --mount=type=cache,id=workspace,target=/root/.local/share/pnpm/store pnpm fetch
