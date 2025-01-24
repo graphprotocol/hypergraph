@@ -1,0 +1,42 @@
+# This .dockerignore file only works with docker buildkit. Wildcard exclusion patterns are
+# utterly broken and misdocumented in vanilla docker.
+# 
+# See: https://github.com/moby/moby/issues/43232
+#
+# This is an allow-list based .dockerignore file.
+#
+# - First of all, ignore everything.
+# - Then, allow only the files that are needed for the build.
+#
+# We add only the absolute minimal set of files needed for the build. For instance,
+# we can entirely skip any tsconfig because we use `tsup` for the server build.
+*
+
+# Allow workspace root files.
+!package.json
+!tsconfig.json
+!tsconfig.base.json
+!tsconfig.build.json
+!pnpm-workspace.yaml
+!pnpm-lock.yaml
+!patches/*
+!scripts/*
+
+# Server application.
+!apps/server/package.json
+!apps/server/tsup.config.ts
+!apps/server/src
+!apps/server/prisma
+
+# Workspace package dependencies.
+!packages/hypergraph/package.json
+!packages/hypergraph/src
+!packages/hypergraph/tsconfig.json
+!packages/hypergraph/tsconfig.src.json
+!packages/hypergraph/tsconfig.build.json
+
+!packages/hypergraph-react/package.json
+!packages/hypergraph-react/src
+!packages/hypergraph-react/tsconfig.json
+!packages/hypergraph-react/tsconfig.src.json
+!packages/hypergraph-react/tsconfig.build.json
