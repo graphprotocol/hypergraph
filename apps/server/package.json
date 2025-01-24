@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch ./src/index.ts"
+    "dev": "bun run --watch ./src/index.ts",
+    "prisma": "prisma",
+    "build": "tsup"
   },
   "dependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
     "@noble/ciphers": "^1.2.0",
-    "@prisma/client": "6.2.1",
+    "@prisma/client": "^6.2.1",
     "cors": "^2.8.5",
     "effect": "^3.12.4",
     "express": "^5.0.1",
@@ -24,6 +26,7 @@
     "@types/pg": "^8.11.6",
     "@types/ws": "^8.5.13",
     "prisma": "^6.2.1",
+    "tsup": "^8.3.5",
     "typescript": "^5.7.3"
   }
 }

@@ -2,6 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
+  // TODO: Using `pnpm deploy` with prisma is quite annoying. We should consider generating the prisma client into
+  // a directory within the package here instead of generating it into node modules (default).
   provider = "prisma-client-js"
 }
 
