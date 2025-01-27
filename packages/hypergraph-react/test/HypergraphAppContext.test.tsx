@@ -4,7 +4,7 @@ import { cleanup, renderHook } from '@testing-library/react';
 import React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { HypergraphAuthProvider, useAuthenticated, useHypergraphAccountId } from '../src/HypergraphAuthContext.js';
+import { HypergraphAppProvider, useAuthenticated, useHypergraphAccountId } from '../src/HypergraphAppContext.js';
 
 afterEach(() => {
   cleanup();
@@ -23,10 +23,10 @@ const storageMock = {
   },
 };
 
-describe('HypergraphAuthContext', () => {
-  it('should render the HypergraphAuthProvider and be initially unauthenticetd', async () => {
+describe('HypergraphAppContext', () => {
+  it('should render the HypergraphAppProvider and be initially unauthenticated', async () => {
     const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-      <HypergraphAuthProvider storage={storageMock}>{children}</HypergraphAuthProvider>
+      <HypergraphAppProvider storage={storageMock}>{children}</HypergraphAppProvider>
     );
 
     const { result: authenticatedResult } = renderHook(() => useAuthenticated(), { wrapper });
