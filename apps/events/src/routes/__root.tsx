@@ -1,14 +1,13 @@
 import { Logout } from '@/components/logout';
-import { Auth, Hypergraph } from '@graphprotocol/hypergraph-react';
+import { Hypergraph } from '@graphprotocol/hypergraph-react';
 import { Link, Outlet, createRootRoute, useLayoutEffect, useRouter } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 
 export const Route = createRootRoute({
   component: () => {
-    const { authenticated, getIdentity, getSessionToken } = Auth.useHypergraphAuth();
+    const { authenticated, getIdentity } = Hypergraph.useHypergraphApp();
 
     const graphIdentity = getIdentity();
-    const loggedInSessionToken = getSessionToken();
 
     const router = useRouter();
 
@@ -44,20 +43,7 @@ export const Route = createRootRoute({
           </header>
           <hr />
 
-          {authenticated && graphIdentity && loggedInSessionToken ? (
-            <Hypergraph.HypergraphAppProvider
-              accountId={graphIdentity.accountId}
-              sessionToken={loggedInSessionToken}
-              encryptionPublicKey={graphIdentity.encryptionPublicKey}
-              encryptionPrivateKey={graphIdentity.encryptionPrivateKey}
-              signaturePrivateKey={graphIdentity.signaturePrivateKey}
-              signaturePublicKey={graphIdentity.signaturePublicKey}
-            >
-              <Outlet />
-            </Hypergraph.HypergraphAppProvider>
-          ) : (
-            <Outlet />
-          )}
+          <Outlet />
 
           <TanStackRouterDevtools />
 
