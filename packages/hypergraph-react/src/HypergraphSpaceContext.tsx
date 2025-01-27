@@ -3,7 +3,7 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
-import { type DocumentContent, subscribeToDocumentChanges } from '@graphprotocol/hypergraph/Entity';
+import type { DocumentContent } from '@graphprotocol/hypergraph/Entity';
 import * as Schema from 'effect/Schema';
 import { type ReactNode, createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
@@ -12,7 +12,6 @@ export type HypergraphContext = {
   repo: Repo;
   id: AnyDocumentId;
   handle: DocHandle<Entity.DocumentContent>;
-  unsubscribeChangeListener: () => void;
 };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
@@ -32,27 +31,16 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
 
   let current = ref.current;
   if (current === undefined || space !== current.space || repo !== current.repo) {
-    current?.unsubscribeChangeListener(); // unsubscribe from the previous space when switching to a new space
-
     const id = Utils.idToAutomergeId(space) as AnyDocumentId;
     const handle = repo.find<DocumentContent>(id);
-    const unsubscribeChangeListener = subscribeToDocumentChanges(handle);
 
     current = ref.current = {
       space,
       repo,
       id,
       handle,
-      unsubscribeChangeListener,
     };
   }
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: no need for dependencies as the unsubscribe is called from the ref
-  useEffect(() => {
-    return () => {
-      current?.unsubscribeChangeListener(); // unsubscribe from the previous space when the component unmounts
-    };
-  }, []);
 
   return <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>;
 }

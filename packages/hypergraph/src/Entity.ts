@@ -101,6 +101,14 @@ type DecodedEntitiesCache = Map<
 
 const decodedEntitiesCache: DecodedEntitiesCache = new Map();
 
+const documentChangeListener: {
+  subscribedQueriesCount: number;
+  unsubscribe: undefined | (() => void);
+} = {
+  subscribedQueriesCount: 0,
+  unsubscribe: undefined,
+};
+
 export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
   const onChange = ({ patches, doc }: { patches: Array<Patch>; doc: DocumentContent }) => {
     const changedEntities = new Set<string>();
@@ -327,9 +335,16 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
 
   const unsubscribe = () => {
     const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
-    if (!query || !query.listeners) return;
-    query.listeners = query.listeners.filter((cachedListener) => cachedListener !== listener);
-    console.log('unsubscribe query', query.listeners);
+    if (query?.listeners) {
+      query.listeners = query.listeners.filter((cachedListener) => cachedListener !== listener);
+      console.log('unsubscribe query', query.listeners);
+    }
+
+    documentChangeListener.subscribedQueriesCount--;
+    if (documentChangeListener.subscribedQueriesCount === 0) {
+      documentChangeListener.unsubscribe?.();
+      documentChangeListener.unsubscribe = undefined;
+    }
   };
 
   const entities = findMany(handle, type);
@@ -374,6 +389,11 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       queries,
     });
   }
+
+  if (documentChangeListener.subscribedQueriesCount === 0) {
+    documentChangeListener.unsubscribe = subscribeToDocumentChanges(handle);
+  }
+  documentChangeListener.subscribedQueriesCount++;
 
   return { listener, getEntities, unsubscribe };
 }
