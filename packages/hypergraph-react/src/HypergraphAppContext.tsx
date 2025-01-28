@@ -7,7 +7,16 @@ import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, st
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
-import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import { type Address, getAddress } from 'viem';
@@ -17,10 +26,6 @@ const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessag
 
 export type HypergraphAppCtx = {
   // auth related
-  getSessionToken(): string | null;
-  getAccountId(): string | null;
-  getIdentity(): Identity.Identity | null;
-  authenticated: boolean;
   login(signer: Identity.Signer): Promise<void>;
   logout(): void;
   setIdentityAndSessionToken(account: Identity.Identity & { sessionToken: string }): void;
@@ -41,16 +46,6 @@ export type HypergraphAppCtx = {
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
-  getAccountId() {
-    return null;
-  },
-  getIdentity() {
-    return null;
-  },
-  getSessionToken() {
-    return null;
-  },
-  authenticated: false,
   async login() {},
   logout() {},
   setIdentityAndSessionToken() {},
@@ -82,20 +77,28 @@ export function useHypergraphApp() {
 }
 
 export function useAuthenticated() {
-  const ctx = useHypergraphApp();
-  return ctx.authenticated;
+  return useSelectorStore(store, (state) => state.context.authenticated);
 }
 export function useHypergraphAccountId() {
-  const ctx = useHypergraphApp();
-  return ctx.getAccountId();
+  return useSelectorStore(store, (state) => state.context.accountId);
 }
 export function useHypergraphIdentity() {
-  const ctx = useHypergraphApp();
-  return ctx.getIdentity();
+  const accountId = useHypergraphAccountId();
+  const keys = useSelectorStore(store, (state) => state.context.keys);
+  const identity: Identity.Identity | null =
+    accountId && keys
+      ? {
+          accountId,
+          encryptionPublicKey: keys.encryptionPublicKey,
+          encryptionPrivateKey: keys.encryptionPrivateKey,
+          signaturePublicKey: keys.signaturePublicKey,
+          signaturePrivateKey: keys.signaturePrivateKey,
+        }
+      : null;
+  return identity;
 }
 export function useHypergraphSessionToken() {
-  const ctx = useHypergraphApp();
-  return ctx.getSessionToken();
+  return useSelectorStore(store, (state) => state.context.sessionToken);
 }
 
 export type HypergraphAppProviderProps = Readonly<{
@@ -115,17 +118,14 @@ export function HypergraphAppProvider({
   chainId = 80451,
   children,
 }: HypergraphAppProviderProps) {
-  const [authState, setAuthState] = useState<HypergraphAppState>({
-    authenticated: false,
-    accountId: null,
-    sessionToken: null,
-    keys: null,
-  });
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [loading, setLoading] = useState(true);
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelectorStore(store, (state) => state.context.repo);
+  const accountId = useSelectorStore(store, (state) => state.context.accountId);
+  const sessionToken = useSelectorStore(store, (state) => state.context.sessionToken);
+  const keys = useSelectorStore(store, (state) => state.context.keys);
 
   function prepareSiweMessage(address: Address, nonce: string) {
     return new SiweMessage({
@@ -160,7 +160,7 @@ export function HypergraphAppProvider({
     return res.status === 200;
   }
 
-  async function loginWithWallet(signer: Identity.Signer, accountId: Address) {
+  async function loginWithWallet(signer: Identity.Signer, accountId: Address, retryCount = 0) {
     const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
     if (!sessionToken) {
       const sessionNonce = await getSessionNonce(accountId);
@@ -178,22 +178,36 @@ export function HypergraphAppProvider({
       const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
       Identity.storeAccountId(storage, accountId);
       Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
-    } else {
-      // use whoami to check if the session token is still valid
-      const res = await fetch(new URL('/whoami', syncServerUri), {
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
-        },
-      });
-      if (res.status !== 200 || (await res.text()) !== accountId) {
-        console.warn('Session token is invalid, wiping state and retrying login with wallet');
-        Identity.wipeSyncServerSessionToken(storage, accountId);
-        return await loginWithWallet(signer, accountId);
-      }
+      const keys = await restoreKeys(signer, accountId, decoded.sessionToken);
+      return {
+        accountId,
+        sessionToken: decoded.sessionToken,
+        keys,
+      };
     }
+    // use whoami to check if the session token is still valid
+    const res = await fetch(new URL('/whoami', syncServerUri), {
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+      },
+    });
+    if (res.status !== 200 || (await res.text()) !== accountId) {
+      console.warn('Session token is invalid, wiping state and retrying login with wallet');
+      Identity.wipeSyncServerSessionToken(storage, accountId);
+      if (retryCount > 3) {
+        throw new Error('Could not login with wallet after several attempts');
+      }
+      return await loginWithWallet(signer, accountId, retryCount + 1);
+    }
+    const keys = await restoreKeys(signer, accountId, sessionToken);
+    return {
+      accountId,
+      sessionToken,
+      keys,
+    };
   }
 
-  async function loginWithKeys(keys: Identity.IdentityKeys, accountId: Address) {
+  async function loginWithKeys(keys: Identity.IdentityKeys, accountId: Address, retryCount = 0) {
     const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
     if (sessionToken) {
       // use whoami to check if the session token is still valid
@@ -205,59 +219,65 @@ export function HypergraphAppProvider({
       if (res.status !== 200 || (await res.text()) !== accountId) {
         console.warn('Session token is invalid, wiping state and retrying login with keys');
         Identity.wipeSyncServerSessionToken(storage, accountId);
-        return await loginWithKeys(keys, accountId);
+        if (retryCount > 3) {
+          throw new Error('Could not login with keys after several attempts');
+        }
+        return await loginWithKeys(keys, accountId, retryCount + 1);
       }
-    } else {
-      const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
-      const sessionNonce = await getSessionNonce(account.address);
-      const message = prepareSiweMessage(account.address, sessionNonce);
-      const signature = await account.signMessage({ message });
-      const req = {
-        accountId,
-        message,
-        publicKey: keys.signaturePublicKey,
-        signature,
-      } as const satisfies Messages.RequestLoginWithSigningKey;
-      const res = await fetch(new URL('/login/with-signing-key', syncServerUri), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(req),
-      });
-      if (res.status !== 200) {
-        throw new Error('Error logging in with signing key');
-      }
-      const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
-      Identity.storeAccountId(storage, accountId);
-      Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
+      throw new Error('Could not login with keys');
     }
+
+    const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
+    const sessionNonce = await getSessionNonce(account.address);
+    const message = prepareSiweMessage(account.address, sessionNonce);
+    const signature = await account.signMessage({ message });
+    const req = {
+      accountId,
+      message,
+      publicKey: keys.signaturePublicKey,
+      signature,
+    } as const satisfies Messages.RequestLoginWithSigningKey;
+    const res = await fetch(new URL('/login/with-signing-key', syncServerUri), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(req),
+    });
+    if (res.status !== 200) {
+      throw new Error('Error logging in with signing key');
+    }
+    const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
+    Identity.storeAccountId(storage, accountId);
+    Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
+    return {
+      accountId,
+      sessionToken: decoded.sessionToken,
+      keys,
+    };
   }
 
-  async function restoreKeys(signer: Identity.Signer, accountId: Address) {
-    const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
-    if (!sessionToken) {
-      return;
-    }
+  async function restoreKeys(signer: Identity.Signer, accountId: Address, sessionToken: string) {
     const keys = Identity.loadKeys(storage, accountId);
-    if (!keys) {
-      // Try to get the users identity from the sync server
-      const res = await fetch(new URL('/identity/encrypted', syncServerUri), {
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
-        },
-      });
-      if (res.status === 200) {
-        console.log('Identity found');
-        const decoded = Schema.decodeUnknownSync(Messages.ResponseIdentityEncrypted)(await res.json());
-        const { keyBox } = decoded;
-        const { ciphertext, nonce } = keyBox;
-        const keys = await Identity.decryptIdentity(signer, accountId, ciphertext, nonce);
-        Identity.storeKeys(storage, accountId, keys);
-      } else {
-        throw new Error(`Error fetching identity ${res.status}`);
-      }
+    if (keys) {
+      return keys;
     }
+    // Try to get the users identity from the sync server
+    const res = await fetch(new URL('/identity/encrypted', syncServerUri), {
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+      },
+    });
+    if (res.status === 200) {
+      console.log('Identity found');
+      const decoded = Schema.decodeUnknownSync(Messages.ResponseIdentityEncrypted)(await res.json());
+      const { keyBox } = decoded;
+      const { ciphertext, nonce } = keyBox;
+      const keys = await Identity.decryptIdentity(signer, accountId, ciphertext, nonce);
+      Identity.storeKeys(storage, accountId, keys);
+      return keys;
+    }
+    throw new Error(`Error fetching identity ${res.status}`);
   }
 
   async function signup(signer: Identity.Signer, accountId: Address) {
@@ -293,6 +313,12 @@ export function HypergraphAppProvider({
     Identity.storeAccountId(storage, accountId);
     Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
     Identity.storeKeys(storage, accountId, keys);
+
+    return {
+      accountId,
+      sessionToken: decoded.sessionToken,
+      keys,
+    };
   }
 
   async function login(signer: Identity.Signer) {
@@ -305,19 +331,22 @@ export function HypergraphAppProvider({
     }
     const accountId = getAddress(address);
     const keys = Identity.loadKeys(storage, accountId);
+    let authData: {
+      accountId: Address;
+      sessionToken: string;
+      keys: Identity.IdentityKeys;
+    };
     if (!keys && !(await identityExists(accountId))) {
-      await signup(signer, accountId);
+      authData = await signup(signer, accountId);
     } else if (keys) {
-      await loginWithKeys(keys, accountId);
+      authData = await loginWithKeys(keys, accountId);
     } else {
-      await loginWithWallet(signer, accountId).then(() => restoreKeys(signer, accountId));
+      authData = await loginWithWallet(signer, accountId);
     }
     console.log('Identity initialized');
-    setAuthState({
-      authenticated: true,
-      accountId,
-      sessionToken: Identity.loadSyncServerSessionToken(storage, accountId),
-      keys: Identity.loadKeys(storage, accountId),
+    store.send({
+      ...authData,
+      type: 'setAuth',
     });
     store.send({ type: 'reset' });
   }
@@ -326,14 +355,14 @@ export function HypergraphAppProvider({
     websocketConnection?.close();
     setWebsocketConnection(undefined);
 
-    const accountId = Identity.loadAccountId(storage) ?? authState.accountId;
+    const accountIdToLogout = accountId ?? Identity.loadAccountId(storage);
     Identity.wipeAccountId(storage);
-    if (!accountId) {
+    if (!accountIdToLogout) {
       return;
     }
-    Identity.wipeKeys(storage, accountId);
-    Identity.wipeSyncServerSessionToken(storage, accountId);
-    setAuthState({ authenticated: false, accountId: null, sessionToken: null, keys: null });
+    Identity.wipeKeys(storage, accountIdToLogout);
+    Identity.wipeSyncServerSessionToken(storage, accountIdToLogout);
+    store.send({ type: 'resetAuth' });
   }
 
   const setIdentityAndSessionToken = useCallback(
@@ -347,8 +376,8 @@ export function HypergraphAppProvider({
         signaturePrivateKey: account.signaturePrivateKey,
       });
       store.send({ type: 'reset' });
-      setAuthState({
-        authenticated: true,
+      store.send({
+        type: 'setAuth',
         accountId: getAddress(account.accountId),
         sessionToken: account.sessionToken,
         keys: {
@@ -365,7 +394,8 @@ export function HypergraphAppProvider({
 
   // check if the user is already authenticated on initial render
   const initialRenderAuthCheckRef = useRef(false);
-  useEffect(() => {
+  // using a layout effect to avoid a re-render
+  useLayoutEffect(() => {
     if (!initialRenderAuthCheckRef.current) {
       const accountId = Identity.loadAccountId(storage);
       if (accountId) {
@@ -374,7 +404,12 @@ export function HypergraphAppProvider({
           const keys = Identity.loadKeys(storage, accountId);
           if (keys) {
             // user is already authenticated, set state
-            setAuthState({ authenticated: true, accountId: getAddress(accountId), sessionToken, keys });
+            store.send({
+              type: 'setAuth',
+              accountId: getAddress(accountId),
+              sessionToken,
+              keys,
+            });
           }
         }
       }
@@ -385,13 +420,13 @@ export function HypergraphAppProvider({
 
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
-    if (!authState.sessionToken) {
+    if (!sessionToken) {
       setLoading(true);
       return;
     }
 
     const syncServerUrl = new URL(syncServerUri);
-    const syncServerWsUrl = new URL(`/?token=${authState.sessionToken}`, syncServerUrl.toString());
+    const syncServerWsUrl = new URL(`/?token=${sessionToken}`, syncServerUrl.toString());
     syncServerWsUrl.protocol = 'ws:';
     const syncServerWsUrlString = syncServerWsUrl.toString();
 
@@ -424,12 +459,12 @@ export function HypergraphAppProvider({
       websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
-  }, [authState.sessionToken, syncServerUri]);
+  }, [sessionToken, syncServerUri]);
 
   // Handle WebSocket messages in a separate effect
   useEffect(() => {
     if (!websocketConnection) return;
-    const encryptionPrivateKey = authState.keys?.encryptionPrivateKey;
+    const encryptionPrivateKey = keys?.encryptionPrivateKey;
     if (!encryptionPrivateKey) {
       console.error('No encryption private key found');
       return;
@@ -629,17 +664,16 @@ export function HypergraphAppProvider({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, spaces, authState.keys?.encryptionPrivateKey]);
+  }, [websocketConnection, spaces, keys?.encryptionPrivateKey]);
 
   const createSpaceForContext = async () => {
-    const accountId = authState.accountId;
     if (!accountId) {
       throw new Error('No account id found');
     }
-    const encryptionPrivateKey = authState.keys?.encryptionPrivateKey;
-    const encryptionPublicKey = authState.keys?.encryptionPublicKey;
-    const signaturePrivateKey = authState.keys?.signaturePrivateKey;
-    const signaturePublicKey = authState.keys?.signaturePublicKey;
+    const encryptionPrivateKey = keys?.encryptionPrivateKey;
+    const encryptionPublicKey = keys?.encryptionPublicKey;
+    const signaturePrivateKey = keys?.signaturePrivateKey;
+    const signaturePublicKey = keys?.signaturePublicKey;
     if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
       throw new Error('Missing keys');
     }
@@ -688,14 +722,13 @@ export function HypergraphAppProvider({
   }: Readonly<{
     invitation: Messages.Invitation;
   }>) => {
-    const accountId = authState.accountId;
     if (!accountId) {
       throw new Error('No account id found');
     }
-    const encryptionPrivateKey = authState.keys?.encryptionPrivateKey;
-    const encryptionPublicKey = authState.keys?.encryptionPublicKey;
-    const signaturePrivateKey = authState.keys?.signaturePrivateKey;
-    const signaturePublicKey = authState.keys?.signaturePublicKey;
+    const encryptionPrivateKey = keys?.encryptionPrivateKey;
+    const encryptionPublicKey = keys?.encryptionPublicKey;
+    const signaturePrivateKey = keys?.signaturePrivateKey;
+    const signaturePublicKey = keys?.signaturePublicKey;
     if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
       throw new Error('Missing keys');
     }
@@ -793,14 +826,13 @@ export function HypergraphAppProvider({
       accountId: string;
     };
   }>) => {
-    const accountId = authState.accountId;
     if (!accountId) {
       throw new Error('No account id found');
     }
-    const encryptionPrivateKey = authState.keys?.encryptionPrivateKey;
-    const encryptionPublicKey = authState.keys?.encryptionPublicKey;
-    const signaturePrivateKey = authState.keys?.signaturePrivateKey;
-    const signaturePublicKey = authState.keys?.signaturePublicKey;
+    const encryptionPrivateKey = keys?.encryptionPrivateKey;
+    const encryptionPublicKey = keys?.encryptionPublicKey;
+    const signaturePrivateKey = keys?.signaturePrivateKey;
+    const signaturePublicKey = keys?.signaturePublicKey;
     if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
       throw new Error('Missing keys');
     }
@@ -856,25 +888,6 @@ export function HypergraphAppProvider({
   return (
     <HypergraphAppContext.Provider
       value={{
-        getAccountId() {
-          return authState.accountId;
-        },
-        getSessionToken() {
-          return authState.sessionToken;
-        },
-        getIdentity() {
-          if (authState.authenticated && authState.accountId && authState.keys) {
-            return {
-              accountId: authState.accountId,
-              encryptionPublicKey: authState.keys.encryptionPublicKey,
-              encryptionPrivateKey: authState.keys.encryptionPrivateKey,
-              signaturePublicKey: authState.keys.signaturePublicKey,
-              signaturePrivateKey: authState.keys.signaturePrivateKey,
-            } as const satisfies Identity.Identity;
-          }
-          return null;
-        },
-        authenticated: authState.authenticated,
         login,
         logout,
         setIdentityAndSessionToken,
@@ -893,10 +906,3 @@ export function HypergraphAppProvider({
     </HypergraphAppContext.Provider>
   );
 }
-
-type HypergraphAppState = {
-  authenticated: boolean;
-  accountId: Address | null;
-  sessionToken: string | null;
-  keys: Identity.IdentityKeys | null;
-};
