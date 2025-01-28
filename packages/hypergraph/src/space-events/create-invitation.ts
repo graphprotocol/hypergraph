@@ -9,8 +9,6 @@ type Params = {
   previousEventHash: string;
   invitee: {
     accountId: string;
-    signaturePublicKey: string;
-    encryptionPublicKey: string;
   };
 };
 
@@ -22,11 +20,7 @@ export const createInvitation = ({
   const transaction = {
     id: generateId(),
     type: 'create-invitation' as const,
-    ciphertext: '',
-    nonce: '',
     inviteeAccountId: invitee.accountId,
-    signaturePublicKey: invitee.signaturePublicKey,
-    encryptionPublicKey: invitee.encryptionPublicKey,
     previousEventHash,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));

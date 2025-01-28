@@ -1,9 +1,17 @@
 import * as Schema from 'effect/Schema';
 
+export const EventAuthor = Schema.Struct({
+  accountId: Schema.String,
+  // must be validated if it belongs to the accountId before being used
+  // Note: could be removed, but also might be useful to keep around in case accounts rotate their keys
+  publicKey: Schema.String,
+  signature: Schema.String,
+});
+
+export type EventAuthor = Schema.Schema.Type<typeof Author>;
+
 export const SpaceMember = Schema.Struct({
   accountId: Schema.String,
-  signaturePublicKey: Schema.String,
-  encryptionPublicKey: Schema.String,
   role: Schema.Union(Schema.Literal('admin'), Schema.Literal('member')),
 });
 
@@ -11,8 +19,6 @@ export type SpaceMember = Schema.Schema.Type<typeof SpaceMember>;
 
 export const SpaceInvitation = Schema.Struct({
   inviteeAccountId: Schema.String,
-  signaturePublicKey: Schema.String,
-  encryptionPublicKey: Schema.String,
 });
 
 export type SpaceInvitation = Schema.Schema.Type<typeof SpaceInvitation>;
@@ -32,14 +38,8 @@ export const CreateSpaceEvent = Schema.Struct({
     type: Schema.Literal('create-space'),
     id: Schema.String,
     creatorAccountId: Schema.String,
-    creatorSignaturePublicKey: Schema.String,
-    creatorEncryptionPublicKey: Schema.String,
   }),
-  author: Schema.Struct({
-    accountId: Schema.String,
-    publicKey: Schema.String,
-    signature: Schema.String,
-  }),
+  author: EventAuthor,
 });
 
 export type CreateSpaceEvent = Schema.Schema.Type<typeof CreateSpaceEvent>;
@@ -50,11 +50,7 @@ export const DeleteSpaceEvent = Schema.Struct({
     id: Schema.String,
     previousEventHash: Schema.String,
   }),
-  author: Schema.Struct({
-    accountId: Schema.String,
-    publicKey: Schema.String,
-    signature: Schema.String,
-  }),
+  author: EventAuthor,
 });
 
 export type DeleteSpaceEvent = Schema.Schema.Type<typeof DeleteSpaceEvent>;
@@ -63,18 +59,10 @@ export const CreateInvitationEvent = Schema.Struct({
   transaction: Schema.Struct({
     type: Schema.Literal('create-invitation'),
     id: Schema.String,
-    ciphertext: Schema.String,
-    nonce: Schema.String,
     inviteeAccountId: Schema.String,
-    signaturePublicKey: Schema.String,
-    encryptionPublicKey: Schema.String,
     previousEventHash: Schema.String,
   }),
-  author: Schema.Struct({
-    accountId: Schema.String,
-    publicKey: Schema.String,
-    signature: Schema.String,
-  }),
+  author: EventAuthor,
 });
 
 export type CreateInvitationEvent = Schema.Schema.Type<typeof CreateInvitationEvent>;
@@ -85,11 +73,7 @@ export const AcceptInvitationEvent = Schema.Struct({
     type: Schema.Literal('accept-invitation'),
     previousEventHash: Schema.String,
   }),
-  author: Schema.Struct({
-    accountId: Schema.String,
-    publicKey: Schema.String,
-    signature: Schema.String,
-  }),
+  author: EventAuthor,
 });
 
 export type AcceptInvitationEvent = Schema.Schema.Type<typeof AcceptInvitationEvent>;

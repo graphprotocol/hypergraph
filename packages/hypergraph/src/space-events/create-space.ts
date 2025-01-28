@@ -13,8 +13,6 @@ export const createSpace = ({ author }: Params): Effect.Effect<CreateSpaceEvent,
     type: 'create-space' as const,
     id: generateId(),
     creatorAccountId: author.accountId,
-    creatorSignaturePublicKey: author.signaturePublicKey,
-    creatorEncryptionPublicKey: author.encryptionPublicKey,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
   const signature = secp256k1
