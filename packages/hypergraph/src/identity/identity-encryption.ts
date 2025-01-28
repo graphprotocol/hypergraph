@@ -5,7 +5,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import type { Hex } from 'viem';
 import { verifyMessage } from 'viem';
 
-import { bytesToHex, hexToBytes } from '../utils/index.js';
+import { bytesToHex, canonicalize, hexToBytes } from '../utils/index.js';
 import type { IdentityKeys, Signer } from './types.js';
 
 // Adapted from the XMTP approach to encrypt keys
@@ -36,7 +36,7 @@ const encrypt = (msg: Uint8Array, secret: Uint8Array): string => {
   const ciphertext = aes.encrypt(msg);
 
   // TODO: Use Effect Schema and better serialization?
-  const ciphertextJson = JSON.stringify({
+  const ciphertextJson = canonicalize({
     aes256GcmHkdfSha256: {
       payload: bytesToHex(ciphertext),
       hkdfSalt: bytesToHex(hkdfSalt),
