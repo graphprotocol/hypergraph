@@ -5,9 +5,8 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 
 export const Route = createRootRoute({
   component: () => {
-    const { authenticated, getIdentity } = Hypergraph.useHypergraphApp();
-
-    const graphIdentity = getIdentity();
+    const authenticated = Hypergraph.useAuthenticated();
+    const graphIdentity = Hypergraph.useHypergraphIdentity();
 
     const router = useRouter();
 
