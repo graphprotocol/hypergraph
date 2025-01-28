@@ -4,7 +4,6 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
-import { canonicalize } from '@graphprotocol/hypergraph/utils/jsc';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -536,18 +535,41 @@ export function HypergraphAppProvider({
             }
 
             if (response.updates) {
-              const updates = response.updates?.updates.map((update) => {
-                return Messages.decryptMessage({
-                  nonceAndCiphertext: update,
-                  secretKey: Utils.hexToBytes(keys[0].key),
+              const updates = response.updates?.updates.map(async (update) => {
+                // TODO verify the update signature and that the signing key
+                // belongs to the reported accountId
+                const signer = Messages.recoverUpdateMessageSigner({
+                  update: update.update,
+                  spaceId: response.id,
+                  ephemeralId: update.ephemeralId,
+                  signature: update.signature,
+                  accountId: update.accountId,
                 });
+                const authorIdentity = await getUserIdentity(update.accountId);
+                if (authorIdentity.signaturePublicKey !== signer) {
+                  console.error(
+                    `Received invalid signature, recovered signer is ${signer},
+                    expected ${authorIdentity.signaturePublicKey}`,
+                  );
+                  return { valid: false, update: new Uint8Array([]) };
+                }
+                return {
+                  valid: true,
+                  update: Messages.decryptMessage({
+                    nonceAndCiphertext: update.update,
+                    secretKey: Utils.hexToBytes(keys[0].key),
+                  }),
+                };
               });
 
-              for (const update of updates) {
-                automergeDocHandle.update((existingDoc) => {
-                  const [newDoc] = automerge.applyChanges(existingDoc, [update]);
-                  return newDoc;
-                });
+              for (const updatePromise of updates) {
+                const update = await updatePromise;
+                if (update.valid) {
+                  automergeDocHandle.update((existingDoc) => {
+                    const [newDoc] = automerge.applyChanges(existingDoc, [update.update]);
+                    return newDoc;
+                  });
+                }
               }
 
               store.send({

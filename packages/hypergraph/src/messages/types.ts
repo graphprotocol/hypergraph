@@ -2,8 +2,20 @@ import * as Schema from 'effect/Schema';
 
 import { AcceptInvitationEvent, CreateInvitationEvent, CreateSpaceEvent, SpaceEvent } from '../space-events/index.js';
 
+export const SignatureWithRecovery = Schema.Struct({
+  hex: Schema.String,
+  recovery: Schema.Number,
+});
+
+export const SignedUpdate = Schema.Struct({
+  update: Schema.Uint8Array,
+  accountId: Schema.String,
+  signature: SignatureWithRecovery,
+  ephemeralId: Schema.String,
+});
+
 export const Updates = Schema.Struct({
-  updates: Schema.Array(Schema.Uint8Array),
+  updates: Schema.Array(SignedUpdate),
   firstUpdateClock: Schema.Number,
   lastUpdateClock: Schema.Number,
 });
@@ -87,7 +99,7 @@ export const RequestCreateUpdate = Schema.Struct({
   update: Schema.Uint8Array,
   spaceId: Schema.String,
   ephemeralId: Schema.String, // used to identify the confirmation message
-  signature: Schema.String,
+  signature: SignatureWithRecovery,
 });
 
 export const RequestMessage = Schema.Union(
