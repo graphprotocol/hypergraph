@@ -86,6 +86,7 @@ export const RequestCreateUpdate = Schema.Struct({
   update: Schema.Uint8Array,
   spaceId: Schema.String,
   ephemeralId: Schema.String, // used to identify the confirmation message
+  signature: Schema.String,
 });
 
 export const RequestMessage = Schema.Union(

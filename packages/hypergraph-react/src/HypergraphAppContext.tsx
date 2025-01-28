@@ -4,6 +4,7 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
+import { canonicalize } from '@graphprotocol/hypergraph/utils/jsc';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -469,6 +470,11 @@ export function HypergraphAppProvider({
       console.error('No encryption private key found');
       return;
     }
+    const signaturePrivateKey = keys?.signaturePrivateKey;
+    if (!signaturePrivateKey) {
+      console.error('No signature private key found.');
+      return;
+    }
 
     const onMessage = async (event: MessageEvent) => {
       const data = Messages.deserialize(event.data);
@@ -560,17 +566,13 @@ export function HypergraphAppProvider({
 
                 const ephemeralId = uuid();
 
-                const nonceAndCiphertext = Messages.encryptMessage({
-                  message: lastLocalChange,
-                  secretKey: Utils.hexToBytes(space.keys[0].key),
-                });
-
-                const messageToSend = {
-                  type: 'create-update',
+                const messageToSend = Messages.signedUpdateMessage({
                   ephemeralId,
-                  update: nonceAndCiphertext,
                   spaceId: space.id,
-                } as const satisfies Messages.RequestCreateUpdate;
+                  message: lastLocalChange,
+                  secretKey: space.keys[0].key,
+                  signaturePrivateKey,
+                });
                 websocketConnection.send(Messages.serialize(messageToSend));
               } catch (error) {
                 console.error('Error sending message', error);
@@ -664,7 +666,7 @@ export function HypergraphAppProvider({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, spaces, keys?.encryptionPrivateKey]);
+  }, [websocketConnection, spaces, keys?.encryptionPrivateKey, keys?.signaturePrivateKey]);
 
   const createSpaceForContext = async () => {
     if (!accountId) {
