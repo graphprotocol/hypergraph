@@ -55,16 +55,14 @@ export const applyEvent = ({
   }
 
   let id = '';
-  let members: { [signaturePublicKey: string]: SpaceMember } = {};
-  let removedMembers: { [signaturePublicKey: string]: SpaceMember } = {};
+  let members: { [accountId: string]: SpaceMember } = {};
+  let removedMembers: { [accountId: string]: SpaceMember } = {};
   let invitations: { [id: string]: SpaceInvitation } = {};
 
   if (event.transaction.type === 'create-space') {
     id = event.transaction.id;
-    members[event.transaction.creatorSignaturePublicKey] = {
+    members[event.transaction.creatorAccountId] = {
       accountId: event.transaction.creatorAccountId,
-      signaturePublicKey: event.transaction.creatorSignaturePublicKey,
-      encryptionPublicKey: event.transaction.creatorEncryptionPublicKey,
       role: 'admin',
     };
   } else if (state !== undefined) {
@@ -75,32 +73,30 @@ export const applyEvent = ({
 
     if (event.transaction.type === 'accept-invitation') {
       // is already a member
-      if (members[event.author.publicKey] !== undefined) {
+      if (members[event.author.accountId] !== undefined) {
         return Effect.fail(new InvalidEventError());
       }
 
       // find the invitation
       const result = Object.entries(invitations).find(
-        ([, invitation]) => invitation.signaturePublicKey === event.author.publicKey,
+        ([, invitation]) => invitation.inviteeAccountId === event.author.accountId,
       );
       if (!result) {
         return Effect.fail(new InvalidEventError());
       }
       const [id, invitation] = result;
 
-      members[event.author.publicKey] = {
-        accountId: event.author.accountId,
-        signaturePublicKey: event.author.publicKey,
-        encryptionPublicKey: invitation.encryptionPublicKey,
+      members[invitation.inviteeAccountId] = {
+        accountId: invitation.inviteeAccountId,
         role: 'member',
       };
       delete invitations[id];
-      if (removedMembers[event.author.publicKey] !== undefined) {
-        delete removedMembers[event.author.publicKey];
+      if (removedMembers[event.author.accountId] !== undefined) {
+        delete removedMembers[event.author.accountId];
       }
     } else {
       // check if the author is an admin
-      if (members[event.author.publicKey]?.role !== 'admin') {
+      if (members[event.author.accountId]?.role !== 'admin') {
         return Effect.fail(new InvalidEventError());
       }
 
@@ -109,19 +105,17 @@ export const applyEvent = ({
         members = {};
         invitations = {};
       } else if (event.transaction.type === 'create-invitation') {
-        if (members[event.transaction.signaturePublicKey] !== undefined) {
+        if (members[event.transaction.inviteeAccountId] !== undefined) {
           return Effect.fail(new InvalidEventError());
         }
         for (const invitation of Object.values(invitations)) {
-          if (invitation.signaturePublicKey === event.transaction.signaturePublicKey) {
+          if (invitation.inviteeAccountId === event.transaction.inviteeAccountId) {
             return Effect.fail(new InvalidEventError());
           }
         }
 
         invitations[event.transaction.id] = {
           inviteeAccountId: event.transaction.inviteeAccountId,
-          signaturePublicKey: event.transaction.signaturePublicKey,
-          encryptionPublicKey: event.transaction.encryptionPublicKey,
         };
       } else {
         throw new Error('State is required for all events except create-space');

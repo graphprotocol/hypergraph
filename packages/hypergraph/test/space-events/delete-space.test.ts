@@ -36,10 +36,8 @@ it('should delete a space', async () => {
   expect(state.invitations).toEqual({});
   expect(state.members).toEqual({});
   expect(state.removedMembers).toEqual({
-    [author.signaturePublicKey]: {
+    [author.accountId]: {
       accountId: author.accountId,
-      signaturePublicKey: author.signaturePublicKey,
-      encryptionPublicKey: author.encryptionPublicKey,
       role: 'admin',
     },
   });

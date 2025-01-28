@@ -22,10 +22,8 @@ it('should create a space state', async () => {
   expect(state.id).toBeTypeOf('string');
   expect(state.invitations).toEqual({});
   expect(state.members).toEqual({
-    [author.signaturePublicKey]: {
+    [author.accountId]: {
       accountId: author.accountId,
-      signaturePublicKey: author.signaturePublicKey,
-      encryptionPublicKey: author.encryptionPublicKey,
       role: 'admin',
     },
   });

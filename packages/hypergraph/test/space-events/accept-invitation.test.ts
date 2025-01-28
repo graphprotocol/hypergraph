@@ -46,16 +46,12 @@ it('should accept an invitation', async () => {
   expect(state3.id).toBeTypeOf('string');
   expect(state3.invitations).toEqual({});
   expect(state3.members).toEqual({
-    [author.signaturePublicKey]: {
+    [author.accountId]: {
       accountId: author.accountId,
-      signaturePublicKey: author.signaturePublicKey,
-      encryptionPublicKey: author.encryptionPublicKey,
       role: 'admin',
     },
-    [invitee.signaturePublicKey]: {
+    [invitee.accountId]: {
       accountId: invitee.accountId,
-      signaturePublicKey: invitee.signaturePublicKey,
-      encryptionPublicKey: invitee.encryptionPublicKey,
       role: 'member',
     },
   });
