@@ -1,7 +1,8 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
 import { type Store, createStore } from '@xstate/store';
-
+import type { Address } from 'viem';
+import type { Identity } from './index.js';
 import type { Invitation, Updates } from './messages/index.js';
 import type { SpaceEvent, SpaceState } from './space-events/index.js';
 import { idToAutomergeId } from './utils/automergeId.js';
@@ -28,6 +29,10 @@ interface StoreContext {
       keyProof: string;
     };
   };
+  authenticated: boolean;
+  accountId: Address | null;
+  sessionToken: string | null;
+  keys: Identity.IdentityKeys | null;
 }
 
 const initialStoreContext: StoreContext = {
@@ -36,6 +41,10 @@ const initialStoreContext: StoreContext = {
   invitations: [],
   repo: new Repo({}),
   userIdentities: {},
+  authenticated: false,
+  accountId: null,
+  sessionToken: null,
+  keys: null,
 };
 
 type StoreEvent =
@@ -65,6 +74,15 @@ type StoreEvent =
         id: string;
         key: string;
       }[];
+    }
+  | {
+      type: 'setAuth';
+      accountId: Address;
+      sessionToken: string;
+      keys: Identity.IdentityKeys;
+    }
+  | {
+      type: 'resetAuth';
     };
 
 type GenericEventObject = { type: string };
@@ -253,6 +271,24 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
           }
           return space;
         }),
+      };
+    },
+    setAuth: (context, event: { accountId: Address; sessionToken: string; keys: Identity.IdentityKeys }) => {
+      return {
+        ...context,
+        authenticated: true,
+        accountId: event.accountId,
+        sessionToken: event.sessionToken,
+        keys: event.keys,
+      };
+    },
+    resetAuth: (context) => {
+      return {
+        ...context,
+        authenticated: false,
+        accountId: null,
+        sessionToken: null,
+        keys: null,
       };
     },
   },
