@@ -83,6 +83,7 @@ export type RequestListInvitations = Schema.Schema.Type<typeof RequestListInvita
 
 export const RequestCreateUpdate = Schema.Struct({
   type: Schema.Literal('create-update'),
+  accountId: Schema.String,
   update: Schema.Uint8Array,
   spaceId: Schema.String,
   ephemeralId: Schema.String, // used to identify the confirmation message

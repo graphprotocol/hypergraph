@@ -4,6 +4,7 @@ import { encryptMessage } from './encrypt-message.js';
 import type { RequestCreateUpdate } from './types.js';
 
 interface Params {
+  accountId: string;
   ephemeralId: string;
   spaceId: string;
   message: Uint8Array;
@@ -12,6 +13,7 @@ interface Params {
 }
 
 export const signedUpdateMessage = ({
+  accountId,
   ephemeralId,
   spaceId,
   message,
@@ -25,6 +27,7 @@ export const signedUpdateMessage = ({
 
   const messageToSign = stringToUint8Array(
     canonicalize({
+      accountId,
       ephemeralId,
       update,
       spaceId,
@@ -38,6 +41,7 @@ export const signedUpdateMessage = ({
     ephemeralId,
     update,
     spaceId,
+    accountId,
     signature,
   };
 };

@@ -465,6 +465,10 @@ export function HypergraphAppProvider({
   // Handle WebSocket messages in a separate effect
   useEffect(() => {
     if (!websocketConnection) return;
+    if (!accountId) {
+      console.error('No accountId found');
+      return;
+    }
     const encryptionPrivateKey = keys?.encryptionPrivateKey;
     if (!encryptionPrivateKey) {
       console.error('No encryption private key found');
@@ -567,6 +571,7 @@ export function HypergraphAppProvider({
                 const ephemeralId = uuid();
 
                 const messageToSend = Messages.signedUpdateMessage({
+                  accountId,
                   ephemeralId,
                   spaceId: space.id,
                   message: lastLocalChange,
@@ -666,7 +671,7 @@ export function HypergraphAppProvider({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, spaces, keys?.encryptionPrivateKey, keys?.signaturePrivateKey]);
+  }, [websocketConnection, spaces, accountId, keys?.encryptionPrivateKey, keys?.signaturePrivateKey]);
 
   const createSpaceForContext = async () => {
     if (!accountId) {
