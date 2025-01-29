@@ -23,8 +23,10 @@ export const createSpace = ({ author }: Params): Effect.Effect<CreateSpaceEvent,
     transaction,
     author: {
       accountId: author.accountId,
-      signature: signatureResult.toCompactHex(),
-      recovery: signatureResult.recovery,
+      signature: {
+        hex: signatureResult.toCompactHex(),
+        recovery: signatureResult.recovery,
+      },
     },
   };
 

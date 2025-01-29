@@ -1,9 +1,9 @@
 import * as Schema from 'effect/Schema';
+import { SignatureWithRecovery } from '../types.js';
 
 export const EventAuthor = Schema.Struct({
   accountId: Schema.String,
-  signature: Schema.String,
-  recovery: Schema.Number, // allows to recover the publicKey
+  signature: SignatureWithRecovery,
 });
 
 export type EventAuthor = Schema.Schema.Type<typeof Author>;

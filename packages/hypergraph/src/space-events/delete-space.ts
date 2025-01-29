@@ -26,8 +26,10 @@ export const deleteSpace = ({ author, id, previousEventHash }: Params): Effect.E
     transaction,
     author: {
       accountId: author.accountId,
-      signature: signatureResult.toCompactHex(),
-      recovery: signatureResult.recovery,
+      signature: {
+        hex: signatureResult.toCompactHex(),
+        recovery: signatureResult.recovery,
+      },
     },
   };
   return Effect.succeed(event);
