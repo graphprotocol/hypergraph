@@ -27,13 +27,7 @@ describe('sign updates and recover key', () => {
 
     // The signer should be recoverable without needing anything
     // outside of what's included in the message
-    const recoveredSigner = recoverUpdateMessageSigner({
-      update: msg.update,
-      spaceId: msg.spaceId,
-      ephemeralId: msg.ephemeralId,
-      signature: msg.signature,
-      accountId: msg.accountId,
-    });
+    const recoveredSigner = recoverUpdateMessageSigner(msg);
 
     expect(recoveredSigner).to.eq(signaturePublicKey);
   });

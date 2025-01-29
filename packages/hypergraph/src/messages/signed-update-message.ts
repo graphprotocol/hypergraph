@@ -63,7 +63,13 @@ export const signedUpdateMessage = ({
   };
 };
 
-export const recoverUpdateMessageSigner = ({ update, spaceId, ephemeralId, signature, accountId }: RecoverParams) => {
+export const recoverUpdateMessageSigner = ({
+  update,
+  spaceId,
+  ephemeralId,
+  signature,
+  accountId,
+}: RecoverParams | RequestCreateUpdate) => {
   const recoveredSignature = secp256k1.Signature.fromCompact(signature.hex).addRecoveryBit(signature.recovery);
   const signedMessage = stringToUint8Array(
     canonicalize({
