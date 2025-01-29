@@ -19,16 +19,16 @@ export const acceptInvitation = ({
     previousEventHash,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
-  const signature = secp256k1
-    .sign(encodedTransaction, hexToBytes(author.signaturePrivateKey), { prehash: true })
-    .toCompactHex();
+  const signatureResult = secp256k1.sign(encodedTransaction, hexToBytes(author.signaturePrivateKey), {
+    prehash: true,
+  });
 
   return Effect.succeed({
     transaction,
     author: {
       accountId: author.accountId,
-      publicKey: author.signaturePublicKey,
-      signature,
+      signature: signatureResult.toCompactHex(),
+      recovery: signatureResult.recovery,
     },
   });
 };

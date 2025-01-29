@@ -18,16 +18,16 @@ export const deleteSpace = ({ author, id, previousEventHash }: Params): Effect.E
     previousEventHash,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
-  const signature = secp256k1
-    .sign(encodedTransaction, hexToBytes(author.signaturePrivateKey), { prehash: true })
-    .toCompactHex();
+  const signatureResult = secp256k1.sign(encodedTransaction, hexToBytes(author.signaturePrivateKey), {
+    prehash: true,
+  });
 
   const event: DeleteSpaceEvent = {
     transaction,
     author: {
       accountId: author.accountId,
-      publicKey: author.signaturePublicKey,
-      signature,
+      signature: signatureResult.toCompactHex(),
+      recovery: signatureResult.recovery,
     },
   };
   return Effect.succeed(event);
