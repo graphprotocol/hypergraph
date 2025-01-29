@@ -1,2 +1,13 @@
-export * as Hypergraph from './HypergraphAppContext.js';
-export * as Space from './HypergraphSpaceContext.js';
+export {
+  HypergraphAppProvider,
+  useHypergraphApp,
+  useHypergraphAuth,
+} from './HypergraphAppContext.js';
+export {
+  HypergraphSpaceProvider,
+  useCreateEntity,
+  useDeleteEntity,
+  useQueryEntities,
+  useQueryEntity,
+  useUpdateEntity,
+} from './HypergraphSpaceContext.js';

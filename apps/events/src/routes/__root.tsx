@@ -1,12 +1,11 @@
 import { Logout } from '@/components/logout';
-import { Hypergraph } from '@graphprotocol/hypergraph-react';
+import { useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { Link, Outlet, createRootRoute, useLayoutEffect, useRouter } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 
 export const Route = createRootRoute({
   component: () => {
-    const authenticated = Hypergraph.useAuthenticated();
-    const graphIdentity = Hypergraph.useHypergraphIdentity();
+    const { authenticated, identity } = useHypergraphAuth();
 
     const router = useRouter();
 
@@ -33,7 +32,7 @@ export const Route = createRootRoute({
               {authenticated ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {graphIdentity?.accountId.substring(0, 6)}
+                    {identity?.accountId.substring(0, 6)}
                   </span>
                   <Logout />
                 </div>

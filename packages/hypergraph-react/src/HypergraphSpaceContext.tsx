@@ -24,7 +24,7 @@ export function useHypergraph() {
   return context as HypergraphContext;
 }
 
-export function HypergraphProvider({ space, children }: { space: string; children: ReactNode }) {
+export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {
   const repo = useRepo();
   const ref = useRef<HypergraphContext | undefined>(undefined);
 

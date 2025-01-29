@@ -1,5 +1,5 @@
 import { store } from '@graphprotocol/hypergraph';
-import { Hypergraph } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { useSelector } from '@xstate/store/react';
 import { useEffect, useState } from 'react';
 
@@ -10,7 +10,7 @@ export function DevTool({ spaceId }: { spaceId: string }) {
 
   const spaces = useSelector(store, (state) => state.context.spaces);
   const updatesInFlight = useSelector(store, (state) => state.context.updatesInFlight);
-  const { subscribeToSpace, loading } = Hypergraph.useHypergraphApp();
+  const { subscribeToSpace, loading } = useHypergraphApp();
 
   useEffect(() => {
     if (!loading) {

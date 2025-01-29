@@ -1,5 +1,5 @@
 import { store } from '@graphprotocol/hypergraph';
-import { Hypergraph } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect } from 'react';
@@ -13,8 +13,7 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } =
-    Hypergraph.useHypergraphApp();
+  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } = useHypergraphApp();
 
   console.log('Home page', { loading });
 
