@@ -1,11 +1,7 @@
 import * as Schema from 'effect/Schema';
 
 import { AcceptInvitationEvent, CreateInvitationEvent, CreateSpaceEvent, SpaceEvent } from '../space-events/index.js';
-
-export const SignatureWithRecovery = Schema.Struct({
-  hex: Schema.String,
-  recovery: Schema.Number,
-});
+import { SignatureWithRecovery } from '../types.js';
 
 export const SignedUpdate = Schema.Struct({
   update: Schema.Uint8Array,
