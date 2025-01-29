@@ -2,7 +2,7 @@
 
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
-import { DocHandle } from '@automerge/automerge-repo';
+import type { DocHandle } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
