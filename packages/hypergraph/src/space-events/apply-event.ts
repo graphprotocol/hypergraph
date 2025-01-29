@@ -1,8 +1,8 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
+import { sha256 } from '@noble/hashes/sha256';
 import { Effect, Schema } from 'effect';
 import type { ParseError } from 'effect/ParseResult';
-
-import { canonicalize, hexToBytes, stringToUint8Array } from '../utils/index.js';
+import { canonicalize, stringToUint8Array } from '../utils/index.js';
 import { hashEvent } from './hash-event.js';
 import {
   InvalidEventError,
@@ -41,16 +41,15 @@ export const applyEvent = ({
 
   const encodedTransaction = stringToUint8Array(canonicalize(event.transaction));
 
-  const isValidSignature = secp256k1.verify(
-    event.author.signature,
-    encodedTransaction,
-    hexToBytes(event.author.publicKey),
-    {
-      prehash: true,
-    },
-  );
+  let signatureInstance = secp256k1.Signature.fromCompact(event.author.signature.hex);
+  signatureInstance = signatureInstance.addRecoveryBit(event.author.signature.recovery);
+  // @ts-expect-error
+  const authorPublicKey = signatureInstance.recoverPublicKey(sha256(encodedTransaction));
+  // TODO compare it to the public key from the author accountId (this already verifies the signature)
+  // in case of a failure we return Effect.fail(new VerifySignatureError());
 
-  if (!isValidSignature) {
+  // biome-ignore lint/correctness/noConstantCondition: wip
+  if (false) {
     return Effect.fail(new VerifySignatureError());
   }
 

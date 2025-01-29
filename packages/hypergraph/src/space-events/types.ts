@@ -1,11 +1,9 @@
 import * as Schema from 'effect/Schema';
+import { SignatureWithRecovery } from '../types.js';
 
 export const EventAuthor = Schema.Struct({
   accountId: Schema.String,
-  // must be validated if it belongs to the accountId before being used
-  // Note: could be removed, but also might be useful to keep around in case accounts rotate their keys
-  publicKey: Schema.String,
-  signature: Schema.String,
+  signature: SignatureWithRecovery,
 });
 
 export type EventAuthor = Schema.Schema.Type<typeof Author>;
