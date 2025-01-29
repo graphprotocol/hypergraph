@@ -62,6 +62,7 @@ model Account {
   sessionNonce          String?
   sessionToken          String?
   sessionTokenExpires   DateTime?
+  updates               Update[]
 
   @@index([sessionToken])
 }
@@ -83,6 +84,11 @@ model Update {
   spaceId String
   clock   Int
   content Bytes
+  account           Account  @relation(fields: [accountId], references: [id])
+  accountId         String
+  signatureHex      String
+  signatureRecovery Int
+  ephemeralId       String
 
   @@id([spaceId, clock])
 }

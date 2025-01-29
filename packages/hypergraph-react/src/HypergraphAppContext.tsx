@@ -2,6 +2,7 @@
 
 import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
+import { DocHandle } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
@@ -479,6 +480,55 @@ export function HypergraphAppProvider({
       return;
     }
 
+    const applyUpdates = async (
+      spaceId: string,
+      spaceSecretKey: string,
+      automergeDocHandle: DocHandle<unknown>,
+      updates: Messages.Updates,
+    ) => {
+      const verifiedUpdates = updates.updates.map(async (update) => {
+        const signer = Messages.recoverUpdateMessageSigner({
+          update: update.update,
+          spaceId,
+          ephemeralId: update.ephemeralId,
+          signature: update.signature,
+          accountId: update.accountId,
+        });
+        const authorIdentity = await getUserIdentity(update.accountId);
+        if (authorIdentity.signaturePublicKey !== signer) {
+          console.error(
+            `Received invalid signature, recovered signer is ${signer},
+            expected ${authorIdentity.signaturePublicKey}`,
+          );
+          return { valid: false, update: new Uint8Array([]) };
+        }
+        return {
+          valid: true,
+          update: Messages.decryptMessage({
+            nonceAndCiphertext: update.update,
+            secretKey: Utils.hexToBytes(spaceSecretKey),
+          }),
+        };
+      });
+
+      for (const updatePromise of verifiedUpdates) {
+        const update = await updatePromise;
+        if (update.valid) {
+          automergeDocHandle.update((existingDoc) => {
+            const [newDoc] = automerge.applyChanges(existingDoc, [update.update]);
+            return newDoc;
+          });
+        }
+      }
+
+      store.send({
+        type: 'applyUpdate',
+        spaceId,
+        firstUpdateClock: updates.firstUpdateClock,
+        lastUpdateClock: updates.lastUpdateClock,
+      });
+    };
+
     const onMessage = async (event: MessageEvent) => {
       const data = Messages.deserialize(event.data);
       const message = decodeResponseMessage(data);
@@ -535,49 +585,7 @@ export function HypergraphAppProvider({
             }
 
             if (response.updates) {
-              const updates = response.updates?.updates.map(async (update) => {
-                // TODO verify the update signature and that the signing key
-                // belongs to the reported accountId
-                const signer = Messages.recoverUpdateMessageSigner({
-                  update: update.update,
-                  spaceId: response.id,
-                  ephemeralId: update.ephemeralId,
-                  signature: update.signature,
-                  accountId: update.accountId,
-                });
-                const authorIdentity = await getUserIdentity(update.accountId);
-                if (authorIdentity.signaturePublicKey !== signer) {
-                  console.error(
-                    `Received invalid signature, recovered signer is ${signer},
-                    expected ${authorIdentity.signaturePublicKey}`,
-                  );
-                  return { valid: false, update: new Uint8Array([]) };
-                }
-                return {
-                  valid: true,
-                  update: Messages.decryptMessage({
-                    nonceAndCiphertext: update.update,
-                    secretKey: Utils.hexToBytes(keys[0].key),
-                  }),
-                };
-              });
-
-              for (const updatePromise of updates) {
-                const update = await updatePromise;
-                if (update.valid) {
-                  automergeDocHandle.update((existingDoc) => {
-                    const [newDoc] = automerge.applyChanges(existingDoc, [update.update]);
-                    return newDoc;
-                  });
-                }
-              }
-
-              store.send({
-                type: 'applyUpdate',
-                spaceId: response.id,
-                firstUpdateClock: response.updates?.firstUpdateClock,
-                lastUpdateClock: response.updates?.lastUpdateClock,
-              });
+              await applyUpdates(response.id, keys[0].key, automergeDocHandle, response.updates);
             }
 
             automergeDocHandle.on('change', (result) => {
@@ -660,25 +668,12 @@ export function HypergraphAppProvider({
               console.error('Space not found', response.spaceId);
               return;
             }
+            if (!space.automergeDocHandle) {
+              console.error('No automergeDocHandle found', response.spaceId);
+              return;
+            }
 
-            const automergeUpdates = response.updates.updates.map((update) => {
-              return Messages.decryptMessage({
-                nonceAndCiphertext: update,
-                secretKey: Utils.hexToBytes(space.keys[0].key),
-              });
-            });
-
-            space?.automergeDocHandle?.update((existingDoc) => {
-              const [newDoc] = automerge.applyChanges(existingDoc, automergeUpdates);
-              return newDoc;
-            });
-
-            store.send({
-              type: 'applyUpdate',
-              spaceId: response.spaceId,
-              firstUpdateClock: response.updates.firstUpdateClock,
-              lastUpdateClock: response.updates.lastUpdateClock,
-            });
+            await applyUpdates(response.spaceId, space.keys[0].key, space.automergeDocHandle, response.updates);
             break;
           }
           default: {
