@@ -92,6 +92,40 @@ app.post('/login/nonce', async (req, res) => {
   res.status(200).send(outgoingMessage);
 });
 
+app.post('/login/with-signing-key', async (req, res) => {
+  console.log('POST login/with-signing-key');
+  try {
+    const message = Schema.decodeUnknownSync(Messages.RequestLoginWithSigningKey)(req.body);
+    const accountId = message.accountId;
+    const nonce = await getSessionNonce({ accountId });
+    // getIdentity will throw if it doesn't exist
+    const identity = await getIdentity({ signaturePublicKey: message.publicKey });
+    if (identity.accountId !== accountId) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
+    const siweObject = new SiweMessage(message.message);
+    if (siweObject.address !== Utils.publicKeyToAddress(message.publicKey)) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
+    const { data: siweMessage } = await siweObject.verify({ signature: message.signature, nonce });
+    if (!siweMessage.expirationTime) {
+      res.status(400).send('Expiration time not set');
+      return;
+    }
+    const sessionTokenExpires = new Date(siweMessage.expirationTime);
+    const sessionToken = await createSessionToken({ accountId, sessionTokenExpires });
+    const outgoingMessage: Messages.ResponseLogin = {
+      sessionToken,
+    };
+    res.status(200).send(outgoingMessage);
+  } catch (error) {
+    res.status(401).send('Unauthorized');
+    return;
+  }
+});
+
 app.post('/login', async (req, res) => {
   console.log('POST login');
   try {
