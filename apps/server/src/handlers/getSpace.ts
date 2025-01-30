@@ -61,7 +61,7 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
         hex: update.signatureHex,
         recovery: update.signatureRecovery,
       },
-      ephemeralId: update.ephemeralId,
+      updateId: update.updateId,
     };
   };
 

@@ -486,40 +486,37 @@ export function HypergraphAppProvider({
       automergeDocHandle: DocHandle<unknown>,
       updates: Messages.Updates,
     ) => {
-      const verifiedUpdates = updates.updates.map(async (update) => {
-        const signer = Messages.recoverUpdateMessageSigner({
-          update: update.update,
-          spaceId,
-          ephemeralId: update.ephemeralId,
-          signature: update.signature,
-          accountId: update.accountId,
-        });
-        const authorIdentity = await getUserIdentity(update.accountId);
-        if (authorIdentity.signaturePublicKey !== signer) {
-          console.error(
-            `Received invalid signature, recovered signer is ${signer},
-            expected ${authorIdentity.signaturePublicKey}`,
-          );
-          return { valid: false, update: new Uint8Array([]) };
-        }
-        return {
-          valid: true,
-          update: Messages.decryptMessage({
-            nonceAndCiphertext: update.update,
-            secretKey: Utils.hexToBytes(spaceSecretKey),
-          }),
-        };
-      });
-
-      for (const updatePromise of verifiedUpdates) {
-        const update = await updatePromise;
-        if (update.valid) {
-          automergeDocHandle.update((existingDoc) => {
-            const [newDoc] = automerge.applyChanges(existingDoc, [update.update]);
-            return newDoc;
+      const verifiedUpdates = await Promise.all(
+        updates.updates.map(async (update) => {
+          const signer = Messages.recoverUpdateMessageSigner({
+            update: update.update,
+            spaceId,
+            updateId: update.updateId,
+            signature: update.signature,
+            accountId: update.accountId,
           });
-        }
-      }
+          const authorIdentity = await getUserIdentity(update.accountId);
+          if (authorIdentity.signaturePublicKey !== signer) {
+            console.error(
+              `Received invalid signature, recovered signer is ${signer},
+            expected ${authorIdentity.signaturePublicKey}`,
+            );
+            return { valid: false, update: new Uint8Array([]) };
+          }
+          return {
+            valid: true,
+            update: Messages.decryptMessage({
+              nonceAndCiphertext: update.update,
+              secretKey: Utils.hexToBytes(spaceSecretKey),
+            }),
+          };
+        }),
+      );
+      const validUpdates = verifiedUpdates.filter((update) => update.valid).map((update) => update.update);
+      automergeDocHandle.update((existingDoc) => {
+        const [newDoc] = automerge.applyChanges(existingDoc, validUpdates);
+        return newDoc;
+      });
 
       store.send({
         type: 'applyUpdate',
@@ -598,11 +595,11 @@ export function HypergraphAppProvider({
                 const storeState = store.getSnapshot();
                 const space = storeState.context.spaces[0];
 
-                const ephemeralId = uuid();
+                const updateId = uuid();
 
                 const messageToSend = Messages.signedUpdateMessage({
                   accountId,
-                  ephemeralId,
+                  updateId,
                   spaceId: space.id,
                   message: lastLocalChange,
                   secretKey: space.keys[0].key,
@@ -651,7 +648,7 @@ export function HypergraphAppProvider({
           case 'update-confirmed': {
             store.send({
               type: 'removeUpdateInFlight',
-              ephemeralId: response.ephemeralId,
+              updateId: response.updateId,
             });
             store.send({
               type: 'updateConfirmed',

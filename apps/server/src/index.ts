@@ -1,6 +1,5 @@
 import { parse } from 'node:url';
 import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
-import { recoverUpdateMessageSigner } from '@graphprotocol/hypergraph/messages/signed-update-message';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
@@ -397,7 +396,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           try {
             // Check that the update was signed by a valid identity
             // belonging to this accountId
-            const signer = recoverUpdateMessageSigner(data);
+            const signer = Messages.recoverUpdateMessageSigner(data);
             const identity = await getIdentity({ signaturePublicKey: signer });
             if (identity.accountId !== accountId) {
               throw new Error('Invalid signature');
@@ -408,11 +407,11 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               update: data.update,
               signatureHex: data.signature.hex,
               signatureRecovery: data.signature.recovery,
-              ephemeralId: data.ephemeralId,
+              updateId: data.updateId,
             });
             const outgoingMessage: Messages.ResponseUpdateConfirmed = {
               type: 'update-confirmed',
-              ephemeralId: data.ephemeralId,
+              updateId: data.updateId,
               clock: update.clock,
               spaceId: data.spaceId,
             };
@@ -426,7 +425,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
                     accountId,
                     update: data.update,
                     signature: data.signature,
-                    ephemeralId: data.ephemeralId,
+                    updateId: data.updateId,
                   },
                 ],
                 firstUpdateClock: update.clock,

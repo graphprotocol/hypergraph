@@ -6,7 +6,7 @@ type Params = {
   spaceId: string;
   signatureHex: string;
   signatureRecovery: number;
-  ephemeralId: string;
+  updateId: string;
 };
 
 export const createUpdate = async ({
@@ -15,7 +15,7 @@ export const createUpdate = async ({
   spaceId,
   signatureHex,
   signatureRecovery,
-  ephemeralId,
+  updateId,
 }: Params) => {
   // throw error if account is not a member of the space
   await prisma.space.findUniqueOrThrow({
@@ -51,7 +51,7 @@ export const createUpdate = async ({
             content: Buffer.from(update),
             signatureHex,
             signatureRecovery,
-            ephemeralId,
+            updateId,
             account: { connect: { id: accountId } },
           },
         });

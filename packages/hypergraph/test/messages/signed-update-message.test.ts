@@ -12,13 +12,13 @@ describe('sign updates and recover key', () => {
     const signaturePrivateKey = bytesToHex(signaturePrivateKeyBytes);
     const signaturePublicKey = bytesToHex(secp256k1.getPublicKey(signaturePrivateKeyBytes));
     const spaceId = '0x1234';
-    const ephemeralId = bytesToHex(randomBytes(32));
+    const updateId = bytesToHex(randomBytes(32));
 
     const message = hexToBytes('0x01234abcdef01234');
 
     const msg = signedUpdateMessage({
       accountId,
-      ephemeralId,
+      updateId,
       spaceId,
       message,
       secretKey,

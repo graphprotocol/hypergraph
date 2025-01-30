@@ -6,7 +6,7 @@ import type { RequestCreateUpdate } from './types.js';
 
 interface SignedMessageParams {
   accountId: string;
-  ephemeralId: string;
+  updateId: string;
   spaceId: string;
   message: Uint8Array;
   secretKey: string;
@@ -16,7 +16,7 @@ interface SignedMessageParams {
 interface RecoverParams {
   update: Uint8Array;
   spaceId: string;
-  ephemeralId: string;
+  updateId: string;
   signature: {
     hex: string;
     recovery: number;
@@ -26,7 +26,7 @@ interface RecoverParams {
 
 export const signedUpdateMessage = ({
   accountId,
-  ephemeralId,
+  updateId,
   spaceId,
   message,
   secretKey,
@@ -40,7 +40,7 @@ export const signedUpdateMessage = ({
   const messageToSign = stringToUint8Array(
     canonicalize({
       accountId,
-      ephemeralId,
+      updateId,
       update,
       spaceId,
     }),
@@ -55,7 +55,7 @@ export const signedUpdateMessage = ({
 
   return {
     type: 'create-update',
-    ephemeralId,
+    updateId,
     update,
     spaceId,
     accountId,
@@ -66,7 +66,7 @@ export const signedUpdateMessage = ({
 export const recoverUpdateMessageSigner = ({
   update,
   spaceId,
-  ephemeralId,
+  updateId,
   signature,
   accountId,
 }: RecoverParams | RequestCreateUpdate) => {
@@ -74,7 +74,7 @@ export const recoverUpdateMessageSigner = ({
   const signedMessage = stringToUint8Array(
     canonicalize({
       accountId,
-      ephemeralId,
+      updateId,
       update,
       spaceId,
     }),

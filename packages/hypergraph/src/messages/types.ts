@@ -7,7 +7,7 @@ export const SignedUpdate = Schema.Struct({
   update: Schema.Uint8Array,
   accountId: Schema.String,
   signature: SignatureWithRecovery,
-  ephemeralId: Schema.String,
+  updateId: Schema.String,
 });
 
 export const Updates = Schema.Struct({
@@ -94,7 +94,7 @@ export const RequestCreateUpdate = Schema.Struct({
   accountId: Schema.String,
   update: Schema.Uint8Array,
   spaceId: Schema.String,
-  ephemeralId: Schema.String, // used to identify the confirmation message
+  updateId: Schema.String, // used to identify the confirmation message
   signature: SignatureWithRecovery,
 });
 
@@ -193,7 +193,7 @@ export type ResponseSpace = Schema.Schema.Type<typeof ResponseSpace>;
 
 export const ResponseUpdateConfirmed = Schema.Struct({
   type: Schema.Literal('update-confirmed'),
-  ephemeralId: Schema.String,
+  updateId: Schema.String,
   clock: Schema.Number,
   spaceId: Schema.String,
 });
