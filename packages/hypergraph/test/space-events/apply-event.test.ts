@@ -5,6 +5,7 @@ import { expect, it } from 'vitest';
 import { canonicalize } from '../../src/utils/jsc.js';
 import { stringToUint8Array } from '../../src/utils/stringToUint8Array.js';
 
+import { InvalidIdentityError } from '../../src/identity/types.js';
 import { applyEvent } from '../../src/space-events/apply-event.js';
 import { createInvitation } from '../../src/space-events/create-invitation.js';
 import { createSpace } from '../../src/space-events/create-space.js';
@@ -24,6 +25,16 @@ const invitee = {
   encryptionPublicKey: 'encryption',
 };
 
+const getVerifiedIdentity = (accountId: string) => {
+  if (accountId === author.accountId) {
+    return Effect.succeed(author);
+  }
+  if (accountId === invitee.accountId) {
+    return Effect.succeed(invitee);
+  }
+  return Effect.fail(new InvalidIdentityError());
+};
+
 it('should fail in case of an invalid signature', async () => {
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
@@ -34,7 +45,7 @@ it('should fail in case of an invalid signature', async () => {
 
       // @ts-expect-error
       spaceEvent.author.signature = signature;
-      return yield* applyEvent({ event: spaceEvent, state: undefined });
+      return yield* applyEvent({ event: spaceEvent, state: undefined, getVerifiedIdentity });
     }),
   );
 
@@ -51,10 +62,10 @@ it('should fail in case state is not provided for an event other than createSpac
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined, getVerifiedIdentity });
 
       const spaceEvent2 = yield* createInvitation({ author, previousEventHash: state.lastEventHash, invitee });
-      return yield* applyEvent({ event: spaceEvent2, state: undefined });
+      return yield* applyEvent({ event: spaceEvent2, state: undefined, getVerifiedIdentity });
     }),
   );
 
@@ -71,13 +82,13 @@ it('should fail in case of an event is applied that is not based on the previous
   const result = await Effect.runPromiseExit(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      const state = yield* applyEvent({ event: spaceEvent, state: undefined });
+      const state = yield* applyEvent({ event: spaceEvent, state: undefined, getVerifiedIdentity });
 
       const spaceEvent2 = yield* createSpace({ author });
-      const state2 = yield* applyEvent({ event: spaceEvent2, state });
+      const state2 = yield* applyEvent({ event: spaceEvent2, state, getVerifiedIdentity });
 
       const spaceEvent3 = yield* createInvitation({ author, previousEventHash: state.lastEventHash, invitee });
-      return yield* applyEvent({ event: spaceEvent3, state: state2 });
+      return yield* applyEvent({ event: spaceEvent3, state: state2, getVerifiedIdentity });
     }),
   );
 

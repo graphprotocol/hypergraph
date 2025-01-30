@@ -32,3 +32,13 @@ export type KeysSchema = Schema.Schema.Type<typeof KeysSchema>;
 export type Identity = IdentityKeys & {
   accountId: string;
 };
+
+export type PublicIdentity = {
+  accountId: string;
+  encryptionPublicKey: string;
+  signaturePublicKey: string;
+};
+
+export class InvalidIdentityError {
+  readonly _tag = 'InvalidIdentityError';
+}

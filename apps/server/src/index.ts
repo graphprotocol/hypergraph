@@ -366,8 +366,13 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           break;
         }
         case 'create-space-event': {
+          const identity = await getIdentity({ accountId });
           const applyEventResult = await Effect.runPromiseExit(
-            SpaceEvents.applyEvent({ event: data.event, state: undefined }),
+            SpaceEvents.applyEvent({
+              event: data.event,
+              state: undefined,
+              getVerifiedIdentity: () => Effect.succeed(identity),
+            }),
           );
           if (Exit.isSuccess(applyEventResult)) {
             const space = await createSpace({ accountId, event: data.event, keyBox: data.keyBox, keyId: data.keyId });

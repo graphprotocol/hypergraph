@@ -302,7 +302,7 @@ export function HypergraphAppProvider({
             signature: update.signature,
             accountId: update.accountId,
           });
-          const authorIdentity = await getUserIdentity(update.accountId);
+          const authorIdentity = await Identity.getVerifiedIdentity(update.accountId, syncServerUri);
           if (authorIdentity.signaturePublicKey !== signer) {
             console.error(
               `Received invalid signature, recovered signer is ${signer},
@@ -333,6 +333,16 @@ export function HypergraphAppProvider({
       });
     };
 
+    const getVerifiedIdentity = (accountId: string) => {
+      return Effect.gen(function* () {
+        const identity = yield* Effect.tryPromise({
+          try: () => Identity.getVerifiedIdentity(accountId, syncServerUri),
+          catch: () => new Identity.InvalidIdentityError(),
+        });
+        return identity;
+      });
+    };
+
     const onMessage = async (event: MessageEvent) => {
       const data = Messages.deserialize(event.data);
       const message = decodeResponseMessage(data);
@@ -354,7 +364,7 @@ export function HypergraphAppProvider({
             for (const event of response.events) {
               // Not sure why but type inference doesn't work here
               const applyEventResult: Exit.Exit<SpaceEvents.SpaceState, SpaceEvents.ApplyError> =
-                await Effect.runPromiseExit(SpaceEvents.applyEvent({ state, event }));
+                await Effect.runPromiseExit(SpaceEvents.applyEvent({ state, event, getVerifiedIdentity }));
               if (Exit.isSuccess(applyEventResult)) {
                 state = applyEventResult.value;
               } else {
@@ -436,7 +446,7 @@ export function HypergraphAppProvider({
             }
 
             const applyEventResult = await Effect.runPromiseExit(
-              SpaceEvents.applyEvent({ event: response.event, state: space.state }),
+              SpaceEvents.applyEvent({ event: response.event, state: space.state, getVerifiedIdentity }),
             );
             if (Exit.isSuccess(applyEventResult)) {
               store.send({
@@ -496,7 +506,7 @@ export function HypergraphAppProvider({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, spaces, accountId, keys?.encryptionPrivateKey, keys?.signaturePrivateKey]);
+  }, [websocketConnection, spaces, accountId, keys?.encryptionPrivateKey, keys?.signaturePrivateKey, syncServerUri]);
 
   const createSpaceForContext = async () => {
     if (!accountId) {
@@ -601,54 +611,6 @@ export function HypergraphAppProvider({
     [websocketConnection],
   );
 
-  const getUserIdentity = async (
-    accountId: string,
-  ): Promise<{
-    accountId: string;
-    encryptionPublicKey: string;
-    signaturePublicKey: string;
-  }> => {
-    const storeState = store.getSnapshot();
-    const identity = storeState.context.identities[accountId];
-    if (identity) {
-      return {
-        accountId,
-        encryptionPublicKey: identity.encryptionPublicKey,
-        signaturePublicKey: identity.signaturePublicKey,
-      };
-    }
-    const res = await fetch(`${syncServerUri}/identity?accountId=${accountId}`);
-    if (res.status !== 200) {
-      throw new Error('Failed to fetch identity');
-    }
-    const resDecoded = Schema.decodeUnknownSync(Messages.ResponseIdentity)(await res.json());
-
-    if (
-      !(await Identity.verifyIdentityOwnership(
-        resDecoded.accountId,
-        resDecoded.signaturePublicKey,
-        resDecoded.accountProof,
-        resDecoded.keyProof,
-      ))
-    ) {
-      throw new Error('Invalid identity');
-    }
-
-    store.send({
-      type: 'addVerifiedIdentity',
-      accountId: resDecoded.accountId,
-      encryptionPublicKey: resDecoded.encryptionPublicKey,
-      signaturePublicKey: resDecoded.signaturePublicKey,
-      accountProof: resDecoded.accountProof,
-      keyProof: resDecoded.keyProof,
-    });
-    return {
-      accountId: resDecoded.accountId,
-      encryptionPublicKey: resDecoded.encryptionPublicKey,
-      signaturePublicKey: resDecoded.signaturePublicKey,
-    };
-  };
-
   const inviteToSpace = async ({
     space,
     invitee,
@@ -675,7 +637,7 @@ export function HypergraphAppProvider({
       console.error('No state found for space');
       return;
     }
-    const inviteeWithKeys = await getUserIdentity(invitee.accountId);
+    const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountId, syncServerUri);
     const spaceEvent = await Effect.runPromiseExit(
       SpaceEvents.createInvitation({
         author: {

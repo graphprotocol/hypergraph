@@ -5,6 +5,7 @@ import type { Messages } from '@graphprotocol/hypergraph';
 import { SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
+import { getIdentity } from './getIdentity.js';
 
 type Params = {
   accountId: string;
@@ -14,7 +15,10 @@ type Params = {
 };
 
 export const createSpace = async ({ accountId, event, keyBox, keyId }: Params) => {
-  const result = await Effect.runPromiseExit(SpaceEvents.applyEvent({ event, state: undefined }));
+  const identity = await getIdentity({ accountId });
+  const result = await Effect.runPromiseExit(
+    SpaceEvents.applyEvent({ event, state: undefined, getVerifiedIdentity: () => Effect.succeed(identity) }),
+  );
   if (Exit.isFailure(result)) {
     throw new Error('Invalid event');
   }
