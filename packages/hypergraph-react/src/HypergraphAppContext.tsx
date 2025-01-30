@@ -354,9 +354,11 @@ export function HypergraphAppProvider({
             let state: SpaceEvents.SpaceState | undefined = undefined;
 
             for (const event of response.events) {
-              const applyEventResult = await Effect.runPromiseExit(SpaceEvents.applyEvent({ state: undefined, event }));
+              const applyEventResult = await Effect.runPromiseExit(SpaceEvents.applyEvent({ state, event }));
               if (Exit.isSuccess(applyEventResult)) {
                 state = applyEventResult.value;
+              } else {
+                console.log('Failed to apply event', applyEventResult);
               }
             }
 
