@@ -4,13 +4,7 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
-import {
-  getSessionNonce,
-  identityExists,
-  prepareSiweMessage,
-  restoreKeys,
-  signup,
-} from '@graphprotocol/hypergraph/identity/login';
+import { getSessionNonce, identityExists, prepareSiweMessage } from '@graphprotocol/hypergraph/identity/login';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -133,58 +127,6 @@ export function HypergraphAppProvider({
   const sessionToken = useSelectorStore(store, (state) => state.context.sessionToken);
   const keys = useSelectorStore(store, (state) => state.context.keys);
 
-  async function loginWithWallet(signer: Identity.Signer, accountId: Address, retryCount = 0) {
-    const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
-    if (!sessionToken) {
-      const sessionNonce = await getSessionNonce(accountId, syncServerUri);
-      // Use SIWE to login with the server and get a token
-      const message = prepareSiweMessage(
-        accountId,
-        sessionNonce,
-        { host: window.location.host, origin: window.location.origin },
-        chainId,
-      );
-      const signature = await signer.signMessage(message);
-      const loginReq = { accountId, message, signature } as const satisfies Messages.RequestLogin;
-      const res = await fetch(new URL('/login', syncServerUri), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginReq),
-      });
-      const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
-      Identity.storeAccountId(storage, accountId);
-      Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
-      const keys = await restoreKeys(signer, accountId, decoded.sessionToken, syncServerUri, storage);
-      return {
-        accountId,
-        sessionToken: decoded.sessionToken,
-        keys,
-      };
-    }
-    // use whoami to check if the session token is still valid
-    const res = await fetch(new URL('/whoami', syncServerUri), {
-      headers: {
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    });
-    if (res.status !== 200 || (await res.text()) !== accountId) {
-      console.warn('Session token is invalid, wiping state and retrying login with wallet');
-      Identity.wipeSyncServerSessionToken(storage, accountId);
-      if (retryCount > 3) {
-        throw new Error('Could not login with wallet after several attempts');
-      }
-      return await loginWithWallet(signer, accountId, retryCount + 1);
-    }
-    const keys = await restoreKeys(signer, accountId, sessionToken, syncServerUri, storage);
-    return {
-      accountId,
-      sessionToken,
-      keys,
-    };
-  }
-
   async function loginWithKeys(keys: Identity.IdentityKeys, accountId: Address, retryCount = 0) {
     const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
     if (sessionToken) {
@@ -255,15 +197,16 @@ export function HypergraphAppProvider({
       sessionToken: string;
       keys: Identity.IdentityKeys;
     };
+    const location = {
+      host: window.location.host,
+      origin: window.location.origin,
+    };
     if (!keys && !(await identityExists(accountId, syncServerUri))) {
-      authData = await signup(signer, accountId, syncServerUri, chainId, storage, {
-        host: window.location.host,
-        origin: window.location.origin,
-      });
+      authData = await Identity.signup(signer, accountId, syncServerUri, chainId, storage, location);
     } else if (keys) {
       authData = await loginWithKeys(keys, accountId);
     } else {
-      authData = await loginWithWallet(signer, accountId);
+      authData = await Identity.loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location);
     }
     console.log('Identity initialized');
     store.send({

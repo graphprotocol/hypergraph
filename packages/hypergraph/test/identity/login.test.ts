@@ -1,7 +1,7 @@
 import { privateKeyToAccount } from 'viem/accounts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { encryptIdentity } from '../../src/identity/identity-encryption';
-import { getSessionNonce, prepareSiweMessage, restoreKeys, signup } from '../../src/identity/login';
+import { getSessionNonce, loginWithWallet, prepareSiweMessage, restoreKeys, signup } from '../../src/identity/login';
 import type { IdentityKeys, Signer, Storage } from '../../src/identity/types';
 import type * as Messages from '../../src/messages';
 
@@ -124,6 +124,14 @@ describe('restoreKeys', () => {
     removeItem: vi.fn(),
   };
 
+  const encryptedKeys: Messages.ResponseIdentityEncrypted = {
+    keyBox: {
+      accountId: account.address,
+      ciphertext: 'foo',
+      nonce: 'bar',
+    },
+  };
+
   // mock fetch to http://localhost:3000/login/nonce to return a nonce
   beforeEach(() => {
     vi.clearAllMocks();
@@ -131,7 +139,7 @@ describe('restoreKeys', () => {
       if (url.toString() === 'http://localhost:3000/identity/encrypted') {
         return Promise.resolve({
           status: 200,
-          json: () => Promise.resolve({ sessionNonce: 'Sv2dJppgx9SKDGCIb' }),
+          json: () => Promise.resolve(encryptedKeys),
         } as Response);
       }
       return vi.fn() as never;
@@ -166,7 +174,7 @@ describe('restoreKeys', () => {
 
     const encryptedIdentity = await encryptIdentity(signer, accountId, identityKeys);
 
-    const mockEncryptedKeys: Messages.ResponseIdentityEncrypted = {
+    const encryptedKeys: Messages.ResponseIdentityEncrypted = {
       keyBox: {
         accountId,
         ciphertext: encryptedIdentity.ciphertext,
@@ -180,7 +188,7 @@ describe('restoreKeys', () => {
       if (url.toString() === 'http://localhost:3000/identity/encrypted') {
         return Promise.resolve({
           status: 200,
-          json: () => Promise.resolve(mockEncryptedKeys),
+          json: () => Promise.resolve(encryptedKeys),
         } as Response);
       }
       return vi.fn() as never;
@@ -191,14 +199,6 @@ describe('restoreKeys', () => {
     expect(result).toEqual(identityKeys);
     expect(mockStorage.getItem).toHaveBeenCalledWith('hypergraph:dev:keys:0x4aAE31951Dfd101d95c2b90e6a8a44b49867346E');
     expect(JSON.parse(mockStorage.setItem.mock.calls[0][1])).toEqual(identityKeys);
-    expect(fetch).toHaveBeenCalledWith(
-      expect.any(URL),
-      expect.objectContaining({
-        headers: {
-          Authorization: 'Bearer session-token',
-        },
-      }),
-    );
   });
 
   it('should throw error if fetch fails', async () => {
@@ -301,5 +301,148 @@ describe('signup', () => {
     await expect(signup(signer, accountId, 'http://localhost:3000', 1, mockStorage, location)).rejects.toThrow(
       'Error creating identity: 500',
     );
+  });
+});
+
+describe('loginWithWallet', () => {
+  let mockStorage: Storage;
+  const accountPrivateKey = '0xda75e4ea10de7b3ba2d4212cc16bfbb6cac6aed04ac59a28c3231994d8027a9f';
+  const account = privateKeyToAccount(accountPrivateKey);
+
+  const signer: Signer = {
+    signMessage: (message) => {
+      return account.signMessage({ message });
+    },
+    getAddress: () => account.address,
+  };
+
+  const location = { host: 'localhost', origin: 'http://localhost' };
+
+  beforeEach(() => {
+    mockStorage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    };
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-01-01'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('should successfully login and restore keys', async () => {
+    const sessionToken = 'test-session-token';
+    const accountId = account.address;
+    const identityKeys: IdentityKeys = {
+      encryptionPrivateKey: 'encryptionPrivateKey',
+      encryptionPublicKey: 'encryptionPublicKey',
+      signaturePrivateKey: 'signaturePrivateKey',
+      signaturePublicKey: 'signaturePublicKey',
+    };
+
+    const encryptedIdentity = await encryptIdentity(signer, accountId, identityKeys);
+
+    const encryptedKeys: Messages.ResponseIdentityEncrypted = {
+      keyBox: {
+        accountId,
+        ciphertext: encryptedIdentity.ciphertext,
+        nonce: encryptedIdentity.nonce,
+      },
+    };
+
+    // @ts-expect-error
+    mockStorage.getItem.mockReturnValue(null);
+
+    // Mock the nonce endpoint
+    vi.spyOn(global, 'fetch').mockImplementation((url) => {
+      if (url.toString() === 'http://localhost:3000/identity/encrypted') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve(encryptedKeys),
+        } as Response);
+      }
+      if (url.toString() === 'http://localhost:3000/login/nonce') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve({ sessionNonce: 'Sv2dJppgx9SKDGCIb' }),
+        } as Response);
+      }
+      if (url.toString() === 'http://localhost:3000/login') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve({ sessionToken }),
+        } as Response);
+      }
+      if (url.toString() === 'http://localhost:3000/whoami') {
+        return Promise.resolve({
+          status: 200,
+          text: () => Promise.resolve(accountId),
+        } as Response);
+      }
+      return vi.fn() as never;
+    });
+
+    const result = await loginWithWallet(signer, accountId, 'http://localhost:3000', 1, mockStorage, location);
+
+    expect(result.accountId).toBe(accountId);
+    expect(result.sessionToken).toBe(sessionToken);
+    expect(result.keys).toEqual(identityKeys);
+  });
+
+  it('should successfully restore keys in case of session token exists', async () => {
+    const sessionToken = 'test-session-token';
+    const accountId = account.address;
+    const identityKeys: IdentityKeys = {
+      encryptionPrivateKey: 'encryptionPrivateKey',
+      encryptionPublicKey: 'encryptionPublicKey',
+      signaturePrivateKey: 'signaturePrivateKey',
+      signaturePublicKey: 'signaturePublicKey',
+    };
+
+    const encryptedIdentity = await encryptIdentity(signer, accountId, identityKeys);
+
+    const encryptedKeys: Messages.ResponseIdentityEncrypted = {
+      keyBox: {
+        accountId,
+        ciphertext: encryptedIdentity.ciphertext,
+        nonce: encryptedIdentity.nonce,
+      },
+    };
+
+    // @ts-expect-error
+    mockStorage.getItem.mockImplementation((key) => {
+      if (key === `hypergraph:dev:session-token:${accountId}`) {
+        return sessionToken;
+      }
+
+      return null;
+    });
+
+    // Mock the nonce endpoint
+    vi.spyOn(global, 'fetch').mockImplementation((url) => {
+      if (url.toString() === 'http://localhost:3000/identity/encrypted') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve(encryptedKeys),
+        } as Response);
+      }
+      if (url.toString() === 'http://localhost:3000/whoami') {
+        return Promise.resolve({
+          status: 200,
+          text: () => Promise.resolve(accountId),
+        } as Response);
+      }
+      return vi.fn() as never;
+    });
+
+    const result = await loginWithWallet(signer, accountId, 'http://localhost:3000', 1, mockStorage, location);
+
+    expect(result.accountId).toBe(accountId);
+    expect(result.sessionToken).toBe(sessionToken);
+    expect(result.keys).toEqual(identityKeys);
   });
 });
