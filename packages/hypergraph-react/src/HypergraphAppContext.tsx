@@ -35,7 +35,7 @@ export type HypergraphAppCtx = {
   acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
   subscribeToSpace(params: Readonly<{ spaceId: string }>): void;
   inviteToSpace(params: Readonly<{ space: SpaceStorageEntry; invitee: { accountId: Address } }>): Promise<unknown>;
-  getUserIdentity(accountId: string): Promise<{
+  getVerifiedIdentity(accountId: string): Promise<{
     accountId: string;
     encryptionPublicKey: string;
     signaturePublicKey: string;
@@ -44,28 +44,36 @@ export type HypergraphAppCtx = {
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
-  async login() {},
-  logout() {},
-  setIdentityAndSessionToken() {},
+  async login() {
+    throw new Error('login is missing');
+  },
+  logout() {
+    throw new Error('logout is missing');
+  },
+  setIdentityAndSessionToken() {
+    throw new Error('setIdentityAndSessionToken is missing');
+  },
   invitations: [],
   async createSpace() {
-    return {};
+    throw new Error('createSpace is missing');
   },
-  listSpaces() {},
-  listInvitations() {},
+  listSpaces() {
+    throw new Error('listSpaces is missing');
+  },
+  listInvitations() {
+    throw new Error('listInvitations is missing');
+  },
   async acceptInvitation() {
-    return {};
+    throw new Error('acceptInvitation is missing');
   },
-  subscribeToSpace() {},
+  subscribeToSpace() {
+    throw new Error('subscribeToSpace is missing');
+  },
   async inviteToSpace() {
-    return {};
+    throw new Error('inviteToSpace is missing');
   },
-  async getUserIdentity() {
-    return {
-      accountId: '',
-      encryptionPublicKey: '',
-      signaturePublicKey: '',
-    };
+  async getVerifiedIdentity() {
+    throw new Error('getVerifiedIdentity is missing');
   },
   loading: true,
 });
@@ -601,7 +609,7 @@ export function HypergraphAppProvider({
     signaturePublicKey: string;
   }> => {
     const storeState = store.getSnapshot();
-    const identity = storeState.context.userIdentities[accountId];
+    const identity = storeState.context.identities[accountId];
     if (identity) {
       return {
         accountId,
@@ -627,7 +635,7 @@ export function HypergraphAppProvider({
     }
 
     store.send({
-      type: 'addUserIdentity',
+      type: 'addVerifiedIdentity',
       accountId: resDecoded.accountId,
       encryptionPublicKey: resDecoded.encryptionPublicKey,
       signaturePublicKey: resDecoded.signaturePublicKey,
@@ -709,6 +717,13 @@ export function HypergraphAppProvider({
     websocketConnection?.send(Messages.serialize(message));
   };
 
+  const getVerifiedIdentity = useCallback(
+    (accountId: string) => {
+      return Identity.getVerifiedIdentity(accountId, syncServerUri);
+    },
+    [syncServerUri],
+  );
+
   return (
     <HypergraphAppContext.Provider
       value={{
@@ -721,7 +736,7 @@ export function HypergraphAppProvider({
         listInvitations,
         acceptInvitation: acceptInvitationForContext,
         subscribeToSpace,
-        getUserIdentity,
+        getVerifiedIdentity,
         inviteToSpace,
         loading,
       }}
