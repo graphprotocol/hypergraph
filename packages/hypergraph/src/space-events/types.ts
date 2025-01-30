@@ -1,4 +1,4 @@
-import { ParseError } from 'effect/ParseResult';
+import type { ParseError } from 'effect/ParseResult';
 import * as Schema from 'effect/Schema';
 import { SignatureWithRecovery } from '../types.js';
 
