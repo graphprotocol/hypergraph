@@ -1,10 +1,10 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { sha256 } from '@noble/hashes/sha256';
 import { Effect, Schema } from 'effect';
-import type { ParseError } from 'effect/ParseResult';
 import { canonicalize, stringToUint8Array } from '../utils/index.js';
 import { hashEvent } from './hash-event.js';
 import {
+  type ApplyError,
   InvalidEventError,
   SpaceEvent,
   type SpaceInvitation,
@@ -20,10 +20,7 @@ type Params = {
 
 const decodeSpaceEvent = Schema.decodeUnknownEither(SpaceEvent);
 
-export const applyEvent = ({
-  state,
-  event: rawEvent,
-}: Params): Effect.Effect<SpaceState, ParseError | VerifySignatureError | InvalidEventError> => {
+export const applyEvent = ({ state, event: rawEvent }: Params): Effect.Effect<SpaceState, ApplyError> => {
   const decodedEvent = decodeSpaceEvent(rawEvent);
   if (decodedEvent._tag === 'Left') {
     return decodedEvent.left;

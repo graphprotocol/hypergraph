@@ -354,7 +354,9 @@ export function HypergraphAppProvider({
             let state: SpaceEvents.SpaceState | undefined = undefined;
 
             for (const event of response.events) {
-              const applyEventResult = await Effect.runPromiseExit(SpaceEvents.applyEvent({ state, event }));
+              // Not sure why but type inference doesn't work here
+              const applyEventResult: Exit.Exit<SpaceEvents.SpaceState, SpaceEvents.ApplyError> =
+                await Effect.runPromiseExit(SpaceEvents.applyEvent({ state, event }));
               if (Exit.isSuccess(applyEventResult)) {
                 state = applyEventResult.value;
               } else {

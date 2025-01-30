@@ -1,3 +1,4 @@
+import { ParseError } from 'effect/ParseResult';
 import * as Schema from 'effect/Schema';
 import { SignatureWithRecovery } from '../types.js';
 
@@ -101,3 +102,5 @@ export class VerifySignatureError {
 export class InvalidEventError {
   readonly _tag = 'InvalidEventError';
 }
+
+export type ApplyError = ParseError | VerifySignatureError | InvalidEventError;
