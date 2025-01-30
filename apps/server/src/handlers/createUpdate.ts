@@ -46,7 +46,7 @@ export const createUpdate = async ({
 
         return await prisma.update.create({
           data: {
-            spaceId,
+            space: { connect: { id: spaceId } },
             clock,
             content: Buffer.from(update),
             signatureHex,
