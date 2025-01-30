@@ -3,7 +3,14 @@ import { SiweMessage } from 'siwe';
 import type { Address, Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import * as Messages from '../messages/index.js';
-import { loadKeys, storeAccountId, storeKeys, storeSyncServerSessionToken } from './auth-storage.js';
+import {
+  loadKeys,
+  loadSyncServerSessionToken,
+  storeAccountId,
+  storeKeys,
+  storeSyncServerSessionToken,
+  wipeSyncServerSessionToken,
+} from './auth-storage.js';
 import { createIdentityKeys } from './create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from './identity-encryption.js';
 import { proveIdentityOwnership } from './prove-ownership.js';
@@ -65,7 +72,6 @@ export async function restoreKeys(
     },
   });
   if (res.status === 200) {
-    console.log('Identity found');
     const decoded = Schema.decodeUnknownSync(Messages.ResponseIdentityEncrypted)(await res.json());
     const { keyBox } = decoded;
     const { ciphertext, nonce } = keyBox;
@@ -120,6 +126,61 @@ export async function signup(
   return {
     accountId,
     sessionToken: decoded.sessionToken,
+    keys,
+  };
+}
+
+export async function loginWithWallet(
+  signer: Signer,
+  accountId: Address,
+  syncServerUri: string,
+  chainId: number,
+  storage: Storage,
+  location: { host: string; origin: string },
+  retryCount = 0,
+) {
+  const sessionToken = loadSyncServerSessionToken(storage, accountId);
+  if (!sessionToken) {
+    const sessionNonce = await getSessionNonce(accountId, syncServerUri);
+    // Use SIWE to login with the server and get a token
+    const message = prepareSiweMessage(accountId, sessionNonce, location, chainId);
+    const signature = await signer.signMessage(message);
+    const loginReq = { accountId, message, signature } as const satisfies Messages.RequestLogin;
+    const res = await fetch(new URL('/login', syncServerUri), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginReq),
+    });
+    const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
+    storeAccountId(storage, accountId);
+    storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
+    const keys = await restoreKeys(signer, accountId, decoded.sessionToken, syncServerUri, storage);
+    return {
+      accountId,
+      sessionToken: decoded.sessionToken,
+      keys,
+    };
+  }
+  // use whoami to check if the session token is still valid
+  const res = await fetch(new URL('/whoami', syncServerUri), {
+    headers: {
+      Authorization: `Bearer ${sessionToken}`,
+    },
+  });
+  if (res.status !== 200 || (await res.text()) !== accountId) {
+    console.warn('Session token is invalid, wiping state and retrying login with wallet');
+    wipeSyncServerSessionToken(storage, accountId);
+    if (retryCount > 3) {
+      throw new Error('Could not login with wallet after several attempts');
+    }
+    return await loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location, retryCount + 1);
+  }
+  const keys = await restoreKeys(signer, accountId, sessionToken, syncServerUri, storage);
+  return {
+    accountId,
+    sessionToken,
     keys,
   };
 }
