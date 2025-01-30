@@ -4,6 +4,13 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
+import {
+  getSessionNonce,
+  identityExists,
+  prepareSiweMessage,
+  restoreKeys,
+  signup,
+} from '@graphprotocol/hypergraph/identity/login';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -17,7 +24,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import { type Address, getAddress } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -127,45 +133,17 @@ export function HypergraphAppProvider({
   const sessionToken = useSelectorStore(store, (state) => state.context.sessionToken);
   const keys = useSelectorStore(store, (state) => state.context.keys);
 
-  function prepareSiweMessage(address: Address, nonce: string) {
-    return new SiweMessage({
-      domain: window.location.host,
-      address,
-      statement: 'Sign in to Hypergraph',
-      uri: window.location.origin,
-      version: '1',
-      chainId,
-      nonce,
-      expirationTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-    }).prepareMessage();
-  }
-
-  async function getSessionNonce(accountId: string) {
-    const nonceReq = { accountId } as const satisfies Messages.RequestLoginNonce;
-    const res = await fetch(new URL('/login/nonce', syncServerUri), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(nonceReq),
-    });
-    const decoded = Schema.decodeUnknownSync(Messages.ResponseLoginNonce)(await res.json());
-    return decoded.sessionNonce;
-  }
-
-  async function identityExists(accountId: string) {
-    const res = await fetch(new URL(`/identity?accountId=${accountId}`, syncServerUri), {
-      method: 'GET',
-    });
-    return res.status === 200;
-  }
-
   async function loginWithWallet(signer: Identity.Signer, accountId: Address, retryCount = 0) {
     const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
     if (!sessionToken) {
-      const sessionNonce = await getSessionNonce(accountId);
+      const sessionNonce = await getSessionNonce(accountId, syncServerUri);
       // Use SIWE to login with the server and get a token
-      const message = prepareSiweMessage(accountId, sessionNonce);
+      const message = prepareSiweMessage(
+        accountId,
+        sessionNonce,
+        { host: window.location.host, origin: window.location.origin },
+        chainId,
+      );
       const signature = await signer.signMessage(message);
       const loginReq = { accountId, message, signature } as const satisfies Messages.RequestLogin;
       const res = await fetch(new URL('/login', syncServerUri), {
@@ -178,7 +156,7 @@ export function HypergraphAppProvider({
       const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
       Identity.storeAccountId(storage, accountId);
       Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
-      const keys = await restoreKeys(signer, accountId, decoded.sessionToken);
+      const keys = await restoreKeys(signer, accountId, decoded.sessionToken, syncServerUri, storage);
       return {
         accountId,
         sessionToken: decoded.sessionToken,
@@ -199,7 +177,7 @@ export function HypergraphAppProvider({
       }
       return await loginWithWallet(signer, accountId, retryCount + 1);
     }
-    const keys = await restoreKeys(signer, accountId, sessionToken);
+    const keys = await restoreKeys(signer, accountId, sessionToken, syncServerUri, storage);
     return {
       accountId,
       sessionToken,
@@ -228,8 +206,13 @@ export function HypergraphAppProvider({
     }
 
     const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
-    const sessionNonce = await getSessionNonce(account.address);
-    const message = prepareSiweMessage(account.address, sessionNonce);
+    const sessionNonce = await getSessionNonce(account.address, syncServerUri);
+    const message = prepareSiweMessage(
+      account.address,
+      sessionNonce,
+      { host: window.location.host, origin: window.location.origin },
+      chainId,
+    );
     const signature = await account.signMessage({ message });
     const req = {
       accountId,
@@ -257,70 +240,6 @@ export function HypergraphAppProvider({
     };
   }
 
-  async function restoreKeys(signer: Identity.Signer, accountId: Address, sessionToken: string) {
-    const keys = Identity.loadKeys(storage, accountId);
-    if (keys) {
-      return keys;
-    }
-    // Try to get the users identity from the sync server
-    const res = await fetch(new URL('/identity/encrypted', syncServerUri), {
-      headers: {
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    });
-    if (res.status === 200) {
-      console.log('Identity found');
-      const decoded = Schema.decodeUnknownSync(Messages.ResponseIdentityEncrypted)(await res.json());
-      const { keyBox } = decoded;
-      const { ciphertext, nonce } = keyBox;
-      const keys = await Identity.decryptIdentity(signer, accountId, ciphertext, nonce);
-      Identity.storeKeys(storage, accountId, keys);
-      return keys;
-    }
-    throw new Error(`Error fetching identity ${res.status}`);
-  }
-
-  async function signup(signer: Identity.Signer, accountId: Address) {
-    const keys = Identity.createIdentityKeys();
-    const { ciphertext, nonce } = await Identity.encryptIdentity(signer, accountId, keys);
-    const { accountProof, keyProof } = await Identity.proveIdentityOwnership(signer, accountId, keys);
-
-    const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
-    const sessionNonce = await getSessionNonce(accountId);
-    const message = prepareSiweMessage(account.address, sessionNonce);
-    const signature = await account.signMessage({ message });
-    const req = {
-      keyBox: { accountId, ciphertext, nonce },
-      accountProof,
-      keyProof,
-      message,
-      signaturePublicKey: keys.signaturePublicKey,
-      encryptionPublicKey: keys.encryptionPublicKey,
-      signature,
-    } as const satisfies Messages.RequestCreateIdentity;
-    const res = await fetch(new URL('/identity', syncServerUri), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(req),
-    });
-    if (res.status !== 200) {
-      // TODO: handle this better?
-      throw new Error(`Error creating identity: ${res.status}`);
-    }
-    const decoded = Schema.decodeUnknownSync(Messages.ResponseCreateIdentity)(await res.json());
-    Identity.storeAccountId(storage, accountId);
-    Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
-    Identity.storeKeys(storage, accountId, keys);
-
-    return {
-      accountId,
-      sessionToken: decoded.sessionToken,
-      keys,
-    };
-  }
-
   async function login(signer: Identity.Signer) {
     if (!signer) {
       return;
@@ -336,8 +255,11 @@ export function HypergraphAppProvider({
       sessionToken: string;
       keys: Identity.IdentityKeys;
     };
-    if (!keys && !(await identityExists(accountId))) {
-      authData = await signup(signer, accountId);
+    if (!keys && !(await identityExists(accountId, syncServerUri))) {
+      authData = await signup(signer, accountId, syncServerUri, chainId, storage, {
+        host: window.location.host,
+        origin: window.location.origin,
+      });
     } else if (keys) {
       authData = await loginWithKeys(keys, accountId);
     } else {
