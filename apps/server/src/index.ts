@@ -393,24 +393,49 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           break;
         }
         case 'create-update': {
-          const update = await createUpdate({ accountId, spaceId: data.spaceId, update: data.update });
-          const outgoingMessage: Messages.ResponseUpdateConfirmed = {
-            type: 'update-confirmed',
-            ephemeralId: data.ephemeralId,
-            clock: update.clock,
-            spaceId: data.spaceId,
-          };
-          webSocket.send(Messages.serialize(outgoingMessage));
+          try {
+            // Check that the update was signed by a valid identity
+            // belonging to this accountId
+            const signer = Messages.recoverUpdateMessageSigner(data);
+            const identity = await getIdentity({ signaturePublicKey: signer });
+            if (identity.accountId !== accountId) {
+              throw new Error('Invalid signature');
+            }
+            const update = await createUpdate({
+              accountId,
+              spaceId: data.spaceId,
+              update: data.update,
+              signatureHex: data.signature.hex,
+              signatureRecovery: data.signature.recovery,
+              updateId: data.updateId,
+            });
+            const outgoingMessage: Messages.ResponseUpdateConfirmed = {
+              type: 'update-confirmed',
+              updateId: data.updateId,
+              clock: update.clock,
+              spaceId: data.spaceId,
+            };
+            webSocket.send(Messages.serialize(outgoingMessage));
 
-          broadcastUpdates({
-            spaceId: data.spaceId,
-            updates: {
-              updates: [new Uint8Array(update.content)],
-              firstUpdateClock: update.clock,
-              lastUpdateClock: update.clock,
-            },
-            currentClient: webSocket,
-          });
+            broadcastUpdates({
+              spaceId: data.spaceId,
+              updates: {
+                updates: [
+                  {
+                    accountId,
+                    update: data.update,
+                    signature: data.signature,
+                    updateId: data.updateId,
+                  },
+                ],
+                firstUpdateClock: update.clock,
+                lastUpdateClock: update.clock,
+              },
+              currentClient: webSocket,
+            });
+          } catch (err) {
+            console.error('Error creating update:', err);
+          }
           break;
         }
         default:

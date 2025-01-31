@@ -1,9 +1,17 @@
 import * as Schema from 'effect/Schema';
 
 import { AcceptInvitationEvent, CreateInvitationEvent, CreateSpaceEvent, SpaceEvent } from '../space-events/index.js';
+import { SignatureWithRecovery } from '../types.js';
+
+export const SignedUpdate = Schema.Struct({
+  update: Schema.Uint8Array,
+  accountId: Schema.String,
+  signature: SignatureWithRecovery,
+  updateId: Schema.String,
+});
 
 export const Updates = Schema.Struct({
-  updates: Schema.Array(Schema.Uint8Array),
+  updates: Schema.Array(SignedUpdate),
   firstUpdateClock: Schema.Number,
   lastUpdateClock: Schema.Number,
 });
@@ -83,9 +91,11 @@ export type RequestListInvitations = Schema.Schema.Type<typeof RequestListInvita
 
 export const RequestCreateUpdate = Schema.Struct({
   type: Schema.Literal('create-update'),
+  accountId: Schema.String,
   update: Schema.Uint8Array,
   spaceId: Schema.String,
-  ephemeralId: Schema.String, // used to identify the confirmation message
+  updateId: Schema.String, // used to identify the confirmation message
+  signature: SignatureWithRecovery,
 });
 
 export const RequestMessage = Schema.Union(
@@ -183,7 +193,7 @@ export type ResponseSpace = Schema.Schema.Type<typeof ResponseSpace>;
 
 export const ResponseUpdateConfirmed = Schema.Struct({
   type: Schema.Literal('update-confirmed'),
-  ephemeralId: Schema.String,
+  updateId: Schema.String,
   clock: Schema.Number,
   spaceId: Schema.String,
 });

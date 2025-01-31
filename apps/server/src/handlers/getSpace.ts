@@ -53,6 +53,18 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
     };
   });
 
+  const formatUpdate = (update) => {
+    return {
+      accountId: update.accountId,
+      update: new Uint8Array(update.content),
+      signature: {
+        hex: update.signatureHex,
+        recovery: update.signatureRecovery,
+      },
+      updateId: update.updateId,
+    };
+  };
+
   return {
     id: space.id,
     events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
@@ -60,7 +72,7 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
     updates:
       space.updates.length > 0
         ? {
-            updates: space.updates.map((update) => new Uint8Array(update.content)),
+            updates: space.updates.map(formatUpdate),
             firstUpdateClock: space.updates[0].clock,
             lastUpdateClock: space.updates[space.updates.length - 1].clock,
           }

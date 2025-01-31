@@ -50,8 +50,8 @@ const initialStoreContext: StoreContext = {
 type StoreEvent =
   | { type: 'setInvitations'; invitations: Invitation[] }
   | { type: 'reset' }
-  | { type: 'addUpdateInFlight'; ephemeralId: string }
-  | { type: 'removeUpdateInFlight'; ephemeralId: string }
+  | { type: 'addUpdateInFlight'; updateId: string }
+  | { type: 'removeUpdateInFlight'; updateId: string }
   | { type: 'setSpaceFromList'; spaceId: string }
   | { type: 'applyEvent'; spaceId: string; event: SpaceEvent; state: SpaceState }
   | { type: 'updateConfirmed'; spaceId: string; clock: number }
@@ -99,16 +99,16 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     reset: () => {
       return initialStoreContext;
     },
-    addUpdateInFlight: (context, event: { ephemeralId: string }) => {
+    addUpdateInFlight: (context, event: { updateId: string }) => {
       return {
         ...context,
-        updatesInFlight: [...context.updatesInFlight, event.ephemeralId],
+        updatesInFlight: [...context.updatesInFlight, event.updateId],
       };
     },
-    removeUpdateInFlight: (context, event: { ephemeralId: string }) => {
+    removeUpdateInFlight: (context, event: { updateId: string }) => {
       return {
         ...context,
-        updatesInFlight: context.updatesInFlight.filter((id) => id !== event.ephemeralId),
+        updatesInFlight: context.updatesInFlight.filter((id) => id !== event.updateId),
       };
     },
     setSpaceFromList: (context, event: { spaceId: string }) => {

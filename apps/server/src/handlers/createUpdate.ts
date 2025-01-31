@@ -4,9 +4,19 @@ type Params = {
   accountId: string;
   update: Uint8Array;
   spaceId: string;
+  signatureHex: string;
+  signatureRecovery: number;
+  updateId: string;
 };
 
-export const createUpdate = async ({ accountId, update, spaceId }: Params) => {
+export const createUpdate = async ({
+  accountId,
+  update,
+  spaceId,
+  signatureHex,
+  signatureRecovery,
+  updateId,
+}: Params) => {
   // throw error if account is not a member of the space
   await prisma.space.findUniqueOrThrow({
     where: { id: spaceId, members: { some: { id: accountId } } },
@@ -36,14 +46,17 @@ export const createUpdate = async ({ accountId, update, spaceId }: Params) => {
 
         return await prisma.update.create({
           data: {
-            spaceId,
+            space: { connect: { id: spaceId } },
             clock,
             content: Buffer.from(update),
+            signatureHex,
+            signatureRecovery,
+            updateId,
+            account: { connect: { id: accountId } },
           },
         });
       });
       success = true;
-      return result;
     } catch (error) {
       const dbError = error as { code?: string; message?: string };
       if (dbError.code === 'P2034' || dbError.code === 'P1008' || dbError.message?.includes('database is locked')) {
