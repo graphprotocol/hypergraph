@@ -1,8 +1,8 @@
-import { parse } from 'node:url';
 import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import WebSocket, { WebSocketServer } from 'ws';
@@ -97,7 +97,7 @@ app.post('/login/with-signing-key', async (req, res) => {
   try {
     const message = Schema.decodeUnknownSync(Messages.RequestLoginWithSigningKey)(req.body);
     const accountId = message.accountId;
-    const nonce = await getSessionNonce({ accountId });
+
     // getIdentity will throw if it doesn't exist
     const identity = await getIdentity({ signaturePublicKey: message.publicKey });
     if (identity.accountId !== accountId) {
@@ -109,6 +109,7 @@ app.post('/login/with-signing-key', async (req, res) => {
       res.status(401).send('Unauthorized');
       return;
     }
+    const nonce = await getSessionNonce({ accountId });
     const { data: siweMessage } = await siweObject.verify({ signature: message.signature, nonce });
     if (!siweMessage.expirationTime) {
       res.status(400).send('Expiration time not set');
