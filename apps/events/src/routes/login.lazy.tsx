@@ -1,5 +1,5 @@
 import type { Identity } from '@graphprotocol/hypergraph';
-import { Hypergraph } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { Loader2 } from 'lucide-react';
@@ -17,7 +17,7 @@ export const Route = createLazyFileRoute('/login')({
 function Login() {
   const { ready: privyReady, login: privyLogin, signMessage, authenticated: privyAuthenticated } = usePrivy();
   const { ready: walletsReady, wallets } = useWallets();
-  const { setIdentityAndSessionToken, login: hypergraphLogin } = Hypergraph.useHypergraphApp();
+  const { setIdentityAndSessionToken, login: hypergraphLogin } = useHypergraphApp();
   const { navigate } = useRouter();
   const [hypergraphLoginStarted, setHypergraphLoginStarted] = useState(false);
 

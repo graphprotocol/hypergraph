@@ -1,13 +1,13 @@
-import '@testing-library/jest-dom/vitest';
 import { type AnyDocumentId, Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
+import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 // biome-ignore lint/style/useImportType: <explanation>
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  HypergraphProvider,
+  HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
   useQueryEntities,
@@ -42,7 +42,7 @@ describe('HypergraphSpaceContext', () => {
   let repo = new Repo({});
   let wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
     <RepoContext.Provider value={repo}>
-      <HypergraphProvider space={spaceId}>{children}</HypergraphProvider>
+      <HypergraphSpaceProvider space={spaceId}>{children}</HypergraphSpaceProvider>
     </RepoContext.Provider>
   );
 
@@ -54,7 +54,7 @@ describe('HypergraphSpaceContext', () => {
 
     wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
       <RepoContext.Provider value={repo}>
-        <HypergraphProvider space={spaceId}>{children}</HypergraphProvider>
+        <HypergraphSpaceProvider space={spaceId}>{children}</HypergraphSpaceProvider>
       </RepoContext.Provider>
     );
   });

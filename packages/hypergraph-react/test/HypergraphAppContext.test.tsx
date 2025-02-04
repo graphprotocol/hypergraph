@@ -4,7 +4,7 @@ import { cleanup, renderHook } from '@testing-library/react';
 import React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { HypergraphAppProvider, useAuthenticated, useHypergraphAccountId } from '../src/HypergraphAppContext.js';
+import { HypergraphAppProvider, useHypergraphAuth } from '../src/HypergraphAppContext.js';
 
 afterEach(() => {
   cleanup();
@@ -29,9 +29,8 @@ describe('HypergraphAppContext', () => {
       <HypergraphAppProvider storage={storageMock}>{children}</HypergraphAppProvider>
     );
 
-    const { result: authenticatedResult } = renderHook(() => useAuthenticated(), { wrapper });
-    expect(authenticatedResult.current).toEqual(false);
-    const { result: accountIdResult } = renderHook(() => useHypergraphAccountId(), { wrapper });
-    expect(accountIdResult.current).toBeNull();
+    const { result: authenticatedResult } = renderHook(() => useHypergraphAuth(), { wrapper });
+    expect(authenticatedResult.current.authenticated).toEqual(false);
+    expect(authenticatedResult.current.identity).toBeNull();
   });
 });

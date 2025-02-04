@@ -1,10 +1,10 @@
-import { Hypergraph } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from '@tanstack/react-router';
 import { Button } from './ui/button';
 
 export function Logout() {
-  const { logout: graphLogout } = Hypergraph.useHypergraphApp();
+  const { logout: graphLogout } = useHypergraphApp();
   const { logout: privyLogout } = usePrivy();
   const router = useRouter();
   const disconnectWallet = async () => {

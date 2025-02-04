@@ -1,14 +1,14 @@
-import { Space } from '@graphprotocol/hypergraph-react';
+import { useCreateEntity, useDeleteEntity, useQueryEntities, useUpdateEntity } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Todo } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const todos = Space.useQueryEntities(Todo);
-  const createEntity = Space.useCreateEntity(Todo);
-  const updateEntity = Space.useUpdateEntity(Todo);
-  const deleteEntity = Space.useDeleteEntity();
+  const todos = useQueryEntities(Todo);
+  const createEntity = useCreateEntity(Todo);
+  const updateEntity = useUpdateEntity(Todo);
+  const deleteEntity = useDeleteEntity();
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
   return (

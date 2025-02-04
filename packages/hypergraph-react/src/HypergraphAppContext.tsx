@@ -77,14 +77,9 @@ export function useHypergraphApp() {
   return useContext<HypergraphAppCtx>(HypergraphAppContext);
 }
 
-export function useAuthenticated() {
-  return useSelectorStore(store, (state) => state.context.authenticated);
-}
-export function useHypergraphAccountId() {
-  return useSelectorStore(store, (state) => state.context.accountId);
-}
-export function useHypergraphIdentity() {
-  const accountId = useHypergraphAccountId();
+export function useHypergraphAuth() {
+  const authenticated = useSelectorStore(store, (state) => state.context.authenticated);
+  const accountId = useSelectorStore(store, (state) => state.context.accountId);
   const keys = useSelectorStore(store, (state) => state.context.keys);
   const identity: Identity.Identity | null =
     accountId && keys
@@ -96,10 +91,7 @@ export function useHypergraphIdentity() {
           signaturePrivateKey: keys.signaturePrivateKey,
         }
       : null;
-  return identity;
-}
-export function useHypergraphSessionToken() {
-  return useSelectorStore(store, (state) => state.context.sessionToken);
+  return { authenticated, identity };
 }
 
 export type HypergraphAppProviderProps = Readonly<{

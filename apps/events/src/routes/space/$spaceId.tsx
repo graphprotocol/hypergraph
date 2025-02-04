@@ -1,5 +1,5 @@
 import { store } from '@graphprotocol/hypergraph';
-import { Hypergraph, Space as HypergraphSpace } from '@graphprotocol/hypergraph-react';
+import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 
@@ -17,7 +17,7 @@ export const Route = createFileRoute('/space/$spaceId')({
 function Space() {
   const { spaceId } = Route.useParams();
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { subscribeToSpace, inviteToSpace, loading } = Hypergraph.useHypergraphApp();
+  const { subscribeToSpace, inviteToSpace, loading } = useHypergraphApp();
   useEffect(() => {
     if (!loading) {
       subscribeToSpace({ spaceId });
@@ -36,7 +36,7 @@ function Space() {
 
   return (
     <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
-      <HypergraphSpace.HypergraphProvider space={spaceId}>
+      <HypergraphSpaceProvider space={spaceId}>
         <Todos />
         <h3 className="text-xl font-bold">Invite people</h3>
         <div className="flex flex-row gap-2">
@@ -59,7 +59,7 @@ function Space() {
         <div className="mt-12">
           <DevTool spaceId={spaceId} />
         </div>
-      </HypergraphSpace.HypergraphProvider>
+      </HypergraphSpaceProvider>
     </div>
   );
 }
