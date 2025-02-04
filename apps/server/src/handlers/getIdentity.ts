@@ -1,9 +1,14 @@
 import { prisma } from '../prisma.js';
 
-type Params = {
-  accountId?: string;
-  signaturePublicKey?: string;
-};
+type Params =
+  | {
+      accountId: string;
+      signaturePublicKey?: string;
+    }
+  | {
+      accountId?: string;
+      signaturePublicKey: string;
+    };
 
 export const getIdentity = async (params: Params) => {
   if (!params.accountId && !params.signaturePublicKey) {

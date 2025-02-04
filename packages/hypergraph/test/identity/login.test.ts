@@ -1,7 +1,14 @@
 import { privateKeyToAccount } from 'viem/accounts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { encryptIdentity } from '../../src/identity/identity-encryption';
-import { getSessionNonce, loginWithWallet, prepareSiweMessage, restoreKeys, signup } from '../../src/identity/login';
+import {
+  getSessionNonce,
+  loginWithKeys,
+  loginWithWallet,
+  prepareSiweMessage,
+  restoreKeys,
+  signup,
+} from '../../src/identity/login';
 import type { IdentityKeys, Signer, Storage } from '../../src/identity/types';
 import type * as Messages from '../../src/messages';
 
@@ -444,5 +451,142 @@ describe('loginWithWallet', () => {
     expect(result.accountId).toBe(accountId);
     expect(result.sessionToken).toBe(sessionToken);
     expect(result.keys).toEqual(identityKeys);
+  });
+});
+
+describe('loginWithKeys', () => {
+  let mockStorage: Storage;
+  const accountId = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+  const identityKeys: IdentityKeys = {
+    signaturePublicKey: '0x0262701b2eb1b6b37ad03e24445dfcad1b91309199e43017b657ce2604417c12f5',
+    signaturePrivateKey: '0x88bb6f20de8dc1787c722dc847f4cf3d00285b8955445f23c483d1237fe85366',
+    encryptionPrivateKey: '0xbbf164a93b0f78a85346017fa2673cf367c64d81b1c3d6af7ad45e308107a812',
+    encryptionPublicKey: '0x595e1a6b0bb346d83bc382998943d2e6d9210fd341bc8b9f41a7229eede27240',
+  };
+  const location = { host: 'localhost', origin: 'http://localhost' };
+
+  beforeEach(() => {
+    mockStorage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    };
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should successfully login with keys and validate the valid session token', async () => {
+    const sessionToken = 'test-session-token';
+
+    // @ts-expect-error
+    mockStorage.getItem.mockImplementation((key) => {
+      if (key === `hypergraph:dev:session-token:${accountId}`) {
+        return sessionToken;
+      }
+
+      return null;
+    });
+
+    vi.spyOn(global, 'fetch').mockImplementation((url) => {
+      if (url.toString() === 'http://localhost:3000/whoami') {
+        return Promise.resolve({
+          status: 200,
+          text: () => Promise.resolve(accountId),
+        } as Response);
+      }
+
+      return vi.fn() as never;
+    });
+
+    const result = await loginWithKeys(identityKeys, accountId, 'http://localhost:3000', 1, mockStorage, location);
+
+    expect(result.accountId).toBe(accountId);
+    expect(result.sessionToken).toBe(sessionToken);
+    expect(result.keys).toEqual(identityKeys);
+  });
+
+  it('should successfully login with keys and retrieve a new session token', async () => {
+    const sessionToken = 'test-session-token';
+
+    vi.spyOn(global, 'fetch').mockImplementation((url) => {
+      if (url.toString() === 'http://localhost:3000/login/with-signing-key') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve({ sessionToken }),
+        } as Response);
+      }
+      if (url.toString() === 'http://localhost:3000/login/nonce') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve({ sessionNonce: 'Sv2dJppgx9SKDGCIb' }),
+        } as Response);
+      }
+
+      return vi.fn() as never;
+    });
+
+    const result = await loginWithKeys(identityKeys, accountId, 'http://localhost:3000', 1, mockStorage, location);
+
+    expect(result.accountId).toBe(accountId);
+    expect(result.sessionToken).toBe(sessionToken);
+    expect(result.keys).toEqual(identityKeys);
+  });
+
+  it('should get new session token if existing token is invalid', async () => {
+    const sessionToken = 'test-session-token';
+
+    const storageData = {};
+    const storage: Storage = {
+      getItem: vi.fn((key) => storageData[key] || null),
+      setItem: vi.fn((key, value) => {
+        storageData[key] = value;
+      }),
+      removeItem: vi.fn((key) => {
+        delete storageData[key];
+      }),
+    };
+
+    storage.setItem(`hypergraph:dev:session-token:${accountId}`, 'wrong-session-token');
+
+    let whoamiCounter = 0;
+
+    vi.spyOn(global, 'fetch').mockImplementation((url) => {
+      if (url.toString() === 'http://localhost:3000/whoami') {
+        return Promise.resolve({
+          status: 200,
+          text: () => {
+            whoamiCounter++;
+            if (whoamiCounter === 1) {
+              return Promise.resolve('wrong-account-id');
+            }
+            return Promise.resolve(accountId);
+          },
+        } as Response);
+      }
+      if (url.toString() === 'http://localhost:3000/login/with-signing-key') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve({ sessionToken }),
+        } as Response);
+      }
+      if (url.toString() === 'http://localhost:3000/login/nonce') {
+        return Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve({ sessionNonce: 'Sv2dJppgx9SKDGCIb' }),
+        } as Response);
+      }
+
+      return vi.fn() as never;
+    });
+
+    const result = await loginWithKeys(identityKeys, accountId, 'http://localhost:3000', 1, storage, location);
+
+    expect(result.accountId).toBe(accountId);
+    expect(result.sessionToken).toBe(sessionToken);
+    expect(result.keys).toEqual(identityKeys);
+    expect(storage.removeItem).toHaveBeenCalledWith(`hypergraph:dev:session-token:${accountId}`);
+    expect(storage.setItem).toHaveBeenCalledWith(`hypergraph:dev:session-token:${accountId}`, sessionToken);
   });
 });

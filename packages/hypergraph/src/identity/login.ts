@@ -14,7 +14,7 @@ import {
 import { createIdentityKeys } from './create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from './identity-encryption.js';
 import { proveIdentityOwnership } from './prove-ownership.js';
-import type { Signer, Storage } from './types.js';
+import type { IdentityKeys, Signer, Storage } from './types.js';
 
 export function prepareSiweMessage(
   address: Address,
@@ -181,6 +181,68 @@ export async function loginWithWallet(
   return {
     accountId,
     sessionToken,
+    keys,
+  };
+}
+
+export async function loginWithKeys(
+  keys: IdentityKeys,
+  accountId: Address,
+  syncServerUri: string,
+  chainId: number,
+  storage: Storage,
+  location: { host: string; origin: string },
+  retryCount = 0,
+) {
+  const sessionToken = loadSyncServerSessionToken(storage, accountId);
+  if (sessionToken) {
+    // use whoami to check if the session token is still valid
+    const res = await fetch(new URL('/whoami', syncServerUri), {
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+      },
+    });
+    if (res.status !== 200 || (await res.text()) !== accountId) {
+      console.warn('Session token is invalid, wiping state and retrying login with keys');
+      wipeSyncServerSessionToken(storage, accountId);
+      if (retryCount > 3) {
+        throw new Error('Could not login with keys after several attempts');
+      }
+      return await loginWithKeys(keys, accountId, syncServerUri, chainId, storage, location, retryCount + 1);
+    }
+    return {
+      accountId,
+      sessionToken,
+      keys,
+    };
+  }
+
+  const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
+  const sessionNonce = await getSessionNonce(accountId, syncServerUri);
+  const message = prepareSiweMessage(account.address, sessionNonce, location, chainId);
+  const signature = await account.signMessage({ message });
+  const req = {
+    accountId,
+    message,
+    publicKey: keys.signaturePublicKey,
+    signature,
+  } as const satisfies Messages.RequestLoginWithSigningKey;
+  const res = await fetch(new URL('/login/with-signing-key', syncServerUri), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(req),
+  });
+  if (res.status !== 200) {
+    throw new Error('Error logging in with signing key');
+  }
+  const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
+  storeAccountId(storage, accountId);
+  storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
+  return {
+    accountId,
+    sessionToken: decoded.sessionToken,
     keys,
   };
 }

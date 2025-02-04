@@ -5,7 +5,6 @@ import { uuid } from '@automerge/automerge';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
-import { getSessionNonce, identityExists, prepareSiweMessage } from '@graphprotocol/hypergraph/identity/login';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -19,9 +18,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Hex } from 'viem';
 import { type Address, getAddress } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
 
@@ -120,61 +117,6 @@ export function HypergraphAppProvider({
   const sessionToken = useSelectorStore(store, (state) => state.context.sessionToken);
   const keys = useSelectorStore(store, (state) => state.context.keys);
 
-  async function loginWithKeys(keys: Identity.IdentityKeys, accountId: Address, retryCount = 0) {
-    const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
-    if (sessionToken) {
-      // use whoami to check if the session token is still valid
-      const res = await fetch(new URL('/whoami', syncServerUri), {
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
-        },
-      });
-      if (res.status !== 200 || (await res.text()) !== accountId) {
-        console.warn('Session token is invalid, wiping state and retrying login with keys');
-        Identity.wipeSyncServerSessionToken(storage, accountId);
-        if (retryCount > 3) {
-          throw new Error('Could not login with keys after several attempts');
-        }
-        return await loginWithKeys(keys, accountId, retryCount + 1);
-      }
-      throw new Error('Could not login with keys');
-    }
-
-    const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
-    const sessionNonce = await getSessionNonce(account.address, syncServerUri);
-    const message = prepareSiweMessage(
-      account.address,
-      sessionNonce,
-      { host: window.location.host, origin: window.location.origin },
-      chainId,
-    );
-    const signature = await account.signMessage({ message });
-    const req = {
-      accountId,
-      message,
-      publicKey: keys.signaturePublicKey,
-      signature,
-    } as const satisfies Messages.RequestLoginWithSigningKey;
-    const res = await fetch(new URL('/login/with-signing-key', syncServerUri), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(req),
-    });
-    if (res.status !== 200) {
-      throw new Error('Error logging in with signing key');
-    }
-    const decoded = Schema.decodeUnknownSync(Messages.ResponseLogin)(await res.json());
-    Identity.storeAccountId(storage, accountId);
-    Identity.storeSyncServerSessionToken(storage, accountId, decoded.sessionToken);
-    return {
-      accountId,
-      sessionToken: decoded.sessionToken,
-      keys,
-    };
-  }
-
   async function login(signer: Identity.Signer) {
     if (!signer) {
       return;
@@ -194,10 +136,10 @@ export function HypergraphAppProvider({
       host: window.location.host,
       origin: window.location.origin,
     };
-    if (!keys && !(await identityExists(accountId, syncServerUri))) {
+    if (!keys && !(await Identity.identityExists(accountId, syncServerUri))) {
       authData = await Identity.signup(signer, accountId, syncServerUri, chainId, storage, location);
     } else if (keys) {
-      authData = await loginWithKeys(keys, accountId);
+      authData = await Identity.loginWithKeys(keys, accountId, syncServerUri, chainId, storage, location);
     } else {
       authData = await Identity.loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location);
     }
