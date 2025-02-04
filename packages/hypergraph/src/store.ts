@@ -12,7 +12,6 @@ export type SpaceStorageEntry = {
   events: SpaceEvent[];
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
-  lastUpdateClock: number;
   automergeDocHandle: DocHandle<unknown> | undefined;
 };
 
@@ -33,6 +32,7 @@ interface StoreContext {
   accountId: Address | null;
   sessionToken: string | null;
   keys: Identity.IdentityKeys | null;
+  lastUpdateClock: { [spaceId: string]: number };
 }
 
 const initialStoreContext: StoreContext = {
@@ -45,6 +45,7 @@ const initialStoreContext: StoreContext = {
   accountId: null,
   sessionToken: null,
   keys: null,
+  lastUpdateClock: {},
 };
 
 type StoreEvent =
@@ -113,6 +114,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     },
     setSpaceFromList: (context, event: { spaceId: string }) => {
       const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
+      const lastUpdateClock = context.lastUpdateClock[event.spaceId] ?? -1;
       const automergeDocHandle = context.repo.find(idToAutomergeId(event.spaceId) as AnyDocumentId);
 
       // set it to ready to interact with the document
@@ -128,13 +130,16 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
                 events: existingSpace.events ?? [],
                 state: existingSpace.state,
                 keys: existingSpace.keys ?? [],
-                lastUpdateClock: existingSpace.lastUpdateClock ?? -1,
                 automergeDocHandle,
               };
               return newSpace;
             }
             return existingSpace;
           }),
+          lastUpdateClock: {
+            ...context.lastUpdateClock,
+            [event.spaceId]: lastUpdateClock,
+          },
         };
       }
       return {
@@ -167,31 +172,26 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     updateConfirmed: (context, event: { spaceId: string; clock: number }) => {
       return {
         ...context,
-        spaces: context.spaces.map((space) => {
-          if (space.id === event.spaceId && space.lastUpdateClock + 1 === event.clock) {
-            return { ...space, lastUpdateClock: event.clock };
-          }
-          return space;
-        }),
+        lastUpdateClock: {
+          ...context.lastUpdateClock,
+          [event.spaceId]: event.clock,
+        },
       };
     },
     applyUpdate: (context, event: { spaceId: string; firstUpdateClock: number; lastUpdateClock: number }) => {
-      return {
-        ...context,
-        spaces: context.spaces.map((space) => {
-          if (space.id === event.spaceId) {
-            let lastUpdateClock = space.lastUpdateClock;
-            if (event.firstUpdateClock === space.lastUpdateClock + 1) {
-              lastUpdateClock = event.lastUpdateClock;
-            } else {
-              // TODO request missing updates from server
-            }
+      const lastUpdateClock = context.lastUpdateClock[event.spaceId] ?? -1;
+      if (event.firstUpdateClock === lastUpdateClock + 1) {
+        return {
+          ...context,
+          lastUpdateClock: {
+            ...context.lastUpdateClock,
+            [event.spaceId]: event.lastUpdateClock,
+          },
+        };
+      }
 
-            return { ...space, lastUpdateClock };
-          }
-          return space;
-        }),
-      };
+      // TODO else case: request missing updates from server
+      return context;
     },
     addVerifiedIdentity: (
       context,
@@ -239,38 +239,43 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
           id: event.spaceId,
           events: event.events,
           state: event.spaceState,
-          lastUpdateClock: -1,
           keys: event.keys,
           automergeDocHandle,
         };
         return {
           ...context,
           spaces: [...context.spaces, newSpace],
+          lastUpdateClock: {
+            ...context.lastUpdateClock,
+            [event.spaceId]: -1,
+          },
         };
+      }
+
+      let lastUpdateClock = context.lastUpdateClock[event.spaceId] ?? -1;
+      if (event.updates?.firstUpdateClock === lastUpdateClock + 1) {
+        lastUpdateClock = event.updates.lastUpdateClock;
+      } else {
+        // TODO request missing updates from server
       }
 
       return {
         ...context,
         spaces: context.spaces.map((space) => {
           if (space.id === event.spaceId) {
-            let lastUpdateClock = space.lastUpdateClock;
-
-            if (event.updates?.firstUpdateClock === lastUpdateClock + 1) {
-              lastUpdateClock = event.updates.lastUpdateClock;
-            } else {
-              // TODO request missing updates from server
-            }
-
             return {
               ...space,
               events: event.events,
               state: event.spaceState,
-              lastUpdateClock,
               keys: event.keys,
             };
           }
           return space;
         }),
+        lastUpdateClock: {
+          ...context.lastUpdateClock,
+          [event.spaceId]: lastUpdateClock,
+        },
       };
     },
     setAuth: (context, event: { accountId: Address; sessionToken: string; keys: Identity.IdentityKeys }) => {
