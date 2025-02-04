@@ -125,41 +125,44 @@ export function HypergraphAppProvider({
   const sessionToken = useSelectorStore(store, (state) => state.context.sessionToken);
   const keys = useSelectorStore(store, (state) => state.context.keys);
 
-  async function login(signer: Identity.Signer) {
-    if (!signer) {
-      return;
-    }
-    const address = await signer.getAddress();
-    if (!address) {
-      return;
-    }
-    const accountId = getAddress(address);
-    const keys = Identity.loadKeys(storage, accountId);
-    let authData: {
-      accountId: Address;
-      sessionToken: string;
-      keys: Identity.IdentityKeys;
-    };
-    const location = {
-      host: window.location.host,
-      origin: window.location.origin,
-    };
-    if (!keys && !(await Identity.identityExists(accountId, syncServerUri))) {
-      authData = await Identity.signup(signer, accountId, syncServerUri, chainId, storage, location);
-    } else if (keys) {
-      authData = await Identity.loginWithKeys(keys, accountId, syncServerUri, chainId, storage, location);
-    } else {
-      authData = await Identity.loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location);
-    }
-    console.log('Identity initialized');
-    store.send({
-      ...authData,
-      type: 'setAuth',
-    });
-    store.send({ type: 'reset' });
-  }
+  const login = useCallback(
+    async (signer: Identity.Signer) => {
+      if (!signer) {
+        return;
+      }
+      const address = await signer.getAddress();
+      if (!address) {
+        return;
+      }
+      const accountId = getAddress(address);
+      const keys = Identity.loadKeys(storage, accountId);
+      let authData: {
+        accountId: Address;
+        sessionToken: string;
+        keys: Identity.IdentityKeys;
+      };
+      const location = {
+        host: window.location.host,
+        origin: window.location.origin,
+      };
+      if (!keys && !(await Identity.identityExists(accountId, syncServerUri))) {
+        authData = await Identity.signup(signer, accountId, syncServerUri, chainId, storage, location);
+      } else if (keys) {
+        authData = await Identity.loginWithKeys(keys, accountId, syncServerUri, chainId, storage, location);
+      } else {
+        authData = await Identity.loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location);
+      }
+      console.log('Identity initialized');
+      store.send({
+        ...authData,
+        type: 'setAuth',
+      });
+      store.send({ type: 'reset' });
+    },
+    [storage, syncServerUri, chainId],
+  );
 
-  function logout() {
+  const logout = useCallback(() => {
     websocketConnection?.close();
     setWebsocketConnection(undefined);
 
@@ -171,7 +174,7 @@ export function HypergraphAppProvider({
     Identity.wipeKeys(storage, accountIdToLogout);
     Identity.wipeSyncServerSessionToken(storage, accountIdToLogout);
     store.send({ type: 'resetAuth' });
-  }
+  }, [accountId, storage, websocketConnection]);
 
   const setIdentityAndSessionToken = useCallback(
     (account: Identity.Identity & { sessionToken: string }) => {
@@ -508,7 +511,7 @@ export function HypergraphAppProvider({
     };
   }, [websocketConnection, spaces, accountId, keys?.encryptionPrivateKey, keys?.signaturePrivateKey, syncServerUri]);
 
-  const createSpaceForContext = async () => {
+  const createSpaceForContext = useCallback(async () => {
     if (!accountId) {
       throw new Error('No account id found');
     }
@@ -547,7 +550,14 @@ export function HypergraphAppProvider({
       },
     } as const satisfies Messages.RequestCreateSpaceEvent;
     websocketConnection?.send(Messages.serialize(message));
-  };
+  }, [
+    accountId,
+    keys?.encryptionPrivateKey,
+    keys?.encryptionPublicKey,
+    keys?.signaturePrivateKey,
+    keys?.signaturePublicKey,
+    websocketConnection,
+  ]);
 
   const listSpaces = useCallback(() => {
     const message: Messages.RequestListSpaces = { type: 'list-spaces' };
@@ -559,49 +569,59 @@ export function HypergraphAppProvider({
     websocketConnection?.send(Messages.serialize(message));
   }, [websocketConnection]);
 
-  const acceptInvitationForContext = async ({
-    invitation,
-  }: Readonly<{
-    invitation: Messages.Invitation;
-  }>) => {
-    if (!accountId) {
-      throw new Error('No account id found');
-    }
-    const encryptionPrivateKey = keys?.encryptionPrivateKey;
-    const encryptionPublicKey = keys?.encryptionPublicKey;
-    const signaturePrivateKey = keys?.signaturePrivateKey;
-    const signaturePublicKey = keys?.signaturePublicKey;
-    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
-      throw new Error('Missing keys');
-    }
-    const spaceEvent = await Effect.runPromiseExit(
-      SpaceEvents.acceptInvitation({
-        author: {
-          accountId,
-          signaturePublicKey,
-          encryptionPublicKey,
-          signaturePrivateKey,
-        },
-        previousEventHash: invitation.previousEventHash,
-      }),
-    );
-    if (Exit.isFailure(spaceEvent)) {
-      console.error('Failed to accept invitation', spaceEvent);
-      return;
-    }
-    const message: Messages.RequestAcceptInvitationEvent = {
-      type: 'accept-invitation-event',
-      event: spaceEvent.value,
-      spaceId: invitation.spaceId,
-    };
-    websocketConnection?.send(Messages.serialize(message));
+  const acceptInvitationForContext = useCallback(
+    async ({
+      invitation,
+    }: Readonly<{
+      invitation: Messages.Invitation;
+    }>) => {
+      if (!accountId) {
+        throw new Error('No account id found');
+      }
+      const encryptionPrivateKey = keys?.encryptionPrivateKey;
+      const encryptionPublicKey = keys?.encryptionPublicKey;
+      const signaturePrivateKey = keys?.signaturePrivateKey;
+      const signaturePublicKey = keys?.signaturePublicKey;
+      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+        throw new Error('Missing keys');
+      }
+      const spaceEvent = await Effect.runPromiseExit(
+        SpaceEvents.acceptInvitation({
+          author: {
+            accountId,
+            signaturePublicKey,
+            encryptionPublicKey,
+            signaturePrivateKey,
+          },
+          previousEventHash: invitation.previousEventHash,
+        }),
+      );
+      if (Exit.isFailure(spaceEvent)) {
+        console.error('Failed to accept invitation', spaceEvent);
+        return;
+      }
+      const message: Messages.RequestAcceptInvitationEvent = {
+        type: 'accept-invitation-event',
+        event: spaceEvent.value,
+        spaceId: invitation.spaceId,
+      };
+      websocketConnection?.send(Messages.serialize(message));
 
-    // temporary until we have define a strategy for accepting invitations response
-    setTimeout(() => {
-      const message2: Messages.RequestListInvitations = { type: 'list-invitations' };
-      websocketConnection?.send(Messages.serialize(message2));
-    }, 1000);
-  };
+      // temporary until we have define a strategy for accepting invitations response
+      setTimeout(() => {
+        const message2: Messages.RequestListInvitations = { type: 'list-invitations' };
+        websocketConnection?.send(Messages.serialize(message2));
+      }, 1000);
+    },
+    [
+      accountId,
+      keys?.encryptionPrivateKey,
+      keys?.encryptionPublicKey,
+      keys?.signaturePrivateKey,
+      keys?.signaturePublicKey,
+      websocketConnection,
+    ],
+  );
 
   const subscribeToSpace = useCallback(
     (params: { spaceId: string }) => {
@@ -611,73 +631,84 @@ export function HypergraphAppProvider({
     [websocketConnection],
   );
 
-  const inviteToSpace = async ({
-    space,
-    invitee,
-  }: Readonly<{
-    space: SpaceStorageEntry;
-    invitee: {
-      accountId: string;
-    };
-  }>) => {
-    if (!accountId) {
-      throw new Error('No account id found');
-    }
-    const encryptionPrivateKey = keys?.encryptionPrivateKey;
-    const encryptionPublicKey = keys?.encryptionPublicKey;
-    const signaturePrivateKey = keys?.signaturePrivateKey;
-    const signaturePublicKey = keys?.signaturePublicKey;
-    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
-      throw new Error('Missing keys');
-    }
-    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
-      throw new Error('Missing keys');
-    }
-    if (!space.state) {
-      console.error('No state found for space');
-      return;
-    }
-    const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountId, syncServerUri);
-    const spaceEvent = await Effect.runPromiseExit(
-      SpaceEvents.createInvitation({
-        author: {
-          accountId,
-          signaturePublicKey,
-          encryptionPublicKey,
-          signaturePrivateKey,
-        },
-        previousEventHash: space.state.lastEventHash,
-        invitee: inviteeWithKeys,
-      }),
-    );
-    if (Exit.isFailure(spaceEvent)) {
-      console.error('Failed to create invitation', spaceEvent);
-      return;
-    }
-
-    const keyBoxes = space.keys.map((key) => {
-      const keyBox = Key.encryptKey({
-        key: Utils.hexToBytes(key.key),
-        publicKey: Utils.hexToBytes(inviteeWithKeys.encryptionPublicKey),
-        privateKey: Utils.hexToBytes(encryptionPrivateKey),
-      });
-      return {
-        id: key.id,
-        ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
-        nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
-        authorPublicKey: encryptionPublicKey,
-        accountId: invitee.accountId,
+  const inviteToSpace = useCallback(
+    async ({
+      space,
+      invitee,
+    }: Readonly<{
+      space: SpaceStorageEntry;
+      invitee: {
+        accountId: string;
       };
-    });
+    }>) => {
+      if (!accountId) {
+        throw new Error('No account id found');
+      }
+      const encryptionPrivateKey = keys?.encryptionPrivateKey;
+      const encryptionPublicKey = keys?.encryptionPublicKey;
+      const signaturePrivateKey = keys?.signaturePrivateKey;
+      const signaturePublicKey = keys?.signaturePublicKey;
+      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+        throw new Error('Missing keys');
+      }
+      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+        throw new Error('Missing keys');
+      }
+      if (!space.state) {
+        console.error('No state found for space');
+        return;
+      }
+      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountId, syncServerUri);
+      const spaceEvent = await Effect.runPromiseExit(
+        SpaceEvents.createInvitation({
+          author: {
+            accountId,
+            signaturePublicKey,
+            encryptionPublicKey,
+            signaturePrivateKey,
+          },
+          previousEventHash: space.state.lastEventHash,
+          invitee: inviteeWithKeys,
+        }),
+      );
+      if (Exit.isFailure(spaceEvent)) {
+        console.error('Failed to create invitation', spaceEvent);
+        return;
+      }
 
-    const message: Messages.RequestCreateInvitationEvent = {
-      type: 'create-invitation-event',
-      event: spaceEvent.value,
-      spaceId: space.id,
-      keyBoxes,
-    };
-    websocketConnection?.send(Messages.serialize(message));
-  };
+      const keyBoxes = space.keys.map((key) => {
+        const keyBox = Key.encryptKey({
+          key: Utils.hexToBytes(key.key),
+          publicKey: Utils.hexToBytes(inviteeWithKeys.encryptionPublicKey),
+          privateKey: Utils.hexToBytes(encryptionPrivateKey),
+        });
+        return {
+          id: key.id,
+          ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
+          nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
+          authorPublicKey: encryptionPublicKey,
+          accountId: invitee.accountId,
+        };
+      });
+
+      const message: Messages.RequestCreateInvitationEvent = {
+        type: 'create-invitation-event',
+        event: spaceEvent.value,
+        spaceId: space.id,
+        keyBoxes,
+      };
+      websocketConnection?.send(Messages.serialize(message));
+    },
+    [
+      accountId,
+      keys?.encryptionPrivateKey,
+      keys?.encryptionPublicKey,
+      keys?.signaturePrivateKey,
+      keys?.signaturePublicKey,
+      websocketConnection,
+      syncServerUri,
+    ],
+  );
 
   const getVerifiedIdentity = useCallback(
     (accountId: string) => {
