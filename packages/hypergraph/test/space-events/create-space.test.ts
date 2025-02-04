@@ -1,6 +1,7 @@
 import { Effect } from 'effect';
 import { expect, it } from 'vitest';
 
+import { InvalidIdentityError } from '../../src/identity/types.js';
 import { applyEvent } from '../../src/space-events/apply-event.js';
 import { createSpace } from '../../src/space-events/create-space.js';
 
@@ -12,10 +13,17 @@ it('should create a space state', async () => {
     encryptionPublicKey: 'encryption',
   };
 
+  const getVerifiedIdentity = (accountId: string) => {
+    if (accountId === author.accountId) {
+      return Effect.succeed(author);
+    }
+    return Effect.fail(new InvalidIdentityError());
+  };
+
   const state = await Effect.runPromise(
     Effect.gen(function* () {
       const spaceEvent = yield* createSpace({ author });
-      return yield* applyEvent({ event: spaceEvent, state: undefined });
+      return yield* applyEvent({ event: spaceEvent, state: undefined, getVerifiedIdentity });
     }),
   );
 

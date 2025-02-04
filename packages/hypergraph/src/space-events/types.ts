@@ -1,5 +1,6 @@
 import type { ParseError } from 'effect/ParseResult';
 import * as Schema from 'effect/Schema';
+import { InvalidIdentityError } from '../identity/types.js';
 import { SignatureWithRecovery } from '../types.js';
 
 export const EventAuthor = Schema.Struct({
@@ -103,4 +104,4 @@ export class InvalidEventError {
   readonly _tag = 'InvalidEventError';
 }
 
-export type ApplyError = ParseError | VerifySignatureError | InvalidEventError;
+export type ApplyError = ParseError | VerifySignatureError | InvalidEventError | InvalidIdentityError;

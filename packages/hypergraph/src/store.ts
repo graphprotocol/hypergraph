@@ -21,7 +21,7 @@ interface StoreContext {
   updatesInFlight: string[];
   invitations: Invitation[];
   repo: Repo;
-  userIdentities: {
+  identities: {
     [accountId: string]: {
       encryptionPublicKey: string;
       signaturePublicKey: string;
@@ -40,7 +40,7 @@ const initialStoreContext: StoreContext = {
   updatesInFlight: [],
   invitations: [],
   repo: new Repo({}),
-  userIdentities: {},
+  identities: {},
   authenticated: false,
   accountId: null,
   sessionToken: null,
@@ -57,7 +57,7 @@ type StoreEvent =
   | { type: 'updateConfirmed'; spaceId: string; clock: number }
   | { type: 'applyUpdate'; spaceId: string; firstUpdateClock: number; lastUpdateClock: number }
   | {
-      type: 'addUserIdentity';
+      type: 'addVerifiedIdentity';
       accountId: string;
       encryptionPublicKey: string;
       signaturePublicKey: string;
@@ -193,7 +193,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         }),
       };
     },
-    addUserIdentity: (
+    addVerifiedIdentity: (
       context,
       event: {
         accountId: string;
@@ -205,8 +205,8 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     ) => {
       return {
         ...context,
-        userIdentities: {
-          ...context.userIdentities,
+        identities: {
+          ...context.identities,
           [event.accountId]: {
             encryptionPublicKey: event.encryptionPublicKey,
             signaturePublicKey: event.signaturePublicKey,
