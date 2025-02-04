@@ -1,7 +1,7 @@
 import { Effect, Exit } from 'effect';
 
 import type { Messages } from '@graphprotocol/hypergraph';
-import { SpaceEvents } from '@graphprotocol/hypergraph';
+import { Identity, SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
 import { getIdentity } from './getIdentity.js';
@@ -37,13 +37,26 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
       orderBy: { counter: 'desc' },
     });
 
-    const identity = await getIdentity({ accountId });
+    const getVerifiedIdentity = (accountIdToFetch: string) => {
+      // applySpaceEvent is only allowed to be called by the account that is applying the event
+      if (accountIdToFetch !== accountId) {
+        return Effect.fail(new Identity.InvalidIdentityError());
+      }
+
+      return Effect.gen(function* () {
+        const identity = yield* Effect.tryPromise({
+          try: () => getIdentity({ accountId: accountIdToFetch }),
+          catch: () => new Identity.InvalidIdentityError(),
+        });
+        return identity;
+      });
+    };
 
     const result = await Effect.runPromiseExit(
       SpaceEvents.applyEvent({
         event,
         state: JSON.parse(lastEvent.state),
-        getVerifiedIdentity: () => Effect.succeed(identity),
+        getVerifiedIdentity,
       }),
     );
     if (Exit.isFailure(result)) {

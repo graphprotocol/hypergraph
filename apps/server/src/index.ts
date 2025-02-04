@@ -366,12 +366,25 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           break;
         }
         case 'create-space-event': {
-          const identity = await getIdentity({ accountId });
+          const getVerifiedIdentity = (accountIdToFetch: string) => {
+            if (accountIdToFetch !== accountId) {
+              return Effect.fail(new Identity.InvalidIdentityError());
+            }
+
+            return Effect.gen(function* () {
+              const identity = yield* Effect.tryPromise({
+                try: () => getIdentity({ accountId: accountIdToFetch }),
+                catch: () => new Identity.InvalidIdentityError(),
+              });
+              return identity;
+            });
+          };
+
           const applyEventResult = await Effect.runPromiseExit(
             SpaceEvents.applyEvent({
               event: data.event,
               state: undefined,
-              getVerifiedIdentity: () => Effect.succeed(identity),
+              getVerifiedIdentity,
             }),
           );
           if (Exit.isSuccess(applyEventResult)) {
