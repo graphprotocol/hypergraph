@@ -537,20 +537,32 @@ describe('loginWithKeys', () => {
   it('should get new session token if existing token is invalid', async () => {
     const sessionToken = 'test-session-token';
 
-    // @ts-expect-error
-    mockStorage.getItem.mockImplementation((key) => {
-      if (key === `hypergraph:dev:session-token:${accountId}`) {
-        return sessionToken;
-      }
+    const storageData = {};
+    const storage: Storage = {
+      getItem: vi.fn((key) => storageData[key] || null),
+      setItem: vi.fn((key, value) => {
+        storageData[key] = value;
+      }),
+      removeItem: vi.fn((key) => {
+        delete storageData[key];
+      }),
+    };
 
-      return null;
-    });
+    storage.setItem(`hypergraph:dev:session-token:${accountId}`, 'wrong-session-token');
+
+    let whoamiCounter = 0;
 
     vi.spyOn(global, 'fetch').mockImplementation((url) => {
       if (url.toString() === 'http://localhost:3000/whoami') {
         return Promise.resolve({
           status: 200,
-          text: () => Promise.resolve(accountId),
+          text: () => {
+            whoamiCounter++;
+            if (whoamiCounter === 1) {
+              return Promise.resolve('wrong-account-id');
+            }
+            return Promise.resolve(accountId);
+          },
         } as Response);
       }
       if (url.toString() === 'http://localhost:3000/login/with-signing-key') {
@@ -569,10 +581,12 @@ describe('loginWithKeys', () => {
       return vi.fn() as never;
     });
 
-    const result = await loginWithKeys(identityKeys, accountId, 'http://localhost:3000', 1, mockStorage, location);
+    const result = await loginWithKeys(identityKeys, accountId, 'http://localhost:3000', 1, storage, location);
 
     expect(result.accountId).toBe(accountId);
     expect(result.sessionToken).toBe(sessionToken);
     expect(result.keys).toEqual(identityKeys);
+    expect(storage.removeItem).toHaveBeenCalledWith(`hypergraph:dev:session-token:${accountId}`);
+    expect(storage.setItem).toHaveBeenCalledWith(`hypergraph:dev:session-token:${accountId}`, sessionToken);
   });
 });
