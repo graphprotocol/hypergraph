@@ -135,29 +135,10 @@ export function HypergraphAppProvider({
         return;
       }
       const accountId = getAddress(address);
-      const keys = Identity.loadKeys(storage, accountId);
-      let authData: {
-        accountId: Address;
-        sessionToken: string;
-        keys: Identity.IdentityKeys;
-      };
-      const location = {
+      await Identity.login(signer, accountId, syncServerUri, chainId, storage, {
         host: window.location.host,
         origin: window.location.origin,
-      };
-      if (!keys && !(await Identity.identityExists(accountId, syncServerUri))) {
-        authData = await Identity.signup(signer, accountId, syncServerUri, chainId, storage, location);
-      } else if (keys) {
-        authData = await Identity.loginWithKeys(keys, accountId, syncServerUri, chainId, storage, location);
-      } else {
-        authData = await Identity.loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location);
-      }
-      console.log('Identity initialized');
-      store.send({
-        ...authData,
-        type: 'setAuth',
       });
-      store.send({ type: 'reset' });
     },
     [storage, syncServerUri, chainId],
   );
@@ -167,13 +148,7 @@ export function HypergraphAppProvider({
     setWebsocketConnection(undefined);
 
     const accountIdToLogout = accountId ?? Identity.loadAccountId(storage);
-    Identity.wipeAccountId(storage);
-    if (!accountIdToLogout) {
-      return;
-    }
-    Identity.wipeKeys(storage, accountIdToLogout);
-    Identity.wipeSyncServerSessionToken(storage, accountIdToLogout);
-    store.send({ type: 'resetAuth' });
+    Identity.logout(accountIdToLogout, storage);
   }, [accountId, storage, websocketConnection]);
 
   const setIdentityAndSessionToken = useCallback(
