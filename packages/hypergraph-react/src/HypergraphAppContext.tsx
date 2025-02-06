@@ -29,7 +29,7 @@ export type HypergraphAppCtx = {
   setIdentityAndSessionToken(account: Identity.Identity & { sessionToken: string }): void;
   // app related
   invitations: Array<Messages.Invitation>;
-  createSpace(): Promise<unknown>;
+  createSpace(): Promise<string>;
   listSpaces(): void;
   listInvitations(): void;
   acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
@@ -511,7 +511,7 @@ export function HypergraphAppProvider({
     };
   }, [websocketConnection, spaces, accountId, keys?.encryptionPrivateKey, keys?.signaturePrivateKey, syncServerUri]);
 
-  const createSpaceForContext = useCallback(async () => {
+  const createSpaceForContext = useCallback<() => Promise<string>>(async () => {
     if (!accountId) {
       throw new Error('No account id found');
     }
@@ -550,6 +550,10 @@ export function HypergraphAppProvider({
       },
     } as const satisfies Messages.RequestCreateSpaceEvent;
     websocketConnection?.send(Messages.serialize(message));
+
+    // return the created space id
+    // @todo return created Space with name, etc
+    return spaceEvent.transaction.id;
   }, [
     accountId,
     keys?.encryptionPrivateKey,
