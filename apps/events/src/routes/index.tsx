@@ -1,11 +1,11 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { smartAccountWalletClient } from '@/lib/smart-account';
 import { store } from '@graphprotocol/hypergraph';
 import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -63,7 +63,7 @@ function Index() {
         <Button
           onClick={(event) => {
             event.preventDefault();
-            createSpace();
+            createSpace(smartAccountWalletClient);
           }}
         >
           Create space

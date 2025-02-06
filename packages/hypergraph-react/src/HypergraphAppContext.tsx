@@ -4,7 +4,9 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { type GeoSmartAccount, Graph } from '@graphprotocol/grc-20';
 import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
+import { generateId } from '@graphprotocol/hypergraph/utils/index';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -486,57 +488,79 @@ export function HypergraphAppProvider({
     };
   }, [websocketConnection, spaces, accountId, keys?.encryptionPrivateKey, keys?.signaturePrivateKey, syncServerUri]);
 
-  const createSpaceForContext = useCallback<() => Promise<string>>(async () => {
-    if (!accountId) {
-      throw new Error('No account id found');
-    }
-    const encryptionPrivateKey = keys?.encryptionPrivateKey;
-    const encryptionPublicKey = keys?.encryptionPublicKey;
-    const signaturePrivateKey = keys?.signaturePrivateKey;
-    const signaturePublicKey = keys?.signaturePublicKey;
-    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
-      throw new Error('Missing keys');
-    }
-    const spaceEvent = await Effect.runPromise(
-      SpaceEvents.createSpace({
-        author: {
+  const createSpaceForContext = useCallback<() => Promise<string>>(
+    async (smartAccountWalletClient?: GeoSmartAccount) => {
+      if (!accountId) {
+        throw new Error('No account id found');
+      }
+      const encryptionPrivateKey = keys?.encryptionPrivateKey;
+      const encryptionPublicKey = keys?.encryptionPublicKey;
+      const signaturePrivateKey = keys?.signaturePrivateKey;
+      const signaturePublicKey = keys?.signaturePublicKey;
+      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+        throw new Error('Missing keys');
+      }
+
+      let spaceId = generateId();
+
+      console.log('WWWWOOOOWWW', smartAccountWalletClient);
+
+      try {
+        if (smartAccountWalletClient?.account) {
+          const result = await Graph.createSpace({
+            editorAddress: smartAccountWalletClient.account?.address,
+            name: 'Test Space',
+          });
+          spaceId = result.id;
+          console.log('Created public space', spaceId);
+        }
+      } catch (error) {
+        console.error('Error creating public space', error);
+      }
+
+      const spaceEvent = await Effect.runPromise(
+        SpaceEvents.createSpace({
+          author: {
+            accountId,
+            encryptionPublicKey,
+            signaturePrivateKey,
+            signaturePublicKey,
+          },
+          spaceId,
+        }),
+      );
+      const result = Key.createKey({
+        privateKey: Utils.hexToBytes(encryptionPrivateKey),
+        publicKey: Utils.hexToBytes(encryptionPublicKey),
+      });
+
+      const message = {
+        type: 'create-space-event',
+        event: spaceEvent,
+        spaceId: spaceEvent.transaction.id,
+        keyId: Utils.generateId(),
+        keyBox: {
           accountId,
-          encryptionPublicKey,
-          signaturePrivateKey,
-          signaturePublicKey,
+          ciphertext: Utils.bytesToHex(result.keyBoxCiphertext),
+          nonce: Utils.bytesToHex(result.keyBoxNonce),
+          authorPublicKey: encryptionPublicKey,
         },
-      }),
-    );
-    const result = Key.createKey({
-      privateKey: Utils.hexToBytes(encryptionPrivateKey),
-      publicKey: Utils.hexToBytes(encryptionPublicKey),
-    });
+      } as const satisfies Messages.RequestCreateSpaceEvent;
+      websocketConnection?.send(Messages.serialize(message));
 
-    const message = {
-      type: 'create-space-event',
-      event: spaceEvent,
-      spaceId: spaceEvent.transaction.id,
-      keyId: Utils.generateId(),
-      keyBox: {
-        accountId,
-        ciphertext: Utils.bytesToHex(result.keyBoxCiphertext),
-        nonce: Utils.bytesToHex(result.keyBoxNonce),
-        authorPublicKey: encryptionPublicKey,
-      },
-    } as const satisfies Messages.RequestCreateSpaceEvent;
-    websocketConnection?.send(Messages.serialize(message));
-
-    // return the created space id
-    // @todo return created Space with name, etc
-    return spaceEvent.transaction.id;
-  }, [
-    accountId,
-    keys?.encryptionPrivateKey,
-    keys?.encryptionPublicKey,
-    keys?.signaturePrivateKey,
-    keys?.signaturePublicKey,
-    websocketConnection,
-  ]);
+      // return the created space id
+      // @todo return created Space with name, etc
+      return spaceEvent.transaction.id;
+    },
+    [
+      accountId,
+      keys?.encryptionPrivateKey,
+      keys?.encryptionPublicKey,
+      keys?.signaturePrivateKey,
+      keys?.signaturePublicKey,
+      websocketConnection,
+    ],
+  );
 
   const listSpaces = useCallback(() => {
     const message: Messages.RequestListSpaces = { type: 'list-spaces' };

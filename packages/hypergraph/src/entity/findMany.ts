@@ -58,12 +58,18 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 
         const oldDecodedEntry = cacheEntry.entities.get(entityId);
         const relations = getEntityRelations(entity, cacheEntry.type, doc);
-        const decoded = cacheEntry.decoder({
-          ...entity,
-          ...relations,
-          id: entityId,
-        });
-        cacheEntry.entities.set(entityId, decoded);
+        let decoded: unknown | undefined;
+        try {
+          decoded = cacheEntry.decoder({
+            ...entity,
+            ...relations,
+            id: entityId,
+          });
+          cacheEntry.entities.set(entityId, decoded);
+        } catch (error) {
+          // TODO: store the corrupt entity ids somewhere, so they can be read via the API
+          console.error('error', error);
+        }
 
         if (oldDecodedEntry) {
           // collect all the Ids for relation entries in the `oldDecodedEntry`
@@ -91,24 +97,25 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           }
         }
 
-        // @ts-expect-error decoded is a valid object
-        for (const [key, value] of Object.entries(decoded)) {
-          if (Array.isArray(value)) {
-            for (const relationEntity of value) {
-              let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-              if (relationParentEntry) {
-                relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
-              } else {
-                relationParentEntry = new Map();
-                entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-                relationParentEntry.set(cacheEntry, 1);
+        if (decoded) {
+          for (const [key, value] of Object.entries(decoded)) {
+            if (Array.isArray(value)) {
+              for (const relationEntity of value) {
+                let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+                if (relationParentEntry) {
+                  relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
+                } else {
+                  relationParentEntry = new Map();
+                  entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+                  relationParentEntry.set(cacheEntry, 1);
+                }
               }
             }
           }
         }
 
         const query = cacheEntry.queries.get('all');
-        if (query) {
+        if (query && decoded) {
           const index = query.data.findIndex((entity) => entity.id === entityId);
           if (index !== -1) {
             query.data[index] = decoded;
@@ -213,7 +220,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-): Readonly<Array<Entity<S>>> {
+): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
   // @ts-expect-error name is defined
@@ -221,19 +228,24 @@ export function findMany<const S extends AnyNoContext>(
 
   const doc = handle.docSync();
   if (!doc) {
-    return [];
+    return { entities: [], corruptEntityIds: [] };
   }
   const entities = doc.entities ?? {};
+  const corruptEntityIds: string[] = [];
   const filtered: Array<Entity<S>> = [];
   for (const id in entities) {
     const entity = entities[id];
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
       const relations = getEntityRelations(entity, type, doc);
-      filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
+      try {
+        filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
+      } catch (error) {
+        corruptEntityIds.push(id);
+      }
     }
   }
 
-  return filtered;
+  return { entities: filtered, corruptEntityIds: [] };
 }
 
 const stableEmptyArray: Array<unknown> = [];
@@ -261,7 +273,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       return query.data;
     }
 
-    const entities = findMany(handle, type);
+    const { entities } = findMany(handle, type);
     for (const entity of entities) {
       cacheEntry?.entities.set(entity.id, entity);
 
@@ -281,7 +293,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   };
 
   if (!decodedEntitiesCache.has(typeName)) {
-    const entities = findMany(handle, type);
+    const { entities } = findMany(handle, type);
     const entitiesMap = new Map();
     for (const entity of entities) {
       entitiesMap.set(entity.id, entity);

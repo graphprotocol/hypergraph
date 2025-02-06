@@ -3,14 +3,17 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Schema from 'effect/Schema';
 import { type ReactNode, createContext, useContext, useRef, useState, useSyncExternalStore } from 'react';
+import type { Mapping } from './types.js';
 
 export type HypergraphContext = {
   space: string;
   repo: Repo;
   id: AnyDocumentId;
   handle: DocHandle<Entity.DocumentContent>;
+  mapping?: Mapping;
 };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
@@ -24,7 +27,13 @@ export function useHypergraph() {
   return context as HypergraphContext;
 }
 
-export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {
+const queryClient = new QueryClient();
+
+export function HypergraphSpaceProvider({
+  space,
+  children,
+  mapping,
+}: { space: string; children: ReactNode; mapping: Mapping }) {
   const repo = useRepo();
   const ref = useRef<HypergraphContext | undefined>(undefined);
 
@@ -38,10 +47,15 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
       repo,
       id,
       handle,
+      mapping,
     };
   }
 
-  return <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>
+    </QueryClientProvider>
+  );
 }
 
 export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S) {
@@ -55,6 +69,11 @@ export function useUpdateEntity<const S extends Entity.AnyNoContext>(type: S) {
 }
 
 export function useDeleteEntity() {
+  const hypergraph = useHypergraph();
+  return Entity.markAsDeleted(hypergraph.handle);
+}
+
+export function useHardDeleteEntity() {
   const hypergraph = useHypergraph();
   return Entity.delete(hypergraph.handle);
 }
@@ -111,3 +130,8 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id:
     return prevEntityRef.current;
   });
 }
+
+export const useHypergraphSpace = () => {
+  const { space } = useHypergraph();
+  return space;
+};

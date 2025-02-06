@@ -18,7 +18,12 @@ export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
     // apply changes to the repo -> adds the entity to the repo entities document
     handle.change((doc) => {
       doc.entities ??= {};
-      doc.entities[entityId] = { ...encoded, '@@types@@': [typeName] };
+      doc.entities[entityId] = {
+        ...encoded,
+        '@@types@@': [typeName],
+        __deleted: false,
+        __version: '',
+      };
     });
 
     return { id: entityId, ...encoded, type: typeName };

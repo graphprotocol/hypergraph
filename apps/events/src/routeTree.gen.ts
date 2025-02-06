@@ -16,12 +16,21 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
 import { Route as SettingsExportWalletImport } from './routes/settings/export-wallet'
+import { Route as SpaceSpaceIdIndexImport } from './routes/space/$spaceId/index'
+import { Route as SpaceSpaceIdPublicIntegrationImport } from './routes/space/$spaceId/public-integration'
 
 // Create Virtual Routes
 
+const PlaygroundLazyImport = createFileRoute('/playground')()
 const LoginLazyImport = createFileRoute('/login')()
 
 // Create/Update Routes
+
+const PlaygroundLazyRoute = PlaygroundLazyImport.update({
+  id: '/playground',
+  path: '/playground',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/playground.lazy').then((d) => d.Route))
 
 const LoginLazyRoute = LoginLazyImport.update({
   id: '/login',
@@ -47,6 +56,19 @@ const SettingsExportWalletRoute = SettingsExportWalletImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const SpaceSpaceIdIndexRoute = SpaceSpaceIdIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SpaceSpaceIdRoute,
+} as any)
+
+const SpaceSpaceIdPublicIntegrationRoute =
+  SpaceSpaceIdPublicIntegrationImport.update({
+    id: '/public-integration',
+    path: '/public-integration',
+    getParentRoute: () => SpaceSpaceIdRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -65,6 +87,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginLazyImport
       parentRoute: typeof rootRoute
     }
+    '/playground': {
+      id: '/playground'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof PlaygroundLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/settings/export-wallet': {
       id: '/settings/export-wallet'
       path: '/settings/export-wallet'
@@ -79,59 +108,113 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpaceSpaceIdImport
       parentRoute: typeof rootRoute
     }
+    '/space/$spaceId/public-integration': {
+      id: '/space/$spaceId/public-integration'
+      path: '/public-integration'
+      fullPath: '/space/$spaceId/public-integration'
+      preLoaderRoute: typeof SpaceSpaceIdPublicIntegrationImport
+      parentRoute: typeof SpaceSpaceIdImport
+    }
+    '/space/$spaceId/': {
+      id: '/space/$spaceId/'
+      path: '/'
+      fullPath: '/space/$spaceId/'
+      preLoaderRoute: typeof SpaceSpaceIdIndexImport
+      parentRoute: typeof SpaceSpaceIdImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface SpaceSpaceIdRouteChildren {
+  SpaceSpaceIdPublicIntegrationRoute: typeof SpaceSpaceIdPublicIntegrationRoute
+  SpaceSpaceIdIndexRoute: typeof SpaceSpaceIdIndexRoute
+}
+
+const SpaceSpaceIdRouteChildren: SpaceSpaceIdRouteChildren = {
+  SpaceSpaceIdPublicIntegrationRoute: SpaceSpaceIdPublicIntegrationRoute,
+  SpaceSpaceIdIndexRoute: SpaceSpaceIdIndexRoute,
+}
+
+const SpaceSpaceIdRouteWithChildren = SpaceSpaceIdRoute._addFileChildren(
+  SpaceSpaceIdRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/playground': typeof PlaygroundLazyRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
+  '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
+  '/space/$spaceId/': typeof SpaceSpaceIdIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/playground': typeof PlaygroundLazyRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
+  '/space/$spaceId': typeof SpaceSpaceIdIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/playground': typeof PlaygroundLazyRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
-  '/space/$spaceId': typeof SpaceSpaceIdRoute
+  '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
+  '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
+  '/space/$spaceId/': typeof SpaceSpaceIdIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/playground'
+    | '/settings/export-wallet'
+    | '/space/$spaceId'
+    | '/space/$spaceId/public-integration'
+    | '/space/$spaceId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
+  to:
+    | '/'
+    | '/login'
+    | '/playground'
+    | '/settings/export-wallet'
+    | '/space/$spaceId/public-integration'
+    | '/space/$spaceId'
   id:
     | '__root__'
     | '/'
     | '/login'
+    | '/playground'
     | '/settings/export-wallet'
     | '/space/$spaceId'
+    | '/space/$spaceId/public-integration'
+    | '/space/$spaceId/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginLazyRoute: typeof LoginLazyRoute
+  PlaygroundLazyRoute: typeof PlaygroundLazyRoute
   SettingsExportWalletRoute: typeof SettingsExportWalletRoute
-  SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
+  SpaceSpaceIdRoute: typeof SpaceSpaceIdRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginLazyRoute: LoginLazyRoute,
+  PlaygroundLazyRoute: PlaygroundLazyRoute,
   SettingsExportWalletRoute: SettingsExportWalletRoute,
-  SpaceSpaceIdRoute: SpaceSpaceIdRoute,
+  SpaceSpaceIdRoute: SpaceSpaceIdRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -146,6 +229,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/login",
+        "/playground",
         "/settings/export-wallet",
         "/space/$spaceId"
       ]
@@ -156,11 +240,26 @@ export const routeTree = rootRoute
     "/login": {
       "filePath": "login.lazy.tsx"
     },
+    "/playground": {
+      "filePath": "playground.lazy.tsx"
+    },
     "/settings/export-wallet": {
       "filePath": "settings/export-wallet.tsx"
     },
     "/space/$spaceId": {
-      "filePath": "space/$spaceId.tsx"
+      "filePath": "space/$spaceId.tsx",
+      "children": [
+        "/space/$spaceId/public-integration",
+        "/space/$spaceId/"
+      ]
+    },
+    "/space/$spaceId/public-integration": {
+      "filePath": "space/$spaceId/public-integration.tsx",
+      "parent": "/space/$spaceId"
+    },
+    "/space/$spaceId/": {
+      "filePath": "space/$spaceId/index.tsx",
+      "parent": "/space/$spaceId"
     }
   }
 }
