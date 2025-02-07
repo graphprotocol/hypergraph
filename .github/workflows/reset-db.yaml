@@ -1,0 +1,13 @@
+name: reset db
+env:
+  HYPERGRAPH_URL: "https://hypergraph.service.pinax.network"
+on:
+  workflow_dispatch:
+
+jobs:
+  reset-db:
+    runs-on: ubuntu-latest
+    steps:
+      - name: curl reset-db
+        run: |
+          curl -L --fail-with-body -m 30 -X POST $HYPERGRAPH_URL/reset-db -H "Authorization: ${{ secrets.AUTH_TOKEN }}"
