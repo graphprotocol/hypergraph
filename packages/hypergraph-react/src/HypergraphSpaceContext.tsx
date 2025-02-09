@@ -5,7 +5,7 @@ import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
 import type { DocumentContent } from '@graphprotocol/hypergraph/Entity';
 import * as Schema from 'effect/Schema';
-import { type ReactNode, createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, createContext, useContext, useRef, useState, useSyncExternalStore } from 'react';
 
 export type HypergraphContext = {
   space: string;
@@ -66,13 +66,7 @@ export function useQueryEntities<const S extends Entity.AnyNoContext>(type: S) {
     return Entity.subscribeToFindMany(hypergraph.handle, type);
   });
 
-  useEffect(() => {
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [subscription]);
-
-  return useSyncExternalStore(subscription.listener, subscription.getEntities, () => []);
+  return useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => []);
 }
 
 export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id: string) {

@@ -5,6 +5,7 @@ import { useSelector } from '@xstate/store/react';
 
 import { DevTool } from '@/components/dev-tool';
 import { Todos } from '@/components/todos';
+import { TodosReadOnly } from '@/components/todos-read-only';
 import { Button } from '@/components/ui/button';
 import { availableAccounts } from '@/lib/availableAccounts';
 import { useEffect, useState } from 'react';
@@ -39,6 +40,7 @@ function Space() {
     <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
       <HypergraphSpaceProvider space={spaceId}>
         <Todos />
+        <TodosReadOnly />
         {show2ndTodos && <Todos />}
         <h3 className="text-xl font-bold">Invite people</h3>
         <div className="flex flex-row gap-2">

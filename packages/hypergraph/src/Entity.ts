@@ -134,6 +134,9 @@ export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) =
     }
 
     const entityTypes = new Set<string>();
+    // collect all query entries that changed and only at the end make one copy to change the
+    // reference to reduce the amount of O(n) operations per query to 1
+    const touchedQueries = new Set<Array<string>>();
 
     // loop over all changed entities and update the cache
     for (const entityId of changedEntities) {
@@ -155,6 +158,7 @@ export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) =
           } else {
             query.data.push(decoded);
           }
+          touchedQueries.add([typeName, 'all']);
         }
 
         entityTypes.add(typeName);
@@ -173,10 +177,21 @@ export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) =
             const index = query.data.findIndex((entity) => entity.id === entityId);
             if (index !== -1) {
               query.data.splice(index, 1);
+              touchedQueries.add([affectedTypeName, 'all']);
             }
           }
         }
       }
+    }
+
+    for (const [typeName, queryKey] of touchedQueries) {
+      const cacheEntry = decodedEntitiesCache.get(typeName);
+      if (!cacheEntry) continue;
+
+      const query = cacheEntry.queries.get(queryKey);
+      if (!query) continue;
+
+      query.data = [...query.data]; // must be a new reference for React.useSyncExternalStore
     }
 
     // invoke all the listeners per type
@@ -195,7 +210,6 @@ export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) =
   handle.on('change', onChange);
 
   return () => {
-    console.log('unsubscribe document changes');
     handle.off('change', onChange);
     decodedEntitiesCache.clear(); // currently we only support exactly one space
   };
@@ -317,7 +331,10 @@ export function findMany<const S extends AnyNoContext>(
 export function subscribeToFindMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-): { listener: () => () => void; getEntities: () => Readonly<Array<Entity<S>>>; unsubscribe: () => void } {
+): {
+  subscribe: (callback: () => void) => () => void;
+  getEntities: () => Readonly<Array<Entity<S>>>;
+} {
   const queryKey = 'all';
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
@@ -325,26 +342,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   const typeName = type.name;
 
   const getEntities = () => {
-    const entities = decodedEntitiesCache.get(typeName)?.queries.get(queryKey)?.data ?? [];
-    return entities;
-  };
-
-  const listener = () => {
-    return () => undefined;
-  };
-
-  const unsubscribe = () => {
-    const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
-    if (query?.listeners) {
-      query.listeners = query.listeners.filter((cachedListener) => cachedListener !== listener);
-      console.log('unsubscribe query', query.listeners);
-    }
-
-    documentChangeListener.subscribedQueriesCount--;
-    if (documentChangeListener.subscribedQueriesCount === 0) {
-      documentChangeListener.unsubscribe?.();
-      documentChangeListener.unsubscribe = undefined;
-    }
+    return decodedEntitiesCache.get(typeName)?.queries.get(queryKey)?.data ?? [];
   };
 
   const entities = findMany(handle, type);
@@ -366,10 +364,6 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
         query.data.push(entity);
       }
     }
-
-    if (query?.listeners) {
-      query.listeners.push(listener);
-    }
   } else {
     const entitiesMap = new Map();
     for (const entity of entities) {
@@ -380,7 +374,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
 
     queries.set(queryKey, {
       data: entities,
-      listeners: [listener],
+      listeners: [],
     });
 
     decodedEntitiesCache.set(typeName, {
@@ -390,12 +384,31 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     });
   }
 
+  const subscribe = (callback: () => void) => {
+    const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
+    if (query?.listeners) {
+      query.listeners.push(callback);
+    }
+    return () => {
+      const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
+      if (query?.listeners) {
+        query.listeners = query?.listeners?.filter((cachedListener) => cachedListener !== callback);
+      }
+
+      documentChangeListener.subscribedQueriesCount--;
+      if (documentChangeListener.subscribedQueriesCount === 0) {
+        documentChangeListener.unsubscribe?.();
+        documentChangeListener.unsubscribe = undefined;
+      }
+    };
+  };
+
   if (documentChangeListener.subscribedQueriesCount === 0) {
     documentChangeListener.unsubscribe = subscribeToDocumentChanges(handle);
   }
   documentChangeListener.subscribedQueriesCount++;
 
-  return { listener, getEntities, unsubscribe };
+  return { subscribe, getEntities };
 }
 
 /**
