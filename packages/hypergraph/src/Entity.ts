@@ -3,6 +3,7 @@ import * as VariantSchema from '@effect/experimental/VariantSchema';
 import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
 import { generateId } from './utils/generateId.js';
+import { hasArrayField } from './utils/hasArrayField.js';
 
 const {
   Class,
@@ -35,7 +36,6 @@ export type AnyNoContext = Schema.Schema.AnyNoContext & {
 
 export type Update<S extends Any> = S['update'];
 export type Insert<S extends Any> = S['insert'];
-
 export interface Generated<S extends Schema.Schema.All | Schema.PropertySignature.All>
   extends VariantSchema.Field<{
     readonly select: S;
@@ -88,6 +88,7 @@ type DecodedEntitiesCache = Map<
   string, // type name
   {
     decoder: (data: unknown) => unknown;
+    type: Any; // TODO should be the type of the entity
     entities: Map<string, Entity<AnyNoContext>>; // holds all entities of this type
     queries: Map<
       string, // instead of serializedQueryKey as string we could also have the actual params
@@ -147,7 +148,39 @@ export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) =
         const cacheEntry = decodedEntitiesCache.get(typeName);
         if (!cacheEntry) continue;
 
-        const decoded = cacheEntry.decoder({ ...entity, id: entityId });
+        const relations: Record<string, Entity<AnyNoContext>> = {};
+        for (const [fieldName, field] of Object.entries(cacheEntry.type.fields)) {
+          // check if the type exists in the cach and is a proper relation
+          // TODO: what's the right way to get the name of the type?
+          // @ts-expect-error name is defined
+          const fieldCacheEntry = decodedEntitiesCache.get(field.name);
+          if (!fieldCacheEntry) continue;
+
+          const relationEntities: Array<Entity<AnyNoContext>> = [];
+
+          if (hasArrayField(entity, fieldName)) {
+            for (const relationEntityId of entity[fieldName]) {
+              const relationEntity = doc.entities?.[relationEntityId];
+              if (
+                !relationEntity ||
+                typeof relationEntity !== 'object' ||
+                !('@@types@@' in relationEntity) ||
+                !Array.isArray(relationEntity['@@types@@'])
+              )
+                continue;
+
+              relationEntities.push({ ...relationEntity, id: relationEntityId });
+            }
+          }
+
+          relations[fieldName] = relationEntities;
+        }
+
+        const decoded = cacheEntry.decoder({
+          ...entity,
+          ...relations,
+          id: entityId,
+        });
         cacheEntry.entities.set(entityId, decoded);
 
         const query = cacheEntry.queries.get('all');
@@ -379,9 +412,52 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
 
     decodedEntitiesCache.set(typeName, {
       decoder: decode,
+      type,
       entities: entitiesMap,
       queries,
     });
+  }
+
+  const allTypes = new Set<S>();
+  for (const [_key, field] of Object.entries(type.fields)) {
+    // TODO check if it is a class instead of specific name
+    // TODO: what's the right way to extract the name from the ast
+    // @ts-expect-error rest is defined
+    if (field.ast.rest) {
+      // @ts-expect-error name is defined
+      const typeName = field.ast.rest[0].type.to.toString();
+      if (typeName === 'User') {
+        allTypes.add(field as S);
+      }
+    }
+  }
+
+  for (const type of allTypes) {
+    // TODO: what's the right way to get the name of the type?
+    // @ts-expect-error name is defined
+    const typeName = type.name;
+    const entities = findMany(handle, type);
+
+    if (decodedEntitiesCache.has(typeName)) {
+      // add a listener to the existing query
+      const cacheEntry = decodedEntitiesCache.get(typeName);
+
+      for (const entity of entities) {
+        cacheEntry?.entities.set(entity.id, entity);
+      }
+    } else {
+      const entitiesMap = new Map();
+      for (const entity of entities) {
+        entitiesMap.set(entity.id, entity);
+      }
+
+      decodedEntitiesCache.set(typeName, {
+        decoder: decode,
+        type,
+        entities: entitiesMap,
+        queries: new Map(),
+      });
+    }
   }
 
   const subscribe = (callback: () => void) => {
@@ -435,3 +511,12 @@ export const findOne =
 
     return undefined;
   };
+
+export const Reference = <S extends Schema.Schema.All | Schema.PropertySignature.All>(schema: S) =>
+  Field({
+    select: schema,
+    insert: Schema.optional(Schema.Array(Schema.String)),
+    update: Schema.optional(Schema.Array(Schema.String)),
+  });
+
+export const ReferenceArray = Schema.Array;
