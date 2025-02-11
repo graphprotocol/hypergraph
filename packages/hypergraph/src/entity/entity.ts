@@ -5,6 +5,7 @@ import * as Schema from 'effect/Schema';
 import { generateId } from '../utils/generateId.js';
 import { decodedEntitiesCache } from './decodedEntitiesCache.js';
 import { getEntityRelations } from './getEntityRelations.js';
+import { isReferenceField } from './isReferenceField.js';
 import type { AnyNoContext, Entity, Insert, Update } from './types.js';
 
 const {
@@ -346,15 +347,8 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
 
   const allTypes = new Set<S>();
   for (const [_key, field] of Object.entries(type.fields)) {
-    // TODO check if it is a class instead of specific name
-    // TODO: what's the right way to extract the name from the ast
-    // @ts-expect-error rest is defined
-    if (field.ast.rest) {
-      // @ts-expect-error name is defined
-      const typeName = field.ast.rest[0].type.to.toString();
-      if (typeName === 'User') {
-        allTypes.add(field as S);
-      }
+    if (isReferenceField(field)) {
+      allTypes.add(field as S);
     }
   }
 

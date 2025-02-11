@@ -1,5 +1,6 @@
 import { hasArrayField } from '../utils/hasArrayField.js';
 import type { DocumentContent } from './index.js';
+import { isReferenceField } from './isReferenceField.js';
 import type { AnyNoContext, Entity } from './types.js';
 
 export const getEntityRelations = <const S extends AnyNoContext>(
@@ -9,10 +10,7 @@ export const getEntityRelations = <const S extends AnyNoContext>(
 ) => {
   const relations: Record<string, Entity<AnyNoContext>> = {};
   for (const [fieldName, field] of Object.entries(type.fields)) {
-    // TODO: this check is a hack atm, instead check if it is a class instead of specific name
-    // TODO: what's the right way to get the name of the type?
-    // @ts-expect-error name is defined
-    if (field.name !== 'ArrayClass') continue;
+    if (!isReferenceField(field)) continue;
 
     const relationEntities: Array<Entity<AnyNoContext>> = [];
 
