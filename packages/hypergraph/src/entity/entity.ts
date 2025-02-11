@@ -2,8 +2,8 @@ import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as VariantSchema from '@effect/experimental/VariantSchema';
 import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
-import { generateId } from './utils/generateId.js';
-import { hasArrayField } from './utils/hasArrayField.js';
+import { generateId } from '../utils/generateId.js';
+import { hasArrayField } from '../utils/hasArrayField.js';
 
 const {
   Class,

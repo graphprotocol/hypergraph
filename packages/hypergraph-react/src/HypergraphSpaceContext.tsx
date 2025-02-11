@@ -3,7 +3,6 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
-import type { DocumentContent } from '@graphprotocol/hypergraph/Entity';
 import * as Schema from 'effect/Schema';
 import { type ReactNode, createContext, useContext, useRef, useState, useSyncExternalStore } from 'react';
 
@@ -32,7 +31,7 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
   let current = ref.current;
   if (current === undefined || space !== current.space || repo !== current.repo) {
     const id = Utils.idToAutomergeId(space) as AnyDocumentId;
-    const handle = repo.find<DocumentContent>(id);
+    const handle = repo.find<Entity.DocumentContent>(id);
 
     current = ref.current = {
       space,
