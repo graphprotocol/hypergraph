@@ -5,6 +5,7 @@ import * as Schema from 'effect/Schema';
 import { generateId } from '../utils/generateId.js';
 import { decodedEntitiesCache } from './decodedEntitiesCache.js';
 import { getEntityRelations } from './getEntityRelations.js';
+import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import { isReferenceField } from './isReferenceField.js';
 import type { AnyNoContext, Entity, Insert, Update } from './types.js';
 
@@ -93,9 +94,9 @@ export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) =
     // loop over all changed entities and update the cache
     for (const entityId of changedEntities) {
       const entity = doc.entities?.[entityId];
-      if (!entity || typeof entity !== 'object' || !('@@types@@' in entity) || !Array.isArray(entity['@@types@@']))
-        return;
+      if (!hasValidTypesProperty(entity)) continue;
       for (const typeName of entity['@@types@@']) {
+        if (typeof typeName !== 'string') continue;
         const cacheEntry = decodedEntitiesCache.get(typeName);
         if (!cacheEntry) continue;
 
@@ -276,12 +277,9 @@ export function findMany<const S extends AnyNoContext>(
   const filtered: Array<Entity<S>> = [];
   for (const id in entities) {
     const entity = entities[id];
-    if (typeof entity === 'object' && entity != null && '@@types@@' in entity) {
-      const types = entity['@@types@@'];
-      if (Array.isArray(types) && types.includes(typeName)) {
-        const relations = getEntityRelations(entity, type, doc);
-        filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
-      }
+    if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
+      const relations = getEntityRelations(entity, type, doc);
+      filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
     }
   }
 
@@ -422,11 +420,8 @@ export const findOne =
     // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
     // an index and store the decoded values instead of re-decoding over and over again.
     const entity = handle.docSync()?.entities?.[id];
-    if (typeof entity === 'object' && entity != null && '@@types@@' in entity) {
-      const types = entity['@@types@@'];
-      if (Array.isArray(types) && types.includes(typeName)) {
-        return { ...decode({ ...entity, id }), type: typeName };
-      }
+    if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
+      return { ...decode({ ...entity, id }), type: typeName };
     }
 
     return undefined;
