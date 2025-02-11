@@ -4,6 +4,8 @@ import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
 import { generateId } from '../utils/generateId.js';
 import { hasArrayField } from '../utils/hasArrayField.js';
+import { decodedEntitiesCache } from './decodedEntitiesCache.js';
+import type { AnyNoContext, Entity, Insert, Update } from './types.js';
 
 const {
   Class,
@@ -22,20 +24,6 @@ const {
 
 export { Class };
 
-export type Any = Schema.Schema.Any & {
-  readonly fields: Schema.Struct.Fields;
-  readonly insert: Schema.Schema.Any;
-  readonly update: Schema.Schema.Any;
-};
-
-export type AnyNoContext = Schema.Schema.AnyNoContext & {
-  readonly fields: Schema.Struct.Fields;
-  readonly insert: Schema.Schema.AnyNoContext;
-  readonly update: Schema.Schema.AnyNoContext;
-};
-
-export type Update<S extends Any> = S['update'];
-export type Insert<S extends Any> = S['insert'];
 export interface Generated<S extends Schema.Schema.All | Schema.PropertySignature.All>
   extends VariantSchema.Field<{
     readonly select: S;
@@ -63,44 +51,6 @@ export class EntityNotFoundError extends Data.TaggedError('EntityNotFoundError')
   type: AnyNoContext;
   cause?: unknown;
 }> {}
-
-export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & { type: string };
-
-/*
- * Note: Currently we only use one global cache for all entities.
- * In the future we probably want a build function that creates a cache and returns the
- * functions (create, update, findMany, …) that use this specific cache.
- *
- * How does it work?
- *
- * We store all decoded entities in a cache and for each query we reference the entities relevant to this query.
- * Whenever a query is registered we add it to the cache and add a listener to the query. Whenever a query is unregistered we remove the listener from the query.
- *
- * Handling filters is relatively straight forward as they are uniquely identified by their params.
- *
- * Questions:
- * How do we handle findOne?
- *  Thoughts: Could be just a special case of findMany limited to a specific id or a separate mechanism.
- * How do we handle relations?
- *  Thoughts: We could have a separate query entry for each relation, but when requesting a lot of entities e.g. 1000 only for a nesting one level deep it would result in a lot of cached queries. Not sure this is a good idea.
- */
-type DecodedEntitiesCache = Map<
-  string, // type name
-  {
-    decoder: (data: unknown) => unknown;
-    type: Any; // TODO should be the type of the entity
-    entities: Map<string, Entity<AnyNoContext>>; // holds all entities of this type
-    queries: Map<
-      string, // instead of serializedQueryKey as string we could also have the actual params
-      {
-        data: Array<Entity<AnyNoContext>>; // holds the decoded entities of this query and must be a stable reference and use the same reference for the `entities` array
-        listeners: Array<() => void>; // listeners to this query
-      }
-    >;
-  }
->;
-
-const decodedEntitiesCache: DecodedEntitiesCache = new Map();
 
 const documentChangeListener: {
   subscribedQueriesCount: number;
