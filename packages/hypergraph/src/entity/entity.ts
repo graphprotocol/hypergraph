@@ -3,8 +3,8 @@ import * as VariantSchema from '@effect/experimental/VariantSchema';
 import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
 import { generateId } from '../utils/generateId.js';
-import { hasArrayField } from '../utils/hasArrayField.js';
 import { decodedEntitiesCache } from './decodedEntitiesCache.js';
+import { getEntityRelations } from './getEntityRelations.js';
 import type { AnyNoContext, Entity, Insert, Update } from './types.js';
 
 const {
@@ -98,34 +98,7 @@ export const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) =
         const cacheEntry = decodedEntitiesCache.get(typeName);
         if (!cacheEntry) continue;
 
-        const relations: Record<string, Entity<AnyNoContext>> = {};
-        for (const [fieldName, field] of Object.entries(cacheEntry.type.fields)) {
-          // check if the type exists in the cach and is a proper relation
-          // TODO: what's the right way to get the name of the type?
-          // @ts-expect-error name is defined
-          const fieldCacheEntry = decodedEntitiesCache.get(field.name);
-          if (!fieldCacheEntry) continue;
-
-          const relationEntities: Array<Entity<AnyNoContext>> = [];
-
-          if (hasArrayField(entity, fieldName)) {
-            for (const relationEntityId of entity[fieldName]) {
-              const relationEntity = doc.entities?.[relationEntityId];
-              if (
-                !relationEntity ||
-                typeof relationEntity !== 'object' ||
-                !('@@types@@' in relationEntity) ||
-                !Array.isArray(relationEntity['@@types@@'])
-              )
-                continue;
-
-              relationEntities.push({ ...relationEntity, id: relationEntityId });
-            }
-          }
-
-          relations[fieldName] = relationEntities;
-        }
-
+        const relations = getEntityRelations(entity, cacheEntry.type, doc);
         const decoded = cacheEntry.decoder({
           ...entity,
           ...relations,
@@ -294,16 +267,19 @@ export function findMany<const S extends AnyNoContext>(
   // @ts-expect-error name is defined
   const typeName = type.name;
 
-  // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
-  // an index and store the decoded values instead of re-decoding over and over again.
-  const entities = handle.docSync()?.entities ?? {};
+  const doc = handle.docSync();
+  if (!doc) {
+    return [];
+  }
+  const entities = doc.entities ?? {};
   const filtered: Array<Entity<S>> = [];
   for (const id in entities) {
     const entity = entities[id];
     if (typeof entity === 'object' && entity != null && '@@types@@' in entity) {
       const types = entity['@@types@@'];
       if (Array.isArray(types) && types.includes(typeName)) {
-        filtered.push({ ...decode({ ...entity, id }), type: typeName });
+        const relations = getEntityRelations(entity, type, doc);
+        filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
       }
     }
   }
