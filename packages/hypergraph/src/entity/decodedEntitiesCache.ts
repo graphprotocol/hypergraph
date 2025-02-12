@@ -1,15 +1,18 @@
 import type { AnyNoContext, Entity } from './types.js';
 
+export type QueryEntry = {
+  data: Array<Entity<AnyNoContext>>; // holds the decoded entities of this query and must be a stable reference and use the same reference for the `entities` array
+  listeners: Array<() => void>; // listeners to this query
+  isInvalidated: boolean;
+};
+
 export type DecodedEntitiesCacheEntry = {
   decoder: (data: unknown) => unknown;
   type: AnyNoContext; // TODO should be the type of the entity
   entities: Map<string, Entity<AnyNoContext>>; // holds all entities of this type
   queries: Map<
     string, // instead of serializedQueryKey as string we could also have the actual params
-    {
-      data: Array<Entity<AnyNoContext>>; // holds the decoded entities of this query and must be a stable reference and use the same reference for the `entities` array
-      listeners: Array<() => void>; // listeners to this query
-    }
+    QueryEntry
   >;
 };
 
@@ -30,3 +33,8 @@ type DecodedEntitiesCache = Map<
 >;
 
 export const decodedEntitiesCache: DecodedEntitiesCache = new Map();
+
+export const relationParentQueries: Map<
+  string, // entity ID
+  Array<QueryEntry>
+> = new Map();

@@ -1,5 +1,5 @@
 import { useCreateEntity, useDeleteEntity, useQueryEntities, useUpdateEntity } from '@graphprotocol/hypergraph-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { Todo, User } from '../schema';
 import { Button } from './ui/button';
@@ -13,6 +13,13 @@ export const Todos = () => {
   const deleteEntity = useDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
   const [assignees, setAssignees] = useState<{ value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    // filter out assignees that are not in the users array
+    setAssignees((prevFilteredAssignees) => {
+      return prevFilteredAssignees.filter((assignee) => users.some((user) => user.id === assignee.value));
+    });
+  }, [users]);
 
   const userOptions = users.map((user) => ({ value: user.id, label: user.name }));
   return (
