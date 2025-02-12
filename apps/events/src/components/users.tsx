@@ -1,13 +1,13 @@
-import { useCreateEntity, useDeleteEntity, useQueryEntities } from '@graphprotocol/hypergraph-react';
+import { useCreateEntity, useQueryEntities } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
-import { User } from '../schema';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { User } from '../schema.js';
+import { Button } from './ui/button.js';
+import { Input } from './ui/input.js';
+import { UserEntry } from './user-entry.js';
 
 export const Users = () => {
   const users = useQueryEntities(User);
   const createEntity = useCreateEntity(User);
-  const deleteEntity = useDeleteEntity();
   const [newUserName, setNewUserName] = useState('');
 
   return (
@@ -25,12 +25,7 @@ export const Users = () => {
         </Button>
       </div>
       {users.map((user) => (
-        <div key={user.id} className="flex flex-row items-center gap-2">
-          <h2>
-            {user.name} <span className="text-xs text-gray-500">({user.id})</span>
-          </h2>
-          <Button onClick={() => deleteEntity(user.id)}>Delete</Button>
-        </div>
+        <UserEntry key={user.id} {...user} />
       ))}
     </>
   );
