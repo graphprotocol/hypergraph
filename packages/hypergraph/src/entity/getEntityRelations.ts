@@ -1,8 +1,7 @@
 import { hasArrayField } from '../utils/hasArrayField.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import type { DocumentContent } from './index.js';
 import { isReferenceField } from './isReferenceField.js';
-import type { AnyNoContext, Entity } from './types.js';
+import type { AnyNoContext, DocumentContent, Entity } from './types.js';
 
 export const getEntityRelations = <const S extends AnyNoContext>(
   entity: Entity<AnyNoContext>,

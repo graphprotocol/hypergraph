@@ -15,8 +15,8 @@ export const Todos = () => {
   const [assignees, setAssignees] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
-    // filter out assignees that are not in the users array
     setAssignees((prevFilteredAssignees) => {
+      // filter out assignees that are not in the users array whenever users change
       return prevFilteredAssignees.filter((assignee) => users.some((user) => user.id === assignee.value));
     });
   }, [users]);

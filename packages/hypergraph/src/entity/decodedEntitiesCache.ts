@@ -33,8 +33,3 @@ type DecodedEntitiesCache = Map<
 >;
 
 export const decodedEntitiesCache: DecodedEntitiesCache = new Map();
-
-export const relationParentQueries: Map<
-  string, // entity ID
-  Array<QueryEntry>
-> = new Map();

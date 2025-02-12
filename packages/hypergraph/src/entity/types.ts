@@ -16,3 +16,7 @@ export type Update<S extends Any> = S['update'];
 export type Insert<S extends Any> = S['insert'];
 
 export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & { type: string };
+
+export type DocumentContent = {
+  entities?: Record<string, unknown>;
+};
