@@ -18,7 +18,7 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
     throw new Error('applySpaceEvent does not support create-space events.');
   }
 
-  return await prisma.$transaction(async (transaction) => {
+  await prisma.$transaction(async (transaction) => {
     if (event.transaction.type === 'accept-invitation') {
       // verify that the account is the invitee
       await transaction.invitation.findFirstOrThrow({
@@ -96,7 +96,7 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
       });
     }
 
-    return await transaction.spaceEvent.create({
+    await transaction.spaceEvent.create({
       data: {
         spaceId,
         counter: lastEvent.counter + 1,
@@ -105,5 +105,19 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
         state: JSON.stringify(result.value),
       },
     });
+
+    if (event.transaction.type === 'create-space-inbox') {
+      await transaction.spaceInbox.create({
+        data: {
+          id: event.transaction.inboxId,
+          isPublic: event.transaction.isPublic,
+          authPolicy: event.transaction.authPolicy,
+          encryptionPublicKey: event.transaction.encryptionPublicKey,
+          encryptedSecretKey: event.transaction.secretKey,
+          space: { connect: { id: spaceId } },
+          spaceEvent: { connect: { id: event.transaction.id } },
+        },
+      });
+    }
   });
 }

@@ -10,7 +10,17 @@ type Params =
       signaturePublicKey: string;
     };
 
-export const getIdentity = async (params: Params) => {
+export type GetIdentityResult = {
+  accountId: string;
+  ciphertext: string;
+  nonce: string;
+  signaturePublicKey: string;
+  encryptionPublicKey: string;
+  accountProof: string;
+  keyProof: string;
+};
+
+export const getIdentity = async (params: Params): Promise<GetIdentityResult> => {
   if (!params.accountId && !params.signaturePublicKey) {
     throw new Error('Either accountId or signaturePublicKey must be provided');
   }
@@ -18,7 +28,7 @@ export const getIdentity = async (params: Params) => {
     where: params,
   });
   if (!identity) {
-    throw new Error(`Identity not found for account ${params.accountId}`);
+    throw new Error(`Identity not found for account ${params.accountId ?? params.signaturePublicKey}`);
   }
   return identity;
 };

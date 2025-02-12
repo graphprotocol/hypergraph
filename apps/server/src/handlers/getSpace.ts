@@ -1,3 +1,4 @@
+import type { Inboxes } from '@graphprotocol/hypergraph';
 import { prisma } from '../prisma.js';
 
 type Params = {
@@ -40,6 +41,15 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
           clock: 'asc',
         },
       },
+      inboxes: {
+        select: {
+          id: true,
+          isPublic: true,
+          authPolicy: true,
+          encryptionPublicKey: true,
+          encryptedSecretKey: true,
+        },
+      },
     },
   });
 
@@ -53,26 +63,29 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
     };
   });
 
-  const formatUpdate = (update) => {
-    return {
-      accountId: update.accountId,
-      update: new Uint8Array(update.content),
-      signature: {
-        hex: update.signatureHex,
-        recovery: update.signatureRecovery,
-      },
-      updateId: update.updateId,
-    };
-  };
-
   return {
     id: space.id,
     events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
     keyBoxes,
+    inboxes: space.inboxes.map((inbox) => ({
+      inboxId: inbox.id,
+      isPublic: inbox.isPublic,
+      authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
+      encryptionPublicKey: inbox.encryptionPublicKey,
+      secretKey: inbox.encryptedSecretKey,
+    })),
     updates:
       space.updates.length > 0
         ? {
-            updates: space.updates.map(formatUpdate),
+            updates: space.updates.map((update) => ({
+              accountId: update.accountId,
+              update: new Uint8Array(update.content),
+              signature: {
+                hex: update.signatureHex,
+                recovery: update.signatureRecovery,
+              },
+              updateId: update.updateId,
+            })),
             firstUpdateClock: space.updates[0].clock,
             lastUpdateClock: space.updates[space.updates.length - 1].clock,
           }

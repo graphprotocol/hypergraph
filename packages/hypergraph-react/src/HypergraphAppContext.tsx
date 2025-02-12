@@ -4,7 +4,17 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Identity, Key, Messages, SpaceEvents, type SpaceStorageEntry, Utils, store } from '@graphprotocol/hypergraph';
+import {
+  Identity,
+  type InboxMessageStorageEntry,
+  Inboxes,
+  Key,
+  Messages,
+  SpaceEvents,
+  type SpaceStorageEntry,
+  Utils,
+  store,
+} from '@graphprotocol/hypergraph';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -30,6 +40,39 @@ export type HypergraphAppCtx = {
   // app related
   invitations: Array<Messages.Invitation>;
   createSpace(): Promise<string>;
+  createSpaceInbox(
+    params: Readonly<{ space: SpaceStorageEntry; isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>,
+  ): Promise<unknown>;
+  getLatestSpaceInboxMessages(params: Readonly<{ spaceId: string; inboxId: string }>): Promise<unknown>;
+  listPublicSpaceInboxes(params: Readonly<{ spaceId: string }>): Promise<readonly Messages.SpaceInboxPublic[]>;
+  getSpaceInbox(params: Readonly<{ spaceId: string; inboxId: string }>): Promise<Messages.SpaceInboxPublic>;
+  sendSpaceInboxMessage(
+    params: Readonly<{
+      message: string;
+      spaceId: string;
+      inboxId: string;
+      encryptionPublicKey: string;
+      signaturePrivateKey: string | null;
+      authorAccountId: string | null;
+    }>,
+  ): Promise<unknown>;
+  createAccountInbox(
+    params: Readonly<{ isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>,
+  ): Promise<unknown>;
+  getLatestAccountInboxMessages(params: Readonly<{ accountId: string; inboxId: string }>): Promise<unknown>;
+  getOwnAccountInboxes(): Promise<unknown>;
+  listPublicAccountInboxes(params: Readonly<{ accountId: string }>): Promise<readonly Messages.AccountInboxPublic[]>;
+  getAccountInbox(params: Readonly<{ accountId: string; inboxId: string }>): Promise<Messages.AccountInboxPublic>;
+  sendAccountInboxMessage(
+    params: Readonly<{
+      message: string;
+      accountId: string;
+      inboxId: string;
+      encryptionPublicKey: string;
+      signaturePrivateKey: string | null;
+      authorAccountId: string | null;
+    }>,
+  ): Promise<unknown>;
   listSpaces(): void;
   listInvitations(): void;
   acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
@@ -41,6 +84,12 @@ export type HypergraphAppCtx = {
     signaturePublicKey: string;
   }>;
   loading: boolean;
+  ensureSpaceInbox(params: {
+    spaceId: string;
+    isPublic?: boolean;
+    authPolicy?: Inboxes.InboxSenderAuthPolicy;
+    index?: number;
+  }): Promise<string>;
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
@@ -56,6 +105,39 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
   invitations: [],
   async createSpace() {
     throw new Error('createSpace is missing');
+  },
+  async createSpaceInbox() {
+    throw new Error('createSpaceInbox is missing');
+  },
+  async getLatestSpaceInboxMessages() {
+    throw new Error('getLatestSpaceInboxMessages is missing');
+  },
+  async listPublicSpaceInboxes() {
+    throw new Error('listPublicSpaceInboxes is missing');
+  },
+  async getSpaceInbox() {
+    throw new Error('getSpaceInbox is missing');
+  },
+  async sendSpaceInboxMessage() {
+    throw new Error('sendSpaceInboxMessage is missing');
+  },
+  async createAccountInbox() {
+    throw new Error('createAccountInbox is missing');
+  },
+  async getOwnAccountInboxes() {
+    throw new Error('getOwnAccountInboxes is missing');
+  },
+  async getLatestAccountInboxMessages() {
+    throw new Error('getLatestAccountInboxMessages is missing');
+  },
+  async listPublicAccountInboxes() {
+    throw new Error('listPublicAccountInboxes is missing');
+  },
+  async getAccountInbox() {
+    throw new Error('getAccountInbox is missing');
+  },
+  async sendAccountInboxMessage() {
+    throw new Error('sendAccountInboxMessage is missing');
   },
   listSpaces() {
     throw new Error('listSpaces is missing');
@@ -76,6 +158,9 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
     throw new Error('getVerifiedIdentity is missing');
   },
   loading: true,
+  async ensureSpaceInbox() {
+    throw new Error('ensureSpaceInbox is missing');
+  },
 });
 
 export function useHypergraphApp() {
@@ -259,6 +344,11 @@ export function HypergraphAppProvider({
       console.error('No encryption private key found');
       return;
     }
+    const encryptionPublicKey = keys?.encryptionPublicKey;
+    if (!encryptionPublicKey) {
+      console.error('No encryption public key found');
+      return;
+    }
     const signaturePrivateKey = keys?.signaturePrivateKey;
     if (!signaturePrivateKey) {
       console.error('No signature private key found.');
@@ -364,11 +454,30 @@ export function HypergraphAppProvider({
               return { id: keyBox.id, key: Utils.bytesToHex(key) };
             });
 
+            const inboxes = response.inboxes.map((inbox) => {
+              return {
+                inboxId: inbox.inboxId,
+                isPublic: inbox.isPublic,
+                authPolicy: inbox.authPolicy,
+                encryptionPublicKey: inbox.encryptionPublicKey,
+                secretKey: Utils.bytesToHex(
+                  Messages.decryptMessage({
+                    nonceAndCiphertext: Utils.hexToBytes(inbox.secretKey),
+                    secretKey: Utils.hexToBytes(keys[0].key),
+                  }),
+                ),
+                messages: [],
+                lastMessageClock: new Date(0).toISOString(),
+                seenMessageIds: new Set<string>(),
+              };
+            });
+
             store.send({
               type: 'setSpace',
               spaceId: response.id,
               updates: response.updates as Messages.Updates,
               events: response.events as Array<SpaceEvents.SpaceEvent>,
+              inboxes,
               spaceState: newState,
               keys,
             });
@@ -434,6 +543,28 @@ export function HypergraphAppProvider({
                 state: applyEventResult.value,
               });
             }
+            if (response.event.transaction.type === 'create-space-inbox') {
+              const inbox = {
+                inboxId: response.event.transaction.id,
+                isPublic: response.event.transaction.isPublic,
+                authPolicy: response.event.transaction.authPolicy,
+                encryptionPublicKey: response.event.transaction.encryptionPublicKey,
+                secretKey: Utils.bytesToHex(
+                  Messages.decryptMessage({
+                    nonceAndCiphertext: Utils.hexToBytes(response.event.transaction.secretKey),
+                    secretKey: Utils.hexToBytes(space.keys[0].key),
+                  }),
+                ),
+                lastMessageClock: new Date(0).toISOString(),
+                messages: [],
+                seenMessageIds: new Set<string>(),
+              };
+              store.send({
+                type: 'setSpaceInbox',
+                spaceId: response.spaceId,
+                inbox,
+              });
+            }
 
             break;
           }
@@ -472,6 +603,258 @@ export function HypergraphAppProvider({
             await applyUpdates(response.spaceId, space.keys[0].key, space.automergeDocHandle, response.updates);
             break;
           }
+          case 'account-inbox': {
+            // Validate the signature of the inbox corresponds to the current account's identity
+            if (!keys.signaturePrivateKey) {
+              console.error('No signature private key found to process account inbox');
+              return;
+            }
+            const inboxCreator = Inboxes.recoverAccountInboxCreatorKey(response.inbox);
+            if (inboxCreator !== keys.signaturePublicKey) {
+              console.error('Invalid inbox creator', response.inbox);
+              return;
+            }
+
+            const messages: InboxMessageStorageEntry[] = [];
+
+            store.send({
+              type: 'setAccountInbox',
+              inbox: {
+                ...response.inbox,
+                messages,
+                lastMessageClock: new Date(0).toISOString(),
+                seenMessageIds: new Set<string>(),
+              },
+            });
+            break;
+          }
+          case 'space-inbox-message': {
+            const inbox = store
+              .getSnapshot()
+              .context.spaces.find((s) => s.id === response.spaceId)
+              ?.inboxes.find((i) => i.inboxId === response.inboxId);
+            if (!inbox) {
+              console.error('Inbox not found', response.inboxId);
+              return;
+            }
+            const isValid = await Inboxes.validateSpaceInboxMessage(
+              response.message,
+              inbox,
+              response.spaceId,
+              syncServerUri,
+            );
+            if (!isValid) {
+              console.error('Invalid message', response.message, inbox.inboxId);
+              return;
+            }
+            try {
+              const decryptedMessage = Inboxes.decryptInboxMessage({
+                ciphertext: response.message.ciphertext,
+                encryptionPrivateKey: inbox.secretKey,
+                encryptionPublicKey: inbox.encryptionPublicKey,
+              });
+              const message = {
+                ...response.message,
+                createdAt: response.message.createdAt.toISOString(),
+                plaintext: decryptedMessage,
+                signature: response.message.signature
+                  ? {
+                      hex: response.message.signature.hex,
+                      recovery: response.message.signature.recovery,
+                    }
+                  : null,
+                authorAccountId: response.message.authorAccountId ?? null,
+              };
+              store.send({
+                type: 'setSpaceInboxMessages',
+                spaceId: response.spaceId,
+                inboxId: response.inboxId,
+                messages: [message],
+                lastMessageClock: message.createdAt,
+              });
+            } catch (error) {
+              console.error('Error decrypting message', error);
+            }
+            break;
+          }
+          case 'account-inbox-message': {
+            const inbox = store.getSnapshot().context.accountInboxes.find((i) => i.inboxId === response.inboxId);
+            if (!inbox) {
+              console.error('Inbox not found', response.inboxId);
+              return;
+            }
+            const isValid = await Inboxes.validateAccountInboxMessage(
+              response.message,
+              inbox,
+              accountId,
+              syncServerUri,
+            );
+            if (!isValid) {
+              console.error('Invalid message', response.message, inbox.inboxId);
+              return;
+            }
+            try {
+              const decryptedMessage = Inboxes.decryptInboxMessage({
+                ciphertext: response.message.ciphertext,
+                encryptionPrivateKey: encryptionPrivateKey,
+                encryptionPublicKey: encryptionPublicKey,
+              });
+              const message = {
+                ...response.message,
+                createdAt: response.message.createdAt.toISOString(),
+                plaintext: decryptedMessage,
+                signature: response.message.signature
+                  ? {
+                      hex: response.message.signature.hex,
+                      recovery: response.message.signature.recovery,
+                    }
+                  : null,
+                authorAccountId: response.message.authorAccountId ?? null,
+              };
+              store.send({
+                type: 'setAccountInboxMessages',
+                inboxId: response.inboxId,
+                messages: [message],
+                lastMessageClock: message.createdAt,
+              });
+            } catch (error) {
+              console.error('Error decrypting message', error);
+            }
+            break;
+          }
+          case 'account-inboxes': {
+            response.inboxes.map((inbox) => {
+              store.send({
+                type: 'setAccountInbox',
+                inbox: {
+                  ...inbox,
+                  messages: [],
+                  lastMessageClock: new Date(0).toISOString(),
+                  seenMessageIds: new Set<string>(),
+                },
+              });
+            });
+            break;
+          }
+          case 'account-inbox-messages': {
+            // Validate the signature of the inbox corresponds to the current account's identity
+            if (!keys.signaturePrivateKey) {
+              console.error('No signature private key found to process account inbox');
+              return;
+            }
+            const inbox = store.getSnapshot().context.accountInboxes.find((i) => i.inboxId === response.inboxId);
+            if (!inbox) {
+              console.error('Inbox not found', response.inboxId);
+              return;
+            }
+            const validSignatures = await Promise.all(
+              response.messages.map(
+                // If the message has a signature, check that the signature is valid for the authorAccountId
+                async (message) => {
+                  return Inboxes.validateAccountInboxMessage(message, inbox, accountId, syncServerUri);
+                },
+              ),
+            );
+            let lastMessageClock = new Date(0);
+            const messages = response.messages
+              .filter((message, index) => validSignatures[index])
+              .map((message) => {
+                try {
+                  const decryptedMessage = Inboxes.decryptInboxMessage({
+                    ciphertext: message.ciphertext,
+                    encryptionPrivateKey,
+                    encryptionPublicKey,
+                  });
+                  if (message.createdAt > lastMessageClock) {
+                    lastMessageClock = message.createdAt;
+                  }
+                  return {
+                    ...message,
+                    createdAt: message.createdAt.toISOString(),
+                    plaintext: decryptedMessage,
+                    signature: message.signature
+                      ? {
+                          hex: message.signature.hex,
+                          recovery: message.signature.recovery,
+                        }
+                      : null,
+                    authorAccountId: message.authorAccountId ?? null,
+                  };
+                } catch (error) {
+                  console.error('Error decrypting message', error);
+                  return null;
+                }
+              })
+              .filter((message) => message !== null);
+
+            store.send({
+              type: 'setAccountInboxMessages',
+              inboxId: response.inboxId,
+              messages,
+              lastMessageClock: lastMessageClock.toISOString(),
+            });
+            break;
+          }
+          case 'space-inbox-messages': {
+            const space = store.getSnapshot().context.spaces.find((s) => s.id === response.spaceId);
+            if (!space) {
+              console.error('Space not found', response.spaceId);
+              return;
+            }
+            const inbox = space.inboxes.find((i) => i.inboxId === response.inboxId);
+            if (!inbox) {
+              console.error('Inbox not found', response.inboxId);
+              return;
+            }
+            let lastMessageClock = new Date(0);
+            const validSignatures = await Promise.all(
+              response.messages.map(
+                // If the message has a signature, check that the signature is valid for the authorAccountId
+                async (message) => {
+                  return Inboxes.validateSpaceInboxMessage(message, inbox, space.id, syncServerUri);
+                },
+              ),
+            );
+            const messages = response.messages
+              .filter((message, index) => validSignatures[index])
+              .map((message) => {
+                try {
+                  const decryptedMessage = Inboxes.decryptInboxMessage({
+                    ciphertext: message.ciphertext,
+                    encryptionPrivateKey: inbox.secretKey,
+                    encryptionPublicKey: inbox.encryptionPublicKey,
+                  });
+                  if (message.createdAt > lastMessageClock) {
+                    lastMessageClock = message.createdAt;
+                  }
+                  return {
+                    ...message,
+                    createdAt: message.createdAt.toISOString(),
+                    signature: message.signature
+                      ? {
+                          hex: message.signature.hex,
+                          recovery: message.signature.recovery,
+                        }
+                      : null,
+                    authorAccountId: message.authorAccountId ?? null,
+                    plaintext: decryptedMessage,
+                  };
+                } catch (error) {
+                  console.error('Error decrypting message', error);
+                  return null;
+                }
+              })
+              .filter((message) => message !== null);
+
+            store.send({
+              type: 'setSpaceInboxMessages',
+              spaceId: response.spaceId,
+              inboxId: response.inboxId,
+              messages,
+              lastMessageClock: lastMessageClock.toISOString(),
+            });
+            break;
+          }
           default: {
             Utils.assertExhaustive(response);
           }
@@ -484,7 +867,16 @@ export function HypergraphAppProvider({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, spaces, accountId, keys?.encryptionPrivateKey, keys?.signaturePrivateKey, syncServerUri]);
+  }, [
+    websocketConnection,
+    spaces,
+    accountId,
+    keys?.encryptionPrivateKey,
+    keys?.encryptionPublicKey,
+    keys?.signaturePrivateKey,
+    keys?.signaturePublicKey,
+    syncServerUri,
+  ]);
 
   const createSpaceForContext = useCallback<() => Promise<string>>(async () => {
     if (!accountId) {
@@ -547,6 +939,218 @@ export function HypergraphAppProvider({
     const message: Messages.RequestListInvitations = { type: 'list-invitations' };
     websocketConnection?.send(Messages.serialize(message));
   }, [websocketConnection]);
+
+  const createSpaceInboxForContext = useCallback(
+    async ({
+      space,
+      isPublic,
+      authPolicy,
+    }: Readonly<{ space: SpaceStorageEntry; isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>) => {
+      if (!accountId) {
+        throw new Error('No account id found');
+      }
+      const encryptionPrivateKey = keys?.encryptionPrivateKey;
+      const encryptionPublicKey = keys?.encryptionPublicKey;
+      const signaturePrivateKey = keys?.signaturePrivateKey;
+      const signaturePublicKey = keys?.signaturePublicKey;
+      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+        throw new Error('Missing keys');
+      }
+      if (!space.state) {
+        console.error('Space has no state', space.id);
+        return;
+      }
+      const message = await Inboxes.createSpaceInboxCreationMessage({
+        author: {
+          accountId,
+          signaturePublicKey,
+          encryptionPublicKey,
+          signaturePrivateKey,
+        },
+        spaceId: space.id,
+        isPublic,
+        authPolicy,
+        spaceSecretKey: space.keys[0].key,
+        previousEventHash: space.state.lastEventHash,
+      });
+      websocketConnection?.send(Messages.serialize(message));
+    },
+    [
+      accountId,
+      keys?.encryptionPrivateKey,
+      keys?.encryptionPublicKey,
+      keys?.signaturePrivateKey,
+      keys?.signaturePublicKey,
+      websocketConnection,
+    ],
+  );
+
+  const getLatestSpaceInboxMessagesForContext = useCallback(
+    async ({ spaceId, inboxId }: Readonly<{ spaceId: string; inboxId: string }>) => {
+      const storeState = store.getSnapshot();
+      const space = storeState.context.spaces.find((s) => s.id === spaceId);
+      if (!space) {
+        console.error('Space not found', spaceId);
+        return;
+      }
+      const inbox = space.inboxes.find((i) => i.inboxId === inboxId);
+      if (!inbox) {
+        console.error('Inbox not found', inboxId);
+        return;
+      }
+      const latestMessageClock = inbox.lastMessageClock;
+      const message: Messages.RequestGetLatestSpaceInboxMessages = {
+        type: 'get-latest-space-inbox-messages',
+        spaceId,
+        inboxId,
+        since: new Date(latestMessageClock),
+      };
+      websocketConnection?.send(Messages.serialize(message));
+    },
+    [websocketConnection],
+  );
+
+  const listPublicSpaceInboxesForContext = useCallback(
+    async ({ spaceId }: Readonly<{ spaceId: string }>): Promise<readonly Messages.SpaceInboxPublic[]> => {
+      return await Inboxes.listPublicSpaceInboxes({ spaceId, syncServerUri });
+    },
+    [syncServerUri],
+  );
+
+  const getSpaceInboxForContext = useCallback(
+    async ({
+      spaceId,
+      inboxId,
+    }: Readonly<{ spaceId: string; inboxId: string }>): Promise<Messages.SpaceInboxPublic> => {
+      return await Inboxes.getSpaceInbox({ spaceId, inboxId, syncServerUri });
+    },
+    [syncServerUri],
+  );
+
+  const sendSpaceInboxMessageForContext = useCallback(
+    async ({
+      spaceId,
+      inboxId,
+      message,
+      encryptionPublicKey,
+      signaturePrivateKey,
+      authorAccountId,
+    }: Readonly<{
+      spaceId: string;
+      inboxId: string;
+      message: string;
+      encryptionPublicKey: string;
+      signaturePrivateKey: string | null;
+      authorAccountId: string;
+    }>) => {
+      return await Inboxes.sendSpaceInboxMessage({
+        spaceId,
+        inboxId,
+        message,
+        encryptionPublicKey,
+        signaturePrivateKey,
+        syncServerUri,
+        authorAccountId,
+      });
+    },
+    [syncServerUri],
+  );
+
+  const createAccountInboxForContext = useCallback(
+    async ({ isPublic, authPolicy }: Readonly<{ isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>) => {
+      if (!accountId) {
+        throw new Error('No account id found');
+      }
+      const encryptionPrivateKey = keys?.encryptionPrivateKey;
+      const encryptionPublicKey = keys?.encryptionPublicKey;
+      const signaturePrivateKey = keys?.signaturePrivateKey;
+      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey) {
+        throw new Error('Missing keys');
+      }
+      const message = await Inboxes.createAccountInboxCreationMessage({
+        accountId,
+        isPublic,
+        authPolicy,
+        encryptionPublicKey,
+        signaturePrivateKey,
+      });
+      websocketConnection?.send(Messages.serialize(message));
+    },
+    [accountId, keys?.encryptionPrivateKey, keys?.encryptionPublicKey, keys?.signaturePrivateKey, websocketConnection],
+  );
+
+  const getLatestAccountInboxMessagesForContext = useCallback(
+    async ({ accountId, inboxId }: Readonly<{ accountId: string; inboxId: string }>) => {
+      const storeState = store.getSnapshot();
+      const inbox = storeState.context.accountInboxes.find((i) => i.inboxId === inboxId);
+      if (!inbox) {
+        console.error('Inbox not found', inboxId);
+        return;
+      }
+      const latestMessageClock = inbox.lastMessageClock;
+      const message: Messages.RequestGetLatestAccountInboxMessages = {
+        type: 'get-latest-account-inbox-messages',
+        accountId,
+        inboxId,
+        since: new Date(latestMessageClock),
+      };
+      websocketConnection?.send(Messages.serialize(message));
+    },
+    [websocketConnection],
+  );
+
+  const getOwnAccountInboxesForContext = useCallback(async () => {
+    const message: Messages.RequestGetAccountInboxes = {
+      type: 'get-account-inboxes',
+    };
+    websocketConnection?.send(Messages.serialize(message));
+  }, [websocketConnection]);
+
+  const listPublicAccountInboxesForContext = useCallback(
+    async ({ accountId }: Readonly<{ accountId: string }>): Promise<readonly Messages.AccountInboxPublic[]> => {
+      return await Inboxes.listPublicAccountInboxes({ accountId, syncServerUri });
+    },
+    [syncServerUri],
+  );
+
+  const getAccountInboxForContext = useCallback(
+    async ({
+      accountId,
+      inboxId,
+    }: Readonly<{ accountId: string; inboxId: string }>): Promise<Messages.AccountInboxPublic> => {
+      return await Inboxes.getAccountInbox({ accountId, inboxId, syncServerUri });
+    },
+    [syncServerUri],
+  );
+
+  const sendAccountInboxMessageForContext = useCallback(
+    async ({
+      message,
+      accountId,
+      inboxId,
+      encryptionPublicKey,
+      signaturePrivateKey,
+      authorAccountId,
+    }: Readonly<{
+      message: string;
+      accountId: string;
+      inboxId: string;
+      encryptionPublicKey: string;
+      signaturePrivateKey: string | null;
+      authorAccountId: string | null;
+    }>) => {
+      return await Inboxes.sendAccountInboxMessage({
+        message,
+        accountId,
+        inboxId,
+        encryptionPublicKey,
+        signaturePrivateKey,
+        syncServerUri,
+        authorAccountId,
+      });
+    },
+    [syncServerUri],
+  );
 
   const acceptInvitationForContext = useCallback(
     async ({
@@ -630,9 +1234,6 @@ export function HypergraphAppProvider({
       if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
         throw new Error('Missing keys');
       }
-      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
-        throw new Error('Missing keys');
-      }
       if (!space.state) {
         console.error('No state found for space');
         return;
@@ -696,6 +1297,56 @@ export function HypergraphAppProvider({
     [syncServerUri],
   );
 
+  const ensureSpaceInboxForContext = useCallback(
+    async ({
+      spaceId,
+      isPublic = true,
+      authPolicy = 'anonymous',
+      index = 0,
+    }: {
+      spaceId: string;
+      isPublic?: boolean;
+      authPolicy?: Inboxes.InboxSenderAuthPolicy;
+      index?: number;
+    }) => {
+      const storeState = store.getSnapshot();
+      const space = storeState.context.spaces.find((s) => s.id === spaceId);
+      if (!space) {
+        throw new Error('Space not found');
+      }
+
+      // Return existing inbox if found
+      if (space.inboxes[index]) {
+        return space.inboxes[index].inboxId;
+      }
+
+      // Create new inbox
+      await createSpaceInboxForContext({
+        space,
+        isPublic,
+        authPolicy,
+      });
+
+      // Wait for inbox to appear in store
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      while (attempts < maxAttempts) {
+        const storeState = store.getSnapshot();
+        const updatedSpace = storeState.context.spaces.find((s) => s.id === spaceId);
+        if (updatedSpace?.inboxes[index]) {
+          return updatedSpace.inboxes[index].inboxId;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        attempts++;
+      }
+
+      throw new Error('Timeout waiting for inbox to be created');
+    },
+    [createSpaceInboxForContext],
+  );
+
   return (
     <HypergraphAppContext.Provider
       value={{
@@ -704,6 +1355,17 @@ export function HypergraphAppProvider({
         setIdentityAndSessionToken,
         invitations,
         createSpace: createSpaceForContext,
+        createSpaceInbox: createSpaceInboxForContext,
+        getLatestSpaceInboxMessages: getLatestSpaceInboxMessagesForContext,
+        listPublicSpaceInboxes: listPublicSpaceInboxesForContext,
+        getSpaceInbox: getSpaceInboxForContext,
+        sendSpaceInboxMessage: sendSpaceInboxMessageForContext,
+        createAccountInbox: createAccountInboxForContext,
+        getLatestAccountInboxMessages: getLatestAccountInboxMessagesForContext,
+        getOwnAccountInboxes: getOwnAccountInboxesForContext,
+        listPublicAccountInboxes: listPublicAccountInboxesForContext,
+        getAccountInbox: getAccountInboxForContext,
+        sendAccountInboxMessage: sendAccountInboxMessageForContext,
         listSpaces,
         listInvitations,
         acceptInvitation: acceptInvitationForContext,
@@ -711,6 +1373,7 @@ export function HypergraphAppProvider({
         getVerifiedIdentity,
         inviteToSpace,
         loading,
+        ensureSpaceInbox: ensureSpaceInboxForContext,
       }}
     >
       <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>

@@ -1,11 +1,12 @@
-import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
+import { Messages, store } from '@graphprotocol/hypergraph';
+import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { availableAccounts } from '@/lib/availableAccounts';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -13,7 +14,19 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } = useHypergraphApp();
+  const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
+  const {
+    createSpace,
+    listSpaces,
+    listInvitations,
+    invitations,
+    acceptInvitation,
+    createAccountInbox,
+    getOwnAccountInboxes,
+    loading,
+  } = useHypergraphApp();
+
+  const { identity } = useHypergraphAuth();
 
   console.log('Home page', { loading });
 
@@ -21,8 +34,9 @@ function Index() {
     if (!loading) {
       listSpaces();
       listInvitations();
+      getOwnAccountInboxes();
     }
-  }, [listSpaces, listInvitations, loading]);
+  }, [listSpaces, listInvitations, getOwnAccountInboxes, loading]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
@@ -85,6 +99,57 @@ function Index() {
           );
         })}
       </ul>
+
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-bold">Account Inboxes</h2>
+        <Button
+          onClick={(event) => {
+            event.preventDefault();
+            createAccountInbox({
+              isPublic: true,
+              authPolicy: 'optional_auth',
+            });
+          }}
+        >
+          Create account inbox
+        </Button>
+        <ul className="flex flex-col gap-2">
+          {accountInboxes.length === 0 && <div>No account inboxes</div>}
+          {accountInboxes.map((inbox) => {
+            return (
+              <li key={inbox.inboxId}>
+                <Link to="/account-inbox/$inboxId" params={{ inboxId: inbox.inboxId }}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{inbox.inboxId}</CardTitle>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-bold">Friends</h2>
+        <ul className="flex flex-col gap-2">
+          {availableAccounts
+            .filter((account) => account.accountId !== identity?.accountId)
+            .map((account) => {
+              return (
+                <li key={account.accountId}>
+                  <Link to="/friends/$accountId" params={{ accountId: account.accountId }}>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{account.accountId}</CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                </li>
+              );
+            })}
+        </ul>
+      </div>
     </div>
   );
 }

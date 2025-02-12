@@ -13,13 +13,14 @@ datasource db {
 }
 
 model SpaceEvent {
-  id        String   @id
-  event     String
-  state     String
-  counter   Int
-  space     Space    @relation(fields: [spaceId], references: [id])
-  spaceId   String
-  createdAt DateTime @default(now())
+  id                    String   @id
+  event                 String
+  state                 String
+  counter               Int
+  space                 Space    @relation(fields: [spaceId], references: [id])
+  spaceId               String
+  createdAt             DateTime @default(now())
+  inboxes               SpaceInbox[]
 
   @@unique([spaceId, counter])
 }
@@ -31,6 +32,7 @@ model Space {
   invitations Invitation[]
   keys        SpaceKey[]
   updates     Update[]
+  inboxes     SpaceInbox[]
 }
 
 model SpaceKey {
@@ -53,6 +55,31 @@ model SpaceKeyBox {
   createdAt       DateTime @default(now())
 }
 
+model SpaceInbox {
+  id                  String @id
+  space               Space @relation(fields: [spaceId], references: [id])
+  spaceId             String
+  isPublic            Boolean
+  authPolicy          String
+  encryptionPublicKey String
+  encryptedSecretKey  String
+  spaceEvent          SpaceEvent @relation(fields: [spaceEventId], references: [id])
+  spaceEventId        String
+  messages            SpaceInboxMessage[]
+  createdAt           DateTime @default(now())
+}
+
+model SpaceInboxMessage {
+  id String @id @default(uuid(4))
+  spaceInbox SpaceInbox @relation(fields: [spaceInboxId], references: [id])
+  spaceInboxId String
+  ciphertext String
+  signatureHex String?
+  signatureRecovery Int?
+  authorAccountId String?
+  createdAt DateTime @default(now())
+}
+
 model Account {
   id                  String        @id
   spaces              Space[]
@@ -63,8 +90,33 @@ model Account {
   sessionToken          String?
   sessionTokenExpires   DateTime?
   updates               Update[]
+  inboxes        AccountInbox[]
 
   @@index([sessionToken])
+}
+
+model AccountInbox {
+  id                  String @id
+  account             Account @relation(fields: [accountId], references: [id])
+  accountId           String
+  isPublic            Boolean
+  authPolicy          String
+  encryptionPublicKey String
+  signatureHex        String
+  signatureRecovery   Int
+  messages            AccountInboxMessage[]
+  createdAt           DateTime @default(now())
+}
+
+model AccountInboxMessage {
+  id String @id @default(uuid(7))
+  accountInbox AccountInbox @relation(fields: [accountInboxId], references: [id])
+  accountInboxId String
+  ciphertext String
+  signatureHex String?
+  signatureRecovery Int?
+  authorAccountId String?
+  createdAt DateTime @default(now())
 }
 
 model Invitation {

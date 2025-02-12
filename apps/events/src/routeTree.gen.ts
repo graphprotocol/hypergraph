@@ -16,6 +16,8 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
 import { Route as SettingsExportWalletImport } from './routes/settings/export-wallet'
+import { Route as FriendsAccountIdImport } from './routes/friends/$accountId'
+import { Route as AccountInboxInboxIdImport } from './routes/account-inbox/$inboxId'
 
 // Create Virtual Routes
 
@@ -47,6 +49,18 @@ const SettingsExportWalletRoute = SettingsExportWalletImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const FriendsAccountIdRoute = FriendsAccountIdImport.update({
+  id: '/friends/$accountId',
+  path: '/friends/$accountId',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountInboxInboxIdRoute = AccountInboxInboxIdImport.update({
+  id: '/account-inbox/$inboxId',
+  path: '/account-inbox/$inboxId',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -63,6 +77,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/account-inbox/$inboxId': {
+      id: '/account-inbox/$inboxId'
+      path: '/account-inbox/$inboxId'
+      fullPath: '/account-inbox/$inboxId'
+      preLoaderRoute: typeof AccountInboxInboxIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/friends/$accountId': {
+      id: '/friends/$accountId'
+      path: '/friends/$accountId'
+      fullPath: '/friends/$accountId'
+      preLoaderRoute: typeof FriendsAccountIdImport
       parentRoute: typeof rootRoute
     }
     '/settings/export-wallet': {
@@ -87,6 +115,8 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
+  '/friends/$accountId': typeof FriendsAccountIdRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
@@ -94,6 +124,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
+  '/friends/$accountId': typeof FriendsAccountIdRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
@@ -102,19 +134,35 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
+  '/friends/$accountId': typeof FriendsAccountIdRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/account-inbox/$inboxId'
+    | '/friends/$accountId'
+    | '/settings/export-wallet'
+    | '/space/$spaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
+  to:
+    | '/'
+    | '/login'
+    | '/account-inbox/$inboxId'
+    | '/friends/$accountId'
+    | '/settings/export-wallet'
+    | '/space/$spaceId'
   id:
     | '__root__'
     | '/'
     | '/login'
+    | '/account-inbox/$inboxId'
+    | '/friends/$accountId'
     | '/settings/export-wallet'
     | '/space/$spaceId'
   fileRoutesById: FileRoutesById
@@ -123,6 +171,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginLazyRoute: typeof LoginLazyRoute
+  AccountInboxInboxIdRoute: typeof AccountInboxInboxIdRoute
+  FriendsAccountIdRoute: typeof FriendsAccountIdRoute
   SettingsExportWalletRoute: typeof SettingsExportWalletRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
 }
@@ -130,6 +180,8 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginLazyRoute: LoginLazyRoute,
+  AccountInboxInboxIdRoute: AccountInboxInboxIdRoute,
+  FriendsAccountIdRoute: FriendsAccountIdRoute,
   SettingsExportWalletRoute: SettingsExportWalletRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRoute,
 }
@@ -146,6 +198,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/login",
+        "/account-inbox/$inboxId",
+        "/friends/$accountId",
         "/settings/export-wallet",
         "/space/$spaceId"
       ]
@@ -155,6 +209,12 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.lazy.tsx"
+    },
+    "/account-inbox/$inboxId": {
+      "filePath": "account-inbox/$inboxId.tsx"
+    },
+    "/friends/$accountId": {
+      "filePath": "friends/$accountId.tsx"
     },
     "/settings/export-wallet": {
       "filePath": "settings/export-wallet.tsx"
