@@ -419,7 +419,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
             if (
               client.readyState === WebSocket.OPEN &&
-              client.accountId === data.event.transaction.signaturePublicKey
+              client.accountId === data.event.transaction.inviteeAccountId
             ) {
               const invitations = await listInvitations({ accountId: client.accountId });
               const outgoingMessage: Messages.ResponseListInvitations = {
