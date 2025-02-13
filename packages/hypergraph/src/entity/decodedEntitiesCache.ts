@@ -14,6 +14,7 @@ export type DecodedEntitiesCacheEntry = {
     string, // instead of serializedQueryKey as string we could also have the actual params
     QueryEntry
   >;
+  isInvalidated: boolean;
 };
 
 /*

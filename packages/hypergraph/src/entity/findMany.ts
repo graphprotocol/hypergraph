@@ -1,10 +1,10 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
-import { type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
+import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
+import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import { isReferenceField } from './isReferenceField.js';
-import { relationParentQueries } from './relationParentQueries.js';
 import type { AnyNoContext, DocumentContent, Entity } from './types.js';
 
 const documentChangeListener: {
@@ -44,7 +44,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     // reference to reduce the amount of O(n) operations per query to 1
     const touchedQueries = new Set<Array<string>>();
 
-    const touchedRelationParentQueries = new Set<QueryEntry>();
+    const touchedRelationParents = new Set<DecodedEntitiesCacheEntry>();
 
     // loop over all changed entities and update the cache
     for (const entityId of changedEntities) {
@@ -77,13 +77,13 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           for (const [key, value] of Object.entries(decoded)) {
             if (Array.isArray(value)) {
               for (const relationEntity of value) {
-                let relationParentQueriesEntry = relationParentQueries.get(relationEntity.id);
-                if (!relationParentQueriesEntry) {
-                  relationParentQueriesEntry = [];
-                  relationParentQueries.set(relationEntity.id, relationParentQueriesEntry);
+                let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+                if (!relationParentEntry) {
+                  relationParentEntry = [];
+                  entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
                 }
 
-                relationParentQueriesEntry.push(query);
+                relationParentEntry.push(cacheEntry);
               }
             }
           }
@@ -91,13 +91,13 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 
         entityTypes.add(typeName);
 
-        // gather all the queries of impacted parent relation queries
-        if (relationParentQueries.has(entityId)) {
-          const queries = relationParentQueries.get(entityId);
-          if (!queries) return;
+        // gather all the decodedEntitiesCacheEntries
+        if (entityRelationParentsMap.has(entityId)) {
+          const decodedEntitiesCacheEntries = entityRelationParentsMap.get(entityId);
+          if (!decodedEntitiesCacheEntries) return;
 
-          for (const query of queries) {
-            touchedRelationParentQueries.add(query);
+          for (const entry of decodedEntitiesCacheEntries) {
+            touchedRelationParents.add(entry);
           }
         }
       }
@@ -122,12 +122,12 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
       }
 
       // gather all the queries of impacted parent relation queries
-      if (relationParentQueries.has(entityId)) {
-        const queries = relationParentQueries.get(entityId);
-        if (!queries) return;
+      if (entityRelationParentsMap.has(entityId)) {
+        const decodedEntitiesCacheEntries = entityRelationParentsMap.get(entityId);
+        if (!decodedEntitiesCacheEntries) return;
 
-        for (const query of queries) {
-          touchedRelationParentQueries.add(query);
+        for (const entry of decodedEntitiesCacheEntries) {
+          touchedRelationParents.add(entry);
         }
       }
     }
@@ -156,10 +156,13 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 
     // trigger all the listeners of the parent relation queries
     // TODO: align with the touchedQueries to avoid unnecessary trigger calls
-    for (const query of touchedRelationParentQueries) {
-      query.isInvalidated = true;
-      for (const listener of query.listeners) {
-        listener();
+    for (const decodedEntitiesCacheEntry of touchedRelationParents) {
+      decodedEntitiesCacheEntry.isInvalidated = true;
+      for (const query of decodedEntitiesCacheEntry.queries.values()) {
+        query.isInvalidated = true;
+        for (const listener of query.listeners) {
+          listener();
+        }
       }
     }
   };
@@ -218,10 +221,11 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
 
   const getEntities = () => {
     const cacheEntry = decodedEntitiesCache.get(typeName);
-    const query = cacheEntry?.queries.get(queryKey);
+    if (!cacheEntry) return stableEmptyArray;
+    const query = cacheEntry.queries.get(queryKey);
     if (!query) return stableEmptyArray;
 
-    if (!query.isInvalidated) {
+    if (!cacheEntry.isInvalidated && !query.isInvalidated) {
       return query.data;
     }
 
@@ -239,6 +243,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       }
     }
 
+    cacheEntry.isInvalidated = false;
     query.isInvalidated = false;
     return query.data;
   };
@@ -246,10 +251,10 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   if (!decodedEntitiesCache.has(typeName)) {
     const entities = findMany(handle, type);
     const entitiesMap = new Map();
-    const relationParentQueries = new Map();
+    const relationParent = new Map();
     for (const entity of entities) {
       entitiesMap.set(entity.id, entity);
-      relationParentQueries.set(entity.id, new Map());
+      relationParent.set(entity.id, new Map());
     }
 
     const queries = new Map<string, QueryEntry>();
@@ -265,6 +270,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       type,
       entities: entitiesMap,
       queries,
+      isInvalidated: false,
     });
   }
 
@@ -281,19 +287,12 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     const typeName = type.name;
     const entities = findMany(handle, type);
 
-    if (decodedEntitiesCache.has(typeName)) {
-      // add a listener to the existing query
-      const cacheEntry = decodedEntitiesCache.get(typeName);
-
-      for (const entity of entities) {
-        cacheEntry?.entities.set(entity.id, entity);
-      }
-    } else {
+    if (!decodedEntitiesCache.has(typeName)) {
       const entitiesMap = new Map();
-      const relationParentQueries = new Map();
+      const relationParent = new Map();
       for (const entity of entities) {
         entitiesMap.set(entity.id, entity);
-        relationParentQueries.set(entity.id, new Map());
+        relationParent.set(entity.id, new Map());
       }
 
       decodedEntitiesCache.set(typeName, {
@@ -301,6 +300,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
         type,
         entities: entitiesMap,
         queries: new Map(),
+        isInvalidated: false,
       });
     }
   }
