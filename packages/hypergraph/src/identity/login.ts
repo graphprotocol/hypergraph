@@ -3,6 +3,7 @@ import { SiweMessage } from 'siwe';
 import type { Address, Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import * as Messages from '../messages/index.js';
+import { store } from '../store.js';
 import {
   loadKeys,
   loadSyncServerSessionToken,
@@ -245,4 +246,33 @@ export async function loginWithKeys(
     sessionToken: decoded.sessionToken,
     keys,
   };
+}
+
+export async function login(
+  signer: Signer,
+  accountId: Address,
+  syncServerUri: string,
+  chainId: number,
+  storage: Storage,
+  location: { host: string; origin: string },
+) {
+  const keys = loadKeys(storage, accountId);
+  let authData: {
+    accountId: Address;
+    sessionToken: string;
+    keys: IdentityKeys;
+  };
+  if (!keys && !(await identityExists(accountId, syncServerUri))) {
+    authData = await signup(signer, accountId, syncServerUri, chainId, storage, location);
+  } else if (keys) {
+    authData = await loginWithKeys(keys, accountId, syncServerUri, chainId, storage, location);
+  } else {
+    authData = await loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location);
+  }
+  console.log('Identity initialized');
+  store.send({
+    ...authData,
+    type: 'setAuth',
+  });
+  store.send({ type: 'reset' });
 }
