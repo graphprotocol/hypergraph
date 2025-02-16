@@ -281,39 +281,41 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     }
   }
 
-  for (const type of allTypes) {
-    // TODO: what's the right way to get the name of the type?
-    // @ts-expect-error name is defined
-    const typeName = type.name;
-    const entities = findMany(handle, type);
-
-    if (!decodedEntitiesCache.has(typeName)) {
-      const entitiesMap = new Map();
-      const relationParent = new Map();
-      for (const entity of entities) {
-        entitiesMap.set(entity.id, entity);
-        relationParent.set(entity.id, new Map());
-      }
-
-      decodedEntitiesCache.set(typeName, {
-        decoder: decode,
-        type,
-        entities: entitiesMap,
-        queries: new Map(),
-        isInvalidated: false,
-      });
-    }
-  }
-
   const subscribe = (callback: () => void) => {
     const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
     if (query?.listeners) {
       query.listeners.push(callback);
     }
+
     return () => {
-      const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
-      if (query?.listeners) {
-        query.listeners = query?.listeners?.filter((cachedListener) => cachedListener !== callback);
+      const cacheEntry = decodedEntitiesCache.get(typeName);
+      if (cacheEntry) {
+        // first cleanup the queries
+        const query = cacheEntry.queries.get(queryKey);
+        if (query) {
+          query.listeners = query?.listeners?.filter((cachedListener) => cachedListener !== callback);
+          if (query.listeners.length === 0) {
+            cacheEntry.queries.delete(queryKey);
+          }
+        }
+        // if the last query is removed, cleanup the entityRelationParentsMap and remove the decodedEntitiesCacheEntry
+        if (cacheEntry.queries.size === 0) {
+          entityRelationParentsMap.forEach((relationCacheEntries, key) => {
+            for (const relationCacheEntry of relationCacheEntries) {
+              if (relationCacheEntry === cacheEntry) {
+                entityRelationParentsMap.set(
+                  key,
+                  relationCacheEntries.filter((entry) => entry !== cacheEntry),
+                );
+              }
+            }
+            const updatedRelationCacheEntries = entityRelationParentsMap.get(key);
+            if (updatedRelationCacheEntries && updatedRelationCacheEntries.length === 0) {
+              entityRelationParentsMap.delete(key);
+            }
+          });
+          decodedEntitiesCache.delete(typeName);
+        }
       }
 
       documentChangeListener.subscribedQueriesCount--;
