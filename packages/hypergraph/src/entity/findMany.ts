@@ -251,10 +251,8 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   if (!decodedEntitiesCache.has(typeName)) {
     const entities = findMany(handle, type);
     const entitiesMap = new Map();
-    const relationParent = new Map();
     for (const entity of entities) {
       entitiesMap.set(entity.id, entity);
-      relationParent.set(entity.id, new Map());
     }
 
     const queries = new Map<string, QueryEntry>();
@@ -265,13 +263,31 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       isInvalidated: false,
     });
 
-    decodedEntitiesCache.set(typeName, {
+    const cacheEntry: DecodedEntitiesCacheEntry = {
       decoder: decode,
       type,
       entities: entitiesMap,
       queries,
       isInvalidated: false,
-    });
+    };
+
+    decodedEntitiesCache.set(typeName, cacheEntry);
+
+    for (const entity of entities) {
+      for (const [, value] of Object.entries(entity)) {
+        if (Array.isArray(value)) {
+          for (const relationEntity of value) {
+            let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+            if (!relationParentEntry) {
+              relationParentEntry = [];
+              entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+            }
+
+            relationParentEntry.push(cacheEntry);
+          }
+        }
+      }
+    }
   }
 
   const allTypes = new Set<S>();
