@@ -44,6 +44,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     // reference to reduce the amount of O(n) operations per query to 1
     const touchedQueries = new Set<Array<string>>();
 
+    // collect all entities that used this entity as a entry in on of their relation fields
     const touchedRelationParents = new Set<DecodedEntitiesCacheEntry>();
 
     // loop over all changed entities and update the cache
@@ -55,6 +56,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         const cacheEntry = decodedEntitiesCache.get(typeName);
         if (!cacheEntry) continue;
 
+        const oldDecodedEntry = cacheEntry.entities.get(entityId);
         const relations = getEntityRelations(entity, cacheEntry.type, doc);
         const decoded = cacheEntry.decoder({
           ...entity,
@@ -62,6 +64,51 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           id: entityId,
         });
         cacheEntry.entities.set(entityId, decoded);
+
+        if (oldDecodedEntry) {
+          // collect all the Ids for relation entries that don't exist in the `decoded` entry, but did in the `oldDecodedEntry`
+          const deletedRelationIds = new Set<string>();
+          for (const [fieldName, value] of Object.entries(oldDecodedEntry)) {
+            if (Array.isArray(value)) {
+              for (const relationEntity of value) {
+                // @ts-expect-error decoded is a valid object
+                if (!decoded[fieldName]?.includes(relationEntity.id)) {
+                  deletedRelationIds.add(relationEntity.id);
+                }
+              }
+            }
+          }
+
+          // it's fine to remove all of them since they are re-added below
+          for (const deletedRelationId of deletedRelationIds) {
+            const deletedRelationEntry = entityRelationParentsMap.get(deletedRelationId);
+            if (deletedRelationEntry) {
+              deletedRelationEntry.set(cacheEntry, (deletedRelationEntry.get(cacheEntry) ?? 0) - 1);
+              if (deletedRelationEntry.get(cacheEntry) === 0) {
+                deletedRelationEntry.delete(cacheEntry);
+              }
+              if (deletedRelationEntry.size === 0) {
+                entityRelationParentsMap.delete(deletedRelationId);
+              }
+            }
+          }
+        }
+
+        // @ts-expect-error decoded is a valid object
+        for (const [key, value] of Object.entries(decoded)) {
+          if (Array.isArray(value)) {
+            for (const relationEntity of value) {
+              let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+              if (relationParentEntry) {
+                relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
+              } else {
+                relationParentEntry = new Map();
+                entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+                relationParentEntry.set(cacheEntry, 1);
+              }
+            }
+          }
+        }
 
         const query = cacheEntry.queries.get('all');
         if (query) {
@@ -72,31 +119,17 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
             query.data.push(decoded);
           }
           touchedQueries.add([typeName, 'all']);
-
-          // @ts-expect-error decoded is a valid object
-          for (const [key, value] of Object.entries(decoded)) {
-            if (Array.isArray(value)) {
-              for (const relationEntity of value) {
-                let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-                if (!relationParentEntry) {
-                  relationParentEntry = [];
-                  entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-                }
-
-                relationParentEntry.push(cacheEntry);
-              }
-            }
-          }
         }
 
         entityTypes.add(typeName);
 
-        // gather all the decodedEntitiesCacheEntries
+        // gather all the decodedEntitiesCacheEntries that have a relation to this entity to
+        // invoke their query listeners below
         if (entityRelationParentsMap.has(entityId)) {
           const decodedEntitiesCacheEntries = entityRelationParentsMap.get(entityId);
           if (!decodedEntitiesCacheEntries) return;
 
-          for (const entry of decodedEntitiesCacheEntries) {
+          for (const [entry] of decodedEntitiesCacheEntries) {
             touchedRelationParents.add(entry);
           }
         }
@@ -121,17 +154,20 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         }
       }
 
-      // gather all the queries of impacted parent relation queries
+      // gather all the queries of impacted parent relation queries and then remove the cacheEntry
       if (entityRelationParentsMap.has(entityId)) {
         const decodedEntitiesCacheEntries = entityRelationParentsMap.get(entityId);
         if (!decodedEntitiesCacheEntries) return;
 
-        for (const entry of decodedEntitiesCacheEntries) {
+        for (const [entry] of decodedEntitiesCacheEntries) {
           touchedRelationParents.add(entry);
         }
+
+        entityRelationParentsMap.delete(entityId);
       }
     }
 
+    // update the queries affected queries
     for (const [typeName, queryKey] of touchedQueries) {
       const cacheEntry = decodedEntitiesCache.get(typeName);
       if (!cacheEntry) continue;
@@ -155,7 +191,6 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     }
 
     // trigger all the listeners of the parent relation queries
-    // TODO: align with the touchedQueries to avoid unnecessary trigger calls
     for (const decodedEntitiesCacheEntry of touchedRelationParents) {
       decodedEntitiesCacheEntry.isInvalidated = true;
       for (const query of decodedEntitiesCacheEntry.queries.values()) {
@@ -278,12 +313,13 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
         if (Array.isArray(value)) {
           for (const relationEntity of value) {
             let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-            if (!relationParentEntry) {
-              relationParentEntry = [];
+            if (relationParentEntry) {
+              relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
+            } else {
+              relationParentEntry = new Map();
               entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+              relationParentEntry.set(cacheEntry, 1);
             }
-
-            relationParentEntry.push(cacheEntry);
           }
         }
       }
@@ -317,16 +353,12 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
         // if the last query is removed, cleanup the entityRelationParentsMap and remove the decodedEntitiesCacheEntry
         if (cacheEntry.queries.size === 0) {
           entityRelationParentsMap.forEach((relationCacheEntries, key) => {
-            for (const relationCacheEntry of relationCacheEntries) {
-              if (relationCacheEntry === cacheEntry) {
-                entityRelationParentsMap.set(
-                  key,
-                  relationCacheEntries.filter((entry) => entry !== cacheEntry),
-                );
+            for (const [relationCacheEntry, counter] of relationCacheEntries) {
+              if (relationCacheEntry === cacheEntry && counter === 0) {
+                relationCacheEntries.delete(cacheEntry);
               }
             }
-            const updatedRelationCacheEntries = entityRelationParentsMap.get(key);
-            if (updatedRelationCacheEntries && updatedRelationCacheEntries.length === 0) {
+            if (relationCacheEntries.size === 0) {
               entityRelationParentsMap.delete(key);
             }
           });
