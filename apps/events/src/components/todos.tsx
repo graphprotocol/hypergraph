@@ -46,7 +46,23 @@ export const Todos = () => {
           <h2>{todo.name}</h2>
           {todo.assignees.length > 0 && (
             <span className="text-xs text-gray-500">
-              Assigned to: {todo.assignees.map((assignee) => assignee.name).join(', ')}
+              Assigned to:{' '}
+              {todo.assignees.map((assignee) => (
+                <span key={assignee.id} className="border rounded-sm mr-1 p-1">
+                  {assignee.name}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateEntity(todo.id, {
+                        assignees: todo.assignees.map((assignee) => assignee.id).filter((id) => id !== assignee.id),
+                      })
+                    }
+                    className="cursor-pointer ml-1 text-red-400"
+                  >
+                    x
+                  </button>
+                </span>
+              ))}
             </span>
           )}
           <input
