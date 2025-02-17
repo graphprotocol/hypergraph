@@ -6,7 +6,7 @@ WORKDIR /workspace
 RUN apk add --update --no-cache openssl python3 make g++
 # Install pnpm.
 ADD package.json .
-# needed due
+# TODO: Remove this once it's no longer needed.
 # - https://github.com/pnpm/pnpm/issues/9014#issuecomment-2618565344
 # - https://github.com/nodejs/corepack/issues/612
 RUN npm install --global corepack@latest
