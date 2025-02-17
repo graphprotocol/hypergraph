@@ -1,5 +1,5 @@
-import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
+import { PublicGraph, Utils, store } from '@graphprotocol/hypergraph';
+import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect } from 'react';
@@ -14,6 +14,7 @@ export const Route = createFileRoute('/')({
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
   const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } = useHypergraphApp();
+  const { identity } = useHypergraphAuth();
 
   console.log('Home page', { loading });
 
@@ -85,6 +86,41 @@ function Index() {
           );
         })}
       </ul>
+      <h2>Public Graph</h2>
+      <Button
+        onClick={() => {
+          if (!identity) {
+            throw new Error('Identity not found');
+          }
+          PublicGraph.createSpace({
+            initialEditorAddress: identity.accountId,
+            spaceName: 'Example-Name',
+          });
+        }}
+      >
+        Create space
+      </Button>
+      <Button
+        onClick={() => {
+          if (!identity) {
+            throw new Error('Identity not found');
+          }
+          const id = Utils.generateId();
+          PublicGraph.createEntity({
+            id,
+            accountId: identity.accountId,
+            spaceId: 'APRxsbvk2awdZQChF4i5ey',
+            data: {
+              name: 'Test Geo',
+            },
+            mapping: {
+              name: PublicGraph.SYSTEM_IDS.NAME_ATTRIBUTE,
+            },
+          });
+        }}
+      >
+        Create entity
+      </Button>
     </div>
   );
 }

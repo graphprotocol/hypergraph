@@ -29,6 +29,7 @@
     "@automerge/automerge": "^v2.2.9-alpha.3",
     "@automerge/automerge-repo": "^2.0.0-alpha.14",
     "@effect/experimental": "^0.37.1",
+    "@graphprotocol/grc-20": "^0.5.0",
     "@noble/ciphers": "^1.2.0",
     "@noble/curves": "^1.8.0",
     "@noble/hashes": "^1.7.0",
