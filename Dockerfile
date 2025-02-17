@@ -6,6 +6,10 @@ WORKDIR /workspace
 RUN apk add --update --no-cache openssl python3 make g++
 # Install pnpm.
 ADD package.json .
+# TODO: Remove this once it's no longer needed.
+# - https://github.com/pnpm/pnpm/issues/9014#issuecomment-2618565344
+# - https://github.com/nodejs/corepack/issues/612
+RUN npm install --global corepack@latest
 RUN corepack enable && corepack prepare --activate
 # Skip prisma code generation during install.
 ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
@@ -29,7 +33,7 @@ RUN \
   # Build the server.
   pnpm --filter server build && \
   # Create an isolated deployment for the server.
-  pnpm --filter server deploy --prod deployment && \
+  pnpm --filter server deploy --prod deployment --legacy && \
   # Move the runtime build artifacts into a separate directory.
   mkdir -p deployment/out && mv deployment/dist deployment/prisma deployment/node_modules deployment/package.json deployment/out && \
   # Generate the prisma client
