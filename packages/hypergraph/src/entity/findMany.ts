@@ -66,15 +66,12 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         cacheEntry.entities.set(entityId, decoded);
 
         if (oldDecodedEntry) {
-          // collect all the Ids for relation entries that don't exist in the `decoded` entry, but did in the `oldDecodedEntry`
+          // collect all the Ids for relation entries in the `oldDecodedEntry`
           const deletedRelationIds = new Set<string>();
-          for (const [fieldName, value] of Object.entries(oldDecodedEntry)) {
+          for (const [, value] of Object.entries(oldDecodedEntry)) {
             if (Array.isArray(value)) {
               for (const relationEntity of value) {
-                // @ts-expect-error decoded is a valid object
-                if (!decoded[fieldName]?.includes(relationEntity.id)) {
-                  deletedRelationIds.add(relationEntity.id);
-                }
+                deletedRelationIds.add(relationEntity.id);
               }
             }
           }
