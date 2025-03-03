@@ -15,6 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
+import { Route as SettingsDelegateImport } from './routes/settings/delegate'
 
 // Create Virtual Routes
 
@@ -40,6 +41,12 @@ const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const SettingsDelegateRoute = SettingsDelegateImport.update({
+  id: '/settings/delegate',
+  path: '/settings/delegate',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -58,6 +65,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginLazyImport
       parentRoute: typeof rootRoute
     }
+    '/settings/delegate': {
+      id: '/settings/delegate'
+      path: '/settings/delegate'
+      fullPath: '/settings/delegate'
+      preLoaderRoute: typeof SettingsDelegateImport
+      parentRoute: typeof rootRoute
+    }
     '/space/$spaceId': {
       id: '/space/$spaceId'
       path: '/space/$spaceId'
@@ -73,12 +87,14 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/settings/delegate': typeof SettingsDelegateRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/settings/delegate': typeof SettingsDelegateRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
@@ -86,27 +102,30 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/settings/delegate': typeof SettingsDelegateRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/space/$spaceId'
+  fullPaths: '/' | '/login' | '/settings/delegate' | '/space/$spaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/space/$spaceId'
-  id: '__root__' | '/' | '/login' | '/space/$spaceId'
+  to: '/' | '/login' | '/settings/delegate' | '/space/$spaceId'
+  id: '__root__' | '/' | '/login' | '/settings/delegate' | '/space/$spaceId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginLazyRoute: typeof LoginLazyRoute
+  SettingsDelegateRoute: typeof SettingsDelegateRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginLazyRoute: LoginLazyRoute,
+  SettingsDelegateRoute: SettingsDelegateRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRoute,
 }
 
@@ -122,6 +141,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/login",
+        "/settings/delegate",
         "/space/$spaceId"
       ]
     },
@@ -130,6 +150,9 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.lazy.tsx"
+    },
+    "/settings/delegate": {
+      "filePath": "settings/delegate.tsx"
     },
     "/space/$spaceId": {
       "filePath": "space/$spaceId.tsx"
