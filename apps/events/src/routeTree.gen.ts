@@ -15,7 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
-import { Route as SettingsDelegateImport } from './routes/settings/delegate'
+import { Route as SettingsExportWalletImport } from './routes/settings/export-wallet'
 
 // Create Virtual Routes
 
@@ -41,9 +41,9 @@ const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const SettingsDelegateRoute = SettingsDelegateImport.update({
-  id: '/settings/delegate',
-  path: '/settings/delegate',
+const SettingsExportWalletRoute = SettingsExportWalletImport.update({
+  id: '/settings/export-wallet',
+  path: '/settings/export-wallet',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -65,11 +65,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginLazyImport
       parentRoute: typeof rootRoute
     }
-    '/settings/delegate': {
-      id: '/settings/delegate'
-      path: '/settings/delegate'
-      fullPath: '/settings/delegate'
-      preLoaderRoute: typeof SettingsDelegateImport
+    '/settings/export-wallet': {
+      id: '/settings/export-wallet'
+      path: '/settings/export-wallet'
+      fullPath: '/settings/export-wallet'
+      preLoaderRoute: typeof SettingsExportWalletImport
       parentRoute: typeof rootRoute
     }
     '/space/$spaceId': {
@@ -87,14 +87,14 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
-  '/settings/delegate': typeof SettingsDelegateRoute
+  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
-  '/settings/delegate': typeof SettingsDelegateRoute
+  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
@@ -102,30 +102,35 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
-  '/settings/delegate': typeof SettingsDelegateRoute
+  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/settings/delegate' | '/space/$spaceId'
+  fullPaths: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/settings/delegate' | '/space/$spaceId'
-  id: '__root__' | '/' | '/login' | '/settings/delegate' | '/space/$spaceId'
+  to: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/settings/export-wallet'
+    | '/space/$spaceId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginLazyRoute: typeof LoginLazyRoute
-  SettingsDelegateRoute: typeof SettingsDelegateRoute
+  SettingsExportWalletRoute: typeof SettingsExportWalletRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginLazyRoute: LoginLazyRoute,
-  SettingsDelegateRoute: SettingsDelegateRoute,
+  SettingsExportWalletRoute: SettingsExportWalletRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRoute,
 }
 
@@ -141,7 +146,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/login",
-        "/settings/delegate",
+        "/settings/export-wallet",
         "/space/$spaceId"
       ]
     },
@@ -151,8 +156,8 @@ export const routeTree = rootRoute
     "/login": {
       "filePath": "login.lazy.tsx"
     },
-    "/settings/delegate": {
-      "filePath": "settings/delegate.tsx"
+    "/settings/export-wallet": {
+      "filePath": "settings/export-wallet.tsx"
     },
     "/space/$spaceId": {
       "filePath": "space/$spaceId.tsx"

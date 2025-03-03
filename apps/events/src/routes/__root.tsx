@@ -31,8 +31,8 @@ export const Route = createRootRoute({
             <nav className="ml-auto flex gap-4 sm:gap-6">
               {authenticated ? (
                 <div className="flex items-center gap-4">
-                  <Link className="text-xs" to="/settings/delegate">
-                    Delegate
+                  <Link className="text-xs" to="/settings/export-wallet">
+                    Export Wallet
                   </Link>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {identity?.accountId.substring(0, 6)}
