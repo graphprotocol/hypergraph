@@ -15,6 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
+import { Route as SettingsExportWalletImport } from './routes/settings/export-wallet'
 
 // Create Virtual Routes
 
@@ -40,6 +41,12 @@ const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const SettingsExportWalletRoute = SettingsExportWalletImport.update({
+  id: '/settings/export-wallet',
+  path: '/settings/export-wallet',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -58,6 +65,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginLazyImport
       parentRoute: typeof rootRoute
     }
+    '/settings/export-wallet': {
+      id: '/settings/export-wallet'
+      path: '/settings/export-wallet'
+      fullPath: '/settings/export-wallet'
+      preLoaderRoute: typeof SettingsExportWalletImport
+      parentRoute: typeof rootRoute
+    }
     '/space/$spaceId': {
       id: '/space/$spaceId'
       path: '/space/$spaceId'
@@ -73,12 +87,14 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
@@ -86,27 +102,35 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/login': typeof LoginLazyRoute
+  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/space/$spaceId'
+  fullPaths: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/space/$spaceId'
-  id: '__root__' | '/' | '/login' | '/space/$spaceId'
+  to: '/' | '/login' | '/settings/export-wallet' | '/space/$spaceId'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/settings/export-wallet'
+    | '/space/$spaceId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginLazyRoute: typeof LoginLazyRoute
+  SettingsExportWalletRoute: typeof SettingsExportWalletRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginLazyRoute: LoginLazyRoute,
+  SettingsExportWalletRoute: SettingsExportWalletRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRoute,
 }
 
@@ -122,6 +146,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/login",
+        "/settings/export-wallet",
         "/space/$spaceId"
       ]
     },
@@ -130,6 +155,9 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.lazy.tsx"
+    },
+    "/settings/export-wallet": {
+      "filePath": "settings/export-wallet.tsx"
     },
     "/space/$spaceId": {
       "filePath": "space/$spaceId.tsx"
