@@ -1,25 +1,41 @@
 import { useCreateEntity, useDeleteEntity, useQueryEntities, useUpdateEntity } from '@graphprotocol/hypergraph-react';
-import { useState } from 'react';
-import { Todo } from '../schema';
+import { useEffect, useState } from 'react';
+import Select from 'react-select';
+import { Todo, User } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
   const todos = useQueryEntities(Todo);
+  const users = useQueryEntities(User);
   const createEntity = useCreateEntity(Todo);
   const updateEntity = useUpdateEntity(Todo);
   const deleteEntity = useDeleteEntity();
-  const [newTodoTitle, setNewTodoTitle] = useState('');
+  const [newTodoName, setNewTodoName] = useState('');
+  const [assignees, setAssignees] = useState<{ value: string; label: string }[]>([]);
 
+  useEffect(() => {
+    setAssignees((prevFilteredAssignees) => {
+      // filter out assignees that are not in the users array whenever users change
+      return prevFilteredAssignees.filter((assignee) => users.some((user) => user.id === assignee.value));
+    });
+  }, [users]);
+
+  const userOptions = users.map((user) => ({ value: user.id, label: user.name }));
   return (
     <>
       <h1 className="text-2xl font-bold">Todos</h1>
-      <div className="flex flex-row gap-2">
-        <Input type="text" value={newTodoTitle} onChange={(e) => setNewTodoTitle(e.target.value)} />
+      <div className="flex flex-col gap-2">
+        <Input type="text" value={newTodoName} onChange={(e) => setNewTodoName(e.target.value)} />
+        <Select isMulti value={assignees} onChange={(e) => setAssignees(e.map((a) => a))} options={userOptions} />
         <Button
           onClick={() => {
-            createEntity({ name: newTodoTitle, completed: false });
-            setNewTodoTitle('');
+            if (newTodoName === '') {
+              alert('Todo text is required');
+              return;
+            }
+            createEntity({ name: newTodoName, completed: false, assignees: assignees.map(({ value }) => value) });
+            setNewTodoName('');
           }}
         >
           Create Todo
@@ -28,6 +44,27 @@ export const Todos = () => {
       {todos.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
+          {todo.assignees.length > 0 && (
+            <span className="text-xs text-gray-500">
+              Assigned to:{' '}
+              {todo.assignees.map((assignee) => (
+                <span key={assignee.id} className="border rounded-sm mr-1 p-1">
+                  {assignee.name}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateEntity(todo.id, {
+                        assignees: todo.assignees.map((assignee) => assignee.id).filter((id) => id !== assignee.id),
+                      })
+                    }
+                    className="cursor-pointer ml-1 text-red-400"
+                  >
+                    x
+                  </button>
+                </span>
+              ))}
+            </span>
+          )}
           <input
             type="checkbox"
             checked={todo.completed}

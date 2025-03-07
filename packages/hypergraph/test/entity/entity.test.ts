@@ -2,7 +2,7 @@ import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import * as Entity from '../../src/Entity.js';
+import * as Entity from '../../src/entity/index.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('Entity', () => {
