@@ -98,7 +98,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         }
 
         if (decoded) {
-          for (const [key, value] of Object.entries(decoded)) {
+          for (const [, value] of Object.entries(decoded)) {
             if (Array.isArray(value)) {
               for (const relationEntity of value) {
                 let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);

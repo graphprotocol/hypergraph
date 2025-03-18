@@ -1,5 +1,7 @@
+// biome-ignore lint/style/useNodejsImportProtocol: using a package
+import { createHash } from 'crypto';
+// needed to fix sorting issues
 import { Base58 } from '@graphprotocol/grc-20';
-import { createHash } from 'node:crypto';
 import { v4 } from 'uuid';
 
 function createIdFromUniqueString(text: string) {

@@ -1,8 +1,8 @@
+import { parse } from 'node:url';
 import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
-import { parse } from 'node:url';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import WebSocket, { WebSocketServer } from 'ws';
@@ -417,10 +417,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           };
           webSocket.send(Messages.serialize(outgoingMessage));
           for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
-            if (
-              client.readyState === WebSocket.OPEN &&
-              client.accountId === data.event.transaction.inviteeAccountId
-            ) {
+            if (client.readyState === WebSocket.OPEN && client.accountId === data.event.transaction.inviteeAccountId) {
               const invitations = await listInvitations({ accountId: client.accountId });
               const outgoingMessage: Messages.ResponseListInvitations = {
                 type: 'list-invitations',
