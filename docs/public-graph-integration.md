@@ -13,7 +13,7 @@
 Ideally the public graph API should match the local one. On the other hand it has different behavior
 
 ```ts
-const { isPending, isError, error, data, isFetching } = useQueryEntities(Todo)
+const { isPending, isError, error, data, isFetching } = useQuery(Todo)
 ```
 
 ### GraphQL Endpoint
@@ -50,7 +50,7 @@ const mappings = {
 </HypergraphAppProvider>
 ```
 
-useQueryEntities(Todo) would automatically use the mapping based on the name
+useQuery(Todo) would automatically use the mapping based on the name
 
 It then constructs a query based on the mappings and queries the public graph API.
 

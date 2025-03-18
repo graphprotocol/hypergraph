@@ -1,8 +1,8 @@
-import { usePublicQueryEntities } from '@graphprotocol/hypergraph-react';
+import { useQuery } from '@graphprotocol/hypergraph-react';
 import { NewsStory } from '../schema';
 
 export const Playground = () => {
-  const { data: entityData, isLoading, isError } = usePublicQueryEntities(NewsStory);
+  const { data: entityData, isLoading, isError } = useQuery(NewsStory, { mode: 'public' });
 
   console.log({ isLoading, isError, entityData });
 

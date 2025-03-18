@@ -5,6 +5,7 @@ import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 import { GEO_ENDPOINT } from './constants.js';
+import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocument = gql`
 query entities($spaceId: String!, $typeId: String!) {
@@ -74,14 +75,17 @@ type EntityQueryResult = {
     }[];
   };
 };
-export function usePublicQuery<const S extends Entity.AnyNoContext>(type: S) {
+
+export function useQueryPublic<const S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams) {
+  const { enabled = true } = params ?? {};
   const decode = Schema.decodeUnknownEither(type);
 
   const { space, mapping } = useHypergraph();
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
   const typeName = type.name;
+
   const mappingEntry = mapping?.[typeName];
-  if (!mappingEntry) {
+  if (enabled && !mappingEntry) {
     throw new Error(`Mapping entry for ${typeName} not found`);
   }
 
@@ -90,10 +94,11 @@ export function usePublicQuery<const S extends Entity.AnyNoContext>(type: S) {
     queryFn: async () => {
       const result = await request<EntityQueryResult>(GEO_ENDPOINT, entitiesQueryDocument, {
         spaceId: space,
-        typeId: mappingEntry.typeIds[0],
+        typeId: mappingEntry?.typeIds[0],
       });
       return result;
     },
+    enabled,
   });
 
   const data: Entity.Entity<S>[] = [];
@@ -106,7 +111,7 @@ export function usePublicQuery<const S extends Entity.AnyNoContext>(type: S) {
         id: queryEntity.id,
       };
       // take the mappingEntry and assign the attributes to the rawEntity
-      for (const [key, value] of Object.entries(mappingEntry.properties)) {
+      for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
         const property = queryEntityVersion.triples.nodes.find((a) => a.attributeId === value);
         if (property) {
           if (type.fields[key] === Entity.Checkbox) {

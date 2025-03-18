@@ -1,4 +1,4 @@
-import { useCreateEntity, useDeleteEntity, useQueryEntities, useUpdateEntity } from '@graphprotocol/hypergraph-react';
+import { useCreateEntity, useDeleteEntity, useQuery, useUpdateEntity } from '@graphprotocol/hypergraph-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { Todo, User } from '../schema';
@@ -6,8 +6,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const todos = useQueryEntities(Todo);
-  const users = useQueryEntities(User);
+  const { data: todos } = useQuery(Todo, { mode: 'local' });
+  const { data: users } = useQuery(User, { mode: 'local' });
   const createEntity = useCreateEntity(Todo);
   const updateEntity = useUpdateEntity(Todo);
   const deleteEntity = useDeleteEntity();

@@ -5,6 +5,7 @@ import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 import { KG_ENDPOINT } from './constants.js';
+import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocument = gql`
 query entities($spaceId: String!, $typeIds: [String!]!) {
@@ -26,13 +27,14 @@ type EntityQueryResult = {
   entities: { id: string; attributes: { attribute: string; value: string }[] }[];
 };
 
-export function usePublicQuery<const S extends Entity.AnyNoContext>(type: S) {
+export function useQueryPublic<const S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams) {
+  const { enabled = true } = params ?? {};
   const decode = Schema.decodeUnknownEither(type);
   const { space, mapping } = useHypergraph();
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
   const typeName = type.name;
   const mappingEntry = mapping?.[typeName];
-  if (!mappingEntry) {
+  if (enabled && !mappingEntry) {
     throw new Error(`Mapping entry for ${typeName} not found`);
   }
 
@@ -41,10 +43,11 @@ export function usePublicQuery<const S extends Entity.AnyNoContext>(type: S) {
     queryFn: async () => {
       const result = await request<EntityQueryResult>(KG_ENDPOINT, entitiesQueryDocument, {
         spaceId: space,
-        typeIds: mappingEntry.typeIds,
+        typeIds: mappingEntry?.typeIds,
       });
       return result;
     },
+    enabled,
   });
 
   const data: Entity.Entity<S>[] = [];
@@ -55,7 +58,7 @@ export function usePublicQuery<const S extends Entity.AnyNoContext>(type: S) {
         id: queryEntity.id,
       };
       // take the mappingEntry and assign the attributes to the rawEntity
-      for (const [key, value] of Object.entries(mappingEntry.properties)) {
+      for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
         const property = queryEntity.attributes.find((a) => a.attribute === value);
         if (property) {
           if (type.fields[key] === Entity.Checkbox) {

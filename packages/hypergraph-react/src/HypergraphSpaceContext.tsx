@@ -13,7 +13,7 @@ export type HypergraphContext = {
   repo: Repo;
   id: AnyDocumentId;
   handle: DocHandle<Entity.DocumentContent>;
-  mapping?: Mapping;
+  mapping?: Mapping | undefined;
 };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
@@ -33,7 +33,7 @@ export function HypergraphSpaceProvider({
   space,
   children,
   mapping,
-}: { space: string; children: ReactNode; mapping: Mapping }) {
+}: { space: string; children: ReactNode; mapping?: Mapping }) {
   const repo = useRepo();
   const ref = useRef<HypergraphContext | undefined>(undefined);
 
@@ -78,13 +78,29 @@ export function useHardDeleteEntity() {
   return Entity.delete(hypergraph.handle);
 }
 
-export function useQueryEntities<const S extends Entity.AnyNoContext>(type: S) {
+type QueryParams = {
+  enabled: boolean;
+};
+
+export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams) {
+  const { enabled = true } = params ?? {};
+  const stableArrayRef = useRef<Entity.Entity<S>[]>([]);
+
   const hypergraph = useHypergraph();
   const [subscription] = useState(() => {
+    if (!enabled) {
+      return {
+        subscribe: () => () => undefined,
+        getEntities: () => stableArrayRef.current,
+      };
+    }
+
     return Entity.subscribeToFindMany(hypergraph.handle, type);
   });
 
-  return useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => []);
+  // TODO: allow to change the enabled state
+
+  return useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => stableArrayRef.current);
 }
 
 export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id: string) {

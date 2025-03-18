@@ -8,10 +8,8 @@ import {
   useGenerateCreateOps,
   useHardDeleteEntity,
   useHypergraphSpace,
-  _useQueryPublicGeo as usePublicQueryGeo,
-  _useQueryPublicKg as usePublicQueryKg,
   useQuery,
-  useQueryEntities,
+  _useQueryPublicKg as useQueryPublicKg,
 } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Todo2 } from '../schema';
@@ -19,16 +17,17 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos2 = () => {
-  const { data: kgPublicData, isLoading: kgPublicIsLoading, isError: kgPublicIsError } = usePublicQueryKg(Todo2);
-  const { data: geoPublicData, isLoading: geoPublicIsLoading, isError: geoPublicIsError } = usePublicQueryGeo(Todo2);
+  const { data: kgPublicData, isLoading: kgPublicIsLoading, isError: kgPublicIsError } = useQueryPublicKg(Todo2);
+  const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
+  const { data, isLoading, isError } = useQuery(Todo2);
+  const { data: todosLocalData } = useQuery(Todo2, { mode: 'local' });
+
   const generateTodoOps = useGenerateCreateOps(Todo2);
   const space = useHypergraphSpace();
-  const todos = useQueryEntities(Todo2);
   const createEntity = useCreateEntity(Todo2);
   const deleteEntity = useDeleteEntity();
   const hardDeleteEntity = useHardDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
-  const { data, isLoading, isError } = useQuery(Todo2);
 
   return (
     <>
@@ -66,7 +65,7 @@ export const Todos2 = () => {
       <Button
         onClick={async () => {
           const ops: Op[] = [];
-          for (const todo of todos) {
+          for (const todo of todosLocalData) {
             if (todo.__deleted) {
               console.log('todo is deleted', todo.id);
               try {
@@ -90,7 +89,7 @@ export const Todos2 = () => {
       </Button>
 
       <h2 className="text-2xl font-bold">Todos (Local)</h2>
-      {todos.map((todo) => (
+      {todosLocalData.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
@@ -103,10 +102,10 @@ export const Todos2 = () => {
         </div>
       ))}
 
-      <h2 className="text-2xl font-bold">Todos (Public KG)</h2>
-      {kgPublicIsLoading && <div>Loading...</div>}
-      {kgPublicIsError && <div>Error loading todos</div>}
-      {kgPublicData.map((todo) => (
+      <h2 className="text-2xl font-bold">Todos (Public Geo)</h2>
+      {isLoadingPublic && <div>Loading...</div>}
+      {isErrorPublic && <div>Error loading todos</div>}
+      {dataPublic.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
@@ -123,10 +122,10 @@ export const Todos2 = () => {
         </div>
       ))}
 
-      <h2 className="text-2xl font-bold">Todos (Public Geo)</h2>
-      {geoPublicIsLoading && <div>Loading...</div>}
-      {geoPublicIsError && <div>Error loading todos</div>}
-      {geoPublicData.map((todo) => (
+      <h2 className="text-2xl font-bold">Todos (Public KG)</h2>
+      {kgPublicIsLoading && <div>Loading...</div>}
+      {kgPublicIsError && <div>Error loading todos</div>}
+      {kgPublicData.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>

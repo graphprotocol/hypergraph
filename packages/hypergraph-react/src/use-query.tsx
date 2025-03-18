@@ -1,10 +1,26 @@
 import type { Entity } from '@graphprotocol/hypergraph';
-import { useQueryEntities } from './HypergraphSpaceContext.js';
-import { usePublicQuery } from './internal/use-query-public-geo.js';
+import { useQueryLocal } from './HypergraphSpaceContext.js';
+import { useQueryPublic } from './internal/use-query-public-geo.js';
 
-export function useQuery<const S extends Entity.AnyNoContext>(type: S) {
-  const publicResult = usePublicQuery(type);
-  const localResult = useQueryEntities(type);
+type QueryParams = {
+  mode: 'merged' | 'public' | 'local';
+};
+
+export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams) {
+  const { mode = 'merged' } = params ?? {};
+  const publicResult = useQueryPublic(type, { enabled: mode === 'public' || mode === 'merged' });
+  const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged' });
+
+  if (mode === 'public') {
+    return publicResult;
+  }
+
+  if (mode === 'local') {
+    return {
+      ...publicResult,
+      data: localResult,
+    };
+  }
 
   if (!publicResult.isLoading) {
     const mergedData: Entity.Entity<S>[] = [];
