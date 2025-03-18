@@ -12,13 +12,17 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
   const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged' });
 
   if (mode === 'public') {
-    return publicResult;
+    return {
+      ...publicResult,
+      deleted: [],
+    };
   }
 
   if (mode === 'local') {
     return {
       ...publicResult,
-      data: localResult,
+      data: localResult.entities,
+      deleted: localResult.deletedEntities,
     };
   }
 
@@ -26,11 +30,12 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
     const mergedData: Entity.Entity<S>[] = [];
 
     for (const entity of publicResult.data) {
-      const localEntity = localResult.find((e) => e.id === entity.id);
+      const deletedEntity = localResult.deletedEntities.find((e) => e.id === entity.id);
+      if (deletedEntity) {
+        continue;
+      }
+      const localEntity = localResult.entities.find((e) => e.id === entity.id);
       if (localEntity) {
-        if (localEntity.__deleted) {
-          continue;
-        }
         const mergedEntity = { ...entity };
         for (const key in entity) {
           mergedEntity[key] = localEntity[key];
@@ -42,20 +47,20 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
     }
 
     // find all local entities that are not in the public result
-    const localEntitiesNotInPublic = localResult.filter(
-      (e) => e.__deleted !== true && !publicResult.data.some((p) => p.id === e.id),
-    );
+    const localEntitiesNotInPublic = localResult.entities.filter((e) => !publicResult.data.some((p) => p.id === e.id));
 
     mergedData.push(...localEntitiesNotInPublic);
 
     return {
       ...publicResult,
       data: mergedData,
+      deleted: localResult.deletedEntities,
     };
   }
 
   return {
     ...publicResult,
-    data: localResult,
+    data: localResult.entities,
+    deleted: localResult.deletedEntities,
   };
 }

@@ -84,14 +84,15 @@ type QueryParams = {
 
 export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams) {
   const { enabled = true } = params ?? {};
-  const stableArrayRef = useRef<Entity.Entity<S>[]>([]);
+  const entitiesRef = useRef<Entity.Entity<S>[]>([]);
+  const deletedEntitiesRef = useRef<Entity.Entity<S>[]>([]);
 
   const hypergraph = useHypergraph();
   const [subscription] = useState(() => {
     if (!enabled) {
       return {
         subscribe: () => () => undefined,
-        getEntities: () => stableArrayRef.current,
+        getEntities: () => entitiesRef.current,
       };
     }
 
@@ -100,7 +101,22 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
 
   // TODO: allow to change the enabled state
 
-  return useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => stableArrayRef.current);
+  const entities = useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => entitiesRef.current);
+
+  for (const entity of entities) {
+    entitiesRef.current.splice(0, entitiesRef.current.length);
+    deletedEntitiesRef.current.splice(0, deletedEntitiesRef.current.length);
+    if (entity._deleted === true) {
+      deletedEntitiesRef.current.push(entity);
+    } else {
+      entitiesRef.current.push(entity);
+    }
+  }
+
+  return {
+    entities: entitiesRef.current,
+    deletedEntities: deletedEntitiesRef.current,
+  };
 }
 
 export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id: string) {
