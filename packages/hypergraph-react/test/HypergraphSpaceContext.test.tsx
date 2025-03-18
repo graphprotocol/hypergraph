@@ -10,8 +10,8 @@ import {
   HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
-  useQueryEntities,
   useQueryEntity,
+  useQueryLocal,
   useUpdateEntity,
 } from '../src/HypergraphSpaceContext.js';
 
@@ -80,7 +80,7 @@ describe('HypergraphSpaceContext', () => {
         expect(queryEntityResult.current).toEqual(createdEntity);
       }
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Event), { wrapper });
+      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Event), { wrapper });
       expect(queryEntitiesResult.current).toEqual([createdEntity]);
     });
   });
@@ -119,7 +119,7 @@ describe('HypergraphSpaceContext', () => {
       const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
       expect(queryEntityResult.current).toEqual(createdEntity);
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Person), { wrapper });
+      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Person), { wrapper });
       expect(queryEntitiesResult.current).toEqual([createdEntity]);
     });
   });
@@ -141,10 +141,9 @@ describe('HypergraphSpaceContext', () => {
         );
       });
 
-      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(
-        () => useQueryEntities(User),
-        { wrapper },
-      );
+      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryLocal(User), {
+        wrapper,
+      });
       expect(queryEntitiesResult.current).toEqual([createdEntity]);
 
       const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(), { wrapper });
