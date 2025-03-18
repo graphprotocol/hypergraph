@@ -1,4 +1,5 @@
 import { smartAccountWalletClient } from '@/lib/smart-account';
+import { cn } from '@/lib/utils';
 import type { Op } from '@graphprotocol/grc-20';
 import {
   generateDeleteOps,
@@ -13,6 +14,7 @@ import {
 } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Todo2 } from '../schema';
+import { Spinner } from './spinner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
@@ -31,20 +33,24 @@ export const Todos2 = () => {
 
   return (
     <>
-      <h2 className="text-2xl font-bold">Todos (Merged)</h2>
-      {isLoading && <div>Loading...</div>}
+      <div className="flex flex-row gap-4 items-center">
+        <h2 className="text-2xl font-bold">Todos (Merged)</h2>
+        {isLoading && <Spinner size="sm" />}
+      </div>
       {isError && <div>Error loading todos</div>}
-      {data.map((todo) => (
-        <div key={todo.id} className="flex flex-row items-center gap-2">
-          <h2>{todo.name}</h2>
-          <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" defaultChecked={todo.checked} />
-          <div className="text-xs">{todo.__version}</div>
-          <Button variant="outline" size="sm" onClick={() => deleteEntity(todo.id)}>
-            Delete
-          </Button>
-        </div>
-      ))}
+      <div className={`flex flex-col gap-4 ${cn({ 'opacity-50': isLoading })}`}>
+        {data.map((todo) => (
+          <div key={todo.id} className="flex flex-row items-center gap-2">
+            <h2>{todo.name}</h2>
+            <div className="text-xs">{todo.id}</div>
+            <input type="checkbox" defaultChecked={todo.checked} />
+            <div className="text-xs">{todo.__version}</div>
+            <Button variant="outline" size="sm" onClick={() => deleteEntity(todo.id)}>
+              Delete
+            </Button>
+          </div>
+        ))}
+      </div>
 
       <div className="flex flex-col gap-2">
         <Input type="text" value={newTodoName} onChange={(e) => setNewTodoName(e.target.value)} />
