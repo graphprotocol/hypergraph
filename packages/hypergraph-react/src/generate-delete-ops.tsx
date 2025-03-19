@@ -1,6 +1,6 @@
 import { type Op, Relation, Triple } from '@graphprotocol/grc-20';
 import { gql, request } from 'graphql-request';
-import { GEO_ENDPOINT } from './internal/constants.js';
+import { KG_ENDPOINT } from './internal/constants.js';
 
 const deleteEntityQueryDocument = gql`
 query deleteEntity($spaceId: String!, $id: String!) {
@@ -27,7 +27,7 @@ type DeleteEntityResult = {
 };
 
 export const generateDeleteOps = async ({ id, space }: { id: string; space: string }) => {
-  const result = await request<DeleteEntityResult>(GEO_ENDPOINT, deleteEntityQueryDocument, {
+  const result = await request<DeleteEntityResult>(KG_ENDPOINT, deleteEntityQueryDocument, {
     id,
     spaceId: space,
   });
