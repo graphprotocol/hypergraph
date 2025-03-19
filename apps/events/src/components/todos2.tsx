@@ -22,7 +22,7 @@ export const Todos2 = () => {
   const { data: kgPublicData, isLoading: kgPublicIsLoading, isError: kgPublicIsError } = useQueryPublicKg(Todo2);
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
   const { data, isLoading, isError } = useQuery(Todo2);
-  const { data: todosLocalData } = useQuery(Todo2, { mode: 'local' });
+  const { data: todosLocalData, deleted: deletedTodosLocalData } = useQuery(Todo2, { mode: 'local' });
   const generateTodoOps = useGenerateCreateOps(Todo2);
   const space = useHypergraphSpace();
   const createEntity = useCreateEntity(Todo2);
@@ -111,9 +111,21 @@ export const Todos2 = () => {
           </Button>
         </div>
       ))}
+      <h2 className="text-2xl font-bold">Deleted Todos (Local)</h2>
+      {deletedTodosLocalData.map((todo) => (
+        <div key={todo.id} className="flex flex-row items-center gap-2">
+          <h2>{todo.name}</h2>
+          <div className="text-xs">{todo.id}</div>
+          <Button variant="secondary" size="sm" onClick={() => hardDeleteEntity(todo.id)}>
+            Hard Delete
+          </Button>
+        </div>
+      ))}
 
-      <h2 className="text-2xl font-bold">Todos (Public Geo)</h2>
-      {isLoadingPublic && <div>Loading...</div>}
+      <div className="flex flex-row gap-4 items-center">
+        <h2 className="text-2xl font-bold">Todos (Public Geo)</h2>
+        {isLoadingPublic && <Spinner size="sm" />}
+      </div>
       {isErrorPublic && <div>Error loading todos</div>}
       {dataPublic.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
@@ -132,8 +144,10 @@ export const Todos2 = () => {
         </div>
       ))}
 
-      <h2 className="text-2xl font-bold">Todos (Public KG)</h2>
-      {kgPublicIsLoading && <div>Loading...</div>}
+      <div className="flex flex-row gap-4 items-center">
+        <h2 className="text-2xl font-bold">Todos (Public KG)</h2>
+        {kgPublicIsLoading && <Spinner size="sm" />}
+      </div>
       {kgPublicIsError && <div>Error loading todos</div>}
       {kgPublicData.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
