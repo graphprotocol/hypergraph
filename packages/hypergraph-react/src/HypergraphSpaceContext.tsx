@@ -103,9 +103,9 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
 
   const entities = useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => entitiesRef.current);
 
+  entitiesRef.current.splice(0, entitiesRef.current.length);
+  deletedEntitiesRef.current.splice(0, deletedEntitiesRef.current.length);
   for (const entity of entities) {
-    entitiesRef.current.splice(0, entitiesRef.current.length);
-    deletedEntitiesRef.current.splice(0, deletedEntitiesRef.current.length);
     if (entity.__deleted === true) {
       deletedEntitiesRef.current.push(entity);
     } else {

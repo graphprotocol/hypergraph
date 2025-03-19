@@ -5,6 +5,8 @@ import type { Mapping } from '@graphprotocol/hypergraph-react';
 export class User extends Entity.Class<User>('User')({
   id: Entity.Generated(Entity.Text),
   name: Entity.Text,
+  __deleted: Entity.Generated(Entity.Checkbox),
+  __version: Entity.Generated(Entity.Text),
 }) {}
 
 export class Todo extends Entity.Class<Todo>('Todo')({
@@ -12,6 +14,8 @@ export class Todo extends Entity.Class<Todo>('Todo')({
   name: Entity.Text,
   completed: Entity.Checkbox,
   assignees: Entity.Reference(Entity.ReferenceArray(User)),
+  __deleted: Entity.Generated(Entity.Checkbox),
+  __version: Entity.Generated(Entity.Text),
 }) {}
 
 export class Todo2 extends Entity.Class<Todo2>('Todo2')({
@@ -27,6 +31,8 @@ export class NewsStory extends Entity.Class<NewsStory>('NewsStory')({
   name: Entity.Text,
   description: Entity.Text,
   publishDate: Entity.Text,
+  __deleted: Entity.Generated(Entity.Checkbox),
+  __version: Entity.Generated(Entity.Text),
 }) {}
 
 export const mapping: Mapping = {
