@@ -12,24 +12,24 @@ import {
   useQuery,
   _useQueryPublicKg as useQueryPublicKg,
 } from '@graphprotocol/hypergraph-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Todo2 } from '../schema';
 import { Spinner } from './spinner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-
 export const Todos2 = () => {
   const { data: kgPublicData, isLoading: kgPublicIsLoading, isError: kgPublicIsError } = useQueryPublicKg(Todo2);
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
   const { data, isLoading, isError } = useQuery(Todo2);
   const { data: todosLocalData } = useQuery(Todo2, { mode: 'local' });
-
   const generateTodoOps = useGenerateCreateOps(Todo2);
   const space = useHypergraphSpace();
   const createEntity = useCreateEntity(Todo2);
   const deleteEntity = useDeleteEntity();
   const hardDeleteEntity = useHardDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
+  const queryClient = useQueryClient();
 
   return (
     <>
@@ -89,6 +89,10 @@ export const Todos2 = () => {
           console.log('ops', ops);
           const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
           console.log('result', result);
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
+            queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
+          }, 1000);
         }}
       >
         Publish
