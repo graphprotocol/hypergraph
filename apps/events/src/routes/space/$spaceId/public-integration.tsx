@@ -14,16 +14,16 @@ export const Route = createFileRoute('/space/$spaceId/public-integration')({
 function PublicIntegration() {
   const { spaceId } = Route.useParams();
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { subscribeToSpace, loading } = useHypergraphApp();
+  const { subscribeToSpace, isConnecting, isLoadingSpaces } = useHypergraphApp();
   useEffect(() => {
-    if (!loading) {
+    if (!isConnecting) {
       subscribeToSpace({ spaceId });
     }
-  }, [loading, subscribeToSpace, spaceId]);
+  }, [isConnecting, subscribeToSpace, spaceId]);
 
   const space = spaces.find((space) => space.id === spaceId);
 
-  if (loading) {
+  if (isConnecting || isLoadingSpaces[spaceId]) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 

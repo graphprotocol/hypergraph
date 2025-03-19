@@ -13,18 +13,16 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } = useHypergraphApp();
-
-  console.log('Home page', { loading });
+  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, isConnecting } = useHypergraphApp();
 
   useEffect(() => {
-    if (!loading) {
+    if (!isConnecting) {
       listSpaces();
       listInvitations();
     }
-  }, [listSpaces, listInvitations, loading]);
+  }, [isConnecting, listSpaces, listInvitations]);
 
-  if (loading) {
+  if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 

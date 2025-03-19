@@ -19,17 +19,17 @@ export const Route = createFileRoute('/space/$spaceId/')({
 function Space() {
   const { spaceId } = Route.useParams();
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { subscribeToSpace, inviteToSpace, loading } = useHypergraphApp();
+  const { subscribeToSpace, inviteToSpace, isConnecting } = useHypergraphApp();
   useEffect(() => {
-    if (!loading) {
+    if (!isConnecting) {
       subscribeToSpace({ spaceId });
     }
-  }, [loading, subscribeToSpace, spaceId]);
+  }, [isConnecting, subscribeToSpace, spaceId]);
   const [show2ndTodos, setShow2ndTodos] = useState(false);
 
   const space = spaces.find((space) => space.id === spaceId);
 
-  if (loading) {
+  if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 

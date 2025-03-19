@@ -42,7 +42,8 @@ export type HypergraphAppCtx = {
     encryptionPublicKey: string;
     signaturePublicKey: string;
   }>;
-  loading: boolean;
+  isConnecting: boolean;
+  isLoadingSpaces: Record<string, boolean>;
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
@@ -77,7 +78,8 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
   async getVerifiedIdentity() {
     throw new Error('getVerifiedIdentity is missing');
   },
-  loading: true,
+  isConnecting: true,
+  isLoadingSpaces: {},
 });
 
 export function useHypergraphApp() {
@@ -119,7 +121,8 @@ export function HypergraphAppProvider({
   children,
 }: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
-  const [loading, setLoading] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(true);
+  const [isLoadingSpaces, setIsLoadingSpaces] = useState<Record<string, boolean>>({});
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelectorStore(store, (state) => state.context.repo);
@@ -209,7 +212,7 @@ export function HypergraphAppProvider({
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     if (!sessionToken) {
-      setLoading(true);
+      setIsConnecting(true);
       return;
     }
 
@@ -224,17 +227,17 @@ export function HypergraphAppProvider({
 
     const onOpen = () => {
       console.log('websocket connected');
-      setLoading(false);
+      setIsConnecting(false);
     };
 
     const onError = (event: Event) => {
       console.log('websocket error', event);
-      setLoading(false);
+      setIsConnecting(false);
     };
 
     const onClose = (event: CloseEvent) => {
       console.log('websocket close', event);
-      setLoading(false);
+      setIsConnecting(false);
     };
 
     websocketConnection.addEventListener('open', onOpen);
@@ -412,6 +415,10 @@ export function HypergraphAppProvider({
               }
             });
 
+            setIsLoadingSpaces((prev) => {
+              return { ...prev, [response.id]: false };
+            });
+
             break;
           }
           case 'space-event': {
@@ -502,8 +509,6 @@ export function HypergraphAppProvider({
       }
 
       let spaceId = generateId();
-
-      console.log('WWWWOOOOWWW', smartAccountWalletClient);
 
       try {
         if (smartAccountWalletClient?.account) {
@@ -630,6 +635,13 @@ export function HypergraphAppProvider({
     (params: { spaceId: string }) => {
       const message: Messages.RequestSubscribeToSpace = { type: 'subscribe-space', id: params.spaceId };
       websocketConnection?.send(Messages.serialize(message));
+      setIsLoadingSpaces((prev) => {
+        // the space was already loaded, don't set it to loading
+        if (prev[params.spaceId] === false) {
+          return prev;
+        }
+        return { ...prev, [params.spaceId]: true };
+      });
     },
     [websocketConnection],
   );
@@ -734,7 +746,8 @@ export function HypergraphAppProvider({
         subscribeToSpace,
         getVerifiedIdentity,
         inviteToSpace,
-        loading,
+        isConnecting,
+        isLoadingSpaces,
       }}
     >
       <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>
