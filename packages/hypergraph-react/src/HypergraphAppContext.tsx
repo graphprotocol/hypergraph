@@ -31,7 +31,7 @@ export type HypergraphAppCtx = {
   setIdentityAndSessionToken(account: Identity.Identity & { sessionToken: string }): void;
   // app related
   invitations: Array<Messages.Invitation>;
-  createSpace(): Promise<string>;
+  createSpace(smartAccountWalletClient?: GeoSmartAccount): Promise<string>;
   listSpaces(): void;
   listInvitations(): void;
   acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
