@@ -33,7 +33,14 @@ export const update = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
 
       // TODO: Try to get a diff of the entity properties and only override the changed ones.
       updated = { ...decode(entity), ...data };
-      doc.entities[id] = { ...encode(updated), '@@types@@': [typeName] };
+      doc.entities[id] = {
+        ...encode(updated),
+        '@@types@@': [typeName],
+        // @ts-expect-error __deleted and __version are part of the entity
+        __deleted: entity.__deleted ?? false,
+        // @ts-expect-error __deleted and __version are part of the entity
+        __version: entity.__version ?? '',
+      };
     });
 
     if (updated === undefined) {

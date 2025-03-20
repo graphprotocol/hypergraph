@@ -11,6 +11,7 @@ import {
   useHypergraphSpace,
   useQuery,
   _useQueryPublicKg as useQueryPublicKg,
+  useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -26,6 +27,7 @@ export const Todos2 = () => {
   const generateTodoOps = useGenerateCreateOps(Todo2);
   const space = useHypergraphSpace();
   const createEntity = useCreateEntity(Todo2);
+  const updateEntity = useUpdateEntity(Todo2);
   const deleteEntity = useDeleteEntity();
   const hardDeleteEntity = useHardDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
@@ -43,7 +45,11 @@ export const Todos2 = () => {
           <div key={todo.id} className="flex flex-row items-center gap-2">
             <h2>{todo.name}</h2>
             <div className="text-xs">{todo.id}</div>
-            <input type="checkbox" defaultChecked={todo.checked} />
+            <input
+              type="checkbox"
+              checked={todo.checked}
+              onChange={(e) => updateEntity(todo.id, { checked: e.target.checked })}
+            />
             <div className="text-xs">{todo.__version}</div>
             <Button variant="outline" size="sm" onClick={() => deleteEntity(todo.id)}>
               Delete
@@ -103,7 +109,11 @@ export const Todos2 = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" defaultChecked={todo.checked} />
+          <input
+            type="checkbox"
+            checked={todo.checked}
+            onChange={(e) => updateEntity(todo.id, { checked: e.target.checked })}
+          />
           <div className="text-xs">{todo.__deleted ? 'deleted' : 'not deleted'}</div>
           <div className="text-xs">{todo.__version}</div>
           <Button variant="secondary" size="sm" onClick={() => hardDeleteEntity(todo.id)}>
