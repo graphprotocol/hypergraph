@@ -1,6 +1,5 @@
 import { smartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
-import type { Op } from '@graphprotocol/grc-20';
 import {
   generateDeleteOps,
   publishOps,
@@ -22,7 +21,7 @@ import { Input } from './ui/input';
 export const Todos2 = () => {
   const { data: kgPublicData, isLoading: kgPublicIsLoading, isError: kgPublicIsError } = useQueryPublicKg(Todo2);
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
-  const { data, isLoading, isError } = useQuery(Todo2);
+  const { data, isLoading, isError, preparePublish } = useQuery(Todo2);
   const { data: todosLocalData, deleted: deletedTodosLocalData } = useQuery(Todo2, { mode: 'local' });
   const generateTodoOps = useGenerateCreateOps(Todo2);
   const space = useHypergraphSpace();
@@ -73,35 +72,26 @@ export const Todos2 = () => {
           Create Todo
         </Button>
       </div>
-
       <Button
         onClick={async () => {
-          const ops: Op[] = [];
-          for (const todo of todosLocalData) {
-            if (todo.__deleted) {
-              console.log('todo is deleted', todo.id);
-              try {
-                const deleteOps = await generateDeleteOps({ id: todo.id, space });
-                ops.push(...deleteOps);
-              } catch (error) {
-                console.error('error', error);
-              }
-            } else {
-              console.log('todo is not deleted', todo.id);
-              const { ops: todoOps } = generateTodoOps(todo);
-              ops.push(...todoOps);
-            }
+          const result = await preparePublish();
+
+          console.log('ops & diff', result);
+          if (result) {
+            const publishOpsResult = await publishOps({
+              ops: result.ops,
+              walletClient: smartAccountWalletClient,
+              space,
+            });
+            console.log('publishOpsResult', publishOpsResult);
+            setTimeout(() => {
+              queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
+              queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
+            }, 1000);
           }
-          console.log('ops', ops);
-          const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
-          console.log('result', result);
-          setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
-            queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
-          }, 1000);
         }}
       >
-        Publish
+        Prepare Publish and Publish
       </Button>
 
       <h2 className="text-2xl font-bold">Todos (Local)</h2>
