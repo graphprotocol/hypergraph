@@ -1,6 +1,6 @@
 import { type Op, Relation, Triple } from '@graphprotocol/grc-20';
 import { gql, request } from 'graphql-request';
-import { GEO_ENDPOINT } from './internal/constants.js';
+import { GEO_ENDPOINT } from './constants.js';
 
 const deleteEntityQueryDocument = gql`
 query entity($entityId: String!) {

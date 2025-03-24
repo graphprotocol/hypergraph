@@ -1,11 +1,10 @@
 import { smartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
 import {
-  generateDeleteOps,
+  _generateDeleteOps,
   publishOps,
   useCreateEntity,
   useDeleteEntity,
-  useGenerateCreateOps,
   useHardDeleteEntity,
   useHypergraphSpace,
   useQuery,
@@ -23,7 +22,6 @@ export const Todos2 = () => {
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
   const { data, isLoading, isError, preparePublish } = useQuery(Todo2);
   const { data: todosLocalData, deleted: deletedTodosLocalData } = useQuery(Todo2, { mode: 'local' });
-  const generateTodoOps = useGenerateCreateOps(Todo2);
   const space = useHypergraphSpace();
   const createEntity = useCreateEntity(Todo2);
   const updateEntity = useUpdateEntity(Todo2);
@@ -134,7 +132,7 @@ export const Todos2 = () => {
           <input type="checkbox" defaultChecked={todo.checked} />
           <Button
             onClick={async () => {
-              const ops = await generateDeleteOps({ id: todo.id, space });
+              const ops = await _generateDeleteOps({ id: todo.id, space });
               const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
               console.log('result', result);
             }}
@@ -156,7 +154,7 @@ export const Todos2 = () => {
           <input type="checkbox" defaultChecked={todo.checked} />
           <Button
             onClick={async () => {
-              const ops = await generateDeleteOps({ id: todo.id, space });
+              const ops = await _generateDeleteOps({ id: todo.id, space });
               const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
               console.log('result', result);
             }}
