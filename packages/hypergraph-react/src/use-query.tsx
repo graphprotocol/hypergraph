@@ -48,7 +48,7 @@ const getDiff = <S extends Entity.AnyNoContext>(
   localDeletedEntities: Entity.Entity<S>[],
 ) => {
   const deletedEntities: Entity.Entity<S>[] = [];
-  const updatedEntities: DiffEntry<S>[] = [];
+  const updatedEntities: { id: string; current: Entity.Entity<S>; next: Entity.Entity<S>; diff: DiffEntry<S> }[] = [];
 
   for (const entity of publicEntities) {
     const deletedEntity = localDeletedEntities.find((e) => e.id === entity.id);
@@ -64,10 +64,9 @@ const getDiff = <S extends Entity.AnyNoContext>(
         if (entity[key] !== localEntity[key]) {
           // @ts-expect-error TODO: fix this
           diff[key] = localEntity[key];
-          diff.id = entity.id;
         }
       }
-      updatedEntities.push(diff);
+      updatedEntities.push({ id: entity.id, current: entity, next: localEntity, diff });
     } else {
       // TODO update the local entity in this place?
     }
@@ -76,9 +75,9 @@ const getDiff = <S extends Entity.AnyNoContext>(
   const newEntities = localEntities.filter((e) => !publicEntities.some((p) => p.id === e.id));
 
   return {
-    new: newEntities,
-    deleted: deletedEntities,
-    updated: updatedEntities,
+    newEntities,
+    deletedEntities,
+    updatedEntities,
   };
 };
 
@@ -141,20 +140,20 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
         );
 
         let ops: Op[] = [];
-        if (diff.new.length > 0) {
-          for (const entity of diff.new) {
+        if (diff.newEntities.length > 0) {
+          for (const entity of diff.newEntities) {
             const { ops: createOps } = generateCreateOps(entity);
             ops = [...ops, ...createOps];
           }
         }
-        if (diff.updated.length > 0) {
-          for (const partialEntity of diff.updated) {
-            const { ops: updateOps } = generateUpdateOps(partialEntity);
+        if (diff.updatedEntities.length > 0) {
+          for (const updatedEntity of diff.updatedEntities) {
+            const { ops: updateOps } = generateUpdateOps({ ...updatedEntity.diff, id: updatedEntity.id });
             ops = [...ops, ...updateOps];
           }
         }
-        if (diff.deleted.length > 0) {
-          for (const entity of diff.deleted) {
+        if (diff.deletedEntities.length > 0) {
+          for (const entity of diff.deletedEntities) {
             const deleteOps = await generateDeleteOps(entity);
             ops = [...ops, ...deleteOps];
           }
