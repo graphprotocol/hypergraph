@@ -61,12 +61,17 @@ const getDiff = <S extends Entity.AnyNoContext>(
       // @ts-expect-error TODO: fix this
       const diff: DiffEntry<S> = {};
       for (const key in entity) {
+        if (key === '__version') {
+          continue;
+        }
         if (entity[key] !== localEntity[key]) {
           // @ts-expect-error TODO: fix this
           diff[key] = localEntity[key];
         }
       }
-      updatedEntities.push({ id: entity.id, current: entity, next: localEntity, diff });
+      if (Object.keys(diff).length > 0) {
+        updatedEntities.push({ id: entity.id, current: entity, next: localEntity, diff });
+      }
     } else {
       // TODO update the local entity in this place?
     }
