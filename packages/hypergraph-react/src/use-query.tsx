@@ -1,7 +1,7 @@
 import type { Op } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
-import { generateDeleteOps } from './generate-delete-ops.js';
+import { generateDeleteOps } from './generate-delete-ops-geo.js';
 import { useGenerateCreateOps } from './internal/use-generate-create-ops.js';
 import { useGenerateUpdateOps } from './internal/use-generate-update-ops.js';
 import { parseResult, useQueryPublic } from './internal/use-query-public-geo.js';

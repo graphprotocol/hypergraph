@@ -1,5 +1,5 @@
 export { createWalletClient } from './create-wallet-client.js';
-export { generateDeleteOps } from './generate-delete-ops.js';
+export { generateDeleteOps } from './generate-delete-ops-geo.js';
 export {
   HypergraphAppProvider,
   useHypergraphApp,
