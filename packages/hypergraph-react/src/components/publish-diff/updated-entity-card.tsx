@@ -31,7 +31,9 @@ export const UpdatedEntityCard = <S extends Entity.AnyNoContext>({ entity }: Upd
           }
         }}
       >
-        <div className="font-medium">ID: {entity.id}</div>
+        <div className="font-medium">
+          {entity.next.type} - {entity.id}
+        </div>
         <button className="text-gray-500" type="button">
           {isExpanded ? (
             <svg
