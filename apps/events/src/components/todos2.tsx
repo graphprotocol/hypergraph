@@ -35,6 +35,9 @@ export const Todos2 = () => {
   const queryClient = useQueryClient();
   const [publishData, setPublishData] = useState<{ diff: PublishDiffInfo<typeof Todo2>; ops: Array<Op> } | null>(null);
   const [isPublishDiffModalOpen, setIsPublishDiffModalOpen] = useState(false);
+  const [isPreparingPublish, setIsPreparingPublish] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+
   return (
     <>
       <div className="flex flex-row gap-4 items-center">
@@ -77,16 +80,24 @@ export const Todos2 = () => {
       </div>
       <Button
         onClick={async () => {
-          const result = await preparePublish();
+          try {
+            setIsPreparingPublish(true);
+            const result = await preparePublish();
 
-          console.log('ops & diff', result);
-          if (result) {
-            setPublishData(result);
-            setIsPublishDiffModalOpen(true);
+            console.log('ops & diff', result);
+            if (result) {
+              setPublishData(result);
+              setIsPublishDiffModalOpen(true);
+            }
+          } catch (error) {
+            console.error('preparing publishing error', error);
+          } finally {
+            setIsPreparingPublish(false);
           }
         }}
+        disabled={isPreparingPublish}
       >
-        Prepare Publish
+        {isPreparingPublish ? 'Preparing …' : 'Prepare Publish'}
       </Button>
 
       <Modal isOpen={isPublishDiffModalOpen} onOpenChange={setIsPublishDiffModalOpen}>
@@ -98,24 +109,31 @@ export const Todos2 = () => {
           />
           <Button
             onClick={async () => {
-              if (publishData) {
-                const publishOpsResult = await publishOps({
-                  ops: publishData.ops,
-                  walletClient: smartAccountWalletClient,
-                  space,
-                });
-                console.log('publishOpsResult', publishOpsResult);
-                setIsPublishDiffModalOpen(false);
-                setPublishData(null);
-                setTimeout(() => {
-                  queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
-                  queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
-                }, 1000);
+              try {
+                if (publishData) {
+                  setIsPublishing(true);
+                  const publishOpsResult = await publishOps({
+                    ops: publishData.ops,
+                    walletClient: smartAccountWalletClient,
+                    space,
+                  });
+                  console.log('publishOpsResult', publishOpsResult);
+                  setIsPublishDiffModalOpen(false);
+                  setPublishData(null);
+                  setTimeout(() => {
+                    queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
+                    queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
+                  }, 1000);
+                }
+              } catch (error) {
+                console.error('publishing error', error);
+              } finally {
+                setIsPublishing(false);
               }
             }}
-            disabled={publishData?.ops.length === 0}
+            disabled={publishData?.ops.length === 0 || isPublishing}
           >
-            Publish
+            {isPublishing ? 'Publishing …' : 'Publish'}
           </Button>
         </div>
       </Modal>
