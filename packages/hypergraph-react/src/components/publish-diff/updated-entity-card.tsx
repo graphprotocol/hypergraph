@@ -32,7 +32,8 @@ export const UpdatedEntityCard = <S extends Entity.AnyNoContext>({ entity }: Upd
         }}
       >
         <div className="font-medium">
-          {entity.next.type} - {entity.id}
+          {/* TODO: type should not be included if properly decoded */}
+          {entity.next.type || entity.next.constructor.name} - {entity.id}
         </div>
         <button className="text-gray-500" type="button">
           {isExpanded ? (

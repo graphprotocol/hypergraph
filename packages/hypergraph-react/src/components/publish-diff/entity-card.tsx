@@ -26,7 +26,8 @@ export const EntityCard = <S extends Entity.AnyNoContext>({ entity, type }: Enti
         }}
       >
         <div className={`font-medium ${textColor}`}>
-          {entity.type} - {entity.id}
+          {/* TODO: type should not be included if properly decoded */}
+          {entity.type || entity.constructor.name} - {entity.id}
         </div>
         <button className="text-gray-500" type="button">
           {isExpanded ? (
