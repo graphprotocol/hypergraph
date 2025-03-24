@@ -129,7 +129,7 @@ export const Todos2 = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" defaultChecked={todo.checked} />
+          <input type="checkbox" checked={todo.checked} />
           <Button
             onClick={async () => {
               const ops = await _generateDeleteOps({ id: todo.id, space });
@@ -151,7 +151,7 @@ export const Todos2 = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" defaultChecked={todo.checked} />
+          <input type="checkbox" checked={todo.checked} />
           <Button
             onClick={async () => {
               const ops = await _generateDeleteOps({ id: todo.id, space });
