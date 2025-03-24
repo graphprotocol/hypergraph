@@ -1,6 +1,9 @@
 import { smartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
+import type { Op } from '@graphprotocol/grc-20';
+import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
+  PublishDiff,
   _generateDeleteOps,
   publishOps,
   useCreateEntity,
@@ -17,6 +20,7 @@ import { Todo2 } from '../schema';
 import { Spinner } from './spinner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Modal } from './ui/modal';
 export const Todos2 = () => {
   const { data: kgPublicData, isLoading: kgPublicIsLoading, isError: kgPublicIsError } = useQueryPublicKg(Todo2);
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
@@ -29,7 +33,8 @@ export const Todos2 = () => {
   const hardDeleteEntity = useHardDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
   const queryClient = useQueryClient();
-
+  const [publishData, setPublishData] = useState<{ diff: PublishDiffInfo<typeof Todo2>; ops: Array<Op> } | null>(null);
+  const [isPublishDiffModalOpen, setIsPublishDiffModalOpen] = useState(false);
   return (
     <>
       <div className="flex flex-row gap-4 items-center">
@@ -76,21 +81,44 @@ export const Todos2 = () => {
 
           console.log('ops & diff', result);
           if (result) {
-            const publishOpsResult = await publishOps({
-              ops: result.ops,
-              walletClient: smartAccountWalletClient,
-              space,
-            });
-            console.log('publishOpsResult', publishOpsResult);
-            setTimeout(() => {
-              queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
-              queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
-            }, 1000);
+            setPublishData(result);
+            setIsPublishDiffModalOpen(true);
           }
         }}
       >
-        Prepare Publish and Publish
+        Prepare Publish
       </Button>
+
+      <Modal isOpen={isPublishDiffModalOpen} onOpenChange={setIsPublishDiffModalOpen}>
+        <div className="p-4 flex flex-col gap-4 min-w-96">
+          <PublishDiff<typeof Todo2>
+            newEntities={publishData?.diff.newEntities ?? []}
+            deletedEntities={publishData?.diff.deletedEntities ?? []}
+            updatedEntities={publishData?.diff.updatedEntities ?? []}
+          />
+          <Button
+            onClick={async () => {
+              if (publishData) {
+                const publishOpsResult = await publishOps({
+                  ops: publishData.ops,
+                  walletClient: smartAccountWalletClient,
+                  space,
+                });
+                console.log('publishOpsResult', publishOpsResult);
+                setIsPublishDiffModalOpen(false);
+                setPublishData(null);
+                setTimeout(() => {
+                  queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
+                  queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
+                }, 1000);
+              }
+            }}
+            disabled={publishData?.ops.length === 0}
+          >
+            Publish
+          </Button>
+        </div>
+      </Modal>
 
       <h2 className="text-2xl font-bold">Todos (Local)</h2>
       {todosLocalData.map((todo) => (
@@ -129,7 +157,7 @@ export const Todos2 = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" checked={todo.checked} />
+          <input type="checkbox" checked={todo.checked} readOnly />
           <Button
             onClick={async () => {
               const ops = await _generateDeleteOps({ id: todo.id, space });
@@ -151,7 +179,7 @@ export const Todos2 = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" checked={todo.checked} />
+          <input type="checkbox" checked={todo.checked} readOnly />
           <Button
             onClick={async () => {
               const ops = await _generateDeleteOps({ id: todo.id, space });

@@ -1,3 +1,4 @@
+export { PublishDiff } from './components/publish-diff/publish-diff.js';
 export { createWalletClient } from './create-wallet-client.js';
 export {
   HypergraphAppProvider,
@@ -19,5 +20,5 @@ export { useGenerateCreateOps as _useGenerateCreateOps } from './internal/use-ge
 export { useQueryPublic as _useQueryPublicGeo } from './internal/use-query-public-geo.js';
 export { useQueryPublic as _useQueryPublicKg } from './internal/use-query-public-kg.js';
 export { publishOps } from './publish-ops.js';
-export type { Mapping } from './types.js';
+export type * from './types.js';
 export { useQuery } from './use-query.js';

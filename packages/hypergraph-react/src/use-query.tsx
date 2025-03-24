@@ -5,7 +5,7 @@ import { generateDeleteOps } from './internal/generate-delete-ops-geo.js';
 import { useGenerateCreateOps } from './internal/use-generate-create-ops.js';
 import { useGenerateUpdateOps } from './internal/use-generate-update-ops.js';
 import { parseResult, useQueryPublic } from './internal/use-query-public-geo.js';
-import type { DiffEntry } from './types.js';
+import type { DiffEntry, PublishDiff } from './types.js';
 
 type QueryParams = {
   mode: 'merged' | 'public' | 'local';
@@ -46,7 +46,7 @@ const getDiff = <S extends Entity.AnyNoContext>(
   publicEntities: Entity.Entity<S>[],
   localEntities: Entity.Entity<S>[],
   localDeletedEntities: Entity.Entity<S>[],
-) => {
+): PublishDiff<S> => {
   const deletedEntities: Entity.Entity<S>[] = [];
   const updatedEntities: { id: string; current: Entity.Entity<S>; next: Entity.Entity<S>; diff: DiffEntry<S> }[] = [];
 
@@ -120,7 +120,6 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
       data: mergedData,
       deleted: localResult.deletedEntities,
       preparePublish: async () => {
-        console.log('preparePublish');
         // @ts-expect-error TODO should use the actual type instead of the name in the mapping
         const typeName = type.name;
         const mappingEntry = mapping?.[typeName];
@@ -132,7 +131,6 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
         if (!result.data) {
           throw new Error('No data found');
         }
-        console.log('result', result);
         const diff = getDiff(
           parseResult(result.data, type, mappingEntry).data,
           localResult.entities,
