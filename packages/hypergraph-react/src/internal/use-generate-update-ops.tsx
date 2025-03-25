@@ -3,16 +3,19 @@ import type { Entity } from '@graphprotocol/hypergraph';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 import type { DiffEntry } from '../types.js';
 
-export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: S) {
+export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
   const { mapping } = useHypergraph();
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
   const typeName = type.name;
   const mappingEntry = mapping?.[typeName];
-  if (!mappingEntry) {
+  if (!mappingEntry && enabled) {
     throw new Error(`Mapping entry for ${typeName} not found`);
   }
 
   return ({ id, __deleted, __version, ...properties }: DiffEntry<S>) => {
+    if (!enabled || !mappingEntry) {
+      return { ops: [] };
+    }
     const ops: Op[] = [];
     for (const [key, rawValue] of Object.entries(properties)) {
       const attributeId = mappingEntry.properties[key];
