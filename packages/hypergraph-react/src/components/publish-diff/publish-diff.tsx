@@ -6,8 +6,8 @@ import { EntityCard } from './entity-card.js';
 import { UpdatedEntityCard } from './updated-entity-card.js';
 
 type PublishDiffProps<S extends Entity.AnyNoContext> = {
-  newEntities: Entity.Entity<S>[];
-  deletedEntities: Entity.Entity<S>[];
+  newEntities: { id: string; entity: Entity.Entity<S> }[];
+  deletedEntities: { id: string; entity: Entity.Entity<S> }[];
   updatedEntities: {
     id: string;
     current: Entity.Entity<S>;
@@ -42,7 +42,7 @@ export const PublishDiff = <S extends Entity.AnyNoContext>({
             New Entities ({newEntities.length})
           </h2>
           <div className="space-y-3">
-            {newEntities.map((entity) => (
+            {newEntities.map(({ entity }) => (
               <EntityCard<S> key={entity.id} entity={entity} type="new" />
             ))}
           </div>
@@ -78,7 +78,7 @@ export const PublishDiff = <S extends Entity.AnyNoContext>({
             Deleted Entities ({deletedEntities.length})
           </h2>
           <div className="space-y-3">
-            {deletedEntities.map((entity) => (
+            {deletedEntities.map(({ entity }) => (
               <EntityCard<S> key={entity.id} entity={entity} type="deleted" />
             ))}
           </div>

@@ -1,4 +1,4 @@
-import type { Id as Grc20Id } from '@graphprotocol/grc-20';
+import type { Id as Grc20Id, Op } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 
@@ -16,7 +16,7 @@ export type DiffEntry<S extends Entity.AnyNoContext> = Partial<Schema.Schema.Typ
 };
 
 export type PublishDiffInfo<S extends Entity.AnyNoContext> = {
-  newEntities: Entity.Entity<S>[];
-  deletedEntities: Entity.Entity<S>[];
-  updatedEntities: { id: string; current: Entity.Entity<S>; next: Entity.Entity<S>; diff: DiffEntry<S> }[];
+  newEntities: { id: string; entity: Entity.Entity<S>; ops: Op[] }[];
+  deletedEntities: { id: string; entity: Entity.Entity<S>; ops: Op[] }[];
+  updatedEntities: { id: string; current: Entity.Entity<S>; next: Entity.Entity<S>; diff: DiffEntry<S>; ops: Op[] }[];
 };

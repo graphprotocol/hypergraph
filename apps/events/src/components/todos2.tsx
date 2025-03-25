@@ -1,6 +1,5 @@
 import { smartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
-import type { Op } from '@graphprotocol/grc-20';
 import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
   PublishDiff,
@@ -13,7 +12,7 @@ import {
 } from '@graphprotocol/hypergraph-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Todo2 } from '../schema';
+import { Todo2, User } from '../schema';
 import { Spinner } from './spinner';
 import { TodosLocal } from './todo/todos-local';
 import { TodosPublicGeo } from './todo/todos-public-geo';
@@ -23,14 +22,27 @@ import { Input } from './ui/input';
 import { Modal } from './ui/modal';
 
 export const Todos2 = () => {
-  const { data, isLoading, isError, preparePublish } = useQuery(Todo2);
+  const {
+    data: dataTodos,
+    isLoading: isLoadingTodos,
+    isError: isErrorTodos,
+    preparePublish: preparePublishTodos,
+  } = useQuery(Todo2);
+  const {
+    data: dataUsers,
+    isLoading: isLoadingUsers,
+    isError: isErrorUsers,
+    preparePublish: preparePublishUsers,
+  } = useQuery(User);
   const space = useHypergraphSpace();
-  const createEntity = useCreateEntity(Todo2);
-  const updateEntity = useUpdateEntity(Todo2);
+  const createTodo = useCreateEntity(Todo2);
+  const updateTodo = useUpdateEntity(Todo2);
+  const createUser = useCreateEntity(User);
   const deleteEntity = useDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
+  const [newUserName, setNewUserName] = useState('');
   const queryClient = useQueryClient();
-  const [publishData, setPublishData] = useState<{ diff: PublishDiffInfo<typeof Todo2>; ops: Array<Op> } | null>(null);
+  const [publishData, setPublishData] = useState<PublishDiffInfo<typeof Todo2> | null>(null);
   const [isPublishDiffModalOpen, setIsPublishDiffModalOpen] = useState(false);
   const [isPreparingPublish, setIsPreparingPublish] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -38,19 +50,53 @@ export const Todos2 = () => {
   return (
     <>
       <div className="flex flex-row gap-4 items-center">
-        <h2 className="text-2xl font-bold">Todos (Merged)</h2>
-        {isLoading && <Spinner size="sm" />}
+        <h2 className="text-2xl font-bold">Users (Merged)</h2>
+        {isLoadingUsers && <Spinner size="sm" />}
       </div>
-      {isError && <div>Error loading todos</div>}
-      <div className={`flex flex-col gap-4 ${cn({ 'opacity-50': isLoading })}`}>
-        {data.map((todo) => (
+      {isErrorUsers && <div>Error loading todos</div>}
+      <div className={`flex flex-col gap-4 ${cn({ 'opacity-50': isLoadingUsers })}`}>
+        {dataUsers.map((user) => (
+          <div key={user.id} className="flex flex-row items-center gap-2">
+            <h2>{user.name}</h2>
+            <div className="text-xs">{user.id}</div>
+            <div className="text-xs">{user.__version}</div>
+            <Button variant="outline" size="sm" onClick={() => deleteEntity(user.id)}>
+              Delete
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} />
+        <Button
+          onClick={() => {
+            if (newUserName === '') {
+              alert('User name is required');
+              return;
+            }
+            createUser({ name: newUserName });
+            setNewUserName('');
+          }}
+        >
+          Create User
+        </Button>
+      </div>
+
+      <div className="flex flex-row gap-4 items-center">
+        <h2 className="text-2xl font-bold">Todos (Merged)</h2>
+        {isLoadingTodos && <Spinner size="sm" />}
+      </div>
+      {isErrorTodos && <div>Error loading todos</div>}
+      <div className={`flex flex-col gap-4 ${cn({ 'opacity-50': isLoadingTodos })}`}>
+        {dataTodos.map((todo) => (
           <div key={todo.id} className="flex flex-row items-center gap-2">
             <h2>{todo.name}</h2>
             <div className="text-xs">{todo.id}</div>
             <input
               type="checkbox"
               checked={todo.checked}
-              onChange={(e) => updateEntity(todo.id, { checked: e.target.checked })}
+              onChange={(e) => updateTodo(todo.id, { checked: e.target.checked })}
             />
             <div className="text-xs">{todo.__version}</div>
             <Button variant="outline" size="sm" onClick={() => deleteEntity(todo.id)}>
@@ -60,7 +106,7 @@ export const Todos2 = () => {
         ))}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mb-8">
         <Input type="text" value={newTodoName} onChange={(e) => setNewTodoName(e.target.value)} />
         <Button
           onClick={() => {
@@ -68,26 +114,32 @@ export const Todos2 = () => {
               alert('Todo text is required');
               return;
             }
-            createEntity({ name: newTodoName, checked: false });
+            createTodo({ name: newTodoName, checked: false });
             setNewTodoName('');
           }}
         >
           Create Todo
         </Button>
       </div>
+
       <Button
         onClick={async () => {
           try {
             setIsPreparingPublish(true);
-            const result = await preparePublish();
-
-            console.log('ops & diff', result);
-            if (result) {
-              setPublishData(result);
+            const todosResult = await preparePublishTodos();
+            const usersResult = await preparePublishUsers();
+            console.log('todos ops & diff', todosResult);
+            console.log('users ops & diff', usersResult);
+            if (todosResult && usersResult) {
+              setPublishData(todosResult);
               setIsPublishDiffModalOpen(true);
+            } else {
+              console.error('preparing publishing error', todosResult, usersResult);
+              throw new Error('Failed to prepare the publishing operations');
             }
           } catch (error) {
             console.error('preparing publishing error', error);
+            alert('Failed to prepare the publishing operations');
           } finally {
             setIsPreparingPublish(false);
           }
@@ -100,17 +152,22 @@ export const Todos2 = () => {
       <Modal isOpen={isPublishDiffModalOpen} onOpenChange={setIsPublishDiffModalOpen}>
         <div className="p-4 flex flex-col gap-4 min-w-96">
           <PublishDiff<typeof Todo2>
-            newEntities={publishData?.diff.newEntities ?? []}
-            deletedEntities={publishData?.diff.deletedEntities ?? []}
-            updatedEntities={publishData?.diff.updatedEntities ?? []}
+            newEntities={publishData?.newEntities ?? []}
+            deletedEntities={publishData?.deletedEntities ?? []}
+            updatedEntities={publishData?.updatedEntities ?? []}
           />
           <Button
             onClick={async () => {
               try {
                 if (publishData) {
                   setIsPublishing(true);
+                  const ops = [
+                    ...publishData.newEntities.map((entity) => entity.ops),
+                    ...publishData.updatedEntities.map((entity) => entity.ops),
+                    ...publishData.deletedEntities.map((entity) => entity.ops),
+                  ].flat();
                   const publishOpsResult = await publishOps({
-                    ops: publishData.ops,
+                    ops,
                     walletClient: smartAccountWalletClient,
                     space,
                   });
@@ -128,7 +185,12 @@ export const Todos2 = () => {
                 setIsPublishing(false);
               }
             }}
-            disabled={publishData?.ops.length === 0 || isPublishing}
+            disabled={
+              (publishData?.newEntities.length === 0 &&
+                publishData?.updatedEntities.length === 0 &&
+                publishData?.deletedEntities.length === 0) ||
+              isPublishing
+            }
           >
             {isPublishing ? 'Publishing …' : 'Publish'}
           </Button>

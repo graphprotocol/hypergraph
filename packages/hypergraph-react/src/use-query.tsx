@@ -1,4 +1,3 @@
-import type { Op } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
 import { generateDeleteOps } from './internal/generate-delete-ops-geo.js';
@@ -46,7 +45,7 @@ const getDiff = <S extends Entity.AnyNoContext>(
   publicEntities: Entity.Entity<S>[],
   localEntities: Entity.Entity<S>[],
   localDeletedEntities: Entity.Entity<S>[],
-): PublishDiffInfo<S> => {
+) => {
   const deletedEntities: Entity.Entity<S>[] = [];
   const updatedEntities: { id: string; current: Entity.Entity<S>; next: Entity.Entity<S>; diff: DiffEntry<S> }[] = [];
 
@@ -94,7 +93,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
   const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged' });
   const { mapping } = useHypergraph();
   const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
-  const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
+  const generateUpdateOps = useGenerateUpdateOps(type);
 
   if (mode === 'public') {
     return {
@@ -124,7 +123,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
       ...publicResult,
       data: mergedData,
       deleted: localResult.deletedEntities,
-      preparePublish: async () => {
+      preparePublish: async (): Promise<PublishDiffInfo<S>> => {
         // @ts-expect-error TODO should use the actual type instead of the name in the mapping
         const typeName = type.name;
         const mappingEntry = mapping?.[typeName];
@@ -142,27 +141,24 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
           localResult.deletedEntities,
         );
 
-        let ops: Op[] = [];
-        if (diff.newEntities.length > 0) {
-          for (const entity of diff.newEntities) {
-            const { ops: createOps } = generateCreateOps(entity);
-            ops = [...ops, ...createOps];
-          }
-        }
-        if (diff.updatedEntities.length > 0) {
-          for (const updatedEntity of diff.updatedEntities) {
-            const { ops: updateOps } = generateUpdateOps({ ...updatedEntity.diff, id: updatedEntity.id });
-            ops = [...ops, ...updateOps];
-          }
-        }
-        if (diff.deletedEntities.length > 0) {
-          for (const entity of diff.deletedEntities) {
-            const deleteOps = await generateDeleteOps(entity);
-            ops = [...ops, ...deleteOps];
-          }
-        }
+        const newEntities = diff.newEntities.map((entity) => {
+          const { ops: createOps } = generateCreateOps(entity);
+          return { id: entity.id, entity, ops: createOps };
+        });
 
-        return { diff, ops };
+        const updatedEntities = diff.updatedEntities.map((updatedEntityInfo) => {
+          const { ops: updateOps } = generateUpdateOps({ ...updatedEntityInfo.diff, id: updatedEntityInfo.id });
+          return { ...updatedEntityInfo, ops: updateOps };
+        });
+
+        const deletedEntities = await Promise.all(
+          diff.deletedEntities.map(async (entity) => {
+            const deleteOps = await generateDeleteOps(entity);
+            return { id: entity.id, entity, ops: deleteOps };
+          }),
+        );
+
+        return { newEntities, updatedEntities, deletedEntities };
       },
     };
   }
