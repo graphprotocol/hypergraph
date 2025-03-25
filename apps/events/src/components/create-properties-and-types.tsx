@@ -22,8 +22,13 @@ const createPropertiesAndTypes = async ({
   });
   ops.push(...createTodoTypeOps);
 
+  const { id: userId, ops: createUserOps } = Graph.createEntity({
+    name: 'User',
+  });
+  ops.push(...createUserOps);
+
   const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
-  return { result, todoTypeId, checkedPropertyId };
+  return { result, todoTypeId, checkedPropertyId, userId };
 };
 
 export const CreatePropertiesAndTypes = () => {
@@ -41,7 +46,7 @@ export const CreatePropertiesAndTypes = () => {
       )}
       <Button
         onClick={async () => {
-          const { todoTypeId, checkedPropertyId } = await createPropertiesAndTypes({
+          const { todoTypeId, checkedPropertyId, userId } = await createPropertiesAndTypes({
             smartAccountWalletClient,
             space,
           });
@@ -52,7 +57,14 @@ export const CreatePropertiesAndTypes = () => {
     name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
     checked: Id.Id('${checkedPropertyId}'),
   },
-}`;
+},
+User: {
+  typeIds: [Id.Id('${userId}')],
+  properties: {
+    name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+  },
+}
+`;
           setMapping(newMapping);
         }}
       >

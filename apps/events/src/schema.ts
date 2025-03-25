@@ -51,4 +51,10 @@ export const mapping: Mapping = {
       checked: Id.Id('A8UfGTFYCmfpTsDj7fC8dY'),
     },
   },
+  User: {
+    typeIds: [Id.Id('JhxaewiF4zgzpawv4vt9SB')],
+    properties: {
+      name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+    },
+  },
 };
