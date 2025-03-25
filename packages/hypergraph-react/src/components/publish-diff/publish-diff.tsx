@@ -1,26 +1,21 @@
 'use client';
 
-import type { Entity } from '@graphprotocol/hypergraph';
-import type { DiffEntry } from '../../types.js';
+import type { DiffEntryLike, EntityLike } from '../../types.js';
 import { EntityCard } from './entity-card.js';
 import { UpdatedEntityCard } from './updated-entity-card.js';
 
-type PublishDiffProps<S extends Entity.AnyNoContext> = {
-  newEntities: { id: string; entity: Entity.Entity<S> }[];
-  deletedEntities: { id: string; entity: Entity.Entity<S> }[];
+type PublishDiffProps = {
+  newEntities: { id: string; entity: EntityLike }[];
+  deletedEntities: { id: string; entity: EntityLike }[];
   updatedEntities: {
     id: string;
-    current: Entity.Entity<S>;
-    next: Entity.Entity<S>;
-    diff: DiffEntry<S>;
+    current: EntityLike;
+    next: EntityLike;
+    diff: DiffEntryLike;
   }[];
 };
 
-export const PublishDiff = <S extends Entity.AnyNoContext>({
-  newEntities = [],
-  deletedEntities = [],
-  updatedEntities = [],
-}: PublishDiffProps<S>) => {
+export const PublishDiff = ({ newEntities = [], deletedEntities = [], updatedEntities = [] }: PublishDiffProps) => {
   return (
     <div className="space-y-6 text-sm">
       {newEntities.length > 0 && (
@@ -43,7 +38,7 @@ export const PublishDiff = <S extends Entity.AnyNoContext>({
           </h2>
           <div className="space-y-3">
             {newEntities.map(({ entity }) => (
-              <EntityCard<S> key={entity.id} entity={entity} type="new" />
+              <EntityCard key={entity.id} entity={entity} type="new" />
             ))}
           </div>
         </section>
@@ -54,7 +49,7 @@ export const PublishDiff = <S extends Entity.AnyNoContext>({
           <h2 className="text-base font-semibold mb-3">Updated Entities ({updatedEntities.length})</h2>
           <div className="space-y-3">
             {updatedEntities.map((entity) => (
-              <UpdatedEntityCard<S> key={entity.id} entity={entity} />
+              <UpdatedEntityCard key={entity.id} entity={entity} />
             ))}
           </div>
         </section>
@@ -79,7 +74,7 @@ export const PublishDiff = <S extends Entity.AnyNoContext>({
           </h2>
           <div className="space-y-3">
             {deletedEntities.map(({ entity }) => (
-              <EntityCard<S> key={entity.id} entity={entity} type="deleted" />
+              <EntityCard key={entity.id} entity={entity} type="deleted" />
             ))}
           </div>
         </section>

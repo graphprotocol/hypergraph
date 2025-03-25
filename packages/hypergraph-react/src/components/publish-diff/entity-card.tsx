@@ -1,13 +1,13 @@
-import type { Entity } from '@graphprotocol/hypergraph';
 import { useState } from 'react';
+import type { EntityLike } from '../../types.js';
 import { IGNORED_PROPERTIES } from './constants.js';
 
-type EntityCardProps<S extends Entity.AnyNoContext> = {
-  entity: Entity.Entity<S>;
+type EntityCardProps = {
+  entity: EntityLike;
   type: 'new' | 'deleted';
 };
 
-export const EntityCard = <S extends Entity.AnyNoContext>({ entity, type }: EntityCardProps<S>) => {
+export const EntityCard = ({ entity, type }: EntityCardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const headerBgColor = type === 'new' ? 'bg-green-50' : 'bg-red-50';
@@ -26,8 +26,8 @@ export const EntityCard = <S extends Entity.AnyNoContext>({ entity, type }: Enti
         }}
       >
         <div className={`font-medium ${textColor}`}>
-          {/* TODO: type should not be included if properly decoded */}
-          {entity.type || entity.constructor.name} - {entity.id}
+          {/* TODO: We should always be able to rely on the constructor, but sometimes it's a raw object */}
+          {(entity as { type?: string }).type || entity.constructor?.name} - {entity.id}
         </div>
         <button className="text-gray-500" type="button">
           {isExpanded ? (
@@ -75,7 +75,7 @@ export const EntityCard = <S extends Entity.AnyNoContext>({ entity, type }: Enti
                     <td className="py-1.5 font-medium text-gray-600 pr-3">
                       {key.charAt(0).toUpperCase() + key.slice(1)}
                     </td>
-                    <td className="py-1.5">{value.toString()}</td>
+                    <td className="py-1.5">{String(value)}</td>
                   </tr>
                 ))}
             </tbody>

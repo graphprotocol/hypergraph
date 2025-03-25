@@ -42,7 +42,7 @@ export const Todos2 = () => {
   const [newTodoName, setNewTodoName] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const queryClient = useQueryClient();
-  const [publishData, setPublishData] = useState<PublishDiffInfo<typeof Todo2> | null>(null);
+  const [publishData, setPublishData] = useState<PublishDiffInfo | null>(null);
   const [isPublishDiffModalOpen, setIsPublishDiffModalOpen] = useState(false);
   const [isPreparingPublish, setIsPreparingPublish] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -131,7 +131,11 @@ export const Todos2 = () => {
             console.log('todos ops & diff', todosResult);
             console.log('users ops & diff', usersResult);
             if (todosResult && usersResult) {
-              setPublishData(todosResult);
+              setPublishData({
+                newEntities: [...todosResult.newEntities, ...usersResult.newEntities],
+                deletedEntities: [...todosResult.deletedEntities, ...usersResult.deletedEntities],
+                updatedEntities: [...todosResult.updatedEntities, ...usersResult.updatedEntities],
+              });
               setIsPublishDiffModalOpen(true);
             } else {
               console.error('preparing publishing error', todosResult, usersResult);
@@ -151,7 +155,7 @@ export const Todos2 = () => {
 
       <Modal isOpen={isPublishDiffModalOpen} onOpenChange={setIsPublishDiffModalOpen}>
         <div className="p-4 flex flex-col gap-4 min-w-96">
-          <PublishDiff<typeof Todo2>
+          <PublishDiff
             newEntities={publishData?.newEntities ?? []}
             deletedEntities={publishData?.deletedEntities ?? []}
             updatedEntities={publishData?.updatedEntities ?? []}

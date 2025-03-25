@@ -15,8 +15,25 @@ export type DiffEntry<S extends Entity.AnyNoContext> = Partial<Schema.Schema.Typ
   id: string;
 };
 
-export type PublishDiffInfo<S extends Entity.AnyNoContext> = {
-  newEntities: { id: string; entity: Entity.Entity<S>; ops: Op[] }[];
-  deletedEntities: { id: string; entity: Entity.Entity<S>; ops: Op[] }[];
-  updatedEntities: { id: string; current: Entity.Entity<S>; next: Entity.Entity<S>; diff: DiffEntry<S>; ops: Op[] }[];
+export type EntityLike = {
+  id: string;
+  [key: string]: unknown;
+};
+
+export type DiffEntryLike = {
+  id: string;
+  [key: string]: unknown;
+};
+
+// This is a more flexible version of PublishDiffInfo that can handle mixed entity types
+export type PublishDiffInfo = {
+  newEntities: Array<{ id: string; entity: EntityLike; ops: Op[] }>;
+  deletedEntities: Array<{ id: string; entity: EntityLike; ops: Op[] }>;
+  updatedEntities: Array<{
+    id: string;
+    current: EntityLike;
+    next: EntityLike;
+    diff: DiffEntryLike;
+    ops: Op[];
+  }>;
 };

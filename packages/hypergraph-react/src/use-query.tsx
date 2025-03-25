@@ -123,7 +123,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
       ...publicResult,
       data: mergedData,
       deleted: localResult.deletedEntities,
-      preparePublish: async (): Promise<PublishDiffInfo<S>> => {
+      preparePublish: async (): Promise<PublishDiffInfo> => {
         // @ts-expect-error TODO should use the actual type instead of the name in the mapping
         const typeName = type.name;
         const mappingEntry = mapping?.[typeName];

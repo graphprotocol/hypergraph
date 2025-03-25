@@ -1,18 +1,17 @@
-import type { Entity } from '@graphprotocol/hypergraph';
 import { useState } from 'react';
-import type { DiffEntry } from '../../types.js';
+import type { DiffEntryLike, EntityLike } from '../../types.js';
 import { IGNORED_PROPERTIES } from './constants.js';
 
-type UpdatedEntityCardProps<S extends Entity.AnyNoContext> = {
+type UpdatedEntityCardProps = {
   entity: {
     id: string;
-    current: Entity.Entity<S>;
-    next: Entity.Entity<S>;
-    diff: DiffEntry<S>;
+    current: EntityLike;
+    next: EntityLike;
+    diff: DiffEntryLike;
   };
 };
 
-export const UpdatedEntityCard = <S extends Entity.AnyNoContext>({ entity }: UpdatedEntityCardProps<S>) => {
+export const UpdatedEntityCard = ({ entity }: UpdatedEntityCardProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Get all unique keys from both current and next, excluding ignored properties
@@ -32,8 +31,8 @@ export const UpdatedEntityCard = <S extends Entity.AnyNoContext>({ entity }: Upd
         }}
       >
         <div className="font-medium">
-          {/* TODO: type should not be included if properly decoded */}
-          {entity.next.type || entity.next.constructor.name} - {entity.id}
+          {/* TODO: We should always be able to rely on the constructor, but sometimes it's a raw object */}
+          {(entity as { type?: string }).type || entity.constructor?.name} - {entity.id}
         </div>
         <button className="text-gray-500" type="button">
           {isExpanded ? (
