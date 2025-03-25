@@ -4,33 +4,30 @@ import type { Op } from '@graphprotocol/grc-20';
 import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
   PublishDiff,
-  _generateDeleteOps,
   publishOps,
   useCreateEntity,
   useDeleteEntity,
-  useHardDeleteEntity,
   useHypergraphSpace,
   useQuery,
-  _useQueryPublicKg as useQueryPublicKg,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Todo2 } from '../schema';
 import { Spinner } from './spinner';
+import { TodosLocal } from './todo/todos-local';
+import { TodosPublicGeo } from './todo/todos-public-geo';
+import { TodosPublicKg } from './todo/todos-public-kg';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Modal } from './ui/modal';
+
 export const Todos2 = () => {
-  const { data: kgPublicData, isLoading: kgPublicIsLoading, isError: kgPublicIsError } = useQueryPublicKg(Todo2);
-  const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
   const { data, isLoading, isError, preparePublish } = useQuery(Todo2);
-  const { data: todosLocalData, deleted: deletedTodosLocalData } = useQuery(Todo2, { mode: 'local' });
   const space = useHypergraphSpace();
   const createEntity = useCreateEntity(Todo2);
   const updateEntity = useUpdateEntity(Todo2);
   const deleteEntity = useDeleteEntity();
-  const hardDeleteEntity = useHardDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
   const queryClient = useQueryClient();
   const [publishData, setPublishData] = useState<{ diff: PublishDiffInfo<typeof Todo2>; ops: Array<Op> } | null>(null);
@@ -138,77 +135,11 @@ export const Todos2 = () => {
         </div>
       </Modal>
 
-      <h2 className="text-2xl font-bold">Todos (Local)</h2>
-      {todosLocalData.map((todo) => (
-        <div key={todo.id} className="flex flex-row items-center gap-2">
-          <h2>{todo.name}</h2>
-          <div className="text-xs">{todo.id}</div>
-          <input
-            type="checkbox"
-            checked={todo.checked}
-            onChange={(e) => updateEntity(todo.id, { checked: e.target.checked })}
-          />
-          <div className="text-xs">{todo.__deleted ? 'deleted' : 'not deleted'}</div>
-          <div className="text-xs">{todo.__version}</div>
-          <Button variant="secondary" size="sm" onClick={() => hardDeleteEntity(todo.id)}>
-            Hard Delete
-          </Button>
-        </div>
-      ))}
-      <h2 className="text-2xl font-bold">Deleted Todos (Local)</h2>
-      {deletedTodosLocalData.map((todo) => (
-        <div key={todo.id} className="flex flex-row items-center gap-2">
-          <h2>{todo.name}</h2>
-          <div className="text-xs">{todo.id}</div>
-          <Button variant="secondary" size="sm" onClick={() => hardDeleteEntity(todo.id)}>
-            Hard Delete
-          </Button>
-        </div>
-      ))}
+      <TodosLocal />
 
-      <div className="flex flex-row gap-4 items-center">
-        <h2 className="text-2xl font-bold">Todos (Public Geo)</h2>
-        {isLoadingPublic && <Spinner size="sm" />}
-      </div>
-      {isErrorPublic && <div>Error loading todos</div>}
-      {dataPublic.map((todo) => (
-        <div key={todo.id} className="flex flex-row items-center gap-2">
-          <h2>{todo.name}</h2>
-          <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" checked={todo.checked} readOnly />
-          <Button
-            onClick={async () => {
-              const ops = await _generateDeleteOps({ id: todo.id, space });
-              const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
-              console.log('result', result);
-            }}
-          >
-            Delete
-          </Button>
-        </div>
-      ))}
+      <TodosPublicGeo />
 
-      <div className="flex flex-row gap-4 items-center">
-        <h2 className="text-2xl font-bold">Todos (Public KG)</h2>
-        {kgPublicIsLoading && <Spinner size="sm" />}
-      </div>
-      {kgPublicIsError && <div>Error loading todos</div>}
-      {kgPublicData.map((todo) => (
-        <div key={todo.id} className="flex flex-row items-center gap-2">
-          <h2>{todo.name}</h2>
-          <div className="text-xs">{todo.id}</div>
-          <input type="checkbox" checked={todo.checked} readOnly />
-          <Button
-            onClick={async () => {
-              const ops = await _generateDeleteOps({ id: todo.id, space });
-              const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
-              console.log('result', result);
-            }}
-          >
-            Delete
-          </Button>
-        </div>
-      ))}
+      <TodosPublicKg />
     </>
   );
 };
