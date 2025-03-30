@@ -37,6 +37,13 @@ function RouteComponent() {
           >
             Public Integration
           </Link>
+          <Link
+            to={'/space/$spaceId/playground'}
+            params={{ spaceId }}
+            className="px-3 py-2 text-sm font-medium rounded-md"
+          >
+            Playground
+          </Link>
         </nav>
       </div>
 

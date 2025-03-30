@@ -18,6 +18,7 @@ import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
 import { Route as SettingsExportWalletImport } from './routes/settings/export-wallet'
 import { Route as SpaceSpaceIdIndexImport } from './routes/space/$spaceId/index'
 import { Route as SpaceSpaceIdPublicIntegrationImport } from './routes/space/$spaceId/public-integration'
+import { Route as SpaceSpaceIdPlaygroundImport } from './routes/space/$spaceId/playground'
 
 // Create Virtual Routes
 
@@ -69,6 +70,12 @@ const SpaceSpaceIdPublicIntegrationRoute =
     getParentRoute: () => SpaceSpaceIdRoute,
   } as any)
 
+const SpaceSpaceIdPlaygroundRoute = SpaceSpaceIdPlaygroundImport.update({
+  id: '/playground',
+  path: '/playground',
+  getParentRoute: () => SpaceSpaceIdRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -108,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpaceSpaceIdImport
       parentRoute: typeof rootRoute
     }
+    '/space/$spaceId/playground': {
+      id: '/space/$spaceId/playground'
+      path: '/playground'
+      fullPath: '/space/$spaceId/playground'
+      preLoaderRoute: typeof SpaceSpaceIdPlaygroundImport
+      parentRoute: typeof SpaceSpaceIdImport
+    }
     '/space/$spaceId/public-integration': {
       id: '/space/$spaceId/public-integration'
       path: '/public-integration'
@@ -128,11 +142,13 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface SpaceSpaceIdRouteChildren {
+  SpaceSpaceIdPlaygroundRoute: typeof SpaceSpaceIdPlaygroundRoute
   SpaceSpaceIdPublicIntegrationRoute: typeof SpaceSpaceIdPublicIntegrationRoute
   SpaceSpaceIdIndexRoute: typeof SpaceSpaceIdIndexRoute
 }
 
 const SpaceSpaceIdRouteChildren: SpaceSpaceIdRouteChildren = {
+  SpaceSpaceIdPlaygroundRoute: SpaceSpaceIdPlaygroundRoute,
   SpaceSpaceIdPublicIntegrationRoute: SpaceSpaceIdPublicIntegrationRoute,
   SpaceSpaceIdIndexRoute: SpaceSpaceIdIndexRoute,
 }
@@ -147,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/playground': typeof PlaygroundLazyRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
+  '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/': typeof SpaceSpaceIdIndexRoute
 }
@@ -156,6 +173,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
+  '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId': typeof SpaceSpaceIdIndexRoute
 }
@@ -167,6 +185,7 @@ export interface FileRoutesById {
   '/playground': typeof PlaygroundLazyRoute
   '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
+  '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/': typeof SpaceSpaceIdIndexRoute
 }
@@ -179,6 +198,7 @@ export interface FileRouteTypes {
     | '/playground'
     | '/settings/export-wallet'
     | '/space/$spaceId'
+    | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/'
   fileRoutesByTo: FileRoutesByTo
@@ -187,6 +207,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/playground'
     | '/settings/export-wallet'
+    | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId'
   id:
@@ -196,6 +217,7 @@ export interface FileRouteTypes {
     | '/playground'
     | '/settings/export-wallet'
     | '/space/$spaceId'
+    | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/'
   fileRoutesById: FileRoutesById
@@ -249,9 +271,14 @@ export const routeTree = rootRoute
     "/space/$spaceId": {
       "filePath": "space/$spaceId.tsx",
       "children": [
+        "/space/$spaceId/playground",
         "/space/$spaceId/public-integration",
         "/space/$spaceId/"
       ]
+    },
+    "/space/$spaceId/playground": {
+      "filePath": "space/$spaceId/playground.tsx",
+      "parent": "/space/$spaceId"
     },
     "/space/$spaceId/public-integration": {
       "filePath": "space/$spaceId/public-integration.tsx",

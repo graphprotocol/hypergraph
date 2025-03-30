@@ -1,6 +1,6 @@
 import { type Op, Relation, Triple } from '@graphprotocol/grc-20';
 import { gql, request } from 'graphql-request';
-import { KG_ENDPOINT } from './internal/constants.js';
+import { KG_ENDPOINT } from './constants.js';
 
 const deleteEntityQueryDocument = gql`
 query deleteEntity($spaceId: String!, $id: String!) {

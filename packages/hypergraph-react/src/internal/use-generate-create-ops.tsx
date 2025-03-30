@@ -17,7 +17,7 @@ export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: 
     }
     const fields = type.fields;
     const grcProperties: PropertiesParam = {};
-    for (const [key, value] of Object.entries(mappingEntry.properties)) {
+    for (const [key, value] of Object.entries(mappingEntry.properties || {})) {
       let valueType: ValueType = 'TEXT';
       let serializedValue: string = properties[key];
       if (fields[key] === Entity.Checkbox) {
@@ -29,6 +29,14 @@ export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: 
         type: valueType,
         value: serializedValue,
       };
+    }
+
+    for (const [key, value] of Object.entries(mappingEntry.relations || {})) {
+      const toIds: { to: Id.Id }[] = [];
+      for (const toId of properties[key]) {
+        toIds.push({ to: Id.Id(toId) });
+      }
+      grcProperties[value] = toIds;
     }
 
     const { ops, id } = Graph.createEntity({

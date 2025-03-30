@@ -1,19 +1,12 @@
-import type { Id as Grc20Id } from '@graphprotocol/grc-20';
 import { Entity } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
+import type { Mapping, MappingEntry } from '../types.js';
 import { GEO_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
-
-type MappingEntry = {
-  typeIds: Grc20Id.Id[];
-  properties: {
-    [key: string]: Grc20Id.Id;
-  };
-};
 
 const entitiesQueryDocument = gql`
 query entities($spaceId: String!, $typeId: String!) {
@@ -43,7 +36,13 @@ query entities($spaceId: String!, $typeId: String!) {
           }
           relationsByFromVersionId {
             nodes {
+              toEntity {
+                nodeId
+                id
+                name
+              }
               typeOf {
+                id
                 name
               }
             }
@@ -75,6 +74,12 @@ type EntityQueryResult = {
             nodes: {
               typeOf: {
                 name: string;
+                id: string;
+              };
+              toEntity: {
+                nodeId: string;
+                id: string;
+                name: string;
               };
             }[];
           };
@@ -88,6 +93,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
   mappingEntry: MappingEntry,
+  mapping: Mapping,
 ) => {
   const decode = Schema.decodeUnknownEither(type);
   const data: Entity.Entity<S>[] = [];
@@ -95,7 +101,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 
   for (const queryEntity of queryData.entities.nodes) {
     const queryEntityVersion = queryEntity.currentVersion.version;
-    const rawEntity: Record<string, string | boolean> = {
+    const rawEntity: Record<string, string | boolean | unknown[]> = {
       id: queryEntity.id,
     };
     // take the mappingEntry and assign the attributes to the rawEntity
@@ -109,11 +115,62 @@ export const parseResult = <S extends Entity.AnyNoContext>(
         }
       }
     }
+
+    for (const [key, value] of Object.entries(mappingEntry?.relations ?? {})) {
+      const property = queryEntityVersion.relationsByFromVersionId.nodes.find((a) => a.typeOf.id === value);
+      if (!property) {
+        rawEntity[key] = [] as unknown[];
+        continue;
+      }
+
+      const field = type.fields[key];
+      if (!field) {
+        // @ts-expect-error TODO: properly access the type.name
+        console.error(`Field ${key} not found in ${type.name}`);
+        continue;
+      }
+      // @ts-expect-error TODO: properly access the type.name
+      const annotations = field.ast.rest[0].type.to.annotations;
+
+      // TODO: fix this access using proper effect types
+      const relationTypeName =
+        annotations[
+          Object.getOwnPropertySymbols(annotations).find((sym) => sym.description === 'effect/annotation/Identifier')
+        ];
+
+      const relationMappingEntry = mapping[relationTypeName];
+      if (!relationMappingEntry) {
+        console.error(`Relation mapping entry for ${relationTypeName} not found`);
+        continue;
+      }
+
+      const newRelationEntity = {
+        id: property.toEntity.id,
+        name: property.toEntity.name,
+        type: relationMappingEntry.typeIds[0],
+        // TODO: should be determined by the actual value
+        __deleted: false,
+        // TODO: should be determined by the actual value
+        __version: '',
+      };
+
+      if (rawEntity[key]) {
+        rawEntity[key] = [
+          // @ts-expect-error TODO: properly access the type.name
+          ...rawEntity[key],
+          newRelationEntity,
+        ];
+      } else {
+        rawEntity[key] = [newRelationEntity];
+      }
+    }
+
     const decodeResult = decode({
       ...rawEntity,
       __deleted: false,
       __version: queryEntity.currentVersion.versionId,
     });
+
     if (Either.isRight(decodeResult)) {
       data.push(decodeResult.right);
     } else {
@@ -151,7 +208,7 @@ export const useQueryPublic = <const S extends Entity.AnyNoContext>(type: S, par
   let invalidEntities: Record<string, unknown>[] = [];
 
   if (result.data && mappingEntry) {
-    const parsedData = parseResult(result.data, type, mappingEntry);
+    const parsedData = parseResult(result.data, type, mappingEntry, mapping);
     data = parsedData.data;
     invalidEntities = parsedData.invalidEntities;
   }

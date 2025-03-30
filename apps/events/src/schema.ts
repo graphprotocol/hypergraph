@@ -22,6 +22,7 @@ export class Todo2 extends Entity.Class<Todo2>('Todo2')({
   id: Entity.Generated(Entity.Text),
   name: Entity.Text,
   checked: Entity.Checkbox,
+  assignees: Entity.Reference(Entity.ReferenceArray(User)),
   __deleted: Entity.Generated(Entity.Checkbox),
   __version: Entity.Generated(Entity.Text),
 }) {}
@@ -49,6 +50,9 @@ export const mapping: Mapping = {
     properties: {
       name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
       checked: Id.Id('A8UfGTFYCmfpTsDj7fC8dY'),
+    },
+    relations: {
+      assignees: Id.Id('JhxaewiF4zgzpawv4vt9SB'),
     },
   },
   User: {
