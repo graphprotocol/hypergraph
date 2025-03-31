@@ -5,7 +5,7 @@ import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Schema from 'effect/Schema';
-import { type ReactNode, createContext, useContext, useRef, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, createContext, useContext, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Mapping } from './types.js';
 
 export type HypergraphContext = {
@@ -85,7 +85,6 @@ type QueryParams = {
 export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams) {
   const { enabled = true } = params ?? {};
   const entitiesRef = useRef<Entity.Entity<S>[]>([]);
-  const deletedEntitiesRef = useRef<Entity.Entity<S>[]>([]);
 
   const hypergraph = useHypergraph();
   const [subscription] = useState(() => {
@@ -101,22 +100,22 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
 
   // TODO: allow to change the enabled state
 
-  const entities = useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => entitiesRef.current);
+  const allEntities = useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => entitiesRef.current);
 
-  entitiesRef.current.splice(0, entitiesRef.current.length);
-  deletedEntitiesRef.current.splice(0, deletedEntitiesRef.current.length);
-  for (const entity of entities) {
-    if (entity.__deleted === true) {
-      deletedEntitiesRef.current.push(entity);
-    } else {
-      entitiesRef.current.push(entity);
+  const { entities, deletedEntities } = useMemo(() => {
+    const entities: Entity.Entity<S>[] = [];
+    const deletedEntities: Entity.Entity<S>[] = [];
+    for (const entity of allEntities) {
+      if (entity.__deleted === true) {
+        deletedEntities.push(entity);
+      } else {
+        entities.push(entity);
+      }
     }
-  }
+    return { entities, deletedEntities };
+  }, [allEntities]);
 
-  return {
-    entities: entitiesRef.current,
-    deletedEntities: deletedEntitiesRef.current,
-  };
+  return { entities, deletedEntities };
 }
 
 export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id: string) {

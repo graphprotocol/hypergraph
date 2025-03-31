@@ -1,4 +1,5 @@
 import type { Entity } from '@graphprotocol/hypergraph';
+import { useMemo } from 'react';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
 import { generateDeleteOps } from './internal/generate-delete-ops-geo.js';
 import { useGenerateCreateOps } from './internal/use-generate-create-ops.js';
@@ -95,6 +96,13 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
   const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
   const generateUpdateOps = useGenerateUpdateOps(type);
 
+  const mergedData = useMemo(() => {
+    if (mode !== 'merged' || publicResult.isLoading) {
+      return localResult.entities;
+    }
+    return mergeEntities(publicResult.data, localResult.entities, localResult.deletedEntities);
+  }, [mode, publicResult.isLoading, publicResult.data, localResult.entities, localResult.deletedEntities]);
+
   if (mode === 'public') {
     return {
       ...publicResult,
@@ -112,61 +120,48 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
     };
   }
 
-  if (!publicResult.isLoading) {
-    const mergedData: Entity.Entity<S>[] = mergeEntities(
-      publicResult.data,
-      localResult.entities,
-      localResult.deletedEntities,
-    );
-
-    return {
-      ...publicResult,
-      data: mergedData,
-      deleted: localResult.deletedEntities,
-      preparePublish: async (): Promise<PublishDiffInfo> => {
-        // @ts-expect-error TODO should use the actual type instead of the name in the mapping
-        const typeName = type.name;
-        const mappingEntry = mapping?.[typeName];
-        if (!mappingEntry) {
-          throw new Error(`Mapping entry for ${typeName} not found`);
-        }
-
-        const result = await publicResult.refetch();
-        if (!result.data) {
-          throw new Error('No data found');
-        }
-        const diff = getDiff(
-          parseResult(result.data, type, mappingEntry).data,
-          localResult.entities,
-          localResult.deletedEntities,
-        );
-
-        const newEntities = diff.newEntities.map((entity) => {
-          const { ops: createOps } = generateCreateOps(entity);
-          return { id: entity.id, entity, ops: createOps };
-        });
-
-        const updatedEntities = diff.updatedEntities.map((updatedEntityInfo) => {
-          const { ops: updateOps } = generateUpdateOps({ ...updatedEntityInfo.diff, id: updatedEntityInfo.id });
-          return { ...updatedEntityInfo, ops: updateOps };
-        });
-
-        const deletedEntities = await Promise.all(
-          diff.deletedEntities.map(async (entity) => {
-            const deleteOps = await generateDeleteOps(entity);
-            return { id: entity.id, entity, ops: deleteOps };
-          }),
-        );
-
-        return { newEntities, updatedEntities, deletedEntities };
-      },
-    };
-  }
-
   return {
     ...publicResult,
-    data: localResult.entities,
+    data: mergedData,
     deleted: localResult.deletedEntities,
-    preparePublish: preparePublishDummy,
+    preparePublish: !publicResult.isLoading
+      ? async (): Promise<PublishDiffInfo> => {
+          // @ts-expect-error TODO should use the actual type instead of the name in the mapping
+          const typeName = type.name;
+          const mappingEntry = mapping?.[typeName];
+          if (!mappingEntry) {
+            throw new Error(`Mapping entry for ${typeName} not found`);
+          }
+
+          const result = await publicResult.refetch();
+          if (!result.data) {
+            throw new Error('No data found');
+          }
+          const diff = getDiff(
+            parseResult(result.data, type, mappingEntry, mapping).data,
+            localResult.entities,
+            localResult.deletedEntities,
+          );
+
+          const newEntities = diff.newEntities.map((entity) => {
+            const { ops: createOps } = generateCreateOps(entity);
+            return { id: entity.id, entity, ops: createOps };
+          });
+
+          const updatedEntities = diff.updatedEntities.map((updatedEntityInfo) => {
+            const { ops: updateOps } = generateUpdateOps({ ...updatedEntityInfo.diff, id: updatedEntityInfo.id });
+            return { ...updatedEntityInfo, ops: updateOps };
+          });
+
+          const deletedEntities = await Promise.all(
+            diff.deletedEntities.map(async (entity) => {
+              const deleteOps = await generateDeleteOps(entity);
+              return { id: entity.id, entity, ops: deleteOps };
+            }),
+          );
+
+          return { newEntities, updatedEntities, deletedEntities };
+        }
+      : preparePublishDummy,
   };
 }

@@ -3,6 +3,7 @@ import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
+import { useMemo } from 'react';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 import type { Mapping, MappingEntry } from '../types.js';
 import { GEO_ENDPOINT } from './constants.js';
@@ -204,14 +205,12 @@ export const useQueryPublic = <const S extends Entity.AnyNoContext>(type: S, par
     enabled,
   });
 
-  let data: Entity.Entity<S>[] = [];
-  let invalidEntities: Record<string, unknown>[] = [];
-
-  if (result.data && mappingEntry) {
-    const parsedData = parseResult(result.data, type, mappingEntry, mapping);
-    data = parsedData.data;
-    invalidEntities = parsedData.invalidEntities;
-  }
+  const { data, invalidEntities } = useMemo(() => {
+    if (result.data && mappingEntry) {
+      return parseResult(result.data, type, mappingEntry, mapping);
+    }
+    return { data: [], invalidEntities: [] };
+  }, [result.data, type, mappingEntry, mapping]);
 
   return { ...result, data, invalidEntities };
 };
