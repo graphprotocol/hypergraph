@@ -266,6 +266,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   const getEntities = () => {
     const cacheEntry = decodedEntitiesCache.get(typeName);
     if (!cacheEntry) return stableEmptyArray;
+
     const query = cacheEntry.queries.get(queryKey);
     if (!query) return stableEmptyArray;
 
@@ -292,49 +293,6 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     return query.data;
   };
 
-  if (!decodedEntitiesCache.has(typeName)) {
-    const { entities } = findMany(handle, type);
-    const entitiesMap = new Map();
-    for (const entity of entities) {
-      entitiesMap.set(entity.id, entity);
-    }
-
-    const queries = new Map<string, QueryEntry>();
-
-    queries.set(queryKey, {
-      data: [...entities],
-      listeners: [],
-      isInvalidated: false,
-    });
-
-    const cacheEntry: DecodedEntitiesCacheEntry = {
-      decoder: decode,
-      type,
-      entities: entitiesMap,
-      queries,
-      isInvalidated: false,
-    };
-
-    decodedEntitiesCache.set(typeName, cacheEntry);
-
-    for (const entity of entities) {
-      for (const [, value] of Object.entries(entity)) {
-        if (Array.isArray(value)) {
-          for (const relationEntity of value) {
-            let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-            if (relationParentEntry) {
-              relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
-            } else {
-              relationParentEntry = new Map();
-              entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-              relationParentEntry.set(cacheEntry, 1);
-            }
-          }
-        }
-      }
-    }
-  }
-
   const allTypes = new Set<S>();
   for (const [_key, field] of Object.entries(type.fields)) {
     if (isReferenceField(field)) {
@@ -343,7 +301,53 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   }
 
   const subscribe = (callback: () => void) => {
-    const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
+    let cacheEntry = decodedEntitiesCache.get(typeName);
+
+    if (!cacheEntry) {
+      const { entities } = findMany(handle, type);
+      const entitiesMap = new Map();
+      for (const entity of entities) {
+        entitiesMap.set(entity.id, entity);
+      }
+
+      const queries = new Map<string, QueryEntry>();
+
+      queries.set(queryKey, {
+        data: [...entities],
+        listeners: [],
+        isInvalidated: false,
+      });
+
+      cacheEntry = {
+        decoder: decode,
+        type,
+        entities: entitiesMap,
+        queries,
+        isInvalidated: false,
+      };
+
+      decodedEntitiesCache.set(typeName, cacheEntry);
+
+      for (const entity of entities) {
+        for (const [, value] of Object.entries(entity)) {
+          if (Array.isArray(value)) {
+            for (const relationEntity of value) {
+              let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+              if (relationParentEntry) {
+                relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
+              } else {
+                relationParentEntry = new Map();
+                entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+                relationParentEntry.set(cacheEntry, 1);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const query = cacheEntry.queries.get(queryKey);
+
     if (query?.listeners) {
       query.listeners.push(callback);
     }
