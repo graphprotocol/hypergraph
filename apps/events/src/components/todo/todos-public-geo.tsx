@@ -51,7 +51,7 @@ export const TodosPublicGeo = () => {
       <Button
         onClick={async () => {
           const userId = Id.Id('8zPJjTGLBDPtUcj6q2tghg');
-          const todo = createTodo({ name: 'New Todo', checked: false, assignees: [userId] });
+          const todo = createTodo({ name: 'New Todo 22', checked: false, assignees: [userId] });
           console.log('todo', todo);
           const { ops } = generateCreateOps(todo);
           console.log('ops', ops);

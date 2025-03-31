@@ -152,7 +152,7 @@ export const Todos2 = () => {
               alert('Todo text is required');
               return;
             }
-            createTodo({ name: newTodoName, checked: false });
+            createTodo({ name: newTodoName, checked: false, assignees: newTodoAssignees.map(({ value }) => value) });
             setNewTodoName('');
           }}
         >

@@ -5,18 +5,20 @@ import type { DiffEntry } from '../types.js';
 
 export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
   const { mapping } = useHypergraph();
-  // @ts-expect-error TODO should use the actual type instead of the name in the mapping
-  const typeName = type.name;
-  const mappingEntry = mapping?.[typeName];
-  if (!mappingEntry && enabled) {
-    throw new Error(`Mapping entry for ${typeName} not found`);
-  }
 
   return ({ id, __deleted, __version, ...properties }: DiffEntry<S>) => {
-    if (!enabled || !mappingEntry) {
+    // @ts-expect-error TODO should use the actual type instead of the name in the mapping
+    const typeName = type.name;
+    const mappingEntry = mapping?.[typeName];
+    if (!mappingEntry && enabled) {
+      throw new Error(`Mapping entry for ${typeName} not found`);
+    }
+
+    if (!enabled || !mappingEntry || !mappingEntry.properties) {
       return { ops: [] };
     }
     const ops: Op[] = [];
+
     for (const [key, rawValue] of Object.entries(properties)) {
       const attributeId = mappingEntry.properties[key];
       if (attributeId) {

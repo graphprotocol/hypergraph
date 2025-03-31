@@ -1,6 +1,7 @@
 import type { DocHandle } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
 import { generateId } from '../utils/generateId.js';
+import { findOne } from './findOne.js';
 import type { AnyNoContext, DocumentContent, Entity, Insert } from './types.js';
 
 /**
@@ -26,6 +27,6 @@ export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
       };
     });
 
-    return { id: entityId, ...encoded, type: typeName };
+    return findOne(handle, type)(entityId) as Entity<S>;
   };
 };

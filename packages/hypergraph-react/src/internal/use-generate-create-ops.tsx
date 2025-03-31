@@ -4,14 +4,15 @@ import { useHypergraph } from '../HypergraphSpaceContext.js';
 
 export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
   const { mapping } = useHypergraph();
-  // @ts-expect-error TODO should use the actual type instead of the name in the mapping
-  const typeName = type.name;
-  const mappingEntry = mapping?.[typeName];
-  if (!mappingEntry && enabled) {
-    throw new Error(`Mapping entry for ${typeName} not found`);
-  }
 
   return (properties: Entity.Entity<S>) => {
+    // @ts-expect-error TODO should use the actual type instead of the name in the mapping
+    const typeName = type.name;
+    const mappingEntry = mapping?.[typeName];
+    if (!mappingEntry && enabled) {
+      throw new Error(`Mapping entry for ${typeName} not found`);
+    }
+
     if (!enabled || !mappingEntry) {
       return { ops: [] };
     }
@@ -33,8 +34,8 @@ export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: 
 
     for (const [key, value] of Object.entries(mappingEntry.relations || {})) {
       const toIds: { to: Id.Id }[] = [];
-      for (const toId of properties[key]) {
-        toIds.push({ to: Id.Id(toId) });
+      for (const entity of properties[key]) {
+        toIds.push({ to: Id.Id(entity.id) });
       }
       grcProperties[value] = toIds;
     }
