@@ -11,7 +11,8 @@ import {
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { Todo2, User } from '../schema';
 import { Spinner } from './spinner';
 import { TodosLocal } from './todo/todos-local';
@@ -40,12 +41,22 @@ export const Todos2 = () => {
   const createUser = useCreateEntity(User);
   const deleteEntity = useDeleteEntity();
   const [newTodoName, setNewTodoName] = useState('');
+  const [newTodoAssignees, setNewTodoAssignees] = useState<{ value: string; label: string }[]>([]);
   const [newUserName, setNewUserName] = useState('');
   const queryClient = useQueryClient();
   const [publishData, setPublishData] = useState<PublishDiffInfo | null>(null);
   const [isPublishDiffModalOpen, setIsPublishDiffModalOpen] = useState(false);
   const [isPreparingPublish, setIsPreparingPublish] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+
+  useEffect(() => {
+    setNewTodoAssignees((prevFilteredAssignees) => {
+      // filter out assignees that are not in the users array whenever users change
+      return prevFilteredAssignees.filter((assignee) => dataUsers.some((user) => user.id === assignee.value));
+    });
+  }, [dataUsers]);
+
+  const userOptions = dataUsers.map((user) => ({ value: user.id, label: user.name }));
 
   return (
     <>
@@ -98,6 +109,27 @@ export const Todos2 = () => {
               checked={todo.checked}
               onChange={(e) => updateTodo(todo.id, { checked: e.target.checked })}
             />
+            {todo.assignees.length > 0 && (
+              <span className="text-xs text-gray-500">
+                Assigned to:{' '}
+                {todo.assignees.map((assignee) => (
+                  <span key={assignee.id} className="border rounded-sm mr-1 p-1">
+                    {assignee.name}
+                    {/* <button
+                      type="button"
+                      onClick={() =>
+                        updateEntity(todo.id, {
+                          assignees: todo.assignees.map((assignee) => assignee.id).filter((id) => id !== assignee.id),
+                        })
+                      }
+                      className="cursor-pointer ml-1 text-red-400"
+                    >
+                      x
+                    </button> */}
+                  </span>
+                ))}
+              </span>
+            )}
             <div className="text-xs">{todo.__version}</div>
             <Button variant="outline" size="sm" onClick={() => deleteEntity(todo.id)}>
               Delete
@@ -108,6 +140,12 @@ export const Todos2 = () => {
 
       <div className="flex flex-col gap-2 mb-8">
         <Input type="text" value={newTodoName} onChange={(e) => setNewTodoName(e.target.value)} />
+        <Select
+          isMulti
+          value={newTodoAssignees}
+          onChange={(e) => setNewTodoAssignees(e.map((a) => a))}
+          options={userOptions}
+        />
         <Button
           onClick={() => {
             if (newTodoName === '') {
@@ -126,10 +164,11 @@ export const Todos2 = () => {
         onClick={async () => {
           try {
             setIsPreparingPublish(true);
-            const todosResult = await preparePublishTodos();
             const usersResult = await preparePublishUsers();
-            console.log('todos ops & diff', todosResult);
             console.log('users ops & diff', usersResult);
+            const todosResult = await preparePublishTodos();
+            console.log('todos ops & diff', todosResult);
+
             if (todosResult && usersResult) {
               setPublishData({
                 newEntities: [...todosResult.newEntities, ...usersResult.newEntities],
