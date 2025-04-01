@@ -1,12 +1,12 @@
 import { type Op, Triple, type Value } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
-import type { DiffEntry } from '../types.js';
+import type { PartialEntity } from '../types.js';
 
 export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
   const { mapping } = useHypergraph();
 
-  return ({ id, __deleted, __version, ...properties }: DiffEntry<S>) => {
+  return ({ id, __deleted, __version, ...properties }: PartialEntity<S>) => {
     // @ts-expect-error TODO should use the actual type instead of the name in the mapping
     const typeName = type.name;
     const mappingEntry = mapping?.[typeName];

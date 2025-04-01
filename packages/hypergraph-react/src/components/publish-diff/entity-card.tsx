@@ -27,7 +27,8 @@ export const EntityCard = ({ entity, type }: EntityCardProps) => {
       >
         <div className={`font-medium ${textColor}`}>
           {/* TODO: We should always be able to rely on the constructor, but sometimes it's a raw object */}
-          {(entity as { type?: string }).type || entity.constructor?.name} - {entity.id}
+          {(entity as { type?: string }).type || entity.constructor?.name}{' '}
+          <span className="text-gray-500 font-normal"> - {entity.id}</span>
         </div>
         <button className="text-gray-500" type="button">
           {isExpanded ? (
@@ -75,7 +76,19 @@ export const EntityCard = ({ entity, type }: EntityCardProps) => {
                     <td className="py-1.5 font-medium text-gray-600 pr-3">
                       {key.charAt(0).toUpperCase() + key.slice(1)}
                     </td>
-                    <td className="py-1.5">{String(value)}</td>
+                    <td className="py-1.5">
+                      {Array.isArray(value) ? (
+                        <ul>
+                          {value.map(({ id, name }) => (
+                            <li key={id}>
+                              {name} <span className="text-gray-500">- {id}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        String(value)
+                      )}
+                    </td>
                   </tr>
                 ))}
             </tbody>

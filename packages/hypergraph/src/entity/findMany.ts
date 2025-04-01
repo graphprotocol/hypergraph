@@ -1,10 +1,10 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
+import { isRelationField } from '../utils/isRelationField.js';
 import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import { isReferenceField } from './isReferenceField.js';
 import type { AnyNoContext, DocumentContent, Entity } from './types.js';
 
 const documentChangeListener: {
@@ -295,7 +295,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
 
   const allTypes = new Set<S>();
   for (const [_key, field] of Object.entries(type.fields)) {
-    if (isReferenceField(field)) {
+    if (isRelationField(field)) {
       allTypes.add(field as S);
     }
   }

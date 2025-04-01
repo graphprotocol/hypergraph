@@ -1,6 +1,6 @@
 'use client';
 
-import type { DiffEntryLike, EntityLike } from '../../types.js';
+import type { DiffEntry, EntityLike } from '../../types.js';
 import { EntityCard } from './entity-card.js';
 import { UpdatedEntityCard } from './updated-entity-card.js';
 
@@ -10,8 +10,8 @@ type PublishDiffProps = {
   updatedEntities: {
     id: string;
     current: EntityLike;
-    next: EntityLike;
-    diff: DiffEntryLike;
+    new: EntityLike;
+    diff: DiffEntry;
   }[];
 };
 

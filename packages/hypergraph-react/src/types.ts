@@ -16,18 +16,31 @@ export type Mapping = {
   [key: string]: MappingEntry;
 };
 
-export type DiffEntry<S extends Entity.AnyNoContext> = Partial<Schema.Schema.Type<Entity.Update<S>>> & {
-  id: string;
-};
-
 export type EntityLike = {
   id: string;
   [key: string]: unknown;
 };
 
-export type DiffEntryLike = {
+export type PartialEntity<S extends Entity.AnyNoContext> = Partial<Schema.Schema.Type<Entity.Update<S>>> & {
   id: string;
-  [key: string]: unknown;
+};
+
+export type DiffEntry = {
+  [key: string]:
+    | {
+        type: 'relation';
+        current: { id: string; name: string }[];
+        new: { id: string; name: string }[];
+        addedIds: string[];
+        removedIds: string[];
+        unchangedIds: string[];
+      }
+    | {
+        type: 'property';
+        current: unknown;
+        new: unknown;
+      }
+    | undefined;
 };
 
 // This is a more flexible version of PublishDiffInfo that can handle mixed entity types
@@ -37,8 +50,8 @@ export type PublishDiffInfo = {
   updatedEntities: Array<{
     id: string;
     current: EntityLike;
-    next: EntityLike;
-    diff: DiffEntryLike;
+    new: EntityLike;
+    diff: DiffEntry;
     ops: Op[];
   }>;
 };

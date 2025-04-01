@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import type { DiffEntryLike, EntityLike } from '../../types.js';
+import type { DiffEntry, EntityLike } from '../../types.js';
 import { IGNORED_PROPERTIES } from './constants.js';
 
 type UpdatedEntityCardProps = {
   entity: {
     id: string;
     current: EntityLike;
-    next: EntityLike;
-    diff: DiffEntryLike;
+    new: EntityLike;
+    diff: DiffEntry;
   };
 };
 
@@ -16,7 +16,7 @@ export const UpdatedEntityCard = ({ entity }: UpdatedEntityCardProps) => {
 
   // Get all unique keys from both current and next, excluding ignored properties
   const allKeys = new Set(
-    [...Object.keys(entity.current), ...Object.keys(entity.next)].filter((key) => !IGNORED_PROPERTIES.includes(key)),
+    [...Object.keys(entity.current), ...Object.keys(entity.new)].filter((key) => !IGNORED_PROPERTIES.includes(key)),
   );
 
   return (
@@ -83,8 +83,10 @@ export const UpdatedEntityCard = ({ entity }: UpdatedEntityCardProps) => {
             <tbody>
               {Array.from(allKeys).map((key) => {
                 const currentValue = entity.current[key];
-                const nextValue = entity.next[key];
-                const hasChanged = currentValue !== nextValue;
+                const newValue = entity.new[key];
+                const diff = entity.diff[key];
+                const hasChanged = diff !== undefined;
+                const isChangedRelation = hasChanged && diff.type === 'relation';
 
                 return (
                   <tr key={key} className="border-b border-gray-100 last:border-0">
@@ -92,17 +94,51 @@ export const UpdatedEntityCard = ({ entity }: UpdatedEntityCardProps) => {
                       {key.charAt(0).toUpperCase() + key.slice(1)}
                     </td>
                     <td className="py-1.5">
-                      {hasChanged ? <span className="text-red-700">{String(currentValue)}</span> : String(currentValue)}
-                    </td>
-                    <td className="py-1.5">
-                      {nextValue !== undefined && nextValue !== null ? (
-                        hasChanged ? (
-                          <span className="text-green-700">{String(nextValue)}</span>
-                        ) : (
-                          String(nextValue)
-                        )
+                      {Array.isArray(currentValue) ? (
+                        <ul>
+                          {currentValue.map(({ id, name }) => (
+                            <li
+                              key={id}
+                              className={isChangedRelation && diff.removedIds.includes(id) ? 'text-red-700' : ''}
+                            >
+                              {name} <span className="text-gray-500">- {id}</span>
+                            </li>
+                          ))}
+                        </ul>
                       ) : (
-                        String(currentValue)
+                        <span className={hasChanged && newValue === undefined ? 'text-red-700' : ''}>
+                          {String(currentValue)}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-1.5 ">
+                      {!hasChanged ? (
+                        <>
+                          {Array.isArray(currentValue) ? (
+                            <ul>
+                              {currentValue.map(({ id, name }) => (
+                                <li key={id}>
+                                  {name} <span className="text-gray-500">- {id}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span>{String(currentValue)}</span>
+                          )}
+                        </>
+                      ) : Array.isArray(newValue) ? (
+                        <ul>
+                          {newValue.map(({ id, name }) => (
+                            <li
+                              key={id}
+                              className={isChangedRelation && diff.addedIds.includes(id) ? 'text-green-700' : ''}
+                            >
+                              {name} <span className="text-gray-500">- {id}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="text-green-700">{String(newValue)}</span>
                       )}
                     </td>
                   </tr>

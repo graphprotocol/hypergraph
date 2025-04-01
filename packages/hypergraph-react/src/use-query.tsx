@@ -1,4 +1,5 @@
 import type { Entity } from '@graphprotocol/hypergraph';
+import { Utils } from '@graphprotocol/hypergraph';
 import { useMemo } from 'react';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
 import { generateDeleteOps } from './internal/generate-delete-ops-geo.js';
@@ -43,12 +44,13 @@ const mergeEntities = <S extends Entity.AnyNoContext>(
 };
 
 const getDiff = <S extends Entity.AnyNoContext>(
+  type: S,
   publicEntities: Entity.Entity<S>[],
   localEntities: Entity.Entity<S>[],
   localDeletedEntities: Entity.Entity<S>[],
 ) => {
   const deletedEntities: Entity.Entity<S>[] = [];
-  const updatedEntities: { id: string; current: Entity.Entity<S>; next: Entity.Entity<S>; diff: DiffEntry<S> }[] = [];
+  const updatedEntities: { id: string; current: Entity.Entity<S>; new: Entity.Entity<S>; diff: DiffEntry }[] = [];
 
   for (const entity of publicEntities) {
     const deletedEntity = localDeletedEntities.find((e) => e.id === entity.id);
@@ -58,19 +60,45 @@ const getDiff = <S extends Entity.AnyNoContext>(
     }
     const localEntity = localEntities.find((e) => e.id === entity.id);
     if (localEntity) {
-      // @ts-expect-error TODO: fix this
-      const diff: DiffEntry<S> = {};
-      for (const key in entity) {
-        if (key === '__version') {
+      const diff: DiffEntry = {};
+
+      for (const [key, field] of Object.entries(type.fields)) {
+        if (key === '__version' || key === '__deleted') {
           continue;
         }
-        if (entity[key] !== localEntity[key]) {
-          // @ts-expect-error TODO: fix this
-          diff[key] = localEntity[key];
+        if (Utils.isRelationField(field)) {
+          const relationIds: string[] = entity[key].map((e: Entity.Entity<S>) => e.id);
+          const localRelationIds: string[] = localEntity[key].map((e: Entity.Entity<S>) => e.id);
+          if (
+            relationIds.length !== localRelationIds.length ||
+            relationIds.some((id) => !localRelationIds.includes(id))
+          ) {
+            const removedIds = relationIds.filter((id) => !localRelationIds.includes(id));
+            const addedIds = localRelationIds.filter((id) => !relationIds.includes(id));
+            // get a list of the ids that didn't get added or removed
+            const unchangedIds = localRelationIds.filter((id) => !addedIds.includes(id) && !removedIds.includes(id));
+            diff[key] = {
+              type: 'relation',
+              current: entity[key],
+              new: localEntity[key],
+              addedIds,
+              removedIds,
+              unchangedIds,
+            };
+          }
+        } else {
+          if (entity[key] !== localEntity[key]) {
+            diff[key] = {
+              type: 'property',
+              current: entity[key],
+              new: localEntity[key],
+            };
+          }
         }
       }
+
       if (Object.keys(diff).length > 0) {
-        updatedEntities.push({ id: entity.id, current: entity, next: localEntity, diff });
+        updatedEntities.push({ id: entity.id, current: entity, new: localEntity, diff });
       }
     } else {
       // TODO update the local entity in this place?
@@ -133,6 +161,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
       throw new Error('No data found');
     }
     const diff = getDiff(
+      type,
       parseResult(result.data, type, mappingEntry, mapping).data,
       localResult.entities,
       localResult.deletedEntities,
