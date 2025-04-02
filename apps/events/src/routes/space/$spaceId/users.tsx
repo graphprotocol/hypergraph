@@ -1,3 +1,5 @@
+import { UsersMerged } from '@/components/users/users-merged';
+import { UsersPublicGeo } from '@/components/users/users-public-geo';
 import { mapping } from '@/schema';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
@@ -5,8 +7,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect } from 'react';
 import { UsersLocal } from '../../../components/users/users-local';
-import { UsersMerged } from '../../../components/users/users-merged';
-import { UsersPublicGeo } from '../../../components/users/users-public-geo';
 export const Route = createFileRoute('/space/$spaceId/users')({
   component: UsersRouteComponent,
 });

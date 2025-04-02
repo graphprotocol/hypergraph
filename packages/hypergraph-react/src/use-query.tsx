@@ -122,7 +122,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
   const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged' });
   const { mapping } = useHypergraph();
   const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
-  const generateUpdateOps = useGenerateUpdateOps(type);
+  const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
 
   const mergedData = useMemo(() => {
     if (mode !== 'merged' || publicResult.isLoading) {
@@ -173,7 +173,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
     });
 
     const updatedEntities = diff.updatedEntities.map((updatedEntityInfo) => {
-      const { ops: updateOps } = generateUpdateOps({ ...updatedEntityInfo.diff, id: updatedEntityInfo.id });
+      const { ops: updateOps } = generateUpdateOps({ id: updatedEntityInfo.id, diff: updatedEntityInfo.diff });
       return { ...updatedEntityInfo, ops: updateOps };
     });
 

@@ -32,12 +32,12 @@ export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: 
       };
     }
 
-    for (const [key, value] of Object.entries(mappingEntry.relations || {})) {
+    for (const [key, relationId] of Object.entries(mappingEntry.relations || {})) {
       const toIds: { to: Id.Id }[] = [];
       for (const entity of properties[key]) {
         toIds.push({ to: Id.Id(entity.id) });
       }
-      grcProperties[value] = toIds;
+      grcProperties[relationId] = toIds;
     }
 
     const { ops, id } = Graph.createEntity({

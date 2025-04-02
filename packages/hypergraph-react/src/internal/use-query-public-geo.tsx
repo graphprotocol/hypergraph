@@ -117,8 +117,8 @@ export const parseResult = <S extends Entity.AnyNoContext>(
       }
     }
 
-    for (const [key, value] of Object.entries(mappingEntry?.relations ?? {})) {
-      const property = queryEntityVersion.relationsByFromVersionId.nodes.find((a) => a.typeOf.id === value);
+    for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
+      const property = queryEntityVersion.relationsByFromVersionId.nodes.find((a) => a.typeOf.id === relationId);
       if (!property) {
         rawEntity[key] = [] as unknown[];
         continue;

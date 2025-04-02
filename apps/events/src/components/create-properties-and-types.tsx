@@ -16,19 +16,26 @@ const createPropertiesAndTypes = async ({
   });
   ops.push(...createCheckedPropertyOps);
 
-  const { id: todoTypeId, ops: createTodoTypeOps } = Graph.createType({
-    name: 'Todo',
-    properties: [checkedPropertyId],
-  });
-  ops.push(...createTodoTypeOps);
-
-  const { id: userId, ops: createUserOps } = Graph.createEntity({
+  const { id: userId, ops: createUserOps } = Graph.createType({
     name: 'User',
   });
   ops.push(...createUserOps);
 
+  const { id: assigneesRelationTypeId, ops: createAssigneesRelationTypeOps } = Graph.createProperty({
+    type: 'RELATION',
+    name: 'Assignees',
+    relationValueTypes: [userId],
+  });
+  ops.push(...createAssigneesRelationTypeOps);
+
+  const { id: todoTypeId, ops: createTodoTypeOps } = Graph.createType({
+    name: 'Todo',
+    properties: [checkedPropertyId, assigneesRelationTypeId],
+  });
+  ops.push(...createTodoTypeOps);
+
   const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
-  return { result, todoTypeId, checkedPropertyId, userId };
+  return { result, todoTypeId, checkedPropertyId, userId, assigneesRelationTypeId };
 };
 
 export const CreatePropertiesAndTypes = () => {
@@ -46,7 +53,7 @@ export const CreatePropertiesAndTypes = () => {
       )}
       <Button
         onClick={async () => {
-          const { todoTypeId, checkedPropertyId, userId } = await createPropertiesAndTypes({
+          const { todoTypeId, checkedPropertyId, userId, assigneesRelationTypeId } = await createPropertiesAndTypes({
             smartAccountWalletClient,
             space,
           });
@@ -56,6 +63,9 @@ export const CreatePropertiesAndTypes = () => {
   properties: {
     name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
     checked: Id.Id('${checkedPropertyId}'),
+  },
+  relations: {
+    assignees: Id.Id('${assigneesRelationTypeId}'),
   },
 },
 User: {
