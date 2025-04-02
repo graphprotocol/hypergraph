@@ -115,17 +115,17 @@ export const Todos2 = () => {
                 {todo.assignees.map((assignee) => (
                   <span key={assignee.id} className="border rounded-sm mr-1 p-1">
                     {assignee.name}
-                    {/* <button
+                    <button
                       type="button"
                       onClick={() =>
-                        updateEntity(todo.id, {
+                        updateTodo(todo.id, {
                           assignees: todo.assignees.map((assignee) => assignee.id).filter((id) => id !== assignee.id),
                         })
                       }
                       className="cursor-pointer ml-1 text-red-400"
                     >
                       x
-                    </button> */}
+                    </button>
                   </span>
                 ))}
               </span>
