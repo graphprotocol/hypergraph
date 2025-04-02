@@ -118,8 +118,8 @@ export const parseResult = <S extends Entity.AnyNoContext>(
     }
 
     for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
-      const property = queryEntityVersion.relationsByFromVersionId.nodes.find((a) => a.typeOf.id === relationId);
-      if (!property) {
+      const properties = queryEntityVersion.relationsByFromVersionId.nodes.filter((a) => a.typeOf.id === relationId);
+      if (properties.length === 0) {
         rawEntity[key] = [] as unknown[];
         continue;
       }
@@ -145,7 +145,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
         continue;
       }
 
-      const newRelationEntity = {
+      const newRelationEntities = properties.map((property) => ({
         id: property.toEntity.id,
         name: property.toEntity.name,
         type: relationMappingEntry.typeIds[0],
@@ -153,16 +153,16 @@ export const parseResult = <S extends Entity.AnyNoContext>(
         __deleted: false,
         // TODO: should be determined by the actual value
         __version: '',
-      };
+      }));
 
       if (rawEntity[key]) {
         rawEntity[key] = [
           // @ts-expect-error TODO: properly access the type.name
           ...rawEntity[key],
-          newRelationEntity,
+          ...newRelationEntities,
         ];
       } else {
-        rawEntity[key] = [newRelationEntity];
+        rawEntity[key] = newRelationEntities;
       }
     }
 
