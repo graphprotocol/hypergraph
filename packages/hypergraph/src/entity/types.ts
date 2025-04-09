@@ -17,6 +17,21 @@ export type Insert<S extends Any> = S['insert'];
 
 export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & { type: string };
 
+export type DocumentEntity = {
+  __deleted: boolean;
+  [key: string]: unknown;
+};
+
+export type DocumentRelation = {
+  from: string;
+  to: string;
+  fromTypeName: string;
+  fromPropertyName: string;
+  __deleted: boolean;
+  [key: string]: unknown;
+};
+
 export type DocumentContent = {
-  entities?: Record<string, unknown>;
+  entities?: Record<string, DocumentEntity>;
+  relations?: Record<string, DocumentRelation>;
 };

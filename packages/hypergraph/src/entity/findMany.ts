@@ -57,7 +57,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         if (!cacheEntry) continue;
 
         const oldDecodedEntry = cacheEntry.entities.get(entityId);
-        const relations = getEntityRelations(entity, cacheEntry.type, doc);
+        const relations = getEntityRelations(entityId, cacheEntry.type, doc);
         let decoded: unknown | undefined;
         try {
           decoded = cacheEntry.decoder({
@@ -236,7 +236,7 @@ export function findMany<const S extends AnyNoContext>(
   for (const id in entities) {
     const entity = entities[id];
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
-      const relations = getEntityRelations(entity, type, doc);
+      const relations = getEntityRelations(id, type, doc);
       try {
         filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
       } catch (error) {

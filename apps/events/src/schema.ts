@@ -7,6 +7,7 @@ export class User extends Entity.Class<User>('User')({
   name: Entity.Text,
   __deleted: Entity.Generated(Entity.Checkbox),
   __version: Entity.Generated(Entity.Text),
+  _relation: Entity.RelationObject,
 }) {}
 
 export class Todo extends Entity.Class<Todo>('Todo')({
@@ -16,6 +17,7 @@ export class Todo extends Entity.Class<Todo>('Todo')({
   assignees: Entity.Reference(Entity.ReferenceArray(User)),
   __deleted: Entity.Generated(Entity.Checkbox),
   __version: Entity.Generated(Entity.Text),
+  _relation: Entity.RelationObject,
 }) {}
 
 export class Todo2 extends Entity.Class<Todo2>('Todo2')({
@@ -25,6 +27,7 @@ export class Todo2 extends Entity.Class<Todo2>('Todo2')({
   assignees: Entity.Reference(Entity.ReferenceArray(User)),
   __deleted: Entity.Generated(Entity.Checkbox),
   __version: Entity.Generated(Entity.Text),
+  _relation: Entity.RelationObject,
 }) {}
 
 export class NewsStory extends Entity.Class<NewsStory>('NewsStory')({
@@ -34,6 +37,7 @@ export class NewsStory extends Entity.Class<NewsStory>('NewsStory')({
   publishDate: Entity.Text,
   __deleted: Entity.Generated(Entity.Checkbox),
   __version: Entity.Generated(Entity.Text),
+  _relation: Entity.RelationObject,
 }) {}
 
 export const mapping: Mapping = {

@@ -73,6 +73,11 @@ export function useDeleteEntity() {
   return Entity.markAsDeleted(hypergraph.handle);
 }
 
+export function useRemoveRelation() {
+  const hypergraph = useHypergraph();
+  return Entity.removeRelation(hypergraph.handle);
+}
+
 export function useHardDeleteEntity() {
   const hypergraph = useHypergraph();
   return Entity.delete(hypergraph.handle);

@@ -48,7 +48,13 @@ export const Reference = <S extends Schema.Schema.All | Schema.PropertySignature
   Field({
     select: schema,
     insert: Schema.optional(Schema.Array(Schema.String)),
-    update: Schema.optional(Schema.Array(Schema.String)),
+    update: Schema.Undefined,
   });
 
 export const ReferenceArray = Schema.Array;
+
+export const RelationObject = Schema.optional(
+  Schema.Struct({
+    id: Schema.String,
+  }),
+);

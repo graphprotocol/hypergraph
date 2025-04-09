@@ -36,9 +36,7 @@ export const update = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
       doc.entities[id] = {
         ...encode(updated),
         '@@types@@': [typeName],
-        // @ts-expect-error __deleted and __version are part of the entity
         __deleted: entity.__deleted ?? false,
-        // @ts-expect-error __deleted and __version are part of the entity
         __version: entity.__version ?? '',
       };
     });

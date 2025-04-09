@@ -19,7 +19,8 @@ export const findOne = <const S extends AnyNoContext>(handle: DocHandle<Document
     // an index and store the decoded values instead of re-decoding over and over again.
     const doc = handle.docSync();
     const entity = doc?.entities?.[id];
-    const relations = doc ? getEntityRelations(entity, type, doc) : {};
+    const relations = doc ? getEntityRelations(id, type, doc) : {};
+
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
       return { ...decode({ ...entity, id, ...relations }), type: typeName };
     }

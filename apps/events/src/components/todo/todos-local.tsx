@@ -14,6 +14,11 @@ export const TodosLocal = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
+          {todo.assignees.map((assignee) => (
+            <span key={assignee.id} className="border rounded-sm mr-1 p-1">
+              {assignee.name}
+            </span>
+          ))}
           <input
             type="checkbox"
             checked={todo.checked}
