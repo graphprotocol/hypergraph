@@ -290,6 +290,8 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
 
     cacheEntry.isInvalidated = false;
     query.isInvalidated = false;
+    // must be a new reference to ensure it can be used in React.useMemo
+    query.data = [...query.data];
     return query.data;
   };
 
