@@ -17,6 +17,8 @@ const documentChangeListener: {
 
 const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
   const onChange = ({ patches, doc }: { patches: Array<Patch>; doc: DocumentContent }) => {
+    const changedRelations = new Set<string>();
+    const deletedRelations = new Set<string>();
     const changedEntities = new Set<string>();
     const deletedEntities = new Set<string>();
 
@@ -28,11 +30,17 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           if (patch.path.length > 2 && patch.path[0] === 'entities' && typeof patch.path[1] === 'string') {
             changedEntities.add(patch.path[1]);
           }
+          if (patch.path.length > 2 && patch.path[0] === 'relations' && typeof patch.path[1] === 'string') {
+            changedRelations.add(patch.path[1]);
+          }
           break;
         }
         case 'del': {
           if (patch.path.length === 2 && patch.path[0] === 'entities' && typeof patch.path[1] === 'string') {
             deletedEntities.add(patch.path[1]);
+          }
+          if (patch.path.length === 2 && patch.path[0] === 'relations' && typeof patch.path[1] === 'string') {
+            deletedRelations.add(patch.path[1]);
           }
           break;
         }
