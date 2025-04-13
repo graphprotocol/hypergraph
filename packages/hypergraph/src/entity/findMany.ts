@@ -1,6 +1,7 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
 import { isRelationField } from '../utils/isRelationField.js';
+import { canonicalize } from '../utils/jsc.js';
 import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
@@ -122,15 +123,9 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           }
         }
 
-        const query = cacheEntry.queries.get('all');
-        if (query && decoded) {
-          const index = query.data.findIndex((entity) => entity.id === entityId);
-          if (index !== -1) {
-            query.data[index] = decoded;
-          } else {
-            query.data.push(decoded);
-          }
-          touchedQueries.add([typeName, 'all']);
+        for (const [queryKey, query] of cacheEntry.queries) {
+          touchedQueries.add([typeName, queryKey]);
+          query.isInvalidated = true;
         }
 
         entityTypes.add(typeName);
@@ -155,12 +150,12 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           entityTypes.add(affectedTypeName);
           cacheEntry.entities.delete(entityId);
 
-          for (const [, query] of cacheEntry.queries) {
+          for (const [queryKey, query] of cacheEntry.queries) {
             // find the entity in the query and remove it using splice
             const index = query.data.findIndex((entity) => entity.id === entityId);
             if (index !== -1) {
               query.data.splice(index, 1);
-              touchedQueries.add([affectedTypeName, 'all']);
+              touchedQueries.add([affectedTypeName, queryKey]);
             }
           }
         }
@@ -228,6 +223,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
+  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
@@ -246,7 +242,16 @@ export function findMany<const S extends AnyNoContext>(
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
       const relations = getEntityRelations(id, type, doc);
       try {
-        filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
+        const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
+        if (filter) {
+          for (const filterEntry in filter) {
+            if (decoded[filterEntry] === filter[filterEntry]) {
+              filtered.push(decoded);
+            }
+          }
+        } else {
+          filtered.push(decoded);
+        }
       } catch (error) {
         corruptEntityIds.push(id);
       }
@@ -261,11 +266,12 @@ const stableEmptyArray: Array<unknown> = [];
 export function subscribeToFindMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
+  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
 ): {
   subscribe: (callback: () => void) => () => void;
   getEntities: () => Readonly<Array<Entity<S>>>;
 } {
-  const queryKey = 'all';
+  const queryKey = filter ? canonicalize(filter) : 'all';
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
   // @ts-expect-error name is defined
@@ -282,24 +288,17 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       return query.data;
     }
 
-    const { entities } = findMany(handle, type);
+    const { entities } = findMany(handle, type, filter);
+
     for (const entity of entities) {
       cacheEntry?.entities.set(entity.id, entity);
-
-      if (!query) continue;
-
-      const index = query.data.findIndex((e) => e.id === entity.id);
-      if (index !== -1) {
-        query.data[index] = entity;
-      } else {
-        query.data.push(entity);
-      }
     }
 
+    // must be a new reference to ensure it can be used in React.useMemo
+    query.data = [...entities];
     cacheEntry.isInvalidated = false;
     query.isInvalidated = false;
-    // must be a new reference to ensure it can be used in React.useMemo
-    query.data = [...query.data];
+
     return query.data;
   };
 
@@ -314,18 +313,13 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     let cacheEntry = decodedEntitiesCache.get(typeName);
 
     if (!cacheEntry) {
-      const { entities } = findMany(handle, type);
       const entitiesMap = new Map();
-      for (const entity of entities) {
-        entitiesMap.set(entity.id, entity);
-      }
-
       const queries = new Map<string, QueryEntry>();
 
       queries.set(queryKey, {
-        data: [...entities],
+        data: [],
         listeners: [],
-        isInvalidated: false,
+        isInvalidated: true,
       });
 
       cacheEntry = {
@@ -333,30 +327,22 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
         type,
         entities: entitiesMap,
         queries,
-        isInvalidated: false,
+        isInvalidated: true,
       };
 
       decodedEntitiesCache.set(typeName, cacheEntry);
-
-      for (const entity of entities) {
-        for (const [, value] of Object.entries(entity)) {
-          if (Array.isArray(value)) {
-            for (const relationEntity of value) {
-              let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-              if (relationParentEntry) {
-                relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
-              } else {
-                relationParentEntry = new Map();
-                entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-                relationParentEntry.set(cacheEntry, 1);
-              }
-            }
-          }
-        }
-      }
     }
 
-    const query = cacheEntry.queries.get(queryKey);
+    let query = cacheEntry.queries.get(queryKey);
+    if (!query) {
+      query = {
+        data: [],
+        listeners: [],
+        isInvalidated: true,
+      };
+      // we just set up the query and expect it to correctly set itself up in findMany
+      cacheEntry.queries.set(queryKey, query);
+    }
 
     if (query?.listeners) {
       query.listeners.push(callback);

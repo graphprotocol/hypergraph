@@ -1,5 +1,6 @@
 import type { Entity } from '@graphprotocol/hypergraph';
 import { Utils } from '@graphprotocol/hypergraph';
+import type * as Schema from 'effect/Schema';
 import { useMemo } from 'react';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
 import { generateDeleteOps } from './internal/generate-delete-ops-geo.js';
@@ -8,8 +9,9 @@ import { useGenerateUpdateOps } from './internal/use-generate-update-ops.js';
 import { parseResult, useQueryPublic } from './internal/use-query-public-geo.js';
 import type { DiffEntry, PublishDiffInfo } from './types.js';
 
-type QueryParams = {
+type QueryParams<S extends Entity.AnyNoContext> = {
   mode: 'merged' | 'public' | 'local';
+  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined;
 };
 
 const mergeEntities = <S extends Entity.AnyNoContext>(
@@ -116,10 +118,10 @@ const getDiff = <S extends Entity.AnyNoContext>(
 
 const preparePublishDummy = () => undefined;
 
-export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams) {
-  const { mode = 'merged' } = params ?? {};
+export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
+  const { mode = 'merged', filter } = params ?? {};
   const publicResult = useQueryPublic(type, { enabled: mode === 'public' || mode === 'merged' });
-  const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged' });
+  const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged', filter });
   const { mapping } = useHypergraph();
   const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
   const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');

@@ -1,6 +1,7 @@
 import { DevTool } from '@/components/dev-tool';
 import { Todos } from '@/components/todos';
 import { TodosReadOnly } from '@/components/todos-read-only';
+import { TodosReadOnlyFilter } from '@/components/todos-read-only-filter';
 import { Button } from '@/components/ui/button';
 import { Users } from '@/components/users';
 import { availableAccounts } from '@/lib/availableAccounts';
@@ -43,6 +44,7 @@ function Space() {
         <Users />
         <Todos />
         <TodosReadOnly />
+        <TodosReadOnlyFilter />
         {show2ndTodos && <Todos />}
         <h3 className="text-xl font-bold">Invite people</h3>
         <div className="flex flex-row gap-2">

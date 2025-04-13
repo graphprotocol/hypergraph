@@ -33,12 +33,20 @@ export const update = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
 
       // TODO: Try to get a diff of the entity properties and only override the changed ones.
       updated = { ...decode(entity), ...data };
-      doc.entities[id] = {
+
+      const encoded = {
         ...encode(updated),
         '@@types@@': [typeName],
         __deleted: entity.__deleted ?? false,
         __version: entity.__version ?? '',
       };
+      // filter out undefined values otherwise Automerge will throw an error
+      for (const key in updated) {
+        if (updated[key] === undefined) {
+          delete encoded[key];
+        }
+      }
+      doc.entities[id] = encoded;
     });
 
     if (updated === undefined) {

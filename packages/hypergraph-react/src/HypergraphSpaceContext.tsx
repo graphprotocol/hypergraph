@@ -83,12 +83,13 @@ export function useHardDeleteEntity() {
   return Entity.delete(hypergraph.handle);
 }
 
-type QueryParams = {
+type QueryParams<S extends Entity.AnyNoContext> = {
   enabled: boolean;
+  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined;
 };
 
-export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams) {
-  const { enabled = true } = params ?? {};
+export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
+  const { enabled = true, filter } = params ?? {};
   const entitiesRef = useRef<Entity.Entity<S>[]>([]);
 
   const hypergraph = useHypergraph();
@@ -100,7 +101,7 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
       };
     }
 
-    return Entity.subscribeToFindMany(hypergraph.handle, type);
+    return Entity.subscribeToFindMany(hypergraph.handle, type, filter);
   });
 
   // TODO: allow to change the enabled state
