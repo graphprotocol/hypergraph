@@ -1,4 +1,4 @@
-import { smartAccountWalletClient } from '@/lib/smart-account';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
 import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
@@ -202,6 +202,10 @@ export const Todos2 = () => {
           <Button
             onClick={async () => {
               try {
+                const smartAccountWalletClient = await getSmartAccountWalletClient();
+                if (!smartAccountWalletClient) {
+                  throw new Error('Missing smartAccountWalletClient');
+                }
                 if (publishData) {
                   setIsPublishing(true);
                   const ops = [

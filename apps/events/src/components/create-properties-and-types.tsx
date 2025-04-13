@@ -1,4 +1,4 @@
-import { smartAccountWalletClient } from '@/lib/smart-account';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
 import { publishOps, useHypergraphSpace } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
@@ -53,6 +53,10 @@ export const CreatePropertiesAndTypes = () => {
       )}
       <Button
         onClick={async () => {
+          const smartAccountWalletClient = await getSmartAccountWalletClient();
+          if (!smartAccountWalletClient) {
+            throw new Error('Missing smartAccountWalletClient');
+          }
           const { todoTypeId, checkedPropertyId, userId, assigneesRelationTypeId } = await createPropertiesAndTypes({
             smartAccountWalletClient,
             space,

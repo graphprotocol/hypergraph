@@ -1,4 +1,4 @@
-import { smartAccountWalletClient } from '@/lib/smart-account';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { _generateDeleteOps, publishOps, useHypergraphSpace, useQuery } from '@graphprotocol/hypergraph-react';
 import { User } from '../../schema';
 import { Spinner } from '../spinner';
@@ -22,6 +22,10 @@ export const UsersPublicGeo = () => {
 
           <Button
             onClick={async () => {
+              const smartAccountWalletClient = await getSmartAccountWalletClient();
+              if (!smartAccountWalletClient) {
+                throw new Error('Missing smartAccountWalletClient');
+              }
               const ops = await _generateDeleteOps({ id: user.id, space });
               const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
               console.log('result', result);

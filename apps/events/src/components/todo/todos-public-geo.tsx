@@ -1,4 +1,4 @@
-import { smartAccountWalletClient } from '@/lib/smart-account';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { Id } from '@graphprotocol/grc-20';
 import {
   _generateDeleteOps,
@@ -39,6 +39,10 @@ export const TodosPublicGeo = () => {
 
           <Button
             onClick={async () => {
+              const smartAccountWalletClient = await getSmartAccountWalletClient();
+              if (!smartAccountWalletClient) {
+                throw new Error('Missing smartAccountWalletClient');
+              }
               const ops = await _generateDeleteOps({ id: todo.id, space });
               const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
               console.log('result', result);
@@ -50,6 +54,10 @@ export const TodosPublicGeo = () => {
       ))}
       <Button
         onClick={async () => {
+          const smartAccountWalletClient = await getSmartAccountWalletClient();
+          if (!smartAccountWalletClient) {
+            throw new Error('Missing smartAccountWalletClient');
+          }
           const userId = Id.Id('8zPJjTGLBDPtUcj6q2tghg');
           const todo = createTodo({ name: 'New Todo 22', checked: false, assignees: [userId] });
           console.log('todo', todo);

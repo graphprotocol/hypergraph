@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { smartAccountWalletClient } from '@/lib/smart-account';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { store } from '@graphprotocol/hypergraph';
 import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
@@ -59,8 +59,12 @@ function Index() {
       <div className="flex flex-row gap-2 justify-between items-center">
         <h2 className="text-lg font-bold">Spaces</h2>
         <Button
-          onClick={(event) => {
+          onClick={async (event) => {
             event.preventDefault();
+            const smartAccountWalletClient = await getSmartAccountWalletClient();
+            if (!smartAccountWalletClient) {
+              throw new Error('Missing smartAccountWalletClient');
+            }
             createSpace(smartAccountWalletClient);
           }}
         >

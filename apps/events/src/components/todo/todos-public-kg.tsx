@@ -1,4 +1,4 @@
-import { smartAccountWalletClient } from '@/lib/smart-account';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import {
   _generateDeleteOps,
   publishOps,
@@ -27,6 +27,10 @@ export const TodosPublicKg = () => {
           <input type="checkbox" checked={todo.checked} readOnly />
           <Button
             onClick={async () => {
+              const smartAccountWalletClient = await getSmartAccountWalletClient();
+              if (!smartAccountWalletClient) {
+                throw new Error('Missing smartAccountWalletClient');
+              }
               const ops = await _generateDeleteOps({ id: todo.id, space });
               const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
               console.log('result', result);
