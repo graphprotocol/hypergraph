@@ -43,8 +43,8 @@ function Space() {
       <HypergraphSpaceProvider space={spaceId} mapping={mapping}>
         <Users />
         <Todos />
-        <TodosReadOnly />
         <TodosReadOnlyFilter />
+        <TodosReadOnly />
         {show2ndTodos && <Todos />}
         <h3 className="text-xl font-bold">Invite people</h3>
         <div className="flex flex-row gap-2">

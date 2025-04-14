@@ -1,4 +1,3 @@
-import { CreatePropertiesAndTypes } from '@/components/create-properties-and-types';
 import { TodosPublicGeo } from '@/components/todo/todos-public-geo';
 import { mapping } from '@/schema';
 import { store } from '@graphprotocol/hypergraph';
@@ -34,7 +33,6 @@ function PlaygroundRouteComponent() {
   return (
     <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
       <HypergraphSpaceProvider space={spaceId} mapping={mapping}>
-        <CreatePropertiesAndTypes />
         <TodosPublicGeo />
       </HypergraphSpaceProvider>
     </div>
