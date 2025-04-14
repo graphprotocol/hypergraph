@@ -33,9 +33,9 @@ export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: 
     }
 
     for (const [key, relationId] of Object.entries(mappingEntry.relations || {})) {
-      const toIds: { to: Id.Id }[] = [];
+      const toIds: { to: Id.Id; relationId: Id.Id }[] = [];
       for (const entity of properties[key]) {
-        toIds.push({ to: Id.Id(entity.id) });
+        toIds.push({ to: Id.Id(entity.id), relationId: Id.Id(entity._relation.id) });
       }
       grcProperties[relationId] = toIds;
     }
