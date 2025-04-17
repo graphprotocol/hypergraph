@@ -50,17 +50,17 @@ export const mapping: Mapping = {
     },
   },
   Todo2: {
-    typeIds: [Id.Id('How8cJy24CExHsV5yZtQrZ')],
+    typeIds: [Id.Id('4ewpH1mPW9f2tLhaHdKKyn')],
     properties: {
       name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
-      checked: Id.Id('HdkQu7gt8Sc1FpeKoYCK5k'),
+      checked: Id.Id('7zyFtwuuf9evFNZqcLSytU'),
     },
     relations: {
-      assignees: Id.Id('VctPqgXJGmcHTnfRmPzn4Y'),
+      assignees: Id.Id('GeLe54zpz1MiMWAF8LFCCt'),
     },
   },
   User: {
-    typeIds: [Id.Id('7L9sZgoinGoDFEukU5t5sh')],
+    typeIds: [Id.Id('KYCunro75we8KbjpsDKbm7')],
     properties: {
       name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
     },
