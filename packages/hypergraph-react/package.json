@@ -2,7 +2,13 @@
   "name": "@graphprotocol/hypergraph-react",
   "version": "0.0.1",
   "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
-  "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "react"],
+  "keywords": [
+    "Web3",
+    "Local-First",
+    "Knowledge Graph",
+    "Graph Protocol",
+    "react"
+  ],
   "publishConfig": {
     "access": "public",
     "directory": "publish",
@@ -44,7 +50,7 @@
     "@graphprotocol/grc-20": "^0.10.0",
     "@noble/hashes": "^1.8.0",
     "@tanstack/react-query": "^5.67.1",
-    "effect": "^3.12.4",
+    "effect": "^3.14.12",
     "graphql-request": "^7.1.2",
     "siwe": "^2.3.2",
     "uuid": "^11.0.5",

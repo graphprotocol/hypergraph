@@ -13,7 +13,7 @@
     "@noble/ciphers": "^1.2.0",
     "@prisma/client": "^6.2.1",
     "cors": "^2.8.5",
-    "effect": "^3.12.4",
+    "effect": "^3.14.12",
     "express": "^5.0.1",
     "siwe": "^2.3.2",
     "viem": "^2.22.9",

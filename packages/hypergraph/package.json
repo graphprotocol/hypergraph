@@ -28,14 +28,14 @@
   "dependencies": {
     "@automerge/automerge": "^v2.2.9-alpha.3",
     "@automerge/automerge-repo": "^2.0.0-alpha.14",
-    "@effect/experimental": "^0.37.1",
+    "@effect/experimental": "^0.44.12",
     "@noble/ciphers": "^1.2.0",
     "@noble/curves": "^1.8.0",
     "@noble/hashes": "^1.7.0",
     "@noble/secp256k1": "^2.2.3",
     "@xstate/store": "^2.6.2",
     "bs58check": "^4.0.0",
-    "effect": "^3.12.4",
+    "effect": "^3.14.12",
     "siwe": "^2.3.2",
     "uuid": "^11.0.5",
     "viem": "^2.22.9"
