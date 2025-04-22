@@ -24,17 +24,20 @@ describe('HypergraphSpaceContext', () => {
     id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     age: Entity.Number,
+    __deleted: Entity.Generated(Entity.Checkbox),
   }) {}
 
   class User extends Entity.Class<User>('User')({
     id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     email: Entity.Text,
+    __deleted: Entity.Generated(Entity.Checkbox),
   }) {}
 
   class Event extends Entity.Class<Event>('Event')({
     id: Entity.Generated(Entity.Text),
     name: Entity.Text,
+    __deleted: Entity.Generated(Entity.Checkbox),
   }) {}
 
   const spaceId = '52gTkePWSoGdXmgZF3nRU';
@@ -81,7 +84,7 @@ describe('HypergraphSpaceContext', () => {
       }
 
       const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Event), { wrapper });
-      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+      expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
     });
   });
 
@@ -97,7 +100,9 @@ describe('HypergraphSpaceContext', () => {
 
       await waitFor(() => {
         expect(createdEntity).not.toBeNull();
-        expect(createdEntity).toEqual(expect.objectContaining({ name: 'Test', age: 1, type: Person.name }));
+        expect(createdEntity).toEqual(
+          expect.objectContaining({ name: 'Test', age: 1, type: Person.name, __deleted: false }),
+        );
       });
 
       if (createdEntity == null) {
@@ -117,10 +122,13 @@ describe('HypergraphSpaceContext', () => {
       expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
 
       const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
-      expect(queryEntityResult.current).toEqual(createdEntity);
+      expect(queryEntityResult.current).toEqual({ ...createdEntity, __deleted: false });
 
       const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Person), { wrapper });
-      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+      expect(queryEntitiesResult.current).toEqual({
+        deletedEntities: [],
+        entities: [{ ...createdEntity, __deleted: false }],
+      });
     });
   });
 
@@ -144,7 +152,7 @@ describe('HypergraphSpaceContext', () => {
       const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryLocal(User), {
         wrapper,
       });
-      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+      expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
 
       const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(), { wrapper });
 
@@ -160,8 +168,9 @@ describe('HypergraphSpaceContext', () => {
 
       rerenderQueryEntities();
 
-      expect(queryEntitiesResult.current).toHaveLength(0);
-      expect(queryEntitiesResult.current).toEqual([]);
+      expect(queryEntitiesResult.current.entities).toHaveLength(0);
+      expect(queryEntitiesResult.current.entities).toEqual([]);
+      expect(queryEntitiesResult.current.deletedEntities).toHaveLength(1);
     });
   });
 });
