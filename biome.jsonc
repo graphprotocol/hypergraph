@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules/", "**/node_modules", "**/dist", "routeTree.gen.ts", "tsconfig.json", "tsconfig.*.json"]
+    "ignore": [
+      "node_modules/",
+      "**/node_modules",
+      "**/dist",
+      "routeTree.gen.ts",
+      "tsconfig.json",
+      "tsconfig.*.json",
+      "**/variant-schema.ts"
+    ]
   },
   "formatter": {
     "enabled": true,

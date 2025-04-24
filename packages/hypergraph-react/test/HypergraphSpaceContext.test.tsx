@@ -21,23 +21,17 @@ afterEach(() => {
 
 describe('HypergraphSpaceContext', () => {
   class Person extends Entity.Class<Person>('Person')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     age: Entity.Number,
-    __deleted: Entity.Generated(Entity.Checkbox),
   }) {}
 
   class User extends Entity.Class<User>('User')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     email: Entity.Text,
-    __deleted: Entity.Generated(Entity.Checkbox),
   }) {}
 
   class Event extends Entity.Class<Event>('Event')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
-    __deleted: Entity.Generated(Entity.Checkbox),
   }) {}
 
   const spaceId = '52gTkePWSoGdXmgZF3nRU';
@@ -122,12 +116,12 @@ describe('HypergraphSpaceContext', () => {
       expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
 
       const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
-      expect(queryEntityResult.current).toEqual({ ...createdEntity, __deleted: false });
+      expect(queryEntityResult.current).toEqual({ ...createdEntity, __version: '', __deleted: false });
 
       const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Person), { wrapper });
       expect(queryEntitiesResult.current).toEqual({
         deletedEntities: [],
-        entities: [{ ...createdEntity, __deleted: false }],
+        entities: [{ ...createdEntity, __version: '', __deleted: false }],
       });
     });
   });

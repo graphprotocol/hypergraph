@@ -15,7 +15,14 @@ export type AnyNoContext = Schema.Schema.AnyNoContext & {
 export type Update<S extends Any> = S['update'];
 export type Insert<S extends Any> = S['insert'];
 
-export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & { type: string };
+export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & {
+  type: string;
+  // TODO: can we not solve this directly on the variante schema?
+  id: string;
+  __deleted: boolean;
+  __version: string;
+  _relation: { id: string } | undefined;
+};
 
 export type DocumentEntity = {
   __deleted: boolean;

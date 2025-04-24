@@ -3,41 +3,25 @@ import { Entity } from '@graphprotocol/hypergraph';
 import type { Mapping } from '@graphprotocol/hypergraph-react';
 
 export class User extends Entity.Class<User>('User')({
-  id: Entity.Generated(Entity.Text),
   name: Entity.Text,
-  __deleted: Entity.Generated(Entity.Checkbox),
-  __version: Entity.Generated(Entity.Text),
-  _relation: Entity.RelationObject,
 }) {}
 
 export class Todo extends Entity.Class<Todo>('Todo')({
-  id: Entity.Generated(Entity.Text),
   name: Entity.Text,
   completed: Entity.Checkbox,
-  assignees: Entity.Reference(Entity.ReferenceArray(User)),
-  __deleted: Entity.Generated(Entity.Checkbox),
-  __version: Entity.Generated(Entity.Text),
-  _relation: Entity.RelationObject,
+  assignees: Entity.Relation(User),
 }) {}
 
 export class Todo2 extends Entity.Class<Todo2>('Todo2')({
-  id: Entity.Generated(Entity.Text),
   name: Entity.Text,
   checked: Entity.Checkbox,
-  assignees: Entity.Reference(Entity.ReferenceArray(User)),
-  __deleted: Entity.Generated(Entity.Checkbox),
-  __version: Entity.Generated(Entity.Text),
-  _relation: Entity.RelationObject,
+  assignees: Entity.Relation(User),
 }) {}
 
 export class NewsStory extends Entity.Class<NewsStory>('NewsStory')({
-  id: Entity.Generated(Entity.Text),
   name: Entity.Text,
   description: Entity.Text,
   publishDate: Entity.Text,
-  __deleted: Entity.Generated(Entity.Checkbox),
-  __version: Entity.Generated(Entity.Text),
-  _relation: Entity.RelationObject,
 }) {}
 
 export const mapping: Mapping = {

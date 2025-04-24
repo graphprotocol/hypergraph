@@ -7,24 +7,20 @@ import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('Entity', () => {
   class Person extends Entity.Class<Person>('Person')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     age: Entity.Number,
   }) {}
 
   class User extends Entity.Class<User>('User')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     email: Entity.Text,
   }) {}
 
   class Badge extends Entity.Class<Badge>('Badge')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
   }) {}
 
   class Event extends Entity.Class<Event>('Event')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
   }) {}
 
@@ -53,11 +49,23 @@ describe('Entity', () => {
 
       const entities = Entity.findMany(handle, Event);
       expect(entities.entities).toHaveLength(1);
-      expect(entities.entities[0]).toEqual({ id, type: Event.name, name: 'Conference' });
+      expect(entities.entities[0]).toEqual({
+        id,
+        type: Event.name,
+        name: 'Conference',
+        __version: '',
+        __deleted: false,
+      });
 
       const found = Entity.findOne(handle, Event)(id);
       expect(found).not.toBeNull();
-      expect(found).toEqual({ id, type: Event.name, name: 'Conference' });
+      expect(found).toEqual({
+        id,
+        type: Event.name,
+        name: 'Conference',
+        __version: '',
+        __deleted: false,
+      });
     });
   });
 
@@ -72,15 +80,32 @@ describe('Entity', () => {
 
       const entities = Entity.findMany(handle, Person);
       expect(entities.entities).toHaveLength(1);
-      expect(entities.entities[0]).toEqual({ id, type: Person.name, name: 'Test', age: 1 });
-
+      expect(entities.entities[0]).toEqual({
+        id,
+        type: Person.name,
+        name: 'Test',
+        age: 1,
+        __version: '',
+        __deleted: false,
+      });
       const found = Entity.findOne(handle, Person)(id);
       expect(found).not.toBeNull();
-      expect(found).toEqual({ id, type: Person.name, name: 'Test', age: 1 });
-
+      expect(found).toEqual({
+        id,
+        type: Person.name,
+        name: 'Test',
+        age: 1,
+        __version: '',
+        __deleted: false,
+      });
       // update the entity, validate we see the updates
       const updated = Entity.update(handle, Person)(id, { name: 'Test Updated', age: 2112 });
-      expect(updated).toEqual({ id, type: Person.name, name: 'Test Updated', age: 2112 });
+      expect(updated).toEqual({
+        id,
+        type: Person.name,
+        name: 'Test Updated',
+        age: 2112,
+      });
 
       const updatedEntities = Entity.findMany(handle, Person);
       expect(updatedEntities.entities).toHaveLength(1);
@@ -89,7 +114,14 @@ describe('Entity', () => {
       // expect(updatedEntities.entities[0]).toEqual({ id, type: Person.name, name: 'Test Updated', age: 2112 });
       const foundUpdated = Entity.findOne(handle, Person)(id);
       expect(foundUpdated).not.toBeNull();
-      expect(foundUpdated).toEqual({ id, type: Person.name, name: 'Test Updated', age: 2112 });
+      expect(foundUpdated).toEqual({
+        id,
+        type: Person.name,
+        name: 'Test Updated',
+        age: 2112,
+        __version: '',
+        __deleted: false,
+      });
     });
 
     it('should throw an error if attempting to update an entity that does not exist in the repo', () => {
@@ -119,11 +151,24 @@ describe('Entity', () => {
 
       const entities = Entity.findMany(handle, User);
       expect(entities.entities).toHaveLength(1);
-      expect(entities.entities[0]).toEqual({ id, type: User.name, name: 'Test', email: 'test.user@thegraph.com' });
-
+      expect(entities.entities[0]).toEqual({
+        id,
+        type: User.name,
+        name: 'Test',
+        email: 'test.user@thegraph.com',
+        __version: '',
+        __deleted: false,
+      });
       const found = Entity.findOne(handle, User)(id);
       expect(found).not.toBeNull();
-      expect(found).toEqual({ id, type: User.name, name: 'Test', email: 'test.user@thegraph.com' });
+      expect(found).toEqual({
+        id,
+        type: User.name,
+        name: 'Test',
+        email: 'test.user@thegraph.com',
+        __version: '',
+        __deleted: false,
+      });
 
       const deleted = Entity.delete(handle)(id);
       expect(deleted).toBe(true);
