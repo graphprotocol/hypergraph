@@ -17,10 +17,14 @@ export type Insert<S extends Any> = S['insert'];
 
 export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & {
   type: string;
-  // TODO: can we not solve this directly on the variante schema?
+  // TODO: can we solve this directly on the variante schema?
   id: string;
-  __deleted: boolean;
-  __version: string;
+  // TODO: should we expose these internal fields?
+  // __deleted: boolean;
+  // __version: string;
+};
+
+export type EntityWithRelation<S extends AnyNoContext> = Entity<S> & {
   _relation: { id: string } | undefined;
 };
 

@@ -1,6 +1,6 @@
 import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
-import type { AnyNoContext, Entity } from './types.js';
+import type { AnyNoContext, EntityWithRelation } from './types.js';
 import * as VariantSchema from './variant-schema.js';
 
 const {
@@ -33,7 +33,7 @@ export class EntityNotFoundError extends Data.TaggedError('EntityNotFoundError')
 
 export const Relation = <S extends AnyNoContext>(schema: S) =>
   Field({
-    select: Schema.Array(schema) as unknown as Schema.Schema<ReadonlyArray<Entity<S>>>,
+    select: Schema.Array(schema) as unknown as Schema.Schema<ReadonlyArray<EntityWithRelation<S>>>,
     insert: Schema.optional(Schema.Array(Schema.String)),
     update: Schema.Undefined,
   });
