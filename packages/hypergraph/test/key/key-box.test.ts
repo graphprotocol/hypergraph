@@ -37,7 +37,7 @@ describe('KeyBox Encryption/Decryption', () => {
           publicKey,
           secretKey,
         }),
-      ).toThrow('Nonce must be 24 bytes');
+      ).toThrow('Uint8Array expected of length 24, got length=16');
     });
 
     it('should handle empty message', () => {
@@ -117,7 +117,7 @@ describe('KeyBox Encryption/Decryption', () => {
           publicKey,
           secretKey,
         }),
-      ).toThrow('Nonce must be 24 bytes');
+      ).toThrow('Uint8Array expected of length 24, got length=16');
     });
 
     it('should throw error for ciphertext too short', () => {
@@ -132,7 +132,7 @@ describe('KeyBox Encryption/Decryption', () => {
           publicKey,
           secretKey,
         }),
-      ).toThrow('Ciphertext too short');
+      ).toThrow('invalid ciphertext length: smaller than tagLength=16');
     });
 
     it('should fail to decrypt with wrong keys', () => {

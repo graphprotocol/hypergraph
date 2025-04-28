@@ -1,8 +1,14 @@
 import * as Schema from 'effect/Schema';
 
-import { AcceptInvitationEvent, CreateInvitationEvent, CreateSpaceEvent, SpaceEvent } from '../space-events/index.js';
+import { InboxSenderAuthPolicy } from '../inboxes/types.js';
+import {
+  AcceptInvitationEvent,
+  CreateInvitationEvent,
+  CreateSpaceEvent,
+  CreateSpaceInboxEvent,
+  SpaceEvent,
+} from '../space-events/index.js';
 import { SignatureWithRecovery } from '../types.js';
-
 export const SignedUpdate = Schema.Struct({
   update: Schema.Uint8Array,
   accountId: Schema.String,
@@ -98,6 +104,50 @@ export const RequestCreateUpdate = Schema.Struct({
   signature: SignatureWithRecovery,
 });
 
+export const RequestCreateAccountInbox = Schema.Struct({
+  type: Schema.Literal('create-account-inbox'),
+  accountId: Schema.String,
+  inboxId: Schema.String,
+  isPublic: Schema.Boolean,
+  authPolicy: InboxSenderAuthPolicy,
+  encryptionPublicKey: Schema.String,
+  signature: SignatureWithRecovery,
+});
+
+export type RequestCreateAccountInbox = Schema.Schema.Type<typeof RequestCreateAccountInbox>;
+
+export const RequestCreateSpaceInboxEvent = Schema.Struct({
+  type: Schema.Literal('create-space-inbox-event'),
+  spaceId: Schema.String,
+  event: CreateSpaceInboxEvent,
+});
+
+export type RequestCreateSpaceInboxEvent = Schema.Schema.Type<typeof RequestCreateSpaceInboxEvent>;
+
+export const RequestGetLatestSpaceInboxMessages = Schema.Struct({
+  type: Schema.Literal('get-latest-space-inbox-messages'),
+  spaceId: Schema.String,
+  inboxId: Schema.String,
+  since: Schema.Date,
+});
+
+export type RequestGetLatestSpaceInboxMessages = Schema.Schema.Type<typeof RequestGetLatestSpaceInboxMessages>;
+
+export const RequestGetLatestAccountInboxMessages = Schema.Struct({
+  type: Schema.Literal('get-latest-account-inbox-messages'),
+  accountId: Schema.String,
+  inboxId: Schema.String,
+  since: Schema.Date,
+});
+
+export type RequestGetLatestAccountInboxMessages = Schema.Schema.Type<typeof RequestGetLatestAccountInboxMessages>;
+
+export const RequestGetAccountInboxes = Schema.Struct({
+  type: Schema.Literal('get-account-inboxes'),
+});
+
+export type RequestGetAccountInboxes = Schema.Schema.Type<typeof RequestGetAccountInboxes>;
+
 export const RequestMessage = Schema.Union(
   RequestCreateSpaceEvent,
   RequestCreateInvitationEvent,
@@ -106,6 +156,11 @@ export const RequestMessage = Schema.Union(
   RequestListSpaces,
   RequestListInvitations,
   RequestCreateUpdate,
+  RequestCreateAccountInbox,
+  RequestCreateSpaceInboxEvent,
+  RequestGetLatestSpaceInboxMessages,
+  RequestGetLatestAccountInboxMessages,
+  RequestGetAccountInboxes,
 );
 
 export type RequestMessage = Schema.Schema.Type<typeof RequestMessage>;
@@ -147,6 +202,22 @@ export const RequestCreateIdentity = Schema.Struct({
 
 export type RequestCreateIdentity = Schema.Schema.Type<typeof RequestCreateIdentity>;
 
+export const RequestCreateSpaceInboxMessage = Schema.Struct({
+  ciphertext: Schema.String,
+  signature: Schema.optional(SignatureWithRecovery),
+  authorAccountId: Schema.optional(Schema.String),
+});
+
+export type RequestCreateSpaceInboxMessage = Schema.Schema.Type<typeof RequestCreateSpaceInboxMessage>;
+
+export const RequestCreateAccountInboxMessage = Schema.Struct({
+  ciphertext: Schema.String,
+  signature: Schema.optional(SignatureWithRecovery),
+  authorAccountId: Schema.optional(Schema.String),
+});
+
+export type RequestCreateAccountInboxMessage = Schema.Schema.Type<typeof RequestCreateAccountInboxMessage>;
+
 export const ResponseListSpaces = Schema.Struct({
   type: Schema.Literal('list-spaces'),
   spaces: Schema.Array(
@@ -181,12 +252,51 @@ export const ResponseSpaceEvent = Schema.Struct({
 
 export type ResponseSpaceEvent = Schema.Schema.Type<typeof ResponseSpaceEvent>;
 
+export const InboxMessage = Schema.Struct({
+  id: Schema.String,
+  ciphertext: Schema.String,
+  signature: Schema.optional(SignatureWithRecovery),
+  authorAccountId: Schema.optional(Schema.String),
+  createdAt: Schema.Date,
+});
+
+export type InboxMessage = Schema.Schema.Type<typeof InboxMessage>;
+
+export const SpaceInbox = Schema.Struct({
+  inboxId: Schema.String,
+  isPublic: Schema.Boolean,
+  authPolicy: InboxSenderAuthPolicy,
+  encryptionPublicKey: Schema.String,
+  secretKey: Schema.String,
+});
+
+export type SpaceInbox = Schema.Schema.Type<typeof SpaceInbox>;
+
+export const AccountInbox = Schema.Struct({
+  accountId: Schema.String,
+  inboxId: Schema.String,
+  isPublic: Schema.Boolean,
+  authPolicy: InboxSenderAuthPolicy,
+  encryptionPublicKey: Schema.String,
+  signature: SignatureWithRecovery,
+});
+
+export type AccountInbox = Schema.Schema.Type<typeof AccountInbox>;
+
+export const ResponseAccountInbox = Schema.Struct({
+  type: Schema.Literal('account-inbox'),
+  inbox: AccountInbox,
+});
+
+export type ResponseAccountInbox = Schema.Schema.Type<typeof ResponseAccountInbox>;
+
 export const ResponseSpace = Schema.Struct({
   type: Schema.Literal('space'),
   id: Schema.String,
   events: Schema.Array(SpaceEvent),
   keyBoxes: Schema.Array(KeyBoxWithKeyId),
   updates: Schema.optional(Updates),
+  inboxes: Schema.Array(SpaceInbox),
 });
 
 export type ResponseSpace = Schema.Schema.Type<typeof ResponseSpace>;
@@ -208,6 +318,49 @@ export const ResponseUpdatesNotification = Schema.Struct({
 
 export type ResponseUpdatesNotification = Schema.Schema.Type<typeof ResponseUpdatesNotification>;
 
+export const ResponseSpaceInboxMessage = Schema.Struct({
+  type: Schema.Literal('space-inbox-message'),
+  spaceId: Schema.String,
+  inboxId: Schema.String,
+  message: InboxMessage,
+});
+
+export type ResponseSpaceInboxMessage = Schema.Schema.Type<typeof ResponseSpaceInboxMessage>;
+
+export const ResponseSpaceInboxMessages = Schema.Struct({
+  type: Schema.Literal('space-inbox-messages'),
+  spaceId: Schema.String,
+  inboxId: Schema.String,
+  messages: Schema.Array(InboxMessage),
+});
+
+export type ResponseSpaceInboxMessages = Schema.Schema.Type<typeof ResponseSpaceInboxMessages>;
+
+export const ResponseAccountInboxMessage = Schema.Struct({
+  type: Schema.Literal('account-inbox-message'),
+  accountId: Schema.String,
+  inboxId: Schema.String,
+  message: InboxMessage,
+});
+
+export type ResponseAccountInboxMessage = Schema.Schema.Type<typeof ResponseAccountInboxMessage>;
+
+export const ResponseAccountInboxMessages = Schema.Struct({
+  type: Schema.Literal('account-inbox-messages'),
+  accountId: Schema.String,
+  inboxId: Schema.String,
+  messages: Schema.Array(InboxMessage),
+});
+
+export type ResponseAccountInboxMessages = Schema.Schema.Type<typeof ResponseAccountInboxMessages>;
+
+export const ResponseAccountInboxes = Schema.Struct({
+  type: Schema.Literal('account-inboxes'),
+  inboxes: Schema.Array(AccountInbox),
+});
+
+export type ResponseAccountInboxes = Schema.Schema.Type<typeof ResponseAccountInboxes>;
+
 export const ResponseMessage = Schema.Union(
   ResponseListSpaces,
   ResponseListInvitations,
@@ -215,6 +368,12 @@ export const ResponseMessage = Schema.Union(
   ResponseSpaceEvent,
   ResponseUpdateConfirmed,
   ResponseUpdatesNotification,
+  ResponseAccountInbox,
+  ResponseSpaceInboxMessage,
+  ResponseSpaceInboxMessages,
+  ResponseAccountInboxMessage,
+  ResponseAccountInboxMessages,
+  ResponseAccountInboxes,
 );
 
 export type ResponseMessage = Schema.Schema.Type<typeof ResponseMessage>;
@@ -252,6 +411,51 @@ export const ResponseIdentity = Schema.Struct({
 });
 
 export type ResponseIdentity = Schema.Schema.Type<typeof ResponseIdentity>;
+
+export const SpaceInboxPublic = Schema.Struct({
+  inboxId: Schema.String,
+  isPublic: Schema.Boolean,
+  authPolicy: InboxSenderAuthPolicy,
+  encryptionPublicKey: Schema.String,
+  creationEvent: CreateSpaceInboxEvent,
+});
+
+export type SpaceInboxPublic = Schema.Schema.Type<typeof SpaceInboxPublic>;
+
+export const ResponseSpaceInboxPublic = Schema.Struct({
+  inbox: SpaceInboxPublic,
+});
+
+export type ResponseSpaceInboxPublic = Schema.Schema.Type<typeof ResponseSpaceInboxPublic>;
+
+export const ResponseListSpaceInboxesPublic = Schema.Struct({
+  inboxes: Schema.Array(SpaceInboxPublic),
+});
+
+export type ResponseListSpaceInboxesPublic = Schema.Schema.Type<typeof ResponseListSpaceInboxesPublic>;
+
+export const AccountInboxPublic = Schema.Struct({
+  accountId: Schema.String,
+  inboxId: Schema.String,
+  isPublic: Schema.Boolean,
+  authPolicy: InboxSenderAuthPolicy,
+  encryptionPublicKey: Schema.String,
+  signature: SignatureWithRecovery,
+});
+
+export type AccountInboxPublic = Schema.Schema.Type<typeof AccountInboxPublic>;
+
+export const ResponseAccountInboxPublic = Schema.Struct({
+  inbox: AccountInboxPublic,
+});
+
+export type ResponseAccountInboxPublic = Schema.Schema.Type<typeof ResponseAccountInboxPublic>;
+
+export const ResponseListAccountInboxesPublic = Schema.Struct({
+  inboxes: Schema.Array(AccountInboxPublic),
+});
+
+export type ResponseListAccountInboxesPublic = Schema.Schema.Type<typeof ResponseListAccountInboxesPublic>;
 
 export const ResponseIdentityNotFoundError = Schema.Struct({
   accountId: Schema.String,

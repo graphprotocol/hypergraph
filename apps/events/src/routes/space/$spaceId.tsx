@@ -2,15 +2,16 @@ import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
+import { useEffect, useState } from 'react';
+import { getAddress } from 'viem';
 
+import { SpaceChat } from '@/components/SpaceChat';
 import { DevTool } from '@/components/dev-tool';
 import { Todos } from '@/components/todos';
 import { TodosReadOnly } from '@/components/todos-read-only';
 import { Button } from '@/components/ui/button';
 import { Users } from '@/components/users';
 import { availableAccounts } from '@/lib/availableAccounts';
-import { useEffect, useState } from 'react';
-import { getAddress } from 'viem';
 
 export const Route = createFileRoute('/space/$spaceId')({
   component: Space,
@@ -19,17 +20,18 @@ export const Route = createFileRoute('/space/$spaceId')({
 function Space() {
   const { spaceId } = Route.useParams();
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { subscribeToSpace, inviteToSpace, loading } = useHypergraphApp();
+  const { subscribeToSpace, inviteToSpace, loading: appLoading } = useHypergraphApp();
+
   useEffect(() => {
-    if (!loading) {
+    if (!appLoading) {
       subscribeToSpace({ spaceId });
     }
-  }, [loading, subscribeToSpace, spaceId]);
+  }, [appLoading, subscribeToSpace, spaceId]);
   const [show2ndTodos, setShow2ndTodos] = useState(false);
 
   const space = spaces.find((space) => space.id === spaceId);
 
-  if (loading) {
+  if (appLoading) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 
@@ -44,23 +46,24 @@ function Space() {
         <Todos />
         <TodosReadOnly />
         {show2ndTodos && <Todos />}
+
+        <SpaceChat spaceId={spaceId} />
+
         <h3 className="text-xl font-bold">Invite people</h3>
         <div className="flex flex-row gap-2">
-          {availableAccounts.map((invitee) => {
-            return (
-              <Button
-                key={invitee.accountId}
-                onClick={() => {
-                  inviteToSpace({
-                    space,
-                    invitee: { accountId: getAddress(invitee.accountId) },
-                  });
-                }}
-              >
-                Invite {invitee.accountId.substring(0, 6)}
-              </Button>
-            );
-          })}
+          {availableAccounts.map((invitee) => (
+            <Button
+              key={invitee.accountId}
+              onClick={() => {
+                inviteToSpace({
+                  space,
+                  invitee: { accountId: getAddress(invitee.accountId) },
+                });
+              }}
+            >
+              Invite {invitee.accountId.substring(0, 6)}
+            </Button>
+          ))}
         </div>
         <div className="mt-12 flex flex-row gap-2">
           <DevTool spaceId={spaceId} />
