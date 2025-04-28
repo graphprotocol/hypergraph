@@ -1,5 +1,6 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
+import { deepMerge } from '../utils/internal/deep-merge.js';
 import { isRelationField } from '../utils/isRelationField.js';
 import { canonicalize } from '../utils/jsc.js';
 import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
@@ -65,8 +66,13 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         const cacheEntry = decodedEntitiesCache.get(typeName);
         if (!cacheEntry) continue;
 
+        let includeFromAllQueries = {};
+        for (const [, query] of cacheEntry.queries) {
+          includeFromAllQueries = deepMerge(includeFromAllQueries, query.include);
+        }
+
         const oldDecodedEntry = cacheEntry.entities.get(entityId);
-        const relations = getEntityRelations(entityId, cacheEntry.type, doc);
+        const relations = getEntityRelations(entityId, cacheEntry.type, doc, includeFromAllQueries);
         let decoded: unknown | undefined;
         try {
           decoded = cacheEntry.decoder({
@@ -223,7 +229,8 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
+  filter: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
@@ -240,7 +247,7 @@ export function findMany<const S extends AnyNoContext>(
   for (const id in entities) {
     const entity = entities[id];
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
-      const relations = getEntityRelations(id, type, doc);
+      const relations = getEntityRelations(id, type, doc, include);
       try {
         const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
         if (filter) {
@@ -266,7 +273,8 @@ const stableEmptyArray: Array<unknown> = [];
 export function subscribeToFindMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
+  filter: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
 ): {
   subscribe: (callback: () => void) => () => void;
   getEntities: () => Readonly<Array<Entity<S>>>;
@@ -288,7 +296,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       return query.data;
     }
 
-    const { entities } = findMany(handle, type, filter);
+    const { entities } = findMany(handle, type, filter, include);
 
     for (const entity of entities) {
       cacheEntry?.entities.set(entity.id, entity);
@@ -320,6 +328,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
         data: [],
         listeners: [],
         isInvalidated: true,
+        include: include ?? {},
       });
 
       cacheEntry = {
@@ -339,6 +348,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
         data: [],
         listeners: [],
         isInvalidated: true,
+        include: include ?? {},
       };
       // we just set up the query and expect it to correctly set itself up in findMany
       cacheEntry.queries.set(queryKey, query);

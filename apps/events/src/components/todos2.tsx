@@ -28,7 +28,7 @@ export const Todos2 = () => {
     isLoading: isLoadingTodos,
     isError: isErrorTodos,
     preparePublish: preparePublishTodos,
-  } = useQuery(Todo2);
+  } = useQuery(Todo2, { include: { assignees: {} } });
   const {
     data: dataUsers,
     isLoading: isLoadingUsers,

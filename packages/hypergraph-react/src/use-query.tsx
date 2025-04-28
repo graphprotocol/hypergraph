@@ -10,8 +10,9 @@ import { parseResult, useQueryPublic } from './internal/use-query-public-geo.js'
 import type { DiffEntry, PublishDiffInfo } from './types.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {
-  mode: 'merged' | 'public' | 'local';
+  mode?: 'merged' | 'public' | 'local';
   filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined;
+  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined;
 };
 
 const mergeEntities = <S extends Entity.AnyNoContext>(
@@ -119,9 +120,9 @@ const getDiff = <S extends Entity.AnyNoContext>(
 const preparePublishDummy = () => undefined;
 
 export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
-  const { mode = 'merged', filter } = params ?? {};
-  const publicResult = useQueryPublic(type, { enabled: mode === 'public' || mode === 'merged' });
-  const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged', filter });
+  const { mode = 'merged', filter, include } = params ?? {};
+  const publicResult = useQueryPublic(type, { enabled: mode === 'public' || mode === 'merged', include });
+  const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged', filter, include });
   const { mapping } = useHypergraph();
   const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
   const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');

@@ -10,7 +10,7 @@ import { GEO_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocument = gql`
-query entities($spaceId: String!, $typeId: String!) {
+query entities($spaceId: String!, $typeId: String!, $relationTypeIds: [String!]!) {
   entities(
     filter: {
       currentVersion: {
@@ -35,7 +35,7 @@ query entities($spaceId: String!, $typeId: String!) {
               valueType
             }
           }
-          relationsByFromVersionId {
+          relationsByFromVersionId(filter: {typeOfId: {in: $relationTypeIds}}) {
             nodes {
               toEntity {
                 nodeId
@@ -181,8 +181,8 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   return { data, invalidEntities };
 };
 
-export const useQueryPublic = <const S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams) => {
-  const { enabled = true } = params ?? {};
+export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
+  const { enabled = true, include } = params ?? {};
   const { space, mapping } = useHypergraph();
 
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
@@ -193,12 +193,20 @@ export const useQueryPublic = <const S extends Entity.AnyNoContext>(type: S, par
     throw new Error(`Mapping entry for ${typeName} not found`);
   }
 
+  const relationTypeIds: string[] = [];
+  for (const key in mappingEntry?.relations ?? {}) {
+    if (include?.[key] && mappingEntry?.relations?.[key]) {
+      relationTypeIds.push(mappingEntry?.relations?.[key]);
+    }
+  }
+
   const result = useQueryTanstack({
     queryKey: [`entities:geo:${typeName}`],
     queryFn: async () => {
       const result = await request<EntityQueryResult>(GEO_ENDPOINT, entitiesQueryDocument, {
         spaceId: space,
         typeId: mappingEntry?.typeIds[0],
+        relationTypeIds,
       });
       return result;
     },

@@ -27,7 +27,7 @@ type EntityQueryResult = {
   entities: { id: string; attributes: { attribute: string; value: string }[] }[];
 };
 
-export function useQueryPublic<const S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams) {
+export function useQueryPublic<const S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) {
   const { enabled = true } = params ?? {};
   const decode = Schema.decodeUnknownEither(type);
   const { space, mapping } = useHypergraph();

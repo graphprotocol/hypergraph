@@ -86,10 +86,11 @@ export function useHardDeleteEntity() {
 type QueryParams<S extends Entity.AnyNoContext> = {
   enabled: boolean;
   filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined;
+  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined;
 };
 
 export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
-  const { enabled = true, filter } = params ?? {};
+  const { enabled = true, filter, include } = params ?? {};
   const entitiesRef = useRef<Entity.Entity<S>[]>([]);
 
   const hypergraph = useHypergraph();
@@ -101,7 +102,7 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
       };
     }
 
-    return Entity.subscribeToFindMany(hypergraph.handle, type, filter);
+    return Entity.subscribeToFindMany(hypergraph.handle, type, filter, include);
   });
 
   // TODO: allow to change the enabled state
@@ -124,7 +125,11 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
   return { entities, deletedEntities };
 }
 
-export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id: string) {
+export function useQueryEntity<const S extends Entity.AnyNoContext>(
+  type: S,
+  id: string,
+  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> },
+) {
   const hypergraph = useHypergraph();
   const prevEntityRef = useRef<Entity.Entity<S> | undefined>(undefined);
   const equals = Schema.equivalence(type);
@@ -153,7 +158,7 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id:
       return prevEntityRef.current;
     }
 
-    const found = Entity.findOne(hypergraph.handle, type)(id);
+    const found = Entity.findOne(hypergraph.handle, type, include)(id);
     if (found === undefined && prevEntityRef.current !== undefined) {
       // entity was maybe deleted, delete from the ref
       prevEntityRef.current = undefined;

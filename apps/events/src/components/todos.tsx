@@ -12,7 +12,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const { data: todos } = useQuery(Todo, { mode: 'local' });
+  const { data: todos } = useQuery(Todo, { mode: 'local', include: { assignees: {} } });
   const { data: users } = useQuery(User, { mode: 'local' });
   const createEntity = useCreateEntity(Todo);
   const updateEntity = useUpdateEntity(Todo);

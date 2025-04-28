@@ -14,7 +14,14 @@ import { Button } from '../ui/button';
 
 export const TodosPublicGeo = () => {
   const space = useHypergraphSpace();
-  const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(Todo2, { mode: 'public' });
+  const {
+    data: dataPublic,
+    isLoading: isLoadingPublic,
+    isError: isErrorPublic,
+  } = useQuery(Todo2, {
+    mode: 'public',
+    include: { assignees: {} },
+  });
 
   const createTodo = useCreateEntity(Todo2);
   const generateCreateOps = useGenerateCreateOps(Todo2);

@@ -47,7 +47,7 @@ describe('Entity', () => {
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = Entity.findMany(handle, Event);
+      const entities = Entity.findMany(handle, Event, undefined, undefined);
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
@@ -78,7 +78,7 @@ describe('Entity', () => {
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = Entity.findMany(handle, Person);
+      const entities = Entity.findMany(handle, Person, undefined, undefined);
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
@@ -107,7 +107,7 @@ describe('Entity', () => {
         age: 2112,
       });
 
-      const updatedEntities = Entity.findMany(handle, Person);
+      const updatedEntities = Entity.findMany(handle, Person, undefined, undefined);
       expect(updatedEntities.entities).toHaveLength(1);
 
       // TODO: fix this
@@ -149,7 +149,7 @@ describe('Entity', () => {
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = Entity.findMany(handle, User);
+      const entities = Entity.findMany(handle, User, undefined, undefined);
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
@@ -173,7 +173,7 @@ describe('Entity', () => {
       const deleted = Entity.delete(handle)(id);
       expect(deleted).toBe(true);
 
-      expect(Entity.findMany(handle, User).entities).toHaveLength(0);
+      expect(Entity.findMany(handle, User, undefined, undefined).entities).toHaveLength(0);
       expect(Entity.findOne(handle, User)(id)).toBeUndefined();
     });
 
@@ -198,13 +198,13 @@ describe('Entity', () => {
       expect(createdBadge).toEqual(expect.objectContaining({ type: Badge.name, name: 'WeDidIt' }));
 
       // should only return users
-      const users = Entity.findMany(handle, User);
+      const users = Entity.findMany(handle, User, undefined, undefined);
       expect(users.entities).toHaveLength(1);
       for (const user of users.entities) {
         expect(user.type).toEqual(User.name);
       }
       // should only return badges
-      const badges = Entity.findMany(handle, Badge);
+      const badges = Entity.findMany(handle, Badge, undefined, undefined);
       expect(badges.entities).toHaveLength(1);
       for (const badge of badges.entities) {
         expect(badge.type).toEqual(Badge.name);
