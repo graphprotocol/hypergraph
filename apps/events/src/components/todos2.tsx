@@ -70,6 +70,7 @@ export const Todos2 = () => {
           <div key={user.id} className="flex flex-row items-center gap-2">
             <h2>{user.name}</h2>
             <div className="text-xs">{user.id}</div>
+            {/* @ts-expect-error */}
             <div className="text-xs">{user.__version}</div>
             <Button variant="outline" size="sm" onClick={() => deleteEntity(user.id)}>
               Delete
@@ -118,9 +119,10 @@ export const Todos2 = () => {
                     <button
                       type="button"
                       onClick={() =>
-                        updateTodo(todo.id, {
-                          assignees: todo.assignees.map((assignee) => assignee.id).filter((id) => id !== assignee.id),
-                        })
+                        // updateTodo(todo.id, {
+                        //   assignees: todo.assignees.map((assignee) => assignee.id).filter((id) => id !== assignee.id),
+                        // })
+                        alert('TODO')
                       }
                       className="cursor-pointer ml-1 text-red-400"
                     >
@@ -130,6 +132,7 @@ export const Todos2 = () => {
                 ))}
               </span>
             )}
+            {/* @ts-expect-error */}
             <div className="text-xs">{todo.__version}</div>
             <Button variant="outline" size="sm" onClick={() => deleteEntity(todo.id)}>
               Delete

@@ -24,7 +24,9 @@ export const TodosLocal = () => {
             checked={todo.checked}
             onChange={(e) => updateEntity(todo.id, { checked: e.target.checked })}
           />
+          {/* @ts-expect-error */}
           <div className="text-xs">{todo.__deleted ? 'deleted' : 'not deleted'}</div>
+          {/* @ts-expect-error */}
           <div className="text-xs">{todo.__version}</div>
           <Button variant="secondary" size="sm" onClick={() => hardDeleteEntity(todo.id)}>
             Hard Delete
