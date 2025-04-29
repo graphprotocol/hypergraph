@@ -11,7 +11,7 @@ import type { DiffEntry, PublishDiffInfo } from './types.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {
   mode?: 'merged' | 'public' | 'local';
-  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined;
+  filter?: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined;
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined;
 };
 

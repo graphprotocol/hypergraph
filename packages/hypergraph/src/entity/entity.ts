@@ -1,6 +1,12 @@
 import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
-import type { AnyNoContext, EntityWithRelation } from './types.js';
+import type {
+  AnyNoContext,
+  EntityCheckboxFilter,
+  EntityNumberFilter,
+  EntityTextFilter,
+  EntityWithRelation,
+} from './types.js';
 import * as VariantSchema from './variant-schema.js';
 
 const {
@@ -37,3 +43,11 @@ export const Relation = <S extends AnyNoContext>(schema: S) =>
     insert: Schema.optional(Schema.Array(Schema.String)),
     update: Schema.Undefined,
   });
+
+export type EntityFieldFilter<T> = T extends boolean
+  ? EntityCheckboxFilter
+  : T extends number
+    ? EntityNumberFilter
+    : T extends string
+      ? EntityTextFilter
+      : never;

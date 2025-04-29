@@ -85,7 +85,7 @@ export function useHardDeleteEntity() {
 
 type QueryParams<S extends Entity.AnyNoContext> = {
   enabled: boolean;
-  filter?: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined;
+  filter?: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined;
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined;
 };
 

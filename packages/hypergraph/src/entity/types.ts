@@ -46,3 +46,21 @@ export type DocumentContent = {
   entities?: Record<string, DocumentEntity>;
   relations?: Record<string, DocumentRelation>;
 };
+
+export type EntityCheckboxFilter = {
+  is: boolean;
+};
+
+export type EntityNumberFilter = {
+  is?: number;
+  greaterThan?: number;
+  lessThan?: number;
+};
+
+export type EntityTextFilter = {
+  is?: string;
+  startsWith?: string;
+  endsWith?: string;
+  contains?: string;
+  equals?: string;
+};

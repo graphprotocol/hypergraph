@@ -4,10 +4,11 @@ import { deepMerge } from '../utils/internal/deep-merge.js';
 import { isRelationField } from '../utils/isRelationField.js';
 import { canonicalize } from '../utils/jsc.js';
 import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
+import type { EntityFieldFilter } from './entity.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import type { AnyNoContext, DocumentContent, Entity } from './types.js';
+import type { AnyNoContext, DocumentContent, Entity, EntityNumberFilter, EntityTextFilter } from './types.js';
 
 const documentChangeListener: {
   subscribedQueriesCount: number;
@@ -229,7 +230,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-  filter: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
+  filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
@@ -251,10 +252,63 @@ export function findMany<const S extends AnyNoContext>(
       try {
         const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
         if (filter) {
+          let matches = true;
           for (const filterEntry in filter) {
-            if (decoded[filterEntry] === filter[filterEntry]) {
-              filtered.push(decoded);
+            const fieldFilter = filter[filterEntry];
+            const fieldValue = decoded[filterEntry];
+
+            if (fieldFilter) {
+              if ('is' in fieldFilter) {
+                const checkboxFilter = fieldFilter;
+                if (fieldValue !== checkboxFilter.is) {
+                  matches = false;
+                  break;
+                }
+              }
+              if (typeof fieldValue === 'number') {
+                if ('greaterThan' in fieldFilter) {
+                  const numberFilter = fieldFilter as EntityNumberFilter;
+                  if (numberFilter.greaterThan !== undefined && fieldValue <= numberFilter.greaterThan) {
+                    matches = false;
+                    break;
+                  }
+                }
+                if ('lessThan' in fieldFilter) {
+                  const numberFilter = fieldFilter as EntityNumberFilter;
+                  if (numberFilter.lessThan !== undefined && fieldValue >= numberFilter.lessThan) {
+                    matches = false;
+                    break;
+                  }
+                }
+              }
+              if (typeof fieldValue === 'string') {
+                if ('startsWith' in fieldFilter) {
+                  const textFilter = fieldFilter as EntityTextFilter;
+                  if (textFilter.startsWith !== undefined && !fieldValue.startsWith(textFilter.startsWith)) {
+                    matches = false;
+                    break;
+                  }
+                }
+                if ('endsWith' in fieldFilter) {
+                  const textFilter = fieldFilter as EntityTextFilter;
+                  if (textFilter.endsWith !== undefined && !fieldValue.endsWith(textFilter.endsWith)) {
+                    matches = false;
+                    break;
+                  }
+                }
+                if ('contains' in fieldFilter) {
+                  const textFilter = fieldFilter as EntityTextFilter;
+                  if (textFilter.contains !== undefined && !fieldValue.includes(textFilter.contains)) {
+                    matches = false;
+                    break;
+                  }
+                }
+              }
             }
+          }
+
+          if (matches) {
+            filtered.push(decoded);
           }
         } else {
           filtered.push(decoded);
@@ -273,7 +327,7 @@ const stableEmptyArray: Array<unknown> = [];
 export function subscribeToFindMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-  filter: Schema.Simplify<Partial<Schema.Schema.Type<S>>> | undefined,
+  filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
 ): {
   subscribe: (callback: () => void) => () => void;
