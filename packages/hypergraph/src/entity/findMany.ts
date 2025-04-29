@@ -4,11 +4,19 @@ import { deepMerge } from '../utils/internal/deep-merge.js';
 import { isRelationField } from '../utils/isRelationField.js';
 import { canonicalize } from '../utils/jsc.js';
 import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
-import type { EntityFieldFilter } from './entity.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import type { AnyNoContext, DocumentContent, Entity, EntityNumberFilter, EntityTextFilter } from './types.js';
+import type {
+  AnyNoContext,
+  CrossFieldFilter,
+  DocumentContent,
+  Entity,
+  EntityFieldFilter,
+  EntityFilter,
+  EntityNumberFilter,
+  EntityTextFilter,
+} from './types.js';
 
 const documentChangeListener: {
   subscribedQueriesCount: number;
@@ -230,7 +238,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-  filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
+  filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
@@ -245,6 +253,103 @@ export function findMany<const S extends AnyNoContext>(
   const entities = doc.entities ?? {};
   const corruptEntityIds: string[] = [];
   const filtered: Array<Entity<S>> = [];
+
+  const evaluateFilter = <T>(fieldFilter: EntityFieldFilter<T>, fieldValue: T): boolean => {
+    // Handle NOT operator
+    if ('NOT' in fieldFilter && fieldFilter.NOT) {
+      return !evaluateFilter(fieldFilter.NOT, fieldValue);
+    }
+
+    // Handle OR operator
+    if ('OR' in fieldFilter) {
+      const orFilters = fieldFilter.OR;
+      if (Array.isArray(orFilters)) {
+        return orFilters.some((orFilter) => evaluateFilter(orFilter as EntityFieldFilter<T>, fieldValue));
+      }
+    }
+
+    // Handle basic filters
+    if ('is' in fieldFilter) {
+      if (typeof fieldValue === 'boolean') {
+        return fieldValue === fieldFilter.is;
+      }
+      if (typeof fieldValue === 'number') {
+        return fieldValue === fieldFilter.is;
+      }
+      if (typeof fieldValue === 'string') {
+        return fieldValue === fieldFilter.is;
+      }
+    }
+
+    if (typeof fieldValue === 'number') {
+      if ('greaterThan' in fieldFilter) {
+        const numberFilter = fieldFilter as EntityNumberFilter;
+        if (numberFilter.greaterThan !== undefined && fieldValue <= numberFilter.greaterThan) {
+          return false;
+        }
+      }
+      if ('lessThan' in fieldFilter) {
+        const numberFilter = fieldFilter as EntityNumberFilter;
+        if (numberFilter.lessThan !== undefined && fieldValue >= numberFilter.lessThan) {
+          return false;
+        }
+      }
+    }
+
+    if (typeof fieldValue === 'string') {
+      if ('startsWith' in fieldFilter) {
+        const textFilter = fieldFilter as EntityTextFilter;
+        if (textFilter.startsWith !== undefined && !fieldValue.startsWith(textFilter.startsWith)) {
+          return false;
+        }
+      }
+      if ('endsWith' in fieldFilter) {
+        const textFilter = fieldFilter as EntityTextFilter;
+        if (textFilter.endsWith !== undefined && !fieldValue.endsWith(textFilter.endsWith)) {
+          return false;
+        }
+      }
+      if ('contains' in fieldFilter) {
+        const textFilter = fieldFilter as EntityTextFilter;
+        if (textFilter.contains !== undefined && !fieldValue.includes(textFilter.contains)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const evaluateCrossFieldFilter = (
+    crossFieldFilter: CrossFieldFilter<Schema.Schema.Type<S>>,
+    entity: Entity<S>,
+  ): boolean => {
+    for (const fieldName in crossFieldFilter) {
+      const fieldFilter = crossFieldFilter[fieldName];
+      const fieldValue = entity[fieldName];
+
+      if (fieldFilter && !evaluateFilter(fieldFilter, fieldValue)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const evaluateEntityFilter = (entityFilter: EntityFilter<Schema.Schema.Type<S>>, entity: Entity<S>): boolean => {
+    // handle top-level NOT operator
+    if ('NOT' in entityFilter && entityFilter.NOT) {
+      return !evaluateCrossFieldFilter(entityFilter.NOT, entity);
+    }
+
+    // handle top-level OR operator
+    if ('OR' in entityFilter && Array.isArray(entityFilter.OR)) {
+      return entityFilter.OR.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
+    }
+
+    // evaluate regular field filters
+    return evaluateCrossFieldFilter(entityFilter, entity);
+  };
+
   for (const id in entities) {
     const entity = entities[id];
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
@@ -252,62 +357,7 @@ export function findMany<const S extends AnyNoContext>(
       try {
         const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
         if (filter) {
-          let matches = true;
-          for (const filterEntry in filter) {
-            const fieldFilter = filter[filterEntry];
-            const fieldValue = decoded[filterEntry];
-
-            if (fieldFilter) {
-              if ('is' in fieldFilter) {
-                const checkboxFilter = fieldFilter;
-                if (fieldValue !== checkboxFilter.is) {
-                  matches = false;
-                  break;
-                }
-              }
-              if (typeof fieldValue === 'number') {
-                if ('greaterThan' in fieldFilter) {
-                  const numberFilter = fieldFilter as EntityNumberFilter;
-                  if (numberFilter.greaterThan !== undefined && fieldValue <= numberFilter.greaterThan) {
-                    matches = false;
-                    break;
-                  }
-                }
-                if ('lessThan' in fieldFilter) {
-                  const numberFilter = fieldFilter as EntityNumberFilter;
-                  if (numberFilter.lessThan !== undefined && fieldValue >= numberFilter.lessThan) {
-                    matches = false;
-                    break;
-                  }
-                }
-              }
-              if (typeof fieldValue === 'string') {
-                if ('startsWith' in fieldFilter) {
-                  const textFilter = fieldFilter as EntityTextFilter;
-                  if (textFilter.startsWith !== undefined && !fieldValue.startsWith(textFilter.startsWith)) {
-                    matches = false;
-                    break;
-                  }
-                }
-                if ('endsWith' in fieldFilter) {
-                  const textFilter = fieldFilter as EntityTextFilter;
-                  if (textFilter.endsWith !== undefined && !fieldValue.endsWith(textFilter.endsWith)) {
-                    matches = false;
-                    break;
-                  }
-                }
-                if ('contains' in fieldFilter) {
-                  const textFilter = fieldFilter as EntityTextFilter;
-                  if (textFilter.contains !== undefined && !fieldValue.includes(textFilter.contains)) {
-                    matches = false;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          if (matches) {
+          if (evaluateEntityFilter(filter, decoded)) {
             filtered.push(decoded);
           }
         } else {
