@@ -8,6 +8,7 @@ import {
   type ApplyError,
   InvalidEventError,
   SpaceEvent,
+  type SpaceInbox,
   type SpaceInvitation,
   type SpaceMember,
   type SpaceState,
@@ -58,7 +59,7 @@ export const applyEvent = ({
     let members: { [accountId: string]: SpaceMember } = {};
     let removedMembers: { [accountId: string]: SpaceMember } = {};
     let invitations: { [id: string]: SpaceInvitation } = {};
-
+    let inboxes: { [inboxId: string]: SpaceInbox } = {};
     if (event.transaction.type === 'create-space') {
       id = event.transaction.id;
       members[event.transaction.creatorAccountId] = {
@@ -70,7 +71,7 @@ export const applyEvent = ({
       members = { ...state.members };
       removedMembers = { ...state.removedMembers };
       invitations = { ...state.invitations };
-
+      inboxes = { ...state.inboxes };
       if (event.transaction.type === 'accept-invitation') {
         // is already a member
         if (members[event.author.accountId] !== undefined) {
@@ -119,6 +120,17 @@ export const applyEvent = ({
           invitations[event.transaction.id] = {
             inviteeAccountId: event.transaction.inviteeAccountId,
           };
+        } else if (event.transaction.type === 'create-space-inbox') {
+          if (inboxes[event.transaction.inboxId] !== undefined) {
+            yield* Effect.fail(new InvalidEventError());
+          }
+          inboxes[event.transaction.inboxId] = {
+            inboxId: event.transaction.inboxId,
+            encryptionPublicKey: event.transaction.encryptionPublicKey,
+            isPublic: event.transaction.isPublic,
+            authPolicy: event.transaction.authPolicy,
+            secretKey: event.transaction.secretKey,
+          };
         } else {
           // state is required for all events except create-space
           yield* Effect.fail(new InvalidEventError());
@@ -131,6 +143,7 @@ export const applyEvent = ({
       members,
       removedMembers,
       invitations,
+      inboxes,
       lastEventHash: hashEvent(event),
     };
   });

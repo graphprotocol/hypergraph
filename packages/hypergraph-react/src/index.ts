@@ -1,5 +1,10 @@
 export { PublishDiff } from './components/publish-diff/publish-diff.js';
 export { createWalletClient } from './create-wallet-client.js';
+export { useExternalAccountInbox } from './hooks/useExternalAccountInbox.js';
+export { useExternalSpaceInbox } from './hooks/useExternalSpaceInbox.js';
+export { useOwnAccountInbox } from './hooks/useOwnAccountInbox.js';
+export { useOwnSpaceInbox } from './hooks/useOwnSpaceInbox.js';
+export { usePublicAccountInboxes } from './hooks/usePublicAccountInboxes.js';
 export {
   HypergraphAppProvider,
   useHypergraphApp,

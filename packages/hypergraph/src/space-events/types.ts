@@ -1,6 +1,7 @@
 import type { ParseError } from 'effect/ParseResult';
 import * as Schema from 'effect/Schema';
 import type { InvalidIdentityError } from '../identity/types.js';
+import { InboxSenderAuthPolicy } from '../inboxes/types.js';
 import { SignatureWithRecovery } from '../types.js';
 
 export const EventAuthor = Schema.Struct({
@@ -23,11 +24,22 @@ export const SpaceInvitation = Schema.Struct({
 
 export type SpaceInvitation = Schema.Schema.Type<typeof SpaceInvitation>;
 
+export const SpaceInbox = Schema.Struct({
+  inboxId: Schema.String,
+  encryptionPublicKey: Schema.String,
+  isPublic: Schema.Boolean,
+  authPolicy: InboxSenderAuthPolicy,
+  secretKey: Schema.String,
+});
+
+export type SpaceInbox = Schema.Schema.Type<typeof SpaceInbox>;
+
 export const SpaceState = Schema.Struct({
   id: Schema.String,
   invitations: Schema.Record({ key: Schema.String, value: SpaceInvitation }),
   members: Schema.Record({ key: Schema.String, value: SpaceMember }),
   removedMembers: Schema.Record({ key: Schema.String, value: SpaceMember }),
+  inboxes: Schema.Record({ key: Schema.String, value: SpaceInbox }),
   lastEventHash: Schema.String,
 });
 
@@ -67,6 +79,23 @@ export const CreateInvitationEvent = Schema.Struct({
 
 export type CreateInvitationEvent = Schema.Schema.Type<typeof CreateInvitationEvent>;
 
+export const CreateSpaceInboxEvent = Schema.Struct({
+  transaction: Schema.Struct({
+    type: Schema.Literal('create-space-inbox'),
+    id: Schema.String,
+    spaceId: Schema.String,
+    inboxId: Schema.String,
+    encryptionPublicKey: Schema.String,
+    secretKey: Schema.String,
+    isPublic: Schema.Boolean,
+    authPolicy: InboxSenderAuthPolicy,
+    previousEventHash: Schema.String,
+  }),
+  author: EventAuthor,
+});
+
+export type CreateSpaceInboxEvent = Schema.Schema.Type<typeof CreateSpaceInboxEvent>;
+
 export const AcceptInvitationEvent = Schema.Struct({
   transaction: Schema.Struct({
     id: Schema.String,
@@ -83,6 +112,7 @@ export const SpaceEvent = Schema.Union(
   DeleteSpaceEvent,
   CreateInvitationEvent,
   AcceptInvitationEvent,
+  CreateSpaceInboxEvent,
 );
 
 export type SpaceEvent = Schema.Schema.Type<typeof SpaceEvent>;

@@ -1,18 +1,28 @@
-import { parse } from 'node:url';
-import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
+import { Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import WebSocket, { WebSocketServer } from 'ws';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
+import { createAccountInbox } from './handlers/createAccountInbox.js';
+import { createAccountInboxMessage } from './handlers/createAccountInboxMessage.js';
 import { createIdentity } from './handlers/createIdentity.js';
 import { createSpace } from './handlers/createSpace.js';
+import { createSpaceInboxMessage } from './handlers/createSpaceInboxMessage.js';
 import { createUpdate } from './handlers/createUpdate.js';
-import { getIdentity } from './handlers/getIdentity.js';
+import { getAccountInbox } from './handlers/getAccountInbox.js';
+import { type GetIdentityResult, getIdentity } from './handlers/getIdentity.js';
+import { getLatestAccountInboxMessages } from './handlers/getLatestAccountInboxMessages.js';
+import { getLatestSpaceInboxMessages } from './handlers/getLatestSpaceInboxMessages.js';
 import { getSpace } from './handlers/getSpace.js';
+import { getSpaceInbox } from './handlers/getSpaceInbox.js';
+import { listAccountInboxes } from './handlers/listAccountInboxes.js';
 import { listInvitations } from './handlers/listInvitations.js';
+import { listPublicAccountInboxes } from './handlers/listPublicAccountInboxes.js';
+import { listPublicSpaceInboxes } from './handlers/listPublicSpaceInboxes.js';
 import { listSpaces } from './handlers/listSpaces.js';
 import { createSessionNonce, getSessionNonce } from './handlers/sessionNonce.js';
 import { createSessionToken, getAccountIdBySessionToken } from './handlers/sessionToken.js';
@@ -271,6 +281,167 @@ app.get('/identity', async (req, res) => {
   }
 });
 
+app.get('/spaces/:spaceId/inboxes', async (req, res) => {
+  console.log('GET spaces/:spaceId/inboxes');
+  const spaceId = req.params.spaceId;
+  const inboxes = await listPublicSpaceInboxes({ spaceId });
+  const outgoingMessage: Messages.ResponseListSpaceInboxesPublic = {
+    inboxes,
+  };
+  res.status(200).send(outgoingMessage);
+});
+
+app.get('/spaces/:spaceId/inboxes/:inboxId', async (req, res) => {
+  console.log('GET spaces/:spaceId/inboxes/:inboxId');
+  const spaceId = req.params.spaceId;
+  const inboxId = req.params.inboxId;
+  const inbox = await getSpaceInbox({ spaceId, inboxId });
+  const outgoingMessage: Messages.ResponseSpaceInboxPublic = {
+    inbox,
+  };
+  res.status(200).send(outgoingMessage);
+});
+
+app.post('/spaces/:spaceId/inboxes/:inboxId/messages', async (req, res) => {
+  console.log('POST spaces/:spaceId/inboxes/:inboxId/messages');
+  const spaceId = req.params.spaceId;
+  const inboxId = req.params.inboxId;
+  const message = Schema.decodeUnknownSync(Messages.RequestCreateSpaceInboxMessage)(req.body);
+  let spaceInbox: Messages.SpaceInboxPublic;
+  try {
+    spaceInbox = await getSpaceInbox({ spaceId, inboxId });
+  } catch (error) {
+    res.status(404).send({ error: 'Inbox not found' });
+    return;
+  }
+
+  switch (spaceInbox.authPolicy) {
+    case 'requires_auth':
+      if (!message.signature || !message.authorAccountId) {
+        res.status(400).send({ error: 'Signature and authorAccountId required' });
+        return;
+      }
+      break;
+    case 'anonymous':
+      if (message.signature || message.authorAccountId) {
+        res.status(400).send({ error: 'Signature and authorAccountId not allowed' });
+        return;
+      }
+      break;
+    case 'optional_auth':
+      if ((message.signature && !message.authorAccountId) || (!message.signature && message.authorAccountId)) {
+        res.status(400).send({ error: 'Signature and authorAccountId must be provided together' });
+        return;
+      }
+      break;
+    default:
+      // This shouldn't happen
+      res.status(500).send({ error: 'Unknown auth policy' });
+      return;
+  }
+
+  if (message.signature && message.authorAccountId) {
+    // Recover the public key from the signature
+    const authorPublicKey = Inboxes.recoverSpaceInboxMessageSigner(message, spaceId, inboxId);
+
+    // Check if this public key corresponds to a user's identity
+    let authorIdentity: GetIdentityResult;
+    try {
+      authorIdentity = await getIdentity({ signaturePublicKey: authorPublicKey });
+    } catch (error) {
+      res.status(403).send({ error: 'Not authorized to post to this inbox' });
+      return;
+    }
+    if (authorIdentity.accountId !== message.authorAccountId) {
+      res.status(403).send({ error: 'Not authorized to post to this inbox' });
+      return;
+    }
+  }
+  const createdMessage = await createSpaceInboxMessage({ spaceId, inboxId, message });
+  res.status(200).send({});
+  broadcastSpaceInboxMessage({ spaceId, inboxId, message: createdMessage });
+});
+
+app.get('/accounts/:accountId/inboxes', async (req, res) => {
+  console.log('GET accounts/:accountId/inboxes');
+  const accountId = req.params.accountId;
+  const inboxes = await listPublicAccountInboxes({ accountId });
+  const outgoingMessage: Messages.ResponseListAccountInboxesPublic = {
+    inboxes,
+  };
+  res.status(200).send(outgoingMessage);
+});
+
+app.get('/accounts/:accountId/inboxes/:inboxId', async (req, res) => {
+  console.log('GET accounts/:accountId/inboxes/:inboxId');
+  const accountId = req.params.accountId;
+  const inboxId = req.params.inboxId;
+  const inbox = await getAccountInbox({ accountId, inboxId });
+  const outgoingMessage: Messages.ResponseAccountInboxPublic = {
+    inbox,
+  };
+  res.status(200).send(outgoingMessage);
+});
+
+app.post('/accounts/:accountId/inboxes/:inboxId/messages', async (req, res) => {
+  console.log('POST accounts/:accountId/inboxes/:inboxId/messages');
+  const accountId = req.params.accountId;
+  const inboxId = req.params.inboxId;
+  const message = Schema.decodeUnknownSync(Messages.RequestCreateAccountInboxMessage)(req.body);
+  let accountInbox: Messages.AccountInboxPublic;
+  try {
+    accountInbox = await getAccountInbox({ accountId, inboxId });
+  } catch (error) {
+    res.status(404).send({ error: 'Inbox not found' });
+    return;
+  }
+
+  switch (accountInbox.authPolicy) {
+    case 'requires_auth':
+      if (!message.signature || !message.authorAccountId) {
+        res.status(400).send({ error: 'Signature and authorAccountId required' });
+        return;
+      }
+      break;
+    case 'anonymous':
+      if (message.signature || message.authorAccountId) {
+        res.status(400).send({ error: 'Signature and authorAccountId not allowed' });
+        return;
+      }
+      break;
+    case 'optional_auth':
+      if ((message.signature && !message.authorAccountId) || (!message.signature && message.authorAccountId)) {
+        res.status(400).send({ error: 'Signature and authorAccountId must be provided together' });
+        return;
+      }
+      break;
+    default:
+      // This shouldn't happen
+      res.status(500).send({ error: 'Unknown auth policy' });
+      return;
+  }
+  if (message.signature && message.authorAccountId) {
+    // Recover the public key from the signature
+    const authorPublicKey = Inboxes.recoverAccountInboxMessageSigner(message, accountId, inboxId);
+
+    // Check if this public key corresponds to a user's identity
+    let authorIdentity: GetIdentityResult;
+    try {
+      authorIdentity = await getIdentity({ signaturePublicKey: authorPublicKey });
+    } catch (error) {
+      res.status(403).send({ error: 'Not authorized to post to this inbox' });
+      return;
+    }
+    if (authorIdentity.accountId !== message.authorAccountId) {
+      res.status(403).send({ error: 'Not authorized to post to this inbox' });
+      return;
+    }
+  }
+  const createdMessage = await createAccountInboxMessage({ accountId, inboxId, message });
+  res.status(200).send({});
+  broadcastAccountInboxMessage({ accountId, inboxId, message: createdMessage });
+});
+
 const server = app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
@@ -308,6 +479,54 @@ function broadcastUpdates({
       spaceId,
     };
     if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+      client.send(Messages.serialize(outgoingMessage));
+    }
+  }
+}
+
+function broadcastSpaceInboxMessage({
+  spaceId,
+  inboxId,
+  message,
+}: { spaceId: string; inboxId: string; message: Messages.InboxMessage }) {
+  const outgoingMessage: Messages.ResponseSpaceInboxMessage = {
+    type: 'space-inbox-message',
+    spaceId,
+    inboxId,
+    message,
+  };
+  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+    if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+      client.send(Messages.serialize(outgoingMessage));
+    }
+  }
+}
+
+function broadcastAccountInbox({ inbox }: { inbox: Messages.AccountInboxPublic }) {
+  const outgoingMessage: Messages.ResponseAccountInbox = {
+    type: 'account-inbox',
+    inbox,
+  };
+  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+    if (client.readyState === WebSocket.OPEN && client.accountId === inbox.accountId) {
+      client.send(Messages.serialize(outgoingMessage));
+    }
+  }
+}
+
+function broadcastAccountInboxMessage({
+  accountId,
+  inboxId,
+  message,
+}: { accountId: string; inboxId: string; message: Messages.InboxMessage }) {
+  const outgoingMessage: Messages.ResponseAccountInboxMessage = {
+    type: 'account-inbox-message',
+    accountId,
+    inboxId,
+    message,
+  };
+  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+    if (client.readyState === WebSocket.OPEN && client.accountId === accountId) {
       client.send(Messages.serialize(outgoingMessage));
     }
   }
@@ -440,6 +659,90 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           };
           webSocket.send(Messages.serialize(outgoingMessage));
           broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
+          break;
+        }
+        case 'create-space-inbox-event': {
+          await applySpaceEvent({ accountId, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
+          const spaceWithEvents = await getSpace({ accountId, spaceId: data.spaceId });
+          // TODO send back confirmation instead of the entire space
+          const outgoingMessage: Messages.ResponseSpace = {
+            ...spaceWithEvents,
+            type: 'space',
+          };
+          webSocket.send(Messages.serialize(outgoingMessage));
+          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
+          break;
+        }
+        case 'create-account-inbox': {
+          try {
+            // Check that the signature is valid for the corresponding accountId
+            if (data.accountId !== accountId) {
+              throw new Error('Invalid accountId');
+            }
+            const signer = Inboxes.recoverAccountInboxCreatorKey(data);
+            const signerAccount = await getIdentity({ signaturePublicKey: signer });
+            if (signerAccount.accountId !== accountId) {
+              throw new Error('Invalid signature');
+            }
+            // Create the inbox (if it doesn't exist)
+            await createAccountInbox(data);
+            // Broadcast the inbox to other clients from the same account
+            broadcastAccountInbox({ inbox: data });
+          } catch (error) {
+            console.error('Error creating account inbox:', error);
+            return;
+          }
+          break;
+        }
+        case 'get-latest-space-inbox-messages': {
+          try {
+            // Check that the user has access to this space
+            await getSpace({ accountId, spaceId: data.spaceId });
+            const messages = await getLatestSpaceInboxMessages({
+              inboxId: data.inboxId,
+              since: data.since,
+            });
+            const outgoingMessage: Messages.ResponseSpaceInboxMessages = {
+              type: 'space-inbox-messages',
+              spaceId: data.spaceId,
+              inboxId: data.inboxId,
+              messages,
+            };
+            webSocket.send(Messages.serialize(outgoingMessage));
+          } catch (error) {
+            console.error('Error getting latest space inbox messages:', error);
+            return;
+          }
+          break;
+        }
+        case 'get-latest-account-inbox-messages': {
+          try {
+            // Check that the user has access to this inbox
+            await getAccountInbox({ accountId, inboxId: data.inboxId });
+            const messages = await getLatestAccountInboxMessages({
+              inboxId: data.inboxId,
+              since: data.since,
+            });
+            const outgoingMessage: Messages.ResponseAccountInboxMessages = {
+              type: 'account-inbox-messages',
+              accountId,
+              inboxId: data.inboxId,
+              messages,
+            };
+            webSocket.send(Messages.serialize(outgoingMessage));
+          } catch (error) {
+            console.error('Error getting latest account inbox messages:', error);
+            return;
+          }
+          break;
+        }
+        case 'get-account-inboxes': {
+          const inboxes = await listAccountInboxes({ accountId });
+          const outgoingMessage: Messages.ResponseAccountInboxes = {
+            type: 'account-inboxes',
+            inboxes,
+          };
+          webSocket.send(Messages.serialize(outgoingMessage));
           break;
         }
         case 'create-update': {

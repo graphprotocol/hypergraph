@@ -47,6 +47,17 @@ function RouteComponent() {
           <Link to={'/space/$spaceId/users'} params={{ spaceId }} className="px-3 py-2 text-sm font-medium rounded-md">
             Users
           </Link>
+
+          <Link
+            to={'/space/$spaceId/playground'}
+            params={{ spaceId }}
+            className="px-3 py-2 text-sm font-medium rounded-md"
+          >
+            Playground
+          </Link>
+          <Link to={'/space/$spaceId/chat'} params={{ spaceId }} className="px-3 py-2 text-sm font-medium rounded-md">
+            Chat
+          </Link>
         </nav>
       </div>
 

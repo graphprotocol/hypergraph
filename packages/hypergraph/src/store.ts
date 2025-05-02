@@ -2,10 +2,45 @@ import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
 import { type Store, createStore } from '@xstate/store';
 import type { Address } from 'viem';
+import { mergeMessages } from './inboxes/merge-messages.js';
+import type { InboxSenderAuthPolicy } from './inboxes/types.js';
 import type { Identity } from './index.js';
 import type { Invitation, Updates } from './messages/index.js';
 import type { SpaceEvent, SpaceState } from './space-events/index.js';
 import { idToAutomergeId } from './utils/automergeId.js';
+
+export type InboxMessageStorageEntry = {
+  id: string;
+  plaintext: string;
+  ciphertext: string;
+  signature: {
+    hex: string;
+    recovery: number;
+  } | null;
+  createdAt: string;
+  authorAccountId: string | null;
+};
+
+export type SpaceInboxStorageEntry = {
+  inboxId: string;
+  isPublic: boolean;
+  authPolicy: InboxSenderAuthPolicy;
+  encryptionPublicKey: string;
+  secretKey: string;
+  lastMessageClock: string;
+  messages: InboxMessageStorageEntry[]; // Kept sorted by UUIDv7
+  seenMessageIds: Set<string>; // For deduplication
+};
+
+export type AccountInboxStorageEntry = {
+  inboxId: string;
+  isPublic: boolean;
+  authPolicy: InboxSenderAuthPolicy;
+  encryptionPublicKey: string;
+  lastMessageClock: string;
+  messages: InboxMessageStorageEntry[]; // Kept sorted by UUIDv7
+  seenMessageIds: Set<string>; // For deduplication
+};
 
 export type SpaceStorageEntry = {
   id: string;
@@ -13,6 +48,7 @@ export type SpaceStorageEntry = {
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
   automergeDocHandle: DocHandle<unknown> | undefined;
+  inboxes: SpaceInboxStorageEntry[];
 };
 
 interface StoreContext {
@@ -33,6 +69,7 @@ interface StoreContext {
   sessionToken: string | null;
   keys: Identity.IdentityKeys | null;
   lastUpdateClock: { [spaceId: string]: number };
+  accountInboxes: AccountInboxStorageEntry[];
 }
 
 const initialStoreContext: StoreContext = {
@@ -46,6 +83,7 @@ const initialStoreContext: StoreContext = {
   sessionToken: null,
   keys: null,
   lastUpdateClock: {},
+  accountInboxes: [],
 };
 
 type StoreEvent =
@@ -66,10 +104,33 @@ type StoreEvent =
       keyProof: string;
     }
   | {
+      type: 'setSpaceInbox';
+      spaceId: string;
+      inbox: SpaceInboxStorageEntry;
+    }
+  | {
+      type: 'setSpaceInboxMessages';
+      spaceId: string;
+      inboxId: string;
+      messages: InboxMessageStorageEntry[];
+      lastMessageClock: string;
+    }
+  | {
+      type: 'setAccountInbox';
+      inbox: AccountInboxStorageEntry;
+    }
+  | {
+      type: 'setAccountInboxMessages';
+      inboxId: string;
+      messages: InboxMessageStorageEntry[];
+      lastMessageClock: string;
+    }
+  | {
       type: 'setSpace';
       spaceId: string;
       updates?: Updates;
       events: SpaceEvent[];
+      inboxes?: SpaceInboxStorageEntry[];
       spaceState: SpaceState;
       keys: {
         id: string;
@@ -131,6 +192,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
                 state: existingSpace.state,
                 keys: existingSpace.keys ?? [],
                 automergeDocHandle,
+                inboxes: existingSpace.inboxes ?? [],
               };
               return newSpace;
             }
@@ -151,6 +213,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
             events: [],
             state: undefined,
             keys: [],
+            inboxes: [],
             updates: [],
             lastUpdateClock: -1,
             automergeDocHandle,
@@ -216,11 +279,127 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         },
       };
     },
+    setSpaceInbox: (context, event: { spaceId: string; inbox: SpaceInboxStorageEntry }) => {
+      return {
+        ...context,
+        spaces: context.spaces.map((space) => {
+          if (space.id === event.spaceId) {
+            const existingInbox = space.inboxes.find((inbox) => inbox.inboxId === event.inbox.inboxId);
+            if (existingInbox) {
+              return {
+                ...space,
+                inboxes: space.inboxes.map((inbox) => {
+                  if (inbox.inboxId === event.inbox.inboxId) {
+                    const { messages, seenMessageIds } = mergeMessages(
+                      existingInbox.messages,
+                      existingInbox.seenMessageIds,
+                      event.inbox.messages,
+                    );
+                    return {
+                      ...event.inbox,
+                      messages,
+                      seenMessageIds,
+                    };
+                  }
+                  return inbox;
+                }),
+              };
+            }
+            return { ...space, inboxes: [...space.inboxes, event.inbox] };
+          }
+          return space;
+        }),
+      };
+    },
+    setSpaceInboxMessages: (
+      context,
+      event: { spaceId: string; inboxId: string; messages: InboxMessageStorageEntry[]; lastMessageClock: string },
+    ) => {
+      return {
+        ...context,
+        spaces: context.spaces.map((space) => {
+          if (space.id === event.spaceId) {
+            return {
+              ...space,
+              inboxes: space.inboxes.map((inbox) => {
+                if (inbox.inboxId === event.inboxId) {
+                  const { messages, seenMessageIds } = mergeMessages(
+                    inbox.messages,
+                    inbox.seenMessageIds,
+                    event.messages,
+                  );
+                  return {
+                    ...inbox,
+                    messages,
+                    seenMessageIds,
+                    lastMessageClock: new Date(
+                      Math.max(new Date(inbox.lastMessageClock).getTime(), new Date(event.lastMessageClock).getTime()),
+                    ).toISOString(),
+                  };
+                }
+                return inbox;
+              }),
+            };
+          }
+          return space;
+        }),
+      };
+    },
+    setAccountInbox: (context, event: { inbox: AccountInboxStorageEntry }) => {
+      const existingInbox = context.accountInboxes.find((inbox) => inbox.inboxId === event.inbox.inboxId);
+      if (existingInbox) {
+        return {
+          ...context,
+          accountInboxes: context.accountInboxes.map((inbox) => {
+            if (inbox.inboxId === event.inbox.inboxId) {
+              const { messages, seenMessageIds } = mergeMessages(
+                existingInbox.messages,
+                existingInbox.seenMessageIds,
+                event.inbox.messages,
+              );
+              return {
+                ...event.inbox,
+                messages,
+                seenMessageIds,
+              };
+            }
+            return inbox;
+          }),
+        };
+      }
+      return {
+        ...context,
+        accountInboxes: [...context.accountInboxes, event.inbox],
+      };
+    },
+    setAccountInboxMessages: (
+      context,
+      event: { inboxId: string; messages: InboxMessageStorageEntry[]; lastMessageClock: string },
+    ) => {
+      return {
+        ...context,
+        accountInboxes: context.accountInboxes.map((inbox) => {
+          if (inbox.inboxId === event.inboxId) {
+            const { messages, seenMessageIds } = mergeMessages(inbox.messages, inbox.seenMessageIds, event.messages);
+            return {
+              ...inbox,
+              messages,
+              seenMessageIds,
+              lastMessageClock: new Date(
+                Math.max(new Date(inbox.lastMessageClock).getTime(), new Date(event.lastMessageClock).getTime()),
+              ).toISOString(),
+            };
+          }
+          return inbox;
+        }),
+      };
+    },
     setSpace: (
       context,
       event: {
         spaceId: string;
         updates?: Updates;
+        inboxes?: SpaceInboxStorageEntry[];
         events: SpaceEvent[];
         spaceState: SpaceState;
         keys: {
@@ -241,6 +420,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
           state: event.spaceState,
           keys: event.keys,
           automergeDocHandle,
+          inboxes: event.inboxes ?? [],
         };
         return {
           ...context,
@@ -263,11 +443,22 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         ...context,
         spaces: context.spaces.map((space) => {
           if (space.id === event.spaceId) {
+            // Merge inboxes: keep existing ones and add new ones
+            const mergedInboxes = [...space.inboxes];
+            for (const newInbox of event.inboxes ?? []) {
+              const existingInboxIndex = mergedInboxes.findIndex((inbox) => inbox.inboxId === newInbox.inboxId);
+              if (existingInboxIndex === -1) {
+                // Only add if it's a new inbox
+                mergedInboxes.push(newInbox);
+              }
+            }
+
             return {
               ...space,
               events: event.events,
               state: event.spaceState,
               keys: event.keys,
+              inboxes: mergedInboxes,
             };
           }
           return space;
