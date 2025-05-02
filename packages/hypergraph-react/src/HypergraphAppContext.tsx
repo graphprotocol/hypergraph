@@ -16,7 +16,6 @@ import {
   Utils,
   store,
 } from '@graphprotocol/hypergraph';
-import { generateId } from '@graphprotocol/hypergraph/utils/index';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -901,7 +900,7 @@ export function HypergraphAppProvider({
         throw new Error('Missing keys');
       }
 
-      let spaceId = generateId();
+      let spaceId = Utils.generateId();
 
       try {
         if (smartAccountWalletClient?.account) {
