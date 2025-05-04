@@ -4,7 +4,7 @@ import { User } from '../schema.js';
 import { Button } from './ui/button';
 import { Input } from './ui/input.js';
 
-export const UserEntry = (user: User) => {
+export const UserEntry = (user: User & { id: string }) => {
   const deleteEntity = useDeleteEntity();
   const updateEntity = useUpdateEntity(User);
   const [editMode, setEditMode] = useState(false);

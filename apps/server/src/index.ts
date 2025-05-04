@@ -1,8 +1,8 @@
-import { parse } from 'node:url';
 import { Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import { SiweMessage } from 'siwe';
 import type { Hex } from 'viem';
 import WebSocket, { WebSocketServer } from 'ws';

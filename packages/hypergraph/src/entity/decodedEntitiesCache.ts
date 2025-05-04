@@ -1,9 +1,11 @@
+import type * as Schema from 'effect/Schema';
 import type { AnyNoContext, Entity } from './types.js';
 
 export type QueryEntry = {
   data: Array<Entity<AnyNoContext>>; // holds the decoded entities of this query and must be a stable reference and use the same reference for the `entities` array
   listeners: Array<() => void>; // listeners to this query
   isInvalidated: boolean;
+  include: { [K in keyof Schema.Schema.Type<AnyNoContext>]?: Record<string, never> };
 };
 
 export type DecodedEntitiesCacheEntry = {

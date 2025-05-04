@@ -1,11 +1,22 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
+import { deepMerge } from '../utils/internal/deep-merge.js';
+import { isRelationField } from '../utils/isRelationField.js';
+import { canonicalize } from '../utils/jsc.js';
 import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import { isReferenceField } from './isReferenceField.js';
-import type { AnyNoContext, DocumentContent, Entity } from './types.js';
+import type {
+  AnyNoContext,
+  CrossFieldFilter,
+  DocumentContent,
+  Entity,
+  EntityFieldFilter,
+  EntityFilter,
+  EntityNumberFilter,
+  EntityTextFilter,
+} from './types.js';
 
 const documentChangeListener: {
   subscribedQueriesCount: number;
@@ -17,6 +28,8 @@ const documentChangeListener: {
 
 const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
   const onChange = ({ patches, doc }: { patches: Array<Patch>; doc: DocumentContent }) => {
+    const changedRelations = new Set<string>();
+    const deletedRelations = new Set<string>();
     const changedEntities = new Set<string>();
     const deletedEntities = new Set<string>();
 
@@ -28,11 +41,17 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           if (patch.path.length > 2 && patch.path[0] === 'entities' && typeof patch.path[1] === 'string') {
             changedEntities.add(patch.path[1]);
           }
+          if (patch.path.length > 2 && patch.path[0] === 'relations' && typeof patch.path[1] === 'string') {
+            changedRelations.add(patch.path[1]);
+          }
           break;
         }
         case 'del': {
           if (patch.path.length === 2 && patch.path[0] === 'entities' && typeof patch.path[1] === 'string') {
             deletedEntities.add(patch.path[1]);
+          }
+          if (patch.path.length === 2 && patch.path[0] === 'relations' && typeof patch.path[1] === 'string') {
+            deletedRelations.add(patch.path[1]);
           }
           break;
         }
@@ -56,14 +75,25 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         const cacheEntry = decodedEntitiesCache.get(typeName);
         if (!cacheEntry) continue;
 
+        let includeFromAllQueries = {};
+        for (const [, query] of cacheEntry.queries) {
+          includeFromAllQueries = deepMerge(includeFromAllQueries, query.include);
+        }
+
         const oldDecodedEntry = cacheEntry.entities.get(entityId);
-        const relations = getEntityRelations(entity, cacheEntry.type, doc);
-        const decoded = cacheEntry.decoder({
-          ...entity,
-          ...relations,
-          id: entityId,
-        });
-        cacheEntry.entities.set(entityId, decoded);
+        const relations = getEntityRelations(entityId, cacheEntry.type, doc, includeFromAllQueries);
+        let decoded: unknown | undefined;
+        try {
+          decoded = cacheEntry.decoder({
+            ...entity,
+            ...relations,
+            id: entityId,
+          });
+          cacheEntry.entities.set(entityId, decoded);
+        } catch (error) {
+          // TODO: store the corrupt entity ids somewhere, so they can be read via the API
+          console.error('error', error);
+        }
 
         if (oldDecodedEntry) {
           // collect all the Ids for relation entries in the `oldDecodedEntry`
@@ -91,31 +121,26 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           }
         }
 
-        // @ts-expect-error decoded is a valid object
-        for (const [key, value] of Object.entries(decoded)) {
-          if (Array.isArray(value)) {
-            for (const relationEntity of value) {
-              let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-              if (relationParentEntry) {
-                relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
-              } else {
-                relationParentEntry = new Map();
-                entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-                relationParentEntry.set(cacheEntry, 1);
+        if (decoded) {
+          for (const [, value] of Object.entries(decoded)) {
+            if (Array.isArray(value)) {
+              for (const relationEntity of value) {
+                let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+                if (relationParentEntry) {
+                  relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
+                } else {
+                  relationParentEntry = new Map();
+                  entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+                  relationParentEntry.set(cacheEntry, 1);
+                }
               }
             }
           }
         }
 
-        const query = cacheEntry.queries.get('all');
-        if (query) {
-          const index = query.data.findIndex((entity) => entity.id === entityId);
-          if (index !== -1) {
-            query.data[index] = decoded;
-          } else {
-            query.data.push(decoded);
-          }
-          touchedQueries.add([typeName, 'all']);
+        for (const [queryKey, query] of cacheEntry.queries) {
+          touchedQueries.add([typeName, queryKey]);
+          query.isInvalidated = true;
         }
 
         entityTypes.add(typeName);
@@ -140,12 +165,12 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           entityTypes.add(affectedTypeName);
           cacheEntry.entities.delete(entityId);
 
-          for (const [, query] of cacheEntry.queries) {
+          for (const [queryKey, query] of cacheEntry.queries) {
             // find the entity in the query and remove it using splice
             const index = query.data.findIndex((entity) => entity.id === entityId);
             if (index !== -1) {
               query.data.splice(index, 1);
-              touchedQueries.add([affectedTypeName, 'all']);
+              touchedQueries.add([affectedTypeName, queryKey]);
             }
           }
         }
@@ -213,7 +238,9 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-): Readonly<Array<Entity<S>>> {
+  filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
+): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
   // @ts-expect-error name is defined
@@ -221,19 +248,128 @@ export function findMany<const S extends AnyNoContext>(
 
   const doc = handle.docSync();
   if (!doc) {
-    return [];
+    return { entities: [], corruptEntityIds: [] };
   }
   const entities = doc.entities ?? {};
+  const corruptEntityIds: string[] = [];
   const filtered: Array<Entity<S>> = [];
+
+  const evaluateFilter = <T>(fieldFilter: EntityFieldFilter<T>, fieldValue: T): boolean => {
+    // Handle NOT operator
+    if ('NOT' in fieldFilter && fieldFilter.NOT) {
+      return !evaluateFilter(fieldFilter.NOT, fieldValue);
+    }
+
+    // Handle OR operator
+    if ('OR' in fieldFilter) {
+      const orFilters = fieldFilter.OR;
+      if (Array.isArray(orFilters)) {
+        return orFilters.some((orFilter) => evaluateFilter(orFilter as EntityFieldFilter<T>, fieldValue));
+      }
+    }
+
+    // Handle basic filters
+    if ('is' in fieldFilter) {
+      if (typeof fieldValue === 'boolean') {
+        return fieldValue === fieldFilter.is;
+      }
+      if (typeof fieldValue === 'number') {
+        return fieldValue === fieldFilter.is;
+      }
+      if (typeof fieldValue === 'string') {
+        return fieldValue === fieldFilter.is;
+      }
+    }
+
+    if (typeof fieldValue === 'number') {
+      if ('greaterThan' in fieldFilter) {
+        const numberFilter = fieldFilter as EntityNumberFilter;
+        if (numberFilter.greaterThan !== undefined && fieldValue <= numberFilter.greaterThan) {
+          return false;
+        }
+      }
+      if ('lessThan' in fieldFilter) {
+        const numberFilter = fieldFilter as EntityNumberFilter;
+        if (numberFilter.lessThan !== undefined && fieldValue >= numberFilter.lessThan) {
+          return false;
+        }
+      }
+    }
+
+    if (typeof fieldValue === 'string') {
+      if ('startsWith' in fieldFilter) {
+        const textFilter = fieldFilter as EntityTextFilter;
+        if (textFilter.startsWith !== undefined && !fieldValue.startsWith(textFilter.startsWith)) {
+          return false;
+        }
+      }
+      if ('endsWith' in fieldFilter) {
+        const textFilter = fieldFilter as EntityTextFilter;
+        if (textFilter.endsWith !== undefined && !fieldValue.endsWith(textFilter.endsWith)) {
+          return false;
+        }
+      }
+      if ('contains' in fieldFilter) {
+        const textFilter = fieldFilter as EntityTextFilter;
+        if (textFilter.contains !== undefined && !fieldValue.includes(textFilter.contains)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const evaluateCrossFieldFilter = (
+    crossFieldFilter: CrossFieldFilter<Schema.Schema.Type<S>>,
+    entity: Entity<S>,
+  ): boolean => {
+    for (const fieldName in crossFieldFilter) {
+      const fieldFilter = crossFieldFilter[fieldName];
+      const fieldValue = entity[fieldName];
+
+      if (fieldFilter && !evaluateFilter(fieldFilter, fieldValue)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const evaluateEntityFilter = (entityFilter: EntityFilter<Schema.Schema.Type<S>>, entity: Entity<S>): boolean => {
+    // handle top-level NOT operator
+    if ('NOT' in entityFilter && entityFilter.NOT) {
+      return !evaluateCrossFieldFilter(entityFilter.NOT, entity);
+    }
+
+    // handle top-level OR operator
+    if ('OR' in entityFilter && Array.isArray(entityFilter.OR)) {
+      return entityFilter.OR.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
+    }
+
+    // evaluate regular field filters
+    return evaluateCrossFieldFilter(entityFilter, entity);
+  };
+
   for (const id in entities) {
     const entity = entities[id];
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
-      const relations = getEntityRelations(entity, type, doc);
-      filtered.push({ ...decode({ ...entity, ...relations, id }), type: typeName });
+      const relations = getEntityRelations(id, type, doc, include);
+      try {
+        const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
+        if (filter) {
+          if (evaluateEntityFilter(filter, decoded)) {
+            filtered.push(decoded);
+          }
+        } else {
+          filtered.push(decoded);
+        }
+      } catch (error) {
+        corruptEntityIds.push(id);
+      }
     }
   }
 
-  return filtered;
+  return { entities: filtered, corruptEntityIds: [] };
 }
 
 const stableEmptyArray: Array<unknown> = [];
@@ -241,11 +377,13 @@ const stableEmptyArray: Array<unknown> = [];
 export function subscribeToFindMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
+  filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
 ): {
   subscribe: (callback: () => void) => () => void;
   getEntities: () => Readonly<Array<Entity<S>>>;
 } {
-  const queryKey = 'all';
+  const queryKey = filter ? canonicalize(filter) : 'all';
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
   // @ts-expect-error name is defined
@@ -254,6 +392,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   const getEntities = () => {
     const cacheEntry = decodedEntitiesCache.get(typeName);
     if (!cacheEntry) return stableEmptyArray;
+
     const query = cacheEntry.queries.get(queryKey);
     if (!query) return stableEmptyArray;
 
@@ -261,77 +400,64 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       return query.data;
     }
 
-    const entities = findMany(handle, type);
+    const { entities } = findMany(handle, type, filter, include);
+
     for (const entity of entities) {
       cacheEntry?.entities.set(entity.id, entity);
-
-      if (!query) continue;
-
-      const index = query.data.findIndex((e) => e.id === entity.id);
-      if (index !== -1) {
-        query.data[index] = entity;
-      } else {
-        query.data.push(entity);
-      }
     }
 
+    // must be a new reference to ensure it can be used in React.useMemo
+    query.data = [...entities];
     cacheEntry.isInvalidated = false;
     query.isInvalidated = false;
+
     return query.data;
   };
 
-  if (!decodedEntitiesCache.has(typeName)) {
-    const entities = findMany(handle, type);
-    const entitiesMap = new Map();
-    for (const entity of entities) {
-      entitiesMap.set(entity.id, entity);
-    }
-
-    const queries = new Map<string, QueryEntry>();
-
-    queries.set(queryKey, {
-      data: [...entities],
-      listeners: [],
-      isInvalidated: false,
-    });
-
-    const cacheEntry: DecodedEntitiesCacheEntry = {
-      decoder: decode,
-      type,
-      entities: entitiesMap,
-      queries,
-      isInvalidated: false,
-    };
-
-    decodedEntitiesCache.set(typeName, cacheEntry);
-
-    for (const entity of entities) {
-      for (const [, value] of Object.entries(entity)) {
-        if (Array.isArray(value)) {
-          for (const relationEntity of value) {
-            let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-            if (relationParentEntry) {
-              relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
-            } else {
-              relationParentEntry = new Map();
-              entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-              relationParentEntry.set(cacheEntry, 1);
-            }
-          }
-        }
-      }
-    }
-  }
-
   const allTypes = new Set<S>();
   for (const [_key, field] of Object.entries(type.fields)) {
-    if (isReferenceField(field)) {
+    if (isRelationField(field)) {
       allTypes.add(field as S);
     }
   }
 
   const subscribe = (callback: () => void) => {
-    const query = decodedEntitiesCache.get(typeName)?.queries.get(queryKey);
+    let cacheEntry = decodedEntitiesCache.get(typeName);
+
+    if (!cacheEntry) {
+      const entitiesMap = new Map();
+      const queries = new Map<string, QueryEntry>();
+
+      queries.set(queryKey, {
+        data: [],
+        listeners: [],
+        isInvalidated: true,
+        include: include ?? {},
+      });
+
+      cacheEntry = {
+        decoder: decode,
+        type,
+        entities: entitiesMap,
+        queries,
+        isInvalidated: true,
+      };
+
+      decodedEntitiesCache.set(typeName, cacheEntry);
+    }
+
+    let query = cacheEntry.queries.get(queryKey);
+    if (!query) {
+      query = {
+        data: [],
+        listeners: [],
+        isInvalidated: true,
+        include: include ?? {},
+      };
+      // we just set up the query and expect it to correctly set itself up in findMany
+      cacheEntry.queries.set(queryKey, query);
+    }
+
     if (query?.listeners) {
       query.listeners.push(callback);
     }

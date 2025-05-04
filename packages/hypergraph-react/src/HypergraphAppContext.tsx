@@ -4,6 +4,7 @@ import * as automerge from '@automerge/automerge';
 import { uuid } from '@automerge/automerge';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { type GeoSmartAccount, Graph } from '@graphprotocol/grc-20';
 import {
   Identity,
   type InboxMessageStorageEntry,
@@ -39,7 +40,8 @@ export type HypergraphAppCtx = {
   setIdentityAndSessionToken(account: Identity.Identity & { sessionToken: string }): void;
   // app related
   invitations: Array<Messages.Invitation>;
-  createSpace(): Promise<string>;
+  createSpace(smartAccountWalletClient?: GeoSmartAccount): Promise<string>;
+
   createSpaceInbox(
     params: Readonly<{ space: SpaceStorageEntry; isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>,
   ): Promise<unknown>;
@@ -83,7 +85,8 @@ export type HypergraphAppCtx = {
     encryptionPublicKey: string;
     signaturePublicKey: string;
   }>;
-  loading: boolean;
+  isConnecting: boolean;
+  isLoadingSpaces: Record<string, boolean>;
   ensureSpaceInbox(params: {
     spaceId: string;
     isPublic?: boolean;
@@ -157,7 +160,8 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
   async getVerifiedIdentity() {
     throw new Error('getVerifiedIdentity is missing');
   },
-  loading: true,
+  isConnecting: true,
+  isLoadingSpaces: {},
   async ensureSpaceInbox() {
     throw new Error('ensureSpaceInbox is missing');
   },
@@ -202,7 +206,8 @@ export function HypergraphAppProvider({
   children,
 }: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
-  const [loading, setLoading] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(true);
+  const [isLoadingSpaces, setIsLoadingSpaces] = useState<Record<string, boolean>>({});
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelectorStore(store, (state) => state.context.repo);
@@ -292,7 +297,7 @@ export function HypergraphAppProvider({
   // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
     if (!sessionToken) {
-      setLoading(true);
+      setIsConnecting(true);
       return;
     }
 
@@ -307,17 +312,17 @@ export function HypergraphAppProvider({
 
     const onOpen = () => {
       console.log('websocket connected');
-      setLoading(false);
+      setIsConnecting(false);
     };
 
     const onError = (event: Event) => {
       console.log('websocket error', event);
-      setLoading(false);
+      setIsConnecting(false);
     };
 
     const onClose = (event: CloseEvent) => {
       console.log('websocket close', event);
-      setLoading(false);
+      setIsConnecting(false);
     };
 
     websocketConnection.addEventListener('open', onOpen);
@@ -517,6 +522,10 @@ export function HypergraphAppProvider({
               } catch (error) {
                 console.error('Error sending message', error);
               }
+            });
+
+            setIsLoadingSpaces((prev) => {
+              return { ...prev, [response.id]: false };
             });
 
             break;
@@ -878,57 +887,77 @@ export function HypergraphAppProvider({
     syncServerUri,
   ]);
 
-  const createSpaceForContext = useCallback<() => Promise<string>>(async () => {
-    if (!accountId) {
-      throw new Error('No account id found');
-    }
-    const encryptionPrivateKey = keys?.encryptionPrivateKey;
-    const encryptionPublicKey = keys?.encryptionPublicKey;
-    const signaturePrivateKey = keys?.signaturePrivateKey;
-    const signaturePublicKey = keys?.signaturePublicKey;
-    if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
-      throw new Error('Missing keys');
-    }
-    const spaceEvent = await Effect.runPromise(
-      SpaceEvents.createSpace({
-        author: {
+  const createSpaceForContext = useCallback<() => Promise<string>>(
+    async (smartAccountWalletClient?: GeoSmartAccount) => {
+      if (!accountId) {
+        throw new Error('No account id found');
+      }
+      const encryptionPrivateKey = keys?.encryptionPrivateKey;
+      const encryptionPublicKey = keys?.encryptionPublicKey;
+      const signaturePrivateKey = keys?.signaturePrivateKey;
+      const signaturePublicKey = keys?.signaturePublicKey;
+      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+        throw new Error('Missing keys');
+      }
+
+      let spaceId = Utils.generateId();
+
+      try {
+        if (smartAccountWalletClient?.account) {
+          const result = await Graph.createSpace({
+            editorAddress: smartAccountWalletClient.account?.address,
+            name: 'Test Space',
+          });
+          spaceId = result.id;
+          console.log('Created public space', spaceId);
+        }
+      } catch (error) {
+        console.error('Error creating public space', error);
+      }
+
+      const spaceEvent = await Effect.runPromise(
+        SpaceEvents.createSpace({
+          author: {
+            accountId,
+            encryptionPublicKey,
+            signaturePrivateKey,
+            signaturePublicKey,
+          },
+          spaceId,
+        }),
+      );
+      const result = Key.createKey({
+        privateKey: Utils.hexToBytes(encryptionPrivateKey),
+        publicKey: Utils.hexToBytes(encryptionPublicKey),
+      });
+
+      const message = {
+        type: 'create-space-event',
+        event: spaceEvent,
+        spaceId: spaceEvent.transaction.id,
+        keyId: Utils.generateId(),
+        keyBox: {
           accountId,
-          encryptionPublicKey,
-          signaturePrivateKey,
-          signaturePublicKey,
+          ciphertext: Utils.bytesToHex(result.keyBoxCiphertext),
+          nonce: Utils.bytesToHex(result.keyBoxNonce),
+          authorPublicKey: encryptionPublicKey,
         },
-      }),
-    );
-    const result = Key.createKey({
-      privateKey: Utils.hexToBytes(encryptionPrivateKey),
-      publicKey: Utils.hexToBytes(encryptionPublicKey),
-    });
+      } as const satisfies Messages.RequestCreateSpaceEvent;
+      websocketConnection?.send(Messages.serialize(message));
 
-    const message = {
-      type: 'create-space-event',
-      event: spaceEvent,
-      spaceId: spaceEvent.transaction.id,
-      keyId: Utils.generateId(),
-      keyBox: {
-        accountId,
-        ciphertext: Utils.bytesToHex(result.keyBoxCiphertext),
-        nonce: Utils.bytesToHex(result.keyBoxNonce),
-        authorPublicKey: encryptionPublicKey,
-      },
-    } as const satisfies Messages.RequestCreateSpaceEvent;
-    websocketConnection?.send(Messages.serialize(message));
-
-    // return the created space id
-    // @todo return created Space with name, etc
-    return spaceEvent.transaction.id;
-  }, [
-    accountId,
-    keys?.encryptionPrivateKey,
-    keys?.encryptionPublicKey,
-    keys?.signaturePrivateKey,
-    keys?.signaturePublicKey,
-    websocketConnection,
-  ]);
+      // return the created space id
+      // @todo return created Space with name, etc
+      return spaceEvent.transaction.id;
+    },
+    [
+      accountId,
+      keys?.encryptionPrivateKey,
+      keys?.encryptionPublicKey,
+      keys?.signaturePrivateKey,
+      keys?.signaturePublicKey,
+      websocketConnection,
+    ],
+  );
 
   const listSpaces = useCallback(() => {
     const message: Messages.RequestListSpaces = { type: 'list-spaces' };
@@ -1210,6 +1239,13 @@ export function HypergraphAppProvider({
     (params: { spaceId: string }) => {
       const message: Messages.RequestSubscribeToSpace = { type: 'subscribe-space', id: params.spaceId };
       websocketConnection?.send(Messages.serialize(message));
+      setIsLoadingSpaces((prev) => {
+        // the space was already loaded, don't set it to loading
+        if (prev[params.spaceId] === false) {
+          return prev;
+        }
+        return { ...prev, [params.spaceId]: true };
+      });
     },
     [websocketConnection],
   );
@@ -1372,7 +1408,8 @@ export function HypergraphAppProvider({
         subscribeToSpace,
         getVerifiedIdentity,
         inviteToSpace,
-        loading,
+        isConnecting,
+        isLoadingSpaces,
         ensureSpaceInbox: ensureSpaceInboxForContext,
       }}
     >

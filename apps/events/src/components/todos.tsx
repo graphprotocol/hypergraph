@@ -1,4 +1,10 @@
-import { useCreateEntity, useDeleteEntity, useQueryEntities, useUpdateEntity } from '@graphprotocol/hypergraph-react';
+import {
+  useCreateEntity,
+  useDeleteEntity,
+  useQuery,
+  useRemoveRelation,
+  useUpdateEntity,
+} from '@graphprotocol/hypergraph-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { Todo, User } from '../schema';
@@ -6,11 +12,12 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const todos = useQueryEntities(Todo);
-  const users = useQueryEntities(User);
+  const { data: todos } = useQuery(Todo, { mode: 'local', include: { assignees: {} } });
+  const { data: users } = useQuery(User, { mode: 'local' });
   const createEntity = useCreateEntity(Todo);
   const updateEntity = useUpdateEntity(Todo);
   const deleteEntity = useDeleteEntity();
+  const removeRelation = useRemoveRelation();
   const [newTodoName, setNewTodoName] = useState('');
   const [assignees, setAssignees] = useState<{ value: string; label: string }[]>([]);
 
@@ -34,7 +41,11 @@ export const Todos = () => {
               alert('Todo text is required');
               return;
             }
-            createEntity({ name: newTodoName, completed: false, assignees: assignees.map(({ value }) => value) });
+            createEntity({
+              name: newTodoName,
+              completed: false,
+              assignees: assignees.map(({ value }) => value),
+            });
             setNewTodoName('');
           }}
         >
@@ -52,11 +63,11 @@ export const Todos = () => {
                   {assignee.name}
                   <button
                     type="button"
-                    onClick={() =>
-                      updateEntity(todo.id, {
-                        assignees: todo.assignees.map((assignee) => assignee.id).filter((id) => id !== assignee.id),
-                      })
-                    }
+                    onClick={() => {
+                      if (assignee._relation) {
+                        removeRelation(assignee._relation.id);
+                      }
+                    }}
                     className="cursor-pointer ml-1 text-red-400"
                   >
                     x

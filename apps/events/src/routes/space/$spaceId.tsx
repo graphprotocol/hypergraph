@@ -1,75 +1,69 @@
-import { store } from '@graphprotocol/hypergraph';
-import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
-import { createFileRoute } from '@tanstack/react-router';
-import { useSelector } from '@xstate/store/react';
-import { useEffect, useState } from 'react';
-import { getAddress } from 'viem';
-
-import { SpaceChat } from '@/components/SpaceChat';
-import { DevTool } from '@/components/dev-tool';
-import { Todos } from '@/components/todos';
-import { TodosReadOnly } from '@/components/todos-read-only';
-import { Button } from '@/components/ui/button';
-import { Users } from '@/components/users';
-import { availableAccounts } from '@/lib/availableAccounts';
+import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/space/$spaceId')({
-  component: Space,
+  component: RouteComponent,
 });
 
-function Space() {
+function RouteComponent() {
   const { spaceId } = Route.useParams();
-  const spaces = useSelector(store, (state) => state.context.spaces);
-  const { subscribeToSpace, inviteToSpace, loading: appLoading } = useHypergraphApp();
-
-  useEffect(() => {
-    if (!appLoading) {
-      subscribeToSpace({ spaceId });
-    }
-  }, [appLoading, subscribeToSpace, spaceId]);
-  const [show2ndTodos, setShow2ndTodos] = useState(false);
-
-  const space = spaces.find((space) => space.id === spaceId);
-
-  if (appLoading) {
-    return <div className="flex justify-center items-center h-screen">Loading …</div>;
-  }
-
-  if (!space) {
-    return <div className="flex justify-center items-center h-screen">Space not found</div>;
-  }
 
   return (
-    <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
-      <HypergraphSpaceProvider space={spaceId}>
-        <Users />
-        <Todos />
-        <TodosReadOnly />
-        {show2ndTodos && <Todos />}
+    <div className="flex flex-col h-screen">
+      <div className="border-b border-gray-200">
+        <nav className="flex gap-4 max-w-screen-sm mx-auto py-8">
+          <Link
+            to={'/space/$spaceId'}
+            params={{ spaceId }}
+            className="px-3 py-2 text-sm font-medium rounded-md"
+            activeProps={{
+              className: 'bg-gray-100 text-gray-900',
+            }}
+            inactiveProps={{
+              className: 'text-gray-500 hover:text-gray-700',
+            }}
+          >
+            Home
+          </Link>
+          <Link
+            to={'/space/$spaceId/public-integration'}
+            params={{ spaceId }}
+            className="px-3 py-2 text-sm font-medium rounded-md"
+            activeProps={{
+              className: 'bg-gray-100 text-gray-900',
+            }}
+            inactiveProps={{
+              className: 'text-gray-500 hover:text-gray-700',
+            }}
+          >
+            Public Integration
+          </Link>
+          <Link
+            to={'/space/$spaceId/playground'}
+            params={{ spaceId }}
+            className="px-3 py-2 text-sm font-medium rounded-md"
+          >
+            Playground
+          </Link>
+          <Link to={'/space/$spaceId/users'} params={{ spaceId }} className="px-3 py-2 text-sm font-medium rounded-md">
+            Users
+          </Link>
 
-        <SpaceChat spaceId={spaceId} />
+          <Link
+            to={'/space/$spaceId/playground'}
+            params={{ spaceId }}
+            className="px-3 py-2 text-sm font-medium rounded-md"
+          >
+            Playground
+          </Link>
+          <Link to={'/space/$spaceId/chat'} params={{ spaceId }} className="px-3 py-2 text-sm font-medium rounded-md">
+            Chat
+          </Link>
+        </nav>
+      </div>
 
-        <h3 className="text-xl font-bold">Invite people</h3>
-        <div className="flex flex-row gap-2">
-          {availableAccounts.map((invitee) => (
-            <Button
-              key={invitee.accountId}
-              onClick={() => {
-                inviteToSpace({
-                  space,
-                  invitee: { accountId: getAddress(invitee.accountId) },
-                });
-              }}
-            >
-              Invite {invitee.accountId.substring(0, 6)}
-            </Button>
-          ))}
-        </div>
-        <div className="mt-12 flex flex-row gap-2">
-          <DevTool spaceId={spaceId} />
-          <Button onClick={() => setShow2ndTodos((prevShow2ndTodos) => !prevShow2ndTodos)}>Toggle Todos</Button>
-        </div>
-      </HypergraphSpaceProvider>
+      <div className="flex-1 overflow-auto">
+        <Outlet />
+      </div>
     </div>
   );
 }

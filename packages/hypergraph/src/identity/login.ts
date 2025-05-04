@@ -270,9 +270,9 @@ export async function login(
     authData = await loginWithWallet(signer, accountId, syncServerUri, chainId, storage, location);
   }
   console.log('Identity initialized');
+  store.send({ type: 'reset' });
   store.send({
     ...authData,
     type: 'setAuth',
   });
-  store.send({ type: 'reset' });
 }

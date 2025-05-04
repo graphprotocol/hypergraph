@@ -1,12 +1,12 @@
-import { Messages, store } from '@graphprotocol/hypergraph';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { availableAccounts } from '@/lib/availableAccounts';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
+import { store } from '@graphprotocol/hypergraph';
 import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { availableAccounts } from '@/lib/availableAccounts';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -14,6 +14,7 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
+
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
   const {
     createSpace,
@@ -23,22 +24,20 @@ function Index() {
     acceptInvitation,
     createAccountInbox,
     getOwnAccountInboxes,
-    loading,
+    isConnecting,
   } = useHypergraphApp();
 
   const { identity } = useHypergraphAuth();
 
-  console.log('Home page', { loading });
-
   useEffect(() => {
-    if (!loading) {
+    if (!isConnecting) {
       listSpaces();
       listInvitations();
       getOwnAccountInboxes();
     }
-  }, [listSpaces, listInvitations, getOwnAccountInboxes, loading]);
+  }, [isConnecting, listSpaces, listInvitations, getOwnAccountInboxes]);
 
-  if (loading) {
+  if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 
@@ -75,9 +74,13 @@ function Index() {
       <div className="flex flex-row gap-2 justify-between items-center">
         <h2 className="text-lg font-bold">Spaces</h2>
         <Button
-          onClick={(event) => {
+          onClick={async (event) => {
             event.preventDefault();
-            createSpace();
+            const smartAccountWalletClient = await getSmartAccountWalletClient();
+            if (!smartAccountWalletClient) {
+              throw new Error('Missing smartAccountWalletClient');
+            }
+            createSpace(smartAccountWalletClient);
           }}
         >
           Create space

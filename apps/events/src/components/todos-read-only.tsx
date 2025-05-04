@@ -1,8 +1,8 @@
-import { useQueryEntities } from '@graphprotocol/hypergraph-react';
+import { useQuery } from '@graphprotocol/hypergraph-react';
 import { Todo } from '../schema';
 
 export const TodosReadOnly = () => {
-  const todos = useQueryEntities(Todo);
+  const { data: todos } = useQuery(Todo, { mode: 'local' });
 
   return (
     <>
@@ -10,6 +10,16 @@ export const TodosReadOnly = () => {
       {todos.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
+          {todo.assignees.length > 0 && (
+            <span className="text-xs text-gray-500">
+              Assigned to:{' '}
+              {todo.assignees.map((assignee) => (
+                <span key={assignee.id} className="border rounded-sm mr-1 p-1">
+                  {assignee.name}
+                </span>
+              ))}
+            </span>
+          )}
           <input type="checkbox" checked={todo.completed} readOnly />
         </div>
       ))}
