@@ -39,13 +39,13 @@ importers:
   apps/events:
     dependencies:
       '@automerge/automerge':
-        specifier: ^v2.2.9-alpha.3
-        version: 2.2.9-betterpatches.0
+        specifier: ^v2.2.9
+        version: 2.2.9
       '@automerge/automerge-repo':
-        specifier: ^2.0.0-alpha.14
+        specifier: ^2.0.0-beta.2
         version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.10.7)(typescript@5.7.3)
       '@automerge/automerge-repo-react-hooks':
-        specifier: ^2.0.0-alpha.14
+        specifier: ^2.0.0-beta.2
         version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.10.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)
       '@graphprotocol/grc-20':
         specifier: ^0.10.0
@@ -233,10 +233,10 @@ importers:
   packages/hypergraph:
     dependencies:
       '@automerge/automerge':
-        specifier: ^v2.2.9-alpha.3
-        version: 2.2.9-betterpatches.0
+        specifier: ^v2.2.9
+        version: 2.2.9
       '@automerge/automerge-repo':
-        specifier: ^2.0.0-alpha.14
+        specifier: ^2.0.0-beta.2
         version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.14.1)(typescript@5.7.3)
       '@effect/experimental':
         specifier: ^0.44.12
@@ -283,13 +283,13 @@ importers:
   packages/hypergraph-react:
     dependencies:
       '@automerge/automerge':
-        specifier: ^v2.2.9-alpha.3
-        version: 2.2.9-betterpatches.0
+        specifier: ^v2.2.9
+        version: 2.2.9
       '@automerge/automerge-repo':
-        specifier: ^2.0.0-alpha.14
+        specifier: ^2.0.0-beta.2
         version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.14.1)(typescript@5.7.3)
       '@automerge/automerge-repo-react-hooks':
-        specifier: ^2.0.0-alpha.14
+        specifier: ^2.0.0-beta.2
         version: 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.14.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)
       '@graphprotocol/grc-20':
         specifier: ^0.10.0
@@ -373,11 +373,8 @@ packages:
   '@automerge/automerge-repo@2.0.0-collectionsync-alpha.1':
     resolution: {integrity: sha512-IRjwNOHOCL/E+qqKAqyLro/K/MrTCTsBGyXwlvgN19lHV0v2mMngXJUHF3iSGS2DY7nTeP4dSzGR/8+uFXDLSQ==}
 
-  '@automerge/automerge@2.2.8':
-    resolution: {integrity: sha512-kP6Z9lIkNeIGe/jhF8SUQAgUMwVjtXCBL0eZEgQGCoWvPNTPcg8fnQco28XkYBrfkkuqiEUAbdHhJmSp0y79ug==}
-
-  '@automerge/automerge@2.2.9-betterpatches.0':
-    resolution: {integrity: sha512-WPZZ0X/rPq5RZC21wP9i5xsh+Vf5kzJsS9n9J4ADZ6DiDBV2d8ioBPdPC+fgBmfJPjPXhNE0gNCqmJYLJAm3ig==}
+  '@automerge/automerge@2.2.9':
+    resolution: {integrity: sha512-6HM52Ops79hAQBWMg/t0MNfGOdEiXyenQjO9F1hKZq0RWDsMLpPa1SzRy/C4/4UyX67sTHuA5CwBpH34SpfZlA==}
 
   '@automerge/automerge@3.0.0-collectionsync-alpha.1':
     resolution: {integrity: sha512-FO7QCjMz0pdoNxotVaH84X2sJKZdSYrjo6VHuVwFkQB0N/PQ0EHWi7N6knd9/JC+tIAzhGS3rb4xQwXITsewcg==}
@@ -2344,11 +2341,6 @@ packages:
     resolution: {integrity: sha512-ueEepnujpqee2o5aIYnvHU6C0A42MNdsIDeqy5BydrkuC5R1ZuUFnm27EeFJGoEHJQgn3uleRvmTXaJgfXbt4g==}
     engines: {node: '>=0.4.0'}
 
-  acorn@8.12.1:
-    resolution: {integrity: sha512-tcpGyI9zbizT9JbV6oYE477V6mTlXvvi0T0G3SNIYE2apm/G5huBa1+K89VGeovbg+jycCrfhl3ADxErOuO6Jg==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
   acorn@8.14.0:
     resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
     engines: {node: '>=0.4.0'}
@@ -2848,15 +2840,6 @@ packages:
 
   debug@4.3.6:
     resolution: {integrity: sha512-O/09Bd4Z1fBrU4VzkhFqVgpPzaGbw6Sm9FEkBT1A/YBXQFGuuSxa1dN2nxgxS34JmKXqYx8CZAwEVoJFImUXIg==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-
-  debug@4.3.7:
-    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -5482,7 +5465,7 @@ snapshots:
 
   '@automerge/automerge-repo-react-hooks@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.10.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)':
     dependencies:
-      '@automerge/automerge': 2.2.8
+      '@automerge/automerge': 2.2.9
       '@automerge/automerge-repo': 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.10.7)(typescript@5.7.3)
       eventemitter3: 5.0.1
       react: 19.0.0
@@ -5497,7 +5480,7 @@ snapshots:
 
   '@automerge/automerge-repo-react-hooks@2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.14.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)':
     dependencies:
-      '@automerge/automerge': 2.2.8
+      '@automerge/automerge': 2.2.9
       '@automerge/automerge-repo': 2.0.0-collectionsync-alpha.1(@swc/core@1.7.26(@swc/helpers@0.5.17))(@types/node@22.14.1)(typescript@5.7.3)
       eventemitter3: 5.0.1
       react: 19.0.0
@@ -5515,7 +5498,7 @@ snapshots:
       '@automerge/automerge': 3.0.0-collectionsync-alpha.1
       bs58check: 3.0.1
       cbor-x: 1.6.0
-      debug: 4.3.7
+      debug: 4.4.0
       eventemitter3: 5.0.1
       fast-sha256: 1.3.0
       tiny-typed-emitter: 2.1.0
@@ -5534,7 +5517,7 @@ snapshots:
       '@automerge/automerge': 3.0.0-collectionsync-alpha.1
       bs58check: 3.0.1
       cbor-x: 1.6.0
-      debug: 4.3.7
+      debug: 4.4.0
       eventemitter3: 5.0.1
       fast-sha256: 1.3.0
       tiny-typed-emitter: 2.1.0
@@ -5548,11 +5531,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@automerge/automerge@2.2.8':
-    dependencies:
-      uuid: 9.0.1
-
-  '@automerge/automerge@2.2.9-betterpatches.0':
+  '@automerge/automerge@2.2.9':
     dependencies:
       uuid: 9.0.1
 
@@ -8205,9 +8184,7 @@ snapshots:
 
   acorn-walk@8.3.4:
     dependencies:
-      acorn: 8.12.1
-
-  acorn@8.12.1: {}
+      acorn: 8.14.0
 
   acorn@8.14.0: {}
 
@@ -8750,10 +8727,6 @@ snapshots:
   debug@4.3.6:
     dependencies:
       ms: 2.1.2
-
-  debug@4.3.7:
-    dependencies:
-      ms: 2.1.3
 
   debug@4.4.0:
     dependencies:
@@ -10905,7 +10878,7 @@ snapshots:
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
       '@types/node': 22.10.7
-      acorn: 8.12.1
+      acorn: 8.14.0
       acorn-walk: 8.3.4
       arg: 4.1.3
       create-require: 1.1.1
@@ -10925,7 +10898,7 @@ snapshots:
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
       '@types/node': 22.14.1
-      acorn: 8.12.1
+      acorn: 8.14.0
       acorn-walk: 8.3.4
       arg: 4.1.3
       create-require: 1.1.1
