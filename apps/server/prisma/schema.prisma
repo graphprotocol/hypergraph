@@ -5,6 +5,7 @@ generator client {
   // TODO: Using `pnpm deploy` with prisma is quite annoying. We should consider generating the prisma client into
   // a directory within the package here instead of generating it into node modules (default).
   provider = "prisma-client-js"
+  output   = "generated/client"
 }
 
 datasource db {
@@ -13,14 +14,14 @@ datasource db {
 }
 
 model SpaceEvent {
-  id                    String   @id
-  event                 String
-  state                 String
-  counter               Int
-  space                 Space    @relation(fields: [spaceId], references: [id])
-  spaceId               String
-  createdAt             DateTime @default(now())
-  inboxes               SpaceInbox[]
+  id        String       @id
+  event     String
+  state     String
+  counter   Int
+  space     Space        @relation(fields: [spaceId], references: [id])
+  spaceId   String
+  createdAt DateTime     @default(now())
+  inboxes   SpaceInbox[]
 
   @@unique([spaceId, counter])
 }
@@ -56,48 +57,48 @@ model SpaceKeyBox {
 }
 
 model SpaceInbox {
-  id                  String @id
-  space               Space @relation(fields: [spaceId], references: [id])
+  id                  String              @id
+  space               Space               @relation(fields: [spaceId], references: [id])
   spaceId             String
   isPublic            Boolean
   authPolicy          String
   encryptionPublicKey String
   encryptedSecretKey  String
-  spaceEvent          SpaceEvent @relation(fields: [spaceEventId], references: [id])
+  spaceEvent          SpaceEvent          @relation(fields: [spaceEventId], references: [id])
   spaceEventId        String
   messages            SpaceInboxMessage[]
-  createdAt           DateTime @default(now())
+  createdAt           DateTime            @default(now())
 }
 
 model SpaceInboxMessage {
-  id String @id @default(uuid(4))
-  spaceInbox SpaceInbox @relation(fields: [spaceInboxId], references: [id])
-  spaceInboxId String
-  ciphertext String
-  signatureHex String?
+  id                String     @id @default(uuid(4))
+  spaceInbox        SpaceInbox @relation(fields: [spaceInboxId], references: [id])
+  spaceInboxId      String
+  ciphertext        String
+  signatureHex      String?
   signatureRecovery Int?
-  authorAccountId String?
-  createdAt DateTime @default(now())
+  authorAccountId   String?
+  createdAt         DateTime   @default(now())
 }
 
 model Account {
-  id                  String        @id
+  id                  String         @id
   spaces              Space[]
   invitations         Invitation[]
   keyBoxes            SpaceKeyBox[]
   identities          Identity[]
-  sessionNonce          String?
-  sessionToken          String?
-  sessionTokenExpires   DateTime?
-  updates               Update[]
-  inboxes        AccountInbox[]
+  sessionNonce        String?
+  sessionToken        String?
+  sessionTokenExpires DateTime?
+  updates             Update[]
+  inboxes             AccountInbox[]
 
   @@index([sessionToken])
 }
 
 model AccountInbox {
-  id                  String @id
-  account             Account @relation(fields: [accountId], references: [id])
+  id                  String                @id
+  account             Account               @relation(fields: [accountId], references: [id])
   accountId           String
   isPublic            Boolean
   authPolicy          String
@@ -105,18 +106,18 @@ model AccountInbox {
   signatureHex        String
   signatureRecovery   Int
   messages            AccountInboxMessage[]
-  createdAt           DateTime @default(now())
+  createdAt           DateTime              @default(now())
 }
 
 model AccountInboxMessage {
-  id String @id @default(uuid(7))
-  accountInbox AccountInbox @relation(fields: [accountInboxId], references: [id])
-  accountInboxId String
-  ciphertext String
-  signatureHex String?
+  id                String       @id @default(uuid(7))
+  accountInbox      AccountInbox @relation(fields: [accountInboxId], references: [id])
+  accountInboxId    String
+  ciphertext        String
+  signatureHex      String?
   signatureRecovery Int?
-  authorAccountId String?
-  createdAt DateTime @default(now())
+  authorAccountId   String?
+  createdAt         DateTime     @default(now())
 }
 
 model Invitation {
@@ -132,21 +133,21 @@ model Invitation {
 }
 
 model Update {
-  space   Space  @relation(fields: [spaceId], references: [id])
-  spaceId String
-  clock   Int
-  content Bytes
-  account           Account  @relation(fields: [accountId], references: [id])
+  space             Space   @relation(fields: [spaceId], references: [id])
+  spaceId           String
+  clock             Int
+  content           Bytes
+  account           Account @relation(fields: [accountId], references: [id])
   accountId         String
   signatureHex      String
   signatureRecovery Int
-  updateId       String
+  updateId          String
 
   @@id([spaceId, clock])
 }
 
 model Identity {
-  account             Account  @relation(fields: [accountId], references: [id])
+  account             Account @relation(fields: [accountId], references: [id])
   accountId           String
   ciphertext          String
   nonce               String

@@ -2,6 +2,8 @@ dist
 build
 publish
 output
+# generated prisma client
+apps/server/prisma/generated/ 
 
 # Logs
 logs
