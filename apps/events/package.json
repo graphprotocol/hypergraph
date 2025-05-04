@@ -8,9 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@automerge/automerge": "^v2.2.9-alpha.3",
-    "@automerge/automerge-repo": "^2.0.0-alpha.14",
-    "@automerge/automerge-repo-react-hooks": "^2.0.0-alpha.14",
+    "@automerge/automerge": "^v2.2.9",
+    "@automerge/automerge-repo": "^2.0.0-beta.2",
+    "@automerge/automerge-repo-react-hooks": "^2.0.0-beta.2",
     "@graphprotocol/grc-20": "^0.10.0",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
