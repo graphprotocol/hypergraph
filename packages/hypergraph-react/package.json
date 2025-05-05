@@ -25,7 +25,7 @@
   },
   "peerDependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
-    "react": "^19.0.0"
+    "react": "^19.1.0"
   },
   "devDependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
@@ -35,7 +35,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@xstate/store": "^2.6.2",
     "jsdom": "^26.0.0",
-    "react": "^19.0.0"
+    "react": "^19.1.0"
   },
   "dependencies": {
     "@automerge/automerge": "^v2.2.9",
@@ -43,7 +43,7 @@
     "@automerge/automerge-repo-react-hooks": "^2.0.0-beta.2",
     "@graphprotocol/grc-20": "^0.10.0",
     "@noble/hashes": "^1.8.0",
-    "@tanstack/react-query": "^5.67.1",
+    "@tanstack/react-query": "^5.75.2",
     "effect": "^3.14.12",
     "graphql-request": "^7.1.2",
     "siwe": "^2.3.2",
