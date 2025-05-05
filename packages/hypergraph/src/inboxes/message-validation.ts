@@ -1,4 +1,4 @@
-import { Identity, Messages } from '@graphprotocol/hypergraph';
+import { Identity, type Messages } from '@graphprotocol/hypergraph';
 import type { AccountInboxStorageEntry, SpaceInboxStorageEntry } from '../store.js';
 import { recoverAccountInboxMessageSigner, recoverSpaceInboxMessageSigner } from './recover-inbox-message-signer.js';
 

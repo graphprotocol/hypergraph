@@ -14,7 +14,8 @@
       "routeTree.gen.ts",
       "tsconfig.json",
       "tsconfig.*.json",
-      "**/variant-schema.ts"
+      "**/variant-schema.ts",
+      "apps/typesync/client/src/generated"
     ]
   },
   "formatter": {
