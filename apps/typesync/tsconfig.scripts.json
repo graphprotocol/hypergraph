@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "scripts",
+    "eslint.config.mjs",
+    "tsup.config.ts",
+    "vitest.config.ts",
+    "vite.config.ts",
+    "graphql.codegen.ts"
+  ],
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "tsBuildInfoFile": ".tsbuildinfo/scripts.tsbuildinfo",
+    "rootDir": ".",
+    "noEmit": true
+  }
+}
