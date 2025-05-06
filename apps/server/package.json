@@ -10,23 +10,23 @@
   },
   "dependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
-    "@noble/ciphers": "^1.2.0",
-    "@prisma/client": "^6.2.1",
+    "@noble/ciphers": "^1.3.0",
+    "@prisma/client": "^6.7.0",
     "cors": "^2.8.5",
     "effect": "^3.14.12",
-    "express": "^5.0.1",
-    "siwe": "^2.3.2",
-    "viem": "^2.22.9",
-    "ws": "^8.17.1"
+    "express": "^5.1.0",
+    "siwe": "^3.0.0",
+    "viem": "^2.28.3",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.10.7",
-    "@types/pg": "^8.11.6",
-    "@types/ws": "^8.5.13",
-    "prisma": "^6.2.1",
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.3"
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.3",
+    "@types/pg": "^8.11.14",
+    "@types/ws": "^8.18.1",
+    "prisma": "^6.7.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
   }
 }
