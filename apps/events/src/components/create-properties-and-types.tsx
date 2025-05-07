@@ -34,7 +34,12 @@ const createPropertiesAndTypes = async ({
   });
   ops.push(...createTodoTypeOps);
 
-  const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
+  const result = await publishOps({
+    ops,
+    walletClient: smartAccountWalletClient,
+    space,
+    name: 'Create properties and types',
+  });
   return { result, todoTypeId, checkedPropertyId, userId, assigneesRelationTypeId };
 };
 

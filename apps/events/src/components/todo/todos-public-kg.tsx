@@ -32,7 +32,12 @@ export const TodosPublicKg = () => {
                 throw new Error('Missing smartAccountWalletClient');
               }
               const ops = await _generateDeleteOps({ id: todo.id, space });
-              const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
+              const result = await publishOps({
+                ops,
+                walletClient: smartAccountWalletClient,
+                space,
+                name: 'Delete Todo',
+              });
               console.log('result', result);
             }}
           >
