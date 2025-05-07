@@ -3,6 +3,7 @@ import { Ipfs } from '@graphprotocol/grc-20';
 import type { Hash } from 'viem';
 
 type PublishParams = {
+  name: string;
   ops: Op[];
   walletClient: GeoSmartAccount;
   space: string;
@@ -15,14 +16,14 @@ type PublishResult = {
   cid: string;
 };
 
-export const publishOps = async ({ ops, walletClient, space }: PublishParams): Promise<PublishResult> => {
+export const publishOps = async ({ name, ops, walletClient, space }: PublishParams): Promise<PublishResult> => {
   const address = walletClient.account?.address;
   if (!address) {
     throw new Error('No address found');
   }
 
   const publishResult = await Ipfs.publishEdit({
-    name: 'Update todos',
+    name,
     ops: ops,
     author: address,
   });

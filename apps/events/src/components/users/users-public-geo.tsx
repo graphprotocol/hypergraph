@@ -27,7 +27,12 @@ export const UsersPublicGeo = () => {
                 throw new Error('Missing smartAccountWalletClient');
               }
               const ops = await _generateDeleteOps({ id: user.id, space });
-              const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
+              const result = await publishOps({
+                ops,
+                walletClient: smartAccountWalletClient,
+                space,
+                name: 'Delete User',
+              });
               console.log('result', result);
             }}
           >

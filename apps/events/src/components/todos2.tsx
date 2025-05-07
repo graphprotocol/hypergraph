@@ -220,6 +220,7 @@ export const Todos2 = () => {
                     ops,
                     walletClient: smartAccountWalletClient,
                     space,
+                    name: 'Update users and todos',
                   });
                   console.log('publishOpsResult', publishOpsResult);
                   setIsPublishDiffModalOpen(false);

@@ -51,7 +51,12 @@ export const TodosPublicGeo = () => {
                 throw new Error('Missing smartAccountWalletClient');
               }
               const ops = await _generateDeleteOps({ id: todo.id, space });
-              const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
+              const result = await publishOps({
+                ops,
+                walletClient: smartAccountWalletClient,
+                space,
+                name: 'Delete Todo',
+              });
               console.log('result', result);
             }}
           >
@@ -70,7 +75,12 @@ export const TodosPublicGeo = () => {
           console.log('todo', todo);
           const { ops } = generateCreateOps(todo);
           console.log('ops', ops);
-          const result = await publishOps({ ops, walletClient: smartAccountWalletClient, space });
+          const result = await publishOps({
+            ops,
+            walletClient: smartAccountWalletClient,
+            space,
+            name: 'Create Todo',
+          });
           console.log('result', result);
         }}
       >
