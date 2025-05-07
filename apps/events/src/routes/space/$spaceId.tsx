@@ -10,7 +10,7 @@ function RouteComponent() {
   return (
     <div className="flex flex-col h-screen">
       <div className="border-b border-gray-200">
-        <nav className="flex gap-4 max-w-screen-sm mx-auto py-8">
+        <nav className="flex gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
           <Link
             to={'/space/$spaceId'}
             params={{ spaceId }}

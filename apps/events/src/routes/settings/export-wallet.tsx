@@ -7,7 +7,7 @@ export const Route = createFileRoute('/settings/export-wallet')({
 
 function RouteComponent() {
   return (
-    <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
+    <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
       <ExportWallet />
     </div>
   );

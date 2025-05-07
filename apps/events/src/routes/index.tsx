@@ -42,7 +42,7 @@ function Index() {
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
+    <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
       <h2 className="text-lg font-bold">Invitations</h2>
       {invitations.length === 0 && <div>No invitations</div>}
       <ul className="text-xs">
