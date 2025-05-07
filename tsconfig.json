@@ -5,6 +5,7 @@
     { "path": "packages/hypergraph" },
     { "path": "packages/hypergraph-react" },
     { "path": "apps/server" },
-    { "path": "apps/events" }
+    { "path": "apps/events" },
+    { "path": "apps/typesync" }
   ]
 }

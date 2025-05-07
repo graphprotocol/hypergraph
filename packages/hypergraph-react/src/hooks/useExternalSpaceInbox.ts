@@ -1,4 +1,4 @@
-import { Messages } from '@graphprotocol/hypergraph';
+import type { Messages } from '@graphprotocol/hypergraph';
 import { useCallback, useEffect, useState } from 'react';
 import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js';
 
