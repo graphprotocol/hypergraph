@@ -33,7 +33,7 @@ function RouteComponent() {
       <h1 className="text-2xl font-bold mb-6">Inbox Messages</h1>
       <div className="space-y-4">
         {messages.map((message) => (
-          <div key={message.id} className="bg-card rounded-lg p-4 shadow-sm border">
+          <div key={message.id} className="bg-card rounded-lg p-4 shadow-xs border">
             <div className="text-lg mb-2">{message.plaintext}</div>
             <div className="space-y-1 text-sm text-muted-foreground">
               <div className="message-time">{new Date(message.createdAt).toLocaleString()}</div>
