@@ -6,8 +6,8 @@
     "clean": "node scripts/clean.mjs",
     "build": "tsc -b tsconfig.build.json && pnpm --recursive --parallel --filter \"./packages/*\" run build",
     "test": "vitest",
-    "lint": "biome check --write --unsafe",
-    "format": "biome check --write --unsafe",
+    "lint": "biome check",
+    "lint:fix": "biome check --write --unsafe",
     "check": "tsc --noEmit"
   },
   "devDependencies": {
