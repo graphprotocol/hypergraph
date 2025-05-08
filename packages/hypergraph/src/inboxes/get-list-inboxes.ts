@@ -1,5 +1,5 @@
-import { Messages } from '@graphprotocol/hypergraph';
 import { Schema } from 'effect';
+import * as Messages from '../messages/index.js';
 
 export const listPublicSpaceInboxes = async ({
   spaceId,

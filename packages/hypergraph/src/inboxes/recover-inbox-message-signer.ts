@@ -1,6 +1,7 @@
-import { type Messages, Utils } from '@graphprotocol/hypergraph';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { sha256 } from '@noble/hashes/sha256';
+import type * as Messages from '../messages/index.js';
+import * as Utils from '../utils/index.js';
 
 export const recoverSpaceInboxMessageSigner = (
   message: Messages.RequestCreateSpaceInboxMessage,

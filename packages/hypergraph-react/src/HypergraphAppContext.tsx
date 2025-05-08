@@ -1,9 +1,12 @@
 'use client';
 
-import * as automerge from '@automerge/automerge';
-import { uuid } from '@automerge/automerge';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { Repo } from '@automerge/automerge-repo/slim';
+// @ts-expect-error not properly typed and exported in the automerge package
+import { automergeWasmBase64 } from '@automerge/automerge/automerge.wasm.base64.js';
+import * as automerge from '@automerge/automerge/slim';
+import { uuid } from '@automerge/automerge/slim';
 import { type GeoSmartAccount, Graph } from '@graphprotocol/grc-20';
 import {
   Identity,
@@ -1382,6 +1385,20 @@ export function HypergraphAppProvider({
     },
     [createSpaceInboxForContext],
   );
+
+  useEffect(() => {
+    const setupRepo = async () => {
+      await automerge.next.initializeBase64Wasm(automergeWasmBase64);
+      const newRepo = new Repo({});
+      store.send({ type: 'setRepo', repo: newRepo });
+    };
+    setupRepo();
+  }, []);
+
+  // need to wait until Automerge is initialized before we can continue to any component that might need it
+  if (repo === null) {
+    return null;
+  }
 
   return (
     <HypergraphAppContext.Provider

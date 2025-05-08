@@ -40,13 +40,13 @@ export function HypergraphSpaceProvider({
   let current = ref.current;
   if (current === undefined || space !== current.space || repo !== current.repo) {
     const id = Utils.idToAutomergeId(space) as AnyDocumentId;
-    const handle = repo.find<Entity.DocumentContent>(id);
+    const result = repo.findWithProgress<Entity.DocumentContent>(id);
 
     current = ref.current = {
       space,
       repo,
       id,
-      handle,
+      handle: result.handle,
       mapping,
     };
   }

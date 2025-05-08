@@ -39,8 +39,8 @@
   },
   "dependencies": {
     "@automerge/automerge": "^2.2.9",
-    "@automerge/automerge-repo": "^2.0.0-beta.2",
-    "@automerge/automerge-repo-react-hooks": "^2.0.0-beta.2",
+    "@automerge/automerge-repo": "=2.0.0-beta.5",
+    "@automerge/automerge-repo-react-hooks": "=2.0.0-beta.5",
     "@graphprotocol/grc-20": "^0.11.5",
     "@noble/hashes": "^1.8.0",
     "@tanstack/react-query": "^5.75.5",

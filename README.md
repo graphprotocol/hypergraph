@@ -30,6 +30,15 @@ cd apps/server
 pnpm prisma migrate dev # this will also generate the Prisma client
 ```
 
+You can run the next example app with:
+
+```sh
+# Notes:
+# - You need to build the packages first and every time you make changes to the packages
+cd apps/next-example
+pnpm dev
+```
+
 ## Upgrading Dependencies
 
 ```sh
