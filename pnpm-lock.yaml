@@ -38,15 +38,6 @@ importers:
 
   apps/events:
     dependencies:
-      '@automerge/automerge':
-        specifier: ^2.2.9
-        version: 2.2.9
-      '@automerge/automerge-repo':
-        specifier: '=2.0.0-beta.5'
-        version: 2.0.0-beta.5
-      '@automerge/automerge-repo-react-hooks':
-        specifier: '=2.0.0-beta.5'
-        version: 2.0.0-beta.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@graphprotocol/grc-20':
         specifier: ^0.11.5
         version: 0.11.5(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.24.2))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)
