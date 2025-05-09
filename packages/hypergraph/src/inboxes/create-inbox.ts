@@ -2,10 +2,10 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 import { randomBytes } from '@noble/hashes/utils';
 import { cryptoBoxKeyPair } from '@serenity-kit/noble-sodium';
 import { Effect } from 'effect';
-import type * as Inboxes from '../inboxes/types.js';
 import * as Messages from '../messages/index.js';
 import * as SpaceEvents from '../space-events/index.js';
 import { bytesToHex, canonicalize, hexToBytes, stringToUint8Array } from '../utils/index.js';
+import type * as Inboxes from './types.js';
 
 type CreateAccountInboxParams = {
   accountId: string;
