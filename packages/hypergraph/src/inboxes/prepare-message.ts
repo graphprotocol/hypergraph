@@ -1,5 +1,5 @@
-import type { Messages } from '@graphprotocol/hypergraph';
 import { secp256k1 } from '@noble/curves/secp256k1';
+import type * as Messages from '../messages/index.js';
 import type { SignatureWithRecovery } from '../types.js';
 import { canonicalize, hexToBytes, stringToUint8Array } from '../utils/index.js';
 import { encryptInboxMessage } from './message-encryption.js';

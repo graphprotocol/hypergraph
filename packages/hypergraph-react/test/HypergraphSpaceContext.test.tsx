@@ -45,7 +45,8 @@ describe('HypergraphSpaceContext', () => {
 
   beforeEach(() => {
     repo = new Repo({});
-    const automergeDocHandle = repo.find(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
+    const result = repo.findWithProgress(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
+    const automergeDocHandle = result.handle;
     // set it to ready to interact with the document
     automergeDocHandle.doneLoading();
 

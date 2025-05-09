@@ -1,5 +1,4 @@
-import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
-import { Repo } from '@automerge/automerge-repo';
+import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { type Store, createStore } from '@xstate/store';
 import type { Address } from 'viem';
 import { mergeMessages } from './inboxes/merge-messages.js';
@@ -55,7 +54,7 @@ interface StoreContext {
   spaces: SpaceStorageEntry[];
   updatesInFlight: string[];
   invitations: Invitation[];
-  repo: Repo;
+  repo: Repo | null;
   identities: {
     [accountId: string]: {
       encryptionPublicKey: string;
@@ -76,7 +75,7 @@ const initialStoreContext: StoreContext = {
   spaces: [],
   updatesInFlight: [],
   invitations: [],
-  repo: new Repo({}),
+  repo: null,
   identities: {},
   authenticated: false,
   accountId: null,
@@ -145,6 +144,10 @@ type StoreEvent =
     }
   | {
       type: 'resetAuth';
+    }
+  | {
+      type: 'setRepo';
+      repo: Repo;
     };
 
 type GenericEventObject = { type: string };
@@ -174,12 +177,15 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
       };
     },
     setSpaceFromList: (context, event: { spaceId: string }) => {
+      if (!context.repo) {
+        return context;
+      }
       const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
       const lastUpdateClock = context.lastUpdateClock[event.spaceId] ?? -1;
-      const automergeDocHandle = context.repo.find(idToAutomergeId(event.spaceId) as AnyDocumentId);
+      const result = context.repo.findWithProgress(idToAutomergeId(event.spaceId) as AnyDocumentId);
 
       // set it to ready to interact with the document
-      automergeDocHandle.doneLoading();
+      result.handle.doneLoading();
 
       if (existingSpace) {
         return {
@@ -191,7 +197,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
                 events: existingSpace.events ?? [],
                 state: existingSpace.state,
                 keys: existingSpace.keys ?? [],
-                automergeDocHandle,
+                automergeDocHandle: result.handle,
                 inboxes: existingSpace.inboxes ?? [],
               };
               return newSpace;
@@ -216,7 +222,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
             inboxes: [],
             updates: [],
             lastUpdateClock: -1,
-            automergeDocHandle,
+            automergeDocHandle: result.handle,
           },
         ],
       };
@@ -409,17 +415,17 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
       },
     ) => {
       const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
-      if (!existingSpace) {
-        const automergeDocHandle = context.repo.find(idToAutomergeId(event.spaceId) as AnyDocumentId);
+      if (!existingSpace && context.repo) {
+        const result = context.repo.findWithProgress(idToAutomergeId(event.spaceId) as AnyDocumentId);
         // set it to ready to interact with the document
-        automergeDocHandle.doneLoading();
+        result.handle.doneLoading();
 
         const newSpace: SpaceStorageEntry = {
           id: event.spaceId,
           events: event.events,
           state: event.spaceState,
           keys: event.keys,
-          automergeDocHandle,
+          automergeDocHandle: result.handle,
           inboxes: event.inboxes ?? [],
         };
         return {
@@ -485,6 +491,12 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         accountId: null,
         sessionToken: null,
         keys: null,
+      };
+    },
+    setRepo: (context, event: { repo: Repo }) => {
+      return {
+        ...context,
+        repo: event.repo,
       };
     },
   },

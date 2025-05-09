@@ -28,7 +28,8 @@ describe('findMany with filters', () => {
 
   beforeEach(() => {
     repo = new Repo({}); // reset to new Repo instance to clear created entities in tests
-    handle = repo.find(automergeDocId as AnyDocumentId);
+    const result = repo.findWithProgress(automergeDocId as AnyDocumentId);
+    handle = result.handle;
     // set it to ready to interact with the document
     handle.doneLoading();
   });

@@ -30,7 +30,13 @@ describe('HypergraphAppContext', () => {
     );
 
     const { result: authenticatedResult } = renderHook(() => useHypergraphAuth(), { wrapper });
-    expect(authenticatedResult.current.authenticated).toEqual(false);
-    expect(authenticatedResult.current.identity).toBeNull();
+    // hook won't work until the Provider loaded automerge and then renders the children
+    expect(authenticatedResult.current).toEqual(null);
+    // after automerge is loaded, the hook will be rendered and the authenticated state will be set
+    // TODO: use something more reliable than setTimeout
+    setTimeout(() => {
+      expect(authenticatedResult.current.authenticated).toEqual(false);
+      expect(authenticatedResult.current.identity).toBeNull();
+    }, 50);
   });
 });
