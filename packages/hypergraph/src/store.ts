@@ -161,8 +161,9 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         invitations: event.invitations,
       };
     },
-    reset: () => {
-      return initialStoreContext;
+    reset: (context) => {
+      // once the repo is initialized, there is no need to reset it
+      return { ...initialStoreContext, repo: context.repo };
     },
     addUpdateInFlight: (context, event: { updateId: string }) => {
       return {
