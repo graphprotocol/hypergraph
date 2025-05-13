@@ -110,8 +110,4 @@ pnpm up --interactive --latest -r
 
 [✏️ Improve this page](https://github.com/graphprotocol/hypergraph/edit/main/docs/docs/quickstart.md)
 
-
-
-
-
 ```
