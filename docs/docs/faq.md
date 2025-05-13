@@ -9,9 +9,9 @@ tags: [faq]
 
 ## General
 
-### What is Hypergraph in one sentence?
+### What is Hypergraph?
 
-> A TypeScript-first framework for building local-first apps that sync encrypted data to a shared knowledge graph.
+> Hypergraph is a TypeScript-first framework for building local-first apps that sync encrypted data to a shared knowledge graph.
 
 ### Does it replace my backend?
 

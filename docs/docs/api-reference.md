@@ -13,7 +13,6 @@ This section documents the main **Space Events** and the matching client-side he
 
 ## Table of Contents
 
-- [Event list](#event-list)
 - [`createSpace`](#createspace)
 - [`deleteSpace`](#deletespace)
 - [`createInvite`](#createinvite)
