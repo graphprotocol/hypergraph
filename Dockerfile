@@ -28,16 +28,16 @@ ENV DATABASE_URL="file:./dev.db"
 RUN \
   # TODO: This initalizes the database. But we should probably remove this later.
   pnpm --filter server prisma migrate reset --force && \
-  # Build the monorepo packages.
+  # Build the monorepo packages
   pnpm build && \
+  # Generate the prisma client
+  pnpm --filter server prisma generate && \
   # Build the server.
   pnpm --filter server build && \
   # Create an isolated deployment for the server.
   pnpm --filter server deploy --prod deployment --legacy && \
   # Move the runtime build artifacts into a separate directory.
-  mkdir -p deployment/out && mv deployment/dist deployment/prisma deployment/node_modules deployment/package.json deployment/out && \
-  # Generate the prisma client
-  (cd deployment/out && pnpx prisma generate)
+  mkdir -p deployment/out && mv deployment/dist deployment/prisma deployment/node_modules deployment/package.json deployment/out
 
 # Slim runtime image.
 FROM node:22-alpine AS server
