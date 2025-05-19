@@ -153,7 +153,7 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
   };
 
   return useSyncExternalStore(subscribe, () => {
-    const doc = hypergraph.handle.docSync();
+    const doc = hypergraph.handle.doc();
     if (doc === undefined) {
       return prevEntityRef.current;
     }

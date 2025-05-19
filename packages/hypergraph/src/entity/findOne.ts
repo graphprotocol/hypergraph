@@ -21,7 +21,7 @@ export const findOne = <const S extends AnyNoContext>(
   return (id: string): Entity<S> | undefined => {
     // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in
     // an index and store the decoded values instead of re-decoding over and over again.
-    const doc = handle.docSync();
+    const doc = handle.doc();
     const entity = doc?.entities?.[id];
     const relations = doc ? getEntityRelations(id, type, doc, include) : {};
 
