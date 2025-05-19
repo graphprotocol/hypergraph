@@ -246,7 +246,7 @@ export function findMany<const S extends AnyNoContext>(
   // @ts-expect-error name is defined
   const typeName = type.name;
 
-  const doc = handle.docSync();
+  const doc = handle.doc();
   if (!doc) {
     return { entities: [], corruptEntityIds: [] };
   }
