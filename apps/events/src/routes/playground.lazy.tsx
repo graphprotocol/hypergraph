@@ -1,7 +1,7 @@
 import { Playground } from '@/components/playground';
+import { mapping } from '@/mapping.js';
 import { HypergraphSpaceProvider } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { mapping } from '../schema';
 
 export const Route = createLazyFileRoute('/playground')({
   component: RouteComponent,

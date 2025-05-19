@@ -1,6 +1,6 @@
 import { CreatePropertiesAndTypes } from '@/components/create-properties-and-types';
 import { Todos2 } from '@/components/todos2';
-import { mapping } from '@/schema';
+import { mapping } from '@/mapping.js';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
