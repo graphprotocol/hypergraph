@@ -28,9 +28,40 @@ const createPropertiesAndTypes = async ({
   });
   ops.push(...createAssigneesRelationTypeOps);
 
+  const { id: duePropertyId, ops: createDuePropertyOps } = Graph.createProperty({
+    type: 'TIME',
+    name: 'Due',
+  });
+  ops.push(...createDuePropertyOps);
+
+  const { id: pointPropertyId, ops: createPointPropertyOps } = Graph.createProperty({
+    type: 'POINT',
+    name: 'Point',
+  });
+  ops.push(...createPointPropertyOps);
+
+  const { id: amountPropertyId, ops: createAmountPropertyOps } = Graph.createProperty({
+    type: 'NUMBER',
+    name: 'Amount',
+  });
+  ops.push(...createAmountPropertyOps);
+
+  const { id: websitePropertyId, ops: createWebsitePropertyOps } = Graph.createProperty({
+    type: 'URL',
+    name: 'Website',
+  });
+  ops.push(...createWebsitePropertyOps);
+
   const { id: todoTypeId, ops: createTodoTypeOps } = Graph.createType({
     name: 'Todo',
-    properties: [checkedPropertyId, assigneesRelationTypeId],
+    properties: [
+      checkedPropertyId,
+      assigneesRelationTypeId,
+      duePropertyId,
+      pointPropertyId,
+      websitePropertyId,
+      amountPropertyId,
+    ],
   });
   ops.push(...createTodoTypeOps);
 
@@ -40,7 +71,17 @@ const createPropertiesAndTypes = async ({
     space,
     name: 'Create properties and types',
   });
-  return { result, todoTypeId, checkedPropertyId, userId, assigneesRelationTypeId };
+  return {
+    result,
+    todoTypeId,
+    checkedPropertyId,
+    userId,
+    assigneesRelationTypeId,
+    duePropertyId,
+    pointPropertyId,
+    websitePropertyId,
+    amountPropertyId,
+  };
 };
 
 export const CreatePropertiesAndTypes = () => {
@@ -62,7 +103,16 @@ export const CreatePropertiesAndTypes = () => {
           if (!smartAccountWalletClient) {
             throw new Error('Missing smartAccountWalletClient');
           }
-          const { todoTypeId, checkedPropertyId, userId, assigneesRelationTypeId } = await createPropertiesAndTypes({
+          const {
+            todoTypeId,
+            checkedPropertyId,
+            userId,
+            assigneesRelationTypeId,
+            duePropertyId,
+            pointPropertyId,
+            websitePropertyId,
+            amountPropertyId,
+          } = await createPropertiesAndTypes({
             smartAccountWalletClient,
             space,
           });
@@ -72,6 +122,10 @@ export const CreatePropertiesAndTypes = () => {
   properties: {
     name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
     checked: Id.Id('${checkedPropertyId}'),
+    due: Id.Id('${duePropertyId}'),
+    point: Id.Id('${pointPropertyId}'),
+    website: Id.Id('${websitePropertyId}'),
+    amount: Id.Id('${amountPropertyId}'),
   },
   relations: {
     assignees: Id.Id('${assigneesRelationTypeId}'),

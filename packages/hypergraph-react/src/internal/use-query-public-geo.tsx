@@ -32,7 +32,9 @@ query entities($spaceId: String!, $typeId: String!, $relationTypeIds: [String!]!
               attributeId
               textValue
               booleanValue
+              numberValue
               valueType
+              unitOption
             }
           }
           relationsByFromVersionId(filter: {typeOfId: {in: $relationTypeIds}}) {
@@ -68,7 +70,9 @@ type EntityQueryResult = {
               attributeId: string;
               textValue: string;
               booleanValue: boolean;
-              valueType: 'TEXT' | 'CHECKBOX';
+              numberValue: number;
+              valueType: 'TEXT' | 'CHECKBOX' | 'POINT' | 'URL' | 'TIME' | 'NUMBER';
+              unitOption: unknown;
             }[];
           };
           relationsByFromVersionId: {
@@ -102,7 +106,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 
   for (const queryEntity of queryData.entities.nodes) {
     const queryEntityVersion = queryEntity.currentVersion.version;
-    const rawEntity: Record<string, string | boolean | unknown[]> = {
+    const rawEntity: Record<string, string | boolean | unknown[] | URL | Date> = {
       id: queryEntity.id,
     };
     // take the mappingEntry and assign the attributes to the rawEntity
@@ -111,6 +115,12 @@ export const parseResult = <S extends Entity.AnyNoContext>(
       if (property) {
         if (type.fields[key] === Entity.Checkbox) {
           rawEntity[key] = property.booleanValue;
+        } else if (type.fields[key] === Entity.Point) {
+          rawEntity[key] = property.textValue.split(',').map(Number);
+        } else if (type.fields[key] === Entity.Url) {
+          rawEntity[key] = new URL(property.textValue);
+        } else if (type.fields[key] === Entity.Date) {
+          rawEntity[key] = new Date(property.textValue);
         } else {
           rawEntity[key] = property.textValue;
         }

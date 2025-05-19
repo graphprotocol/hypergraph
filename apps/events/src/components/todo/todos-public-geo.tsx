@@ -37,6 +37,10 @@ export const TodosPublicGeo = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
+          <div className="text-xs">{todo.due.toLocaleDateString()}</div>
+          <div className="text-xs">{todo.amount}</div>
+          {todo.point && <div className="text-xs">{todo.point.join(', ')}</div>}
+          {todo.website && <div className="text-xs">{todo.website.toString()}</div>}
           <input type="checkbox" checked={todo.checked} readOnly />
           {todo.assignees.map((assignee) => (
             <span key={assignee.id} className="border rounded-sm mr-1 p-1">
@@ -71,7 +75,15 @@ export const TodosPublicGeo = () => {
             throw new Error('Missing smartAccountWalletClient');
           }
           const userId = Id.Id('8zPJjTGLBDPtUcj6q2tghg');
-          const todo = createTodo({ name: 'New Todo 22', checked: false, assignees: [userId] });
+          const todo = createTodo({
+            name: 'New Todo 22',
+            checked: false,
+            assignees: [userId],
+            due: new Date('2025-08-20'),
+            amount: 200,
+            point: [12.34, 56.78],
+            website: new URL('https://example.com'),
+          });
           console.log('todo', todo);
           const { ops } = generateCreateOps(todo);
           console.log('ops', ops);

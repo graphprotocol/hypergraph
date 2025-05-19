@@ -14,6 +14,10 @@ export const TodosLocal = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
+          <div className="text-xs">{todo.due.toLocaleDateString()}</div>
+          <div className="text-xs">{todo.amount}</div>
+          {todo.point && <div className="text-xs">{todo.point.join(', ')}</div>}
+          {todo.website && <div className="text-xs">{todo.website.toString()}</div>}
           {todo.assignees.map((assignee) => (
             <span key={assignee.id} className="border rounded-sm mr-1 p-1">
               {assignee.name}

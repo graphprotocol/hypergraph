@@ -1,5 +1,4 @@
-import type { Entity } from '@graphprotocol/hypergraph';
-import { Utils } from '@graphprotocol/hypergraph';
+import { Entity, Utils } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { useMemo } from 'react';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
@@ -69,6 +68,7 @@ const getDiff = <S extends Entity.AnyNoContext>(
         if (key === '__version' || key === '__deleted') {
           continue;
         }
+
         if (Utils.isRelationField(field)) {
           const relationIds: string[] = entity[key].map((e: Entity.Entity<S>) => e.id);
           const localRelationIds: string[] = localEntity[key].map((e: Entity.Entity<S>) => e.id);
@@ -90,7 +90,31 @@ const getDiff = <S extends Entity.AnyNoContext>(
             };
           }
         } else {
-          if (entity[key] !== localEntity[key]) {
+          if (field === Entity.Date) {
+            if (entity[key].getTime() !== localEntity[key].getTime()) {
+              diff[key] = {
+                type: 'property',
+                current: entity[key],
+                new: localEntity[key],
+              };
+            }
+          } else if (field === Entity.Url) {
+            if (entity[key].toString() !== localEntity[key].toString()) {
+              diff[key] = {
+                type: 'property',
+                current: entity[key],
+                new: localEntity[key],
+              };
+            }
+          } else if (field === Entity.Point) {
+            if (entity[key].join(',') !== localEntity[key].join(',')) {
+              diff[key] = {
+                type: 'property',
+                current: entity[key],
+                new: localEntity[key],
+              };
+            }
+          } else if (entity[key] !== localEntity[key]) {
             diff[key] = {
               type: 'property',
               current: entity[key],

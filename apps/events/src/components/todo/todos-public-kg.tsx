@@ -24,6 +24,10 @@ export const TodosPublicKg = () => {
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
           <div className="text-xs">{todo.id}</div>
+          <div className="text-xs">{todo.due.toLocaleDateString()}</div>
+          <div className="text-xs">{todo.amount}</div>
+          {todo.point && <div className="text-xs">{todo.point.join(', ')}</div>}
+          {todo.website && <div className="text-xs">{todo.website.toString()}</div>}
           <input type="checkbox" checked={todo.checked} readOnly />
           <Button
             onClick={async () => {

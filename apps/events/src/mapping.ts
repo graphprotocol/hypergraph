@@ -11,17 +11,21 @@ export const mapping: Mapping = {
     },
   },
   Todo2: {
-    typeIds: [Id.Id('4ewpH1mPW9f2tLhaHdKKyn')],
+    typeIds: [Id.Id('LJuM8ju67mCv78FhAiK9k9')],
     properties: {
       name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
-      checked: Id.Id('7zyFtwuuf9evFNZqcLSytU'),
+      checked: Id.Id('Ud9kn9gAUsCr1pxvxcgDj8'),
+      due: Id.Id('CFisPgjjWVdnaMtSWJDBqA'),
+      point: Id.Id('BkcVo7JZHF5LsWw7XZJwwe'),
+      website: Id.Id('XZmLQ8XyaUHnNWgSSbzaHU'),
+      amount: Id.Id('LfzKTfgy5Qg3PxAfKB2BL7'),
     },
     relations: {
-      assignees: Id.Id('GeLe54zpz1MiMWAF8LFCCt'),
+      assignees: Id.Id('HCdFcTRyMyZMXScKox738i'),
     },
   },
   User: {
-    typeIds: [Id.Id('KYCunro75we8KbjpsDKbm7')],
+    typeIds: [Id.Id('Fk5qzwdpKsD35gm5ts4SZA')],
     properties: {
       name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
     },
