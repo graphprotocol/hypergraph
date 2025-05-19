@@ -1,5 +1,5 @@
 import { TodosPublicGeo } from '@/components/todo/todos-public-geo';
-import { mapping } from '@/schema';
+import { mapping } from '@/mapping.js';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';

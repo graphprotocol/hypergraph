@@ -1,6 +1,6 @@
 import { UsersMerged } from '@/components/users/users-merged';
 import { UsersPublicGeo } from '@/components/users/users-public-geo';
-import { mapping } from '@/schema';
+import { mapping } from '@/mapping.js';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
