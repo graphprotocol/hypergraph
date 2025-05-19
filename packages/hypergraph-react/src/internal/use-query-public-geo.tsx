@@ -106,7 +106,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 
   for (const queryEntity of queryData.entities.nodes) {
     const queryEntityVersion = queryEntity.currentVersion.version;
-    const rawEntity: Record<string, string | boolean | unknown[] | URL | Date> = {
+    const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
       id: queryEntity.id,
     };
     // take the mappingEntry and assign the attributes to the rawEntity
@@ -116,11 +116,13 @@ export const parseResult = <S extends Entity.AnyNoContext>(
         if (type.fields[key] === Entity.Checkbox) {
           rawEntity[key] = property.booleanValue;
         } else if (type.fields[key] === Entity.Point) {
-          rawEntity[key] = property.textValue.split(',').map(Number);
+          rawEntity[key] = property.textValue;
         } else if (type.fields[key] === Entity.Url) {
-          rawEntity[key] = new URL(property.textValue);
+          rawEntity[key] = property.textValue;
         } else if (type.fields[key] === Entity.Date) {
-          rawEntity[key] = new Date(property.textValue);
+          rawEntity[key] = property.textValue;
+        } else if (type.fields[key] === Entity.Number) {
+          rawEntity[key] = Number(property.textValue);
         } else {
           rawEntity[key] = property.textValue;
         }
