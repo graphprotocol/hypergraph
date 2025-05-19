@@ -110,6 +110,10 @@ export const Todos2 = () => {
               checked={todo.checked}
               onChange={(e) => updateTodo(todo.id, { checked: e.target.checked })}
             />
+            <div className="text-xs">{todo.due.toLocaleDateString()}</div>
+            <div className="text-xs">{todo.amount}</div>
+            {todo.point && <div className="text-xs">{todo.point.join(', ')}</div>}
+            {todo.website && <div className="text-xs">{todo.website.toString()}</div>}
             {todo.assignees.length > 0 && (
               <span className="text-xs text-gray-500">
                 Assigned to:{' '}
@@ -155,7 +159,15 @@ export const Todos2 = () => {
               alert('Todo text is required');
               return;
             }
-            createTodo({ name: newTodoName, checked: false, assignees: newTodoAssignees.map(({ value }) => value) });
+            createTodo({
+              name: newTodoName,
+              checked: false,
+              assignees: newTodoAssignees.map(({ value }) => value),
+              due: new Date('2025-08-20'),
+              amount: 100,
+              point: [12.34, 56.78],
+              website: new URL('https://example.com'),
+            });
             setNewTodoName('');
           }}
         >

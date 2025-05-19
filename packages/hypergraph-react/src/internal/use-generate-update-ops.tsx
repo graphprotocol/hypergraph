@@ -1,5 +1,5 @@
 import { Id, type Op, Relation, Triple, type Value } from '@graphprotocol/grc-20';
-import type { Entity } from '@graphprotocol/hypergraph';
+import { Entity } from '@graphprotocol/hypergraph';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 import type { DiffEntry } from '../types.js';
 
@@ -31,10 +31,34 @@ export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: 
       const rawValue = propertyDiff.new;
 
       let value: Value;
-      if (typeof rawValue === 'boolean') {
+      if (type.fields[key] === Entity.Checkbox) {
         value = {
           type: 'CHECKBOX',
           value: rawValue ? '1' : '0',
+        };
+      } else if (type.fields[key] === Entity.Point) {
+        value = {
+          type: 'POINT',
+          // @ts-expect-error: must be an array of numbers
+          value: rawValue.join(','),
+        };
+      } else if (type.fields[key] === Entity.Url) {
+        value = {
+          type: 'URL',
+          // @ts-expect-error: must be a URL
+          value: rawValue.toString(),
+        };
+      } else if (type.fields[key] === Entity.Date) {
+        value = {
+          type: 'TIME',
+          // @ts-expect-error: must be a Date
+          value: rawValue.toISOString(),
+        };
+      } else if (type.fields[key] === Entity.Number) {
+        value = {
+          type: 'NUMBER',
+          // @ts-expect-error: must be a number
+          value: rawValue.toString(),
         };
       } else {
         value = {
@@ -42,7 +66,6 @@ export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: 
           value: rawValue as string,
         };
       }
-
       const op = Triple.make({
         attributeId: propertyId,
         entityId: id,
@@ -53,7 +76,10 @@ export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: 
 
     for (const [key, relationId] of Object.entries(mappingEntry.relations || {})) {
       const relationDiff = diff[key];
-      if (relationDiff === undefined || relationDiff.type === 'property') {
+      if (!relationDiff) {
+        continue;
+      }
+      if (relationDiff.type === 'property') {
         throw new Error(`Invalid diff or mapping for generating update Ops on the relation \`${key}\``);
       }
       for (const toId of relationDiff.addedIds) {

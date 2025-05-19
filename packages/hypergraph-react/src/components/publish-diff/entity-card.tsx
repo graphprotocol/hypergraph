@@ -77,7 +77,8 @@ export const EntityCard = ({ entity, type }: EntityCardProps) => {
                       {key.charAt(0).toUpperCase() + key.slice(1)}
                     </td>
                     <td className="py-1.5">
-                      {Array.isArray(value) ? (
+                      {/* check for number to exclude Point fields */}
+                      {Array.isArray(value) && !value.every((v) => typeof v === 'number') ? (
                         <ul>
                           {value.map(({ id, name }) => (
                             <li key={id}>

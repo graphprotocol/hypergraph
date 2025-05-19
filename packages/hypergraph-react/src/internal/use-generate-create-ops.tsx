@@ -24,6 +24,18 @@ export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: 
       if (fields[key] === Entity.Checkbox) {
         valueType = 'CHECKBOX';
         serializedValue = properties[key] ? '1' : '0';
+      } else if (fields[key] === Entity.Date) {
+        valueType = 'TIME';
+        serializedValue = properties[key].toISOString();
+      } else if (fields[key] === Entity.Point) {
+        valueType = 'POINT';
+        serializedValue = properties[key].join(',');
+      } else if (fields[key] === Entity.Url) {
+        valueType = 'URL';
+        serializedValue = properties[key].toString();
+      } else if (fields[key] === Entity.Number) {
+        valueType = 'NUMBER';
+        serializedValue = properties[key].toString();
       }
 
       grcProperties[value] = {
