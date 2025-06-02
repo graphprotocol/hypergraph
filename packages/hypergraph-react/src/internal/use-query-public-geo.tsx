@@ -1,4 +1,4 @@
-import { Entity } from '@graphprotocol/hypergraph';
+import { type Entity, Type } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
@@ -113,15 +113,15 @@ export const parseResult = <S extends Entity.AnyNoContext>(
     for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
       const property = queryEntityVersion.triples.nodes.find((a) => a.attributeId === value);
       if (property) {
-        if (type.fields[key] === Entity.Checkbox) {
+        if (type.fields[key] === Type.Checkbox) {
           rawEntity[key] = property.booleanValue;
-        } else if (type.fields[key] === Entity.Point) {
+        } else if (type.fields[key] === Type.Point) {
           rawEntity[key] = property.textValue;
-        } else if (type.fields[key] === Entity.Url) {
+        } else if (type.fields[key] === Type.Url) {
           rawEntity[key] = property.textValue;
-        } else if (type.fields[key] === Entity.Date) {
+        } else if (type.fields[key] === Type.Date) {
           rawEntity[key] = property.textValue;
-        } else if (type.fields[key] === Entity.Number) {
+        } else if (type.fields[key] === Type.Number) {
           rawEntity[key] = Number(property.textValue);
         } else {
           rawEntity[key] = property.textValue;

@@ -1,5 +1,5 @@
 import { Id, type Op, Relation, Triple, type Value } from '@graphprotocol/grc-20';
-import { Entity } from '@graphprotocol/hypergraph';
+import { type Entity, Type } from '@graphprotocol/hypergraph';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 import type { DiffEntry } from '../types.js';
 
@@ -31,30 +31,30 @@ export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: 
       const rawValue = propertyDiff.new;
 
       let value: Value;
-      if (type.fields[key] === Entity.Checkbox) {
+      if (type.fields[key] === Type.Checkbox) {
         value = {
           type: 'CHECKBOX',
           value: rawValue ? '1' : '0',
         };
-      } else if (type.fields[key] === Entity.Point) {
+      } else if (type.fields[key] === Type.Point) {
         value = {
           type: 'POINT',
           // @ts-expect-error: must be an array of numbers
           value: rawValue.join(','),
         };
-      } else if (type.fields[key] === Entity.Url) {
+      } else if (type.fields[key] === Type.Url) {
         value = {
           type: 'URL',
           // @ts-expect-error: must be a URL
           value: rawValue.toString(),
         };
-      } else if (type.fields[key] === Entity.Date) {
+      } else if (type.fields[key] === Type.Date) {
         value = {
           type: 'TIME',
           // @ts-expect-error: must be a Date
           value: rawValue.toISOString(),
         };
-      } else if (type.fields[key] === Entity.Number) {
+      } else if (type.fields[key] === Type.Number) {
         value = {
           type: 'NUMBER',
           // @ts-expect-error: must be a number

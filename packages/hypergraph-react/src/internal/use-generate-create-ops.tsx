@@ -1,5 +1,5 @@
 import { Graph, Id, type PropertiesParam, type ValueType } from '@graphprotocol/grc-20';
-import { Entity } from '@graphprotocol/hypergraph';
+import { type Entity, Type } from '@graphprotocol/hypergraph';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 
 export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
@@ -21,19 +21,19 @@ export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: 
     for (const [key, value] of Object.entries(mappingEntry.properties || {})) {
       let valueType: ValueType = 'TEXT';
       let serializedValue: string = properties[key];
-      if (fields[key] === Entity.Checkbox) {
+      if (fields[key] === Type.Checkbox) {
         valueType = 'CHECKBOX';
         serializedValue = properties[key] ? '1' : '0';
-      } else if (fields[key] === Entity.Date) {
+      } else if (fields[key] === Type.Date) {
         valueType = 'TIME';
         serializedValue = properties[key].toISOString();
-      } else if (fields[key] === Entity.Point) {
+      } else if (fields[key] === Type.Point) {
         valueType = 'POINT';
         serializedValue = properties[key].join(',');
-      } else if (fields[key] === Entity.Url) {
+      } else if (fields[key] === Type.Url) {
         valueType = 'URL';
         serializedValue = properties[key].toString();
-      } else if (fields[key] === Entity.Number) {
+      } else if (fields[key] === Type.Number) {
         valueType = 'NUMBER';
         serializedValue = properties[key].toString();
       }
