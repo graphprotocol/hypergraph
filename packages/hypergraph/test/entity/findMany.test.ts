@@ -3,20 +3,21 @@ import { Repo } from '@automerge/automerge-repo';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import * as Entity from '../../src/entity/index.js';
+import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('findMany with filters', () => {
   // Define entity classes for testing
   class Person extends Entity.Class<Person>('Person')({
-    name: Entity.Text,
-    age: Entity.Number,
-    isActive: Entity.Checkbox,
+    name: Type.Text,
+    age: Type.Number,
+    isActive: Type.Checkbox,
   }) {}
 
   class Product extends Entity.Class<Product>('Product')({
-    name: Entity.Text,
-    price: Entity.Number,
-    category: Entity.Text,
+    name: Type.Text,
+    price: Type.Number,
+    category: Type.Text,
   }) {}
 
   const spaceId = '52gTkePWSoGdXmgZF3nRU';

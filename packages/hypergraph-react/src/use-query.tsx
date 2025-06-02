@@ -1,4 +1,4 @@
-import { Entity, Utils } from '@graphprotocol/hypergraph';
+import { type Entity, Type, Utils } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { useMemo } from 'react';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
@@ -90,7 +90,7 @@ const getDiff = <S extends Entity.AnyNoContext>(
             };
           }
         } else {
-          if (field === Entity.Date) {
+          if (field === Type.Date) {
             if (entity[key].getTime() !== localEntity[key].getTime()) {
               diff[key] = {
                 type: 'property',
@@ -98,7 +98,7 @@ const getDiff = <S extends Entity.AnyNoContext>(
                 new: localEntity[key],
               };
             }
-          } else if (field === Entity.Url) {
+          } else if (field === Type.Url) {
             if (entity[key].toString() !== localEntity[key].toString()) {
               diff[key] = {
                 type: 'property',
@@ -106,7 +106,7 @@ const getDiff = <S extends Entity.AnyNoContext>(
                 new: localEntity[key],
               };
             }
-          } else if (field === Entity.Point) {
+          } else if (field === Type.Point) {
             if (entity[key].join(',') !== localEntity[key].join(',')) {
               diff[key] = {
                 type: 'property',

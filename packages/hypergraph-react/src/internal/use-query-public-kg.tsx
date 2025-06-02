@@ -1,4 +1,4 @@
-import { Entity } from '@graphprotocol/hypergraph';
+import { type Entity, Type } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
@@ -61,7 +61,7 @@ export function useQueryPublic<const S extends Entity.AnyNoContext>(type: S, par
       for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
         const property = queryEntity.attributes.find((a) => a.attribute === value);
         if (property) {
-          if (type.fields[key] === Entity.Checkbox) {
+          if (type.fields[key] === Type.Checkbox) {
             rawEntity[key] = property.value === '1';
           } else {
             rawEntity[key] = property.value;
