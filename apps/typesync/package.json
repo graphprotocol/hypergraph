@@ -62,7 +62,7 @@
     "@tanstack/react-query-devtools": "^5.75.0",
     "@tanstack/react-router": "^1.119.0",
     "@tanstack/react-router-devtools": "1.119.0",
-    "better-sqlite3": "^11.9.1",
+    "better-sqlite3": "^11.10.0",
     "date-fns": "^4.1.0",
     "effect": "latest",
     "graphql": "^16.11.0",
