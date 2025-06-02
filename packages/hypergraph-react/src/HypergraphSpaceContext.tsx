@@ -3,14 +3,17 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Schema from 'effect/Schema';
-import { type ReactNode, createContext, useContext, useRef, useSyncExternalStore } from 'react';
+import { type ReactNode, createContext, useContext, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import type { Mapping } from './types.js';
 
 export type HypergraphContext = {
   space: string;
   repo: Repo;
   id: AnyDocumentId;
   handle: DocHandle<Entity.DocumentContent>;
+  mapping?: Mapping | undefined;
 };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
@@ -24,22 +27,35 @@ export function useHypergraph() {
   return context as HypergraphContext;
 }
 
-export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {
+const queryClient = new QueryClient();
+
+export function HypergraphSpaceProvider({
+  space,
+  children,
+  mapping,
+}: { space: string; children: ReactNode; mapping?: Mapping }) {
   const repo = useRepo();
   const ref = useRef<HypergraphContext | undefined>(undefined);
 
   let current = ref.current;
   if (current === undefined || space !== current.space || repo !== current.repo) {
     const id = Utils.idToAutomergeId(space) as AnyDocumentId;
+    const result = repo.findWithProgress<Entity.DocumentContent>(id);
+
     current = ref.current = {
       space,
       repo,
       id,
-      handle: repo.find(id),
+      handle: result.handle,
+      mapping,
     };
   }
 
-  return <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>
+    </QueryClientProvider>
+  );
 }
 
 export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S) {
@@ -54,45 +70,66 @@ export function useUpdateEntity<const S extends Entity.AnyNoContext>(type: S) {
 
 export function useDeleteEntity() {
   const hypergraph = useHypergraph();
+  return Entity.markAsDeleted(hypergraph.handle);
+}
+
+export function useRemoveRelation() {
+  const hypergraph = useHypergraph();
+  return Entity.removeRelation(hypergraph.handle);
+}
+
+export function useHardDeleteEntity() {
+  const hypergraph = useHypergraph();
   return Entity.delete(hypergraph.handle);
 }
 
-export function useQueryEntities<const S extends Entity.AnyNoContext>(type: S) {
+type QueryParams<S extends Entity.AnyNoContext> = {
+  enabled: boolean;
+  filter?: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined;
+  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined;
+};
+
+export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
+  const { enabled = true, filter, include } = params ?? {};
+  const entitiesRef = useRef<Entity.Entity<S>[]>([]);
+
   const hypergraph = useHypergraph();
-  const equal = isEqual(type);
-
-  // store as a map of type to array of entities of the type
-  const prevEntitiesRef = useRef<Readonly<Array<Entity.Entity<S>>>>([]);
-
-  const subscribe = (callback: () => void) => {
-    const handleChange = () => {
-      callback();
-    };
-
-    const handleDelete = () => {
-      callback();
-    };
-
-    hypergraph.handle.on('change', handleChange);
-    hypergraph.handle.on('delete', handleDelete);
-
-    return () => {
-      hypergraph.handle.off('change', handleChange);
-      hypergraph.handle.off('delete', handleDelete);
-    };
-  };
-
-  return useSyncExternalStore<Readonly<Array<Entity.Entity<S>>>>(subscribe, () => {
-    const filtered = Entity.findMany(hypergraph.handle, type);
-    if (!equal(filtered, prevEntitiesRef.current)) {
-      prevEntitiesRef.current = filtered;
+  const [subscription] = useState(() => {
+    if (!enabled) {
+      return {
+        subscribe: () => () => undefined,
+        getEntities: () => entitiesRef.current,
+      };
     }
 
-    return prevEntitiesRef.current;
+    return Entity.subscribeToFindMany(hypergraph.handle, type, filter, include);
   });
+
+  // TODO: allow to change the enabled state
+
+  const allEntities = useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => entitiesRef.current);
+
+  const { entities, deletedEntities } = useMemo(() => {
+    const entities: Entity.Entity<S>[] = [];
+    const deletedEntities: Entity.Entity<S>[] = [];
+    for (const entity of allEntities) {
+      if (entity.__deleted === true) {
+        deletedEntities.push(entity);
+      } else {
+        entities.push(entity);
+      }
+    }
+    return { entities, deletedEntities };
+  }, [allEntities]);
+
+  return { entities, deletedEntities };
 }
 
-export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id: string) {
+export function useQueryEntity<const S extends Entity.AnyNoContext>(
+  type: S,
+  id: string,
+  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> },
+) {
   const hypergraph = useHypergraph();
   const prevEntityRef = useRef<Entity.Entity<S> | undefined>(undefined);
   const equals = Schema.equivalence(type);
@@ -116,12 +153,12 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id:
   };
 
   return useSyncExternalStore(subscribe, () => {
-    const doc = hypergraph.handle.docSync();
+    const doc = hypergraph.handle.doc();
     if (doc === undefined) {
       return prevEntityRef.current;
     }
 
-    const found = Entity.findOne(hypergraph.handle, type)(id);
+    const found = Entity.findOne(hypergraph.handle, type, include)(id);
     if (found === undefined && prevEntityRef.current !== undefined) {
       // entity was maybe deleted, delete from the ref
       prevEntityRef.current = undefined;
@@ -136,21 +173,7 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(type: S, id:
   });
 }
 
-/** @internal */
-const isEqual = <A, E>(type: Schema.Schema<A, E, never>) => {
-  const equals = Schema.equivalence(type);
-
-  return (a: ReadonlyArray<A>, b: ReadonlyArray<A>) => {
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    for (let i = 0; i < a.length; i++) {
-      if (!equals(a[i], b[i])) {
-        return false;
-      }
-    }
-
-    return true;
-  };
+export const useHypergraphSpace = () => {
+  const { space } = useHypergraph();
+  return space;
 };

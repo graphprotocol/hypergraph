@@ -1,3 +1,9 @@
 packages:
   - apps/*
   - packages/*
+  - docs
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@swc/core'
+  - prisma

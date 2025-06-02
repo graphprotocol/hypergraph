@@ -1,11 +1,12 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { availableAccounts } from '@/lib/availableAccounts';
+import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -13,23 +14,35 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
-  const { createSpace, listSpaces, listInvitations, invitations, acceptInvitation, loading } = useHypergraphApp();
 
-  console.log('Home page', { loading });
+  const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
+  const {
+    createSpace,
+    listSpaces,
+    listInvitations,
+    invitations,
+    acceptInvitation,
+    createAccountInbox,
+    getOwnAccountInboxes,
+    isConnecting,
+  } = useHypergraphApp();
+
+  const { identity } = useHypergraphAuth();
 
   useEffect(() => {
-    if (!loading) {
+    if (!isConnecting) {
       listSpaces();
       listInvitations();
+      getOwnAccountInboxes();
     }
-  }, [listSpaces, listInvitations, loading]);
+  }, [isConnecting, listSpaces, listInvitations, getOwnAccountInboxes]);
 
-  if (loading) {
+  if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-screen-sm mx-auto py-8">
+    <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
       <h2 className="text-lg font-bold">Invitations</h2>
       {invitations.length === 0 && <div>No invitations</div>}
       <ul className="text-xs">
@@ -61,9 +74,13 @@ function Index() {
       <div className="flex flex-row gap-2 justify-between items-center">
         <h2 className="text-lg font-bold">Spaces</h2>
         <Button
-          onClick={(event) => {
+          onClick={async (event) => {
             event.preventDefault();
-            createSpace();
+            const smartAccountWalletClient = await getSmartAccountWalletClient();
+            if (!smartAccountWalletClient) {
+              throw new Error('Missing smartAccountWalletClient');
+            }
+            createSpace(smartAccountWalletClient);
           }}
         >
           Create space
@@ -85,6 +102,57 @@ function Index() {
           );
         })}
       </ul>
+
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-bold">Account Inboxes</h2>
+        <Button
+          onClick={(event) => {
+            event.preventDefault();
+            createAccountInbox({
+              isPublic: true,
+              authPolicy: 'optional_auth',
+            });
+          }}
+        >
+          Create account inbox
+        </Button>
+        <ul className="flex flex-col gap-2">
+          {accountInboxes.length === 0 && <div>No account inboxes</div>}
+          {accountInboxes.map((inbox) => {
+            return (
+              <li key={inbox.inboxId}>
+                <Link to="/account-inbox/$inboxId" params={{ inboxId: inbox.inboxId }}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{inbox.inboxId}</CardTitle>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-bold">Friends</h2>
+        <ul className="flex flex-col gap-2">
+          {availableAccounts
+            .filter((account) => account.accountId !== identity?.accountId)
+            .map((account) => {
+              return (
+                <li key={account.accountId}>
+                  <Link to="/friends/$accountId" params={{ accountId: account.accountId }}>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{account.accountId}</CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                </li>
+              );
+            })}
+        </ul>
+      </div>
     </div>
   );
 }

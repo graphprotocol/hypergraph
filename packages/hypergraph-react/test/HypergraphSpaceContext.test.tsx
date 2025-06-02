@@ -10,8 +10,8 @@ import {
   HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
-  useQueryEntities,
   useQueryEntity,
+  useQueryLocal,
   useUpdateEntity,
 } from '../src/HypergraphSpaceContext.js';
 
@@ -21,19 +21,16 @@ afterEach(() => {
 
 describe('HypergraphSpaceContext', () => {
   class Person extends Entity.Class<Person>('Person')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     age: Entity.Number,
   }) {}
 
   class User extends Entity.Class<User>('User')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
     email: Entity.Text,
   }) {}
 
   class Event extends Entity.Class<Event>('Event')({
-    id: Entity.Generated(Entity.Text),
     name: Entity.Text,
   }) {}
 
@@ -48,7 +45,8 @@ describe('HypergraphSpaceContext', () => {
 
   beforeEach(() => {
     repo = new Repo({});
-    const automergeDocHandle = repo.find(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
+    const result = repo.findWithProgress(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
+    const automergeDocHandle = result.handle;
     // set it to ready to interact with the document
     automergeDocHandle.doneLoading();
 
@@ -80,8 +78,8 @@ describe('HypergraphSpaceContext', () => {
         expect(queryEntityResult.current).toEqual(createdEntity);
       }
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Event), { wrapper });
-      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Event), { wrapper });
+      expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
     });
   });
 
@@ -97,7 +95,9 @@ describe('HypergraphSpaceContext', () => {
 
       await waitFor(() => {
         expect(createdEntity).not.toBeNull();
-        expect(createdEntity).toEqual(expect.objectContaining({ name: 'Test', age: 1, type: Person.name }));
+        expect(createdEntity).toEqual(
+          expect.objectContaining({ name: 'Test', age: 1, type: Person.name, __deleted: false }),
+        );
       });
 
       if (createdEntity == null) {
@@ -117,10 +117,13 @@ describe('HypergraphSpaceContext', () => {
       expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
 
       const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
-      expect(queryEntityResult.current).toEqual(createdEntity);
+      expect(queryEntityResult.current).toEqual({ ...createdEntity, __version: '', __deleted: false });
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryEntities(Person), { wrapper });
-      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Person), { wrapper });
+      expect(queryEntitiesResult.current).toEqual({
+        deletedEntities: [],
+        entities: [{ ...createdEntity, __version: '', __deleted: false }],
+      });
     });
   });
 
@@ -141,11 +144,10 @@ describe('HypergraphSpaceContext', () => {
         );
       });
 
-      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(
-        () => useQueryEntities(User),
-        { wrapper },
-      );
-      expect(queryEntitiesResult.current).toEqual([createdEntity]);
+      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryLocal(User), {
+        wrapper,
+      });
+      expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
 
       const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(), { wrapper });
 
@@ -161,8 +163,9 @@ describe('HypergraphSpaceContext', () => {
 
       rerenderQueryEntities();
 
-      expect(queryEntitiesResult.current).toHaveLength(0);
-      expect(queryEntitiesResult.current).toEqual([]);
+      expect(queryEntitiesResult.current.entities).toHaveLength(0);
+      expect(queryEntitiesResult.current.entities).toEqual([]);
+      expect(queryEntitiesResult.current.deletedEntities).toHaveLength(1);
     });
   });
 });

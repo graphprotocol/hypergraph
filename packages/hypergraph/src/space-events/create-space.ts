@@ -6,12 +6,13 @@ import type { Author, CreateSpaceEvent } from './types.js';
 
 type Params = {
   author: Author;
+  spaceId?: string;
 };
 
-export const createSpace = ({ author }: Params): Effect.Effect<CreateSpaceEvent, undefined> => {
+export const createSpace = ({ author, spaceId }: Params): Effect.Effect<CreateSpaceEvent, undefined> => {
   const transaction = {
     type: 'create-space' as const,
-    id: generateId(),
+    id: spaceId ?? generateId(),
     creatorAccountId: author.accountId,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));

@@ -10,13 +10,13 @@ export function DevTool({ spaceId }: { spaceId: string }) {
 
   const spaces = useSelector(store, (state) => state.context.spaces);
   const updatesInFlight = useSelector(store, (state) => state.context.updatesInFlight);
-  const { subscribeToSpace, loading } = useHypergraphApp();
+  const { subscribeToSpace, isConnecting } = useHypergraphApp();
 
   useEffect(() => {
-    if (!loading) {
+    if (!isConnecting) {
       subscribeToSpace({ spaceId });
     }
-  }, [loading, subscribeToSpace, spaceId]);
+  }, [isConnecting, subscribeToSpace, spaceId]);
 
   const space = spaces.find((space) => space.id === spaceId);
 
