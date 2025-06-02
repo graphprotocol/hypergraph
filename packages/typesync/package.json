@@ -1,0 +1,30 @@
+{
+  "name": "@graphprotocol/typesync",
+  "version": "0.0.1",
+  "description": "Shared utility layer for building and maintaining Hypergraph schemas as well as the Knowledge-Graph mappings for these schemas.",
+  "publishConfig": {
+    "access": "public",
+    "directory": "publish",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/graphprotocol/hypergraph.git",
+    "directory": "packages/typesync"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [],
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@graphprotocol/grc-20": "^0.15.1",
+    "@graphprotocol/hypergraph": "workspace:*",
+    "effect": "^3.16.2"
+  }
+}

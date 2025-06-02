@@ -6,4 +6,8 @@ onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
   - '@swc/core'
+  - '@tailwindcss/oxide'
+  - better-sqlite3
+  - core-js
+  - core-js-pure
   - prisma
