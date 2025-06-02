@@ -3,25 +3,26 @@ import { Repo } from '@automerge/automerge-repo';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import * as Entity from '../../src/entity/index.js';
+import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('Entity', () => {
   class Person extends Entity.Class<Person>('Person')({
-    name: Entity.Text,
-    age: Entity.Number,
+    name: Type.Text,
+    age: Type.Number,
   }) {}
 
   class User extends Entity.Class<User>('User')({
-    name: Entity.Text,
-    email: Entity.Text,
+    name: Type.Text,
+    email: Type.Text,
   }) {}
 
   class Badge extends Entity.Class<Badge>('Badge')({
-    name: Entity.Text,
+    name: Type.Text,
   }) {}
 
   class Event extends Entity.Class<Event>('Event')({
-    name: Entity.Text,
+    name: Type.Text,
   }) {}
 
   const spaceId = '52gTkePWSoGdXmgZF3nRU';
