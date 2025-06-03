@@ -183,6 +183,7 @@ export async function createApp(create: Schema.InsertAppSchema): Promise<Readonl
       name: create.name,
       description: create.description,
       directory: create.directory,
+      template: create.template,
       types: EffectArray.map(create.types, (type) => ({
         ...type,
         properties: EffectArray.map(type.properties, (prop) => ({
