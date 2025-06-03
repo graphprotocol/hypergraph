@@ -608,19 +608,6 @@ importers:
         version: 19.1.0
     publishDirectory: publish
 
-  packages/typesync:
-    dependencies:
-      '@graphprotocol/grc-20':
-        specifier: ^0.15.1
-        version: 0.15.1(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.24.2))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)
-      '@graphprotocol/hypergraph':
-        specifier: workspace:*
-        version: link:../hypergraph/publish
-      effect:
-        specifier: ^3.16.2
-        version: 3.16.2
-    publishDirectory: publish
-
 packages:
 
   '@adobe/css-tools@4.4.0':
@@ -2634,9 +2621,6 @@ packages:
 
   '@graphprotocol/grc-20@0.11.5':
     resolution: {integrity: sha512-i25OlQtuhu4iT3KPvgNSE5G8HDxVIufIC1EzkquiSzI8q7vjSDPI3tu8zAxJMtFAwc/+tA5Itf/W2px8LTzepA==}
-
-  '@graphprotocol/grc-20@0.15.1':
-    resolution: {integrity: sha512-UV2xQkEZiJeOpIfg6R2AmGXjM4eaCNp7+MY93Pylvm+emd+bnSkWEn+RHP1D/MJ0C7TBSmbThW7ZMlX1WoIeyw==}
 
   '@graphprotocol/grc-20@0.17.0':
     resolution: {integrity: sha512-y/ufqEdvrL06YebzAoQJXuIHKNoi6RmnLITH+OBMHpExjE+fDSB58RxKkRR6KN2ciMO/aoEt/clY1vbcSNwkOA==}
@@ -6424,9 +6408,6 @@ packages:
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
-
-  effect@3.16.2:
-    resolution: {integrity: sha512-lOZ9Q7PUDncgOItoyD/avjiGXfxb4Ot9M49KgB89Koy6aIfyNbKxEDLsJEx6LWX6o0MH5/bKfP1XID2A9Sc/5g==}
 
   effect@3.16.3:
     resolution: {integrity: sha512-SWndb1UavNWvet1+hnkU4qp3EHtnmDKhUeP14eB+7vf/2nCFlM77/oIjdDeZctveibNjE65P9H/sBBmF0NTy/w==}
@@ -14658,27 +14639,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@graphprotocol/grc-20@0.15.1(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.24.2))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)':
-    dependencies:
-      '@bufbuild/protobuf': 1.10.1
-      '@changesets/cli': 2.29.3
-      effect: 3.16.3
-      ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      fflate: 0.8.2
-      graphql-request: 7.2.0(graphql@16.11.0)
-      image-size: 2.0.2
-      permissionless: 0.2.44(ox@0.6.7(typescript@5.8.3)(zod@3.24.2))(viem@2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2))
-      position-strings: 2.0.1
-      uuid: 11.1.0
-      viem: 2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)
-    transitivePeerDependencies:
-      - bufferutil
-      - graphql
-      - ox
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@graphprotocol/grc-20@0.17.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.24.2))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.2)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
@@ -19821,11 +19781,6 @@ snapshots:
   eastasianwidth@0.2.0: {}
 
   ee-first@1.1.1: {}
-
-  effect@3.16.2:
-    dependencies:
-      '@standard-schema/spec': 1.0.0
-      fast-check: 3.23.2
 
   effect@3.16.3:
     dependencies:
@@ -25589,7 +25544,7 @@ snapshots:
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
       acorn: 8.14.0
-      browserslist: 4.24.5
+      browserslist: 4.24.2
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.1
       es-module-lexer: 1.7.0
