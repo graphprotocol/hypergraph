@@ -5,8 +5,15 @@
     "tsBuildInfoFile": ".tsbuildinfo/client.tsbuildinfo",
     "rootDir": "client",
     "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true
   }
 }

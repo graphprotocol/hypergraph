@@ -6,9 +6,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Array as EffectArray, Order, pipe } from 'effect';
 import { useState } from 'react';
 
-import type { SchemaBrowserTypesQuery } from '../../../generated/graphql';
-import { schemaBrowserQueryOptions } from '../../../hooks/useSchemaBrowserQuery';
-import { Loading } from '../../Loading';
+import type { SchemaBrowserTypesQuery } from '../../../../generated/graphql';
+import { schemaBrowserQueryOptions } from '../../../../hooks/useSchemaBrowserQuery';
+import { Loading } from '../../../Loading';
 
 export type SchemaBrowserType = NonNullable<SchemaBrowserTypesQuery['space']>['types'][number];
 type ExtendedSchemaBrowserType = SchemaBrowserType & { slug: string };

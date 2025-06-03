@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import type { CSSProperties } from 'react';
 import { type ThemedToken, codeToTokens } from 'shiki';
 
+import type { AppSchema } from '../../../schema.js';
 import { classnames } from '../../../utils/classnames.js';
-import type * as Types from './types.js';
 import * as Utils from './utils.js';
 
 enum FontStyle {
@@ -20,7 +20,7 @@ enum FontStyle {
 type CodeChunk = ThemedToken;
 type CodeLine = { chunks: Array<CodeChunk>; style: 'added' | 'deleted' | null };
 
-export function SchemaPreview({ schema }: Readonly<{ schema: Types.AppSchemaForm }>) {
+export function SchemaPreview({ schema }: Readonly<{ schema: AppSchema }>) {
   const { code, hash } = Utils.buildAppSchemaFormCode(schema);
   const { data } = useQuery({
     queryKey: ['App', 'schema', 'preview', hash] as const,

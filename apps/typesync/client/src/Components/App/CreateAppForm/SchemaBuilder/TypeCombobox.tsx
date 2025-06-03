@@ -3,10 +3,9 @@
 import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/16/solid';
 import { Array as EffectArray, String as EffectString, Schema, pipe } from 'effect';
-import type { UseFormSetValue } from 'react-hook-form';
 
-import type { InsertAppSchema } from '../../../schema.js';
-import { classnames } from '../../../utils/classnames.js';
+import { useFieldContext } from '../../../../context/form.js';
+import { classnames } from '../../../../utils/classnames.js';
 
 class TypeOption extends Schema.Class<TypeOption>('/hypergraph/typesync/models/TypeOption')({
   id: Schema.NonEmptyTrimmedString,
@@ -27,20 +26,12 @@ const typeOptions: Array<TypeOption> = [
 ];
 
 export function TypeCombobox({
-  typePropertyIdx,
-  typeIdx,
-  value,
-  onTypeSelected,
+  id,
+  name,
   schemaTypes = [],
 }: Readonly<{
-  /** the index of this type selection field in the properties array. Types.AppSchemaForm.types[idx].properties[typeInputIdx] */
-  typePropertyIdx: number;
-  /** the index of the type within the schema array Types.AppSchemaForm.types[typeIdx] */
-  typeIdx: number;
-  /** the current value */
-  value: string;
-  /** set the value in the form when the user selects a value */
-  onTypeSelected: UseFormSetValue<InsertAppSchema>;
+  id: string;
+  name: string;
   /**
    * A list of types within the defined schema that the user can use as a relation
    * This allows the user to specify the property as a relationship to a type in the schema
@@ -49,6 +40,8 @@ export function TypeCombobox({
    */
   schemaTypes?: Array<string> | undefined;
 }>) {
+  const field = useFieldContext<string>();
+
   const relationTypeOptions = pipe(
     schemaTypes,
     EffectArray.filter((_type) => EffectString.isNonEmpty(_type)),
@@ -60,23 +53,20 @@ export function TypeCombobox({
   return (
     <Listbox
       as="div"
-      id={`types.${typeIdx}.properties.${typePropertyIdx}.type_name`}
-      name={`types.${typeIdx}.properties.${typePropertyIdx}.type_name`}
-      value={value}
+      id={id}
+      name={name}
+      value={field.state.value}
+      onBlur={field.handleBlur}
       onChange={(value) => {
         if (value) {
-          onTypeSelected(`types.${typeIdx}.properties.${typePropertyIdx}.type_name`, value, {
-            shouldDirty: true,
-            shouldTouch: true,
-            shouldValidate: true,
-          });
+          field.handleChange(value);
         }
       }}
     >
       <Label className="sr-only">Prop type</Label>
       <div className="relative">
         <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-slate-900 py-1.5 pr-2 pl-3 text-left text-white outline-1 -outline-offset-1 outline-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
-          <span className="col-start-1 row-start-1 truncate pr-6">{value}</span>
+          <span className="col-start-1 row-start-1 truncate pr-6">{field.state.value}</span>
           <ChevronUpDownIcon
             aria-hidden="true"
             className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-300 sm:size-4"

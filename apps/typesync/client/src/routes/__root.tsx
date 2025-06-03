@@ -32,8 +32,8 @@ function Layout() {
 
   return (
     <div>
-      <div className="fixed inset-y-0 z-50 flex w-72 flex-col h-full">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-slate-900 pb-4 h-full">
+      <div className="fixed inset-y-0 z-50 flex w-72 flex-col h-full bg-white dark:bg-slate-900">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto pb-4 h-full">
           <Link
             to="/"
             className="flex h-16 shrink-0 items-center justify-center text-xl border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 cursor-pointer"
