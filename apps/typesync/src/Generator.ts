@@ -189,31 +189,32 @@ function generatePackageJson(app: Domain.InsertAppSchema) {
       typecheck: 'tsc --noEmit',
     },
     dependencies: {
-      '@automerge/automerge': '^v2.2.9-alpha.3',
-      '@automerge/automerge-repo': '^2.0.0-alpha.14',
-      '@automerge/automerge-repo-react-hooks': '^2.0.0-alpha.14',
-      '@graphprotocol/hypergraph': '^v0.0.0-alpha',
-      '@graphprotocol/hypergraph-react': '^v0.0.0-alpha',
-      '@privy-io/react-auth': '^2.8.3',
-      '@tailwindcss/vite': '^4.1.3',
-      '@tanstack/react-query': '^5.74.0',
-      '@tanstack/react-query-devtools': '^5.74.0',
-      '@tanstack/react-router': '^1.116.0',
-      effect: '^3.14.8',
+      '@automerge/automerge': '^2.2.9',
+      '@automerge/automerge-repo': '=2.0.0-beta.5',
+      '@automerge/automerge-repo-react-hooks': '=2.0.0-beta.5',
+      '@graphprotocol/hypergraph': 'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
+      '@graphprotocol/hypergraph-react':
+        'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
+      '@privy-io/react-auth': '^2.13.7',
+      '@tailwindcss/vite': '^4.1.8',
+      '@tanstack/react-query': '^5.79.2',
+      '@tanstack/react-query-devtools': '^5.79.2',
+      '@tanstack/react-router': '^1.120.15',
+      '@tanstack/react-router-devtools': '^1.120.15',
+      effect: '^3.16.3',
       react: '^19.1.0',
       'react-dom': '^19.1.0',
-      tailwindcss: '^4.1.3',
-      vite: '^6.2.6',
+      tailwindcss: '^4.1.8',
+      vite: '^6.3.5',
     },
     devDependencies: {
-      '@eslint/js': '^9.24.0',
-      '@tanstack/react-router-devtools': '^1.116.0',
+      '@eslint/js': '^9.28.0',
       '@tanstack/router-plugin': '^1.116.1',
       '@types/node': '^22.14.1',
-      '@types/react': '^19.1.1',
-      '@types/react-dom': '^19.1.2',
+      '@types/react': '^19.1.6',
+      '@types/react-dom': '^19.1.5',
       '@vitejs/plugin-react': '^4.3.4',
-      eslint: '^9.24.0',
+      eslint: '^9.28.0',
       'eslint-plugin-react-hooks': '^5.2.0',
       'eslint-plugin-react-refresh': '^0.4.19',
       globals: '^16.0.0',
@@ -476,16 +477,25 @@ function fieldToEntityString({
 
   // Convert type to Entity type
   const entityType = (() => {
-    switch (type_name) {
-      case 'Text':
-        return 'Entity.Text';
-      case 'Number':
-        return 'Entity.Number';
-      case 'Checkbox':
-        return 'Entity.Checkbox';
+    switch (true) {
+      case type_name === 'Text':
+        return 'Type.Text';
+      case type_name === 'Number':
+        return 'Type.Number';
+      case type_name === 'Boolean':
+        return 'Type.Boolean';
+      case type_name === 'Date':
+        return 'Type.Date';
+      case type_name === 'Url':
+        return 'Type.Url';
+      case type_name === 'Point':
+        return 'Type.Point';
+      case type_name.startsWith('Relation'):
+        // renders the type as `Type.Relation(Entity)`
+        return `Type.${type_name}`;
       default:
         // how to handle complex types
-        return 'Entity.Text';
+        return 'Type.Text';
     }
   })();
 
@@ -511,13 +521,13 @@ function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): 
   const fieldStrings = fields.map(fieldToEntityString);
 
   const capitalizedName = type.name.charAt(0).toUpperCase() + type.name.slice(1);
-  return `class ${capitalizedName} extends Entity.Class<${capitalizedName}>('${capitalizedName}')({
+  return `export class ${capitalizedName} extends Entity.Class<${capitalizedName}>('${capitalizedName}')({
 ${fieldStrings.join(',\n')}
 }) {}`;
 }
 
 function buildSchemaFile(schema: Domain.InsertAppSchema) {
-  const importStatement = `import * as Entity from '@graphprotocol/hypergraph/Entity';\nimport * as Schema from 'effect/Schema';`;
+  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';\nimport * as Schema from 'effect/Schema';`;
   const typeDefinitions = schema.types
     .map(typeDefinitionToString)
     .filter((def) => def != null)

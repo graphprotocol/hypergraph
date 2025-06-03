@@ -1,13 +1,5 @@
 import * as Schema from 'effect/Schema';
 
-// default schema types
-export const Text = Schema.String;
-export const SchemaNumber = Schema.Number;
-export const Checkbox = Schema.Boolean;
-export const SchemaObject = Schema.Object;
-
-export const DefaultSchemaTypes = [Text, SchemaNumber, Checkbox, SchemaObject] as const;
-
 export const AppSchemaField = Schema.Struct({
   name: Schema.NonEmptyTrimmedString,
   typeName: Schema.NonEmptyTrimmedString,

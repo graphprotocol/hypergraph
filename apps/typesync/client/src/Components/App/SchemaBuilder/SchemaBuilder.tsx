@@ -3,31 +3,22 @@
 import { Input } from '@headlessui/react';
 import { ExclamationCircleIcon, PlusIcon } from '@heroicons/react/16/solid';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { effectTsResolver } from '@hookform/resolvers/effect-ts';
+import { Array as EffectArray, pipe } from 'effect';
 import {
   type Control,
   type UseFormRegister,
   type UseFormSetValue,
   useFieldArray,
-  useForm,
+  useFormContext,
   useWatch,
 } from 'react-hook-form';
 
+import type { InsertAppSchema } from '../../../schema.js';
 import { SchemaBrowser } from './SchemaBrowser.js';
 import { TypeCombobox } from './TypeCombobox.js';
-import { AppSchemaForm } from './types.js';
-
-// biome-ignore lint/suspicious/noExplicitAny: appears to be an issue with the effectTsResolver
-type HookformEffectSchema = any;
 
 export function SchemaBuilder() {
-  const { control, register, formState, setValue } = useForm<AppSchemaForm>({
-    resolver: effectTsResolver(AppSchemaForm as HookformEffectSchema),
-    defaultValues: {
-      types: [{ name: '', properties: [{ name: '', typeName: 'Text' }] }],
-    },
-    shouldFocusError: true,
-  });
+  const { control, register, formState, setValue } = useFormContext<InsertAppSchema>();
   const typesArray = useFieldArray({
     control,
     name: 'types',
@@ -36,19 +27,24 @@ export function SchemaBuilder() {
     },
   });
 
-  const schema = useWatch<AppSchemaForm>({
+  const schema = useWatch<InsertAppSchema>({
     control,
     exact: true,
   });
+  const schemaTypes = pipe(
+    schema.types ?? [],
+    EffectArray.filter((_type) => _type.name != null),
+    EffectArray.map((_type) => _type.name || ''),
+  );
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-7 gap-x-4">
+    <div className="grid grid-cols-2 lg:grid-cols-7 gap-x-4 pb-16">
       <div className="lg:col-span-4 flex flex-col gap-y-4">
         <div className="border-b border-gray-200 dark:border-white/20 pb-5">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">Schema</h3>
           <p className="mt-2 max-w-4xl text-sm text-gray-500 dark:text-gray-200">
-            Build your app schema by adding types, fields belonging to those types, etc. View already existing schemas
-            and types to add to your schema.
+            Build your app schema by adding types, properties belonging to those types, etc. View already existing
+            schemas, types and properties to add to your schema.
           </p>
         </div>
         {typesArray.fields.map((_type, idx) => (
@@ -110,14 +106,29 @@ export function SchemaBuilder() {
                 <TrashIcon aria-hidden="true" className="size-5" />
               </button>
             </div>
-            <PropsInput control={control} register={register} typeIndex={idx} setValue={setValue} />
+            <PropsInput
+              control={control}
+              register={register}
+              typeIndex={idx}
+              setValue={setValue}
+              schemaTypes={EffectArray.filter(schemaTypes, (_typeName) => {
+                // filter out this type
+                const schemaTypeNameAtIdx = schema.types?.[idx]?.name;
+                return schemaTypeNameAtIdx != null && schemaTypeNameAtIdx !== _typeName;
+              })}
+            />
           </div>
         ))}
         <div className="w-full flex items-center justify-end border-t border-gray-500 dark:border-gray-400 mt-3">
           <button
             type="button"
             className="inline-flex items-center gap-x-1.5 text-sm/6 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 rounded-md px-2 py-1.5"
-            onClick={() => typesArray.append({ name: '', properties: [] })}
+            onClick={() =>
+              typesArray.append({
+                name: '',
+                properties: [{ name: '', type_name: 'Text' }],
+              })
+            }
           >
             <PlusIcon aria-hidden="true" className="-ml-0.5 size-5" />
             Add Type
@@ -135,7 +146,10 @@ export function SchemaBuilder() {
               name: type.name || '',
               properties: type.properties.map((prop) => ({
                 name: prop.name || '',
-                typeName: prop.valueType?.name ?? 'Text',
+                type_name: prop.valueType?.name ?? 'Text',
+                description: null,
+                optional: null,
+                nullable: null,
               })),
             });
           }}
@@ -147,10 +161,17 @@ export function SchemaBuilder() {
 
 function PropsInput(
   props: Readonly<{
-    control: Control<AppSchemaForm>;
-    register: UseFormRegister<AppSchemaForm>;
+    control: Control<InsertAppSchema>;
+    register: UseFormRegister<InsertAppSchema>;
     typeIndex: number;
-    setValue: UseFormSetValue<AppSchemaForm>;
+    setValue: UseFormSetValue<InsertAppSchema>;
+    /**
+     * A list of types within the defined schema that the user can use as a relation
+     * This allows the user to specify the property as a relationship to a type in the schema
+     *
+     * @default []
+     */
+    schemaTypes?: Array<string>;
   }>,
 ) {
   const typePropertiesArray = useFieldArray({
@@ -160,7 +181,7 @@ function PropsInput(
   // this is annoying, but the control register is not picking up changes in the <Combobox> headless-ui type.
   // so, instead, grabbing the value and use the onChange to set in the form.
   // @todo FIX THIS
-  const typeProperties = useWatch<AppSchemaForm>({
+  const typeProperties = useWatch<InsertAppSchema>({
     control: props.control,
     exact: true,
   });
@@ -184,8 +205,9 @@ function PropsInput(
               <TypeCombobox
                 typeIdx={props.typeIndex}
                 typePropertyIdx={idx}
-                value={thisType?.properties?.[idx]?.typeName || 'Text'}
+                value={thisType?.properties?.[idx]?.type_name || 'Text'}
                 onTypeSelected={props.setValue}
+                schemaTypes={props.schemaTypes}
               />
             </div>
             <div className="col-span-1 flex items-center justify-end">
@@ -204,7 +226,7 @@ function PropsInput(
         <button
           type="button"
           className="inline-flex items-center gap-x-1.5 text-sm/4 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 rounded-md px-2 py-1.5"
-          onClick={() => typePropertiesArray.append({ name: '', typeName: 'Text' })}
+          onClick={() => typePropertiesArray.append({ name: '', type_name: 'Text' })}
         >
           <PlusIcon aria-hidden="true" className="-ml-0.5 size-4" />
           Add Property

@@ -12,6 +12,7 @@ import {
   useQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { Array as EffectArray } from 'effect';
 
 import { API_ROOT_URL } from '../constants.js';
 import * as Schema from '../schema.js';
@@ -178,10 +179,20 @@ export function useAppEventsSuspenseQuery(
 export async function createApp(create: Schema.InsertAppSchema): Promise<Readonly<Schema.App>> {
   const result = await fetch(`${API_ROOT_URL}/apps`, {
     method: 'POST',
-    body: JSON.stringify(create),
-    headers: {
-      'Content-Type': 'applicaton/json',
-    },
+    body: JSON.stringify({
+      name: create.name,
+      description: create.description,
+      directory: create.directory,
+      types: EffectArray.map(create.types, (type) => ({
+        ...type,
+        properties: EffectArray.map(type.properties, (prop) => ({
+          ...prop,
+          description: null,
+          optional: null,
+          nullable: null,
+        })),
+      })),
+    }),
   });
   if (result.status !== 200) {
     throw new Error('Failure creating app');

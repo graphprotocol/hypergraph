@@ -192,6 +192,7 @@ export const InsertAppSchema = App.pipe(
   Schema.pick('name', 'description', 'directory'),
   Schema.extend(
     Schema.Struct({
+      template: Schema.Literal('vite_react'),
       types: Schema.Array(
         InsertAppSchemaType.pipe(
           Schema.omit('app_id'),
@@ -216,6 +217,7 @@ export const InsertAppSchema = App.pipe(
       name: 'Mesh',
       description: 'Event builder powered by Hypergraph',
       directory: '~/dev/mesh',
+      template: 'vite_react',
       types: [
         {
           name: 'Event',

@@ -16,6 +16,8 @@ lerna-debug.log*
 # Local database
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 
 # Runtime data
 pids
