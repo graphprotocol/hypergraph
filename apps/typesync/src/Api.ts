@@ -1,18 +1,17 @@
 /** Defines the /api/vX endpoints made available to the client for interacting with the user apps */
 
-import * as HttpApi from '@effect/platform/HttpApi';
-import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder';
-import * as HttpApiEndpoint from '@effect/platform/HttpApiEndpoint';
-import * as HttpApiError from '@effect/platform/HttpApiError';
-import * as HttpApiGroup from '@effect/platform/HttpApiGroup';
-import * as HttpApiScalar from '@effect/platform/HttpApiScalar';
-import * as HttpApiSchema from '@effect/platform/HttpApiSchema';
-import * as OpenApi from '@effect/platform/OpenApi';
-import * as Console from 'effect/Console';
-import * as Effect from 'effect/Effect';
-import * as Layer from 'effect/Layer';
-import * as Option from 'effect/Option';
-import * as Schema from 'effect/Schema';
+import {
+  HttpApi,
+  HttpApiBuilder,
+  HttpApiEndpoint,
+  HttpApiError,
+  HttpApiGroup,
+  HttpApiScalar,
+  HttpApiSchema,
+  HttpServerRequest,
+  OpenApi,
+} from '@effect/platform';
+import { Console, Effect, Layer, Option, Schema } from 'effect';
 
 import * as Database from './Database.js';
 import * as Domain from './Domain.js';
@@ -20,6 +19,14 @@ import * as SchemaGenerator from './Generator.js';
 
 const idParam = HttpApiSchema.param('id', Schema.NumberFromString.pipe(Schema.int(), Schema.positive()));
 class ApiRouter extends HttpApiGroup.make('Api')
+  .add(HttpApiEndpoint.get('CWD')`/cwd`.addSuccess(Schema.Struct({ cwd: Schema.NonEmptyTrimmedString })))
+  .annotateContext(
+    OpenApi.annotations({
+      title: 'CWD',
+      description: 'Current working directory where the TypeSync CLI is running',
+      version: 'v1',
+    }),
+  )
   .add(
     HttpApiEndpoint.get('FetchApps')`/apps`
       .addSuccess(Schema.Array(Domain.App))
@@ -33,9 +40,10 @@ class ApiRouter extends HttpApiGroup.make('Api')
   )
   .add(
     HttpApiEndpoint.post('CreateApp')`/apps`
-      .setPayload(Domain.InsertAppSchema)
+      // .setPayload(Domain.InsertAppSchema)
       .addSuccess(Domain.AppSchema)
       .addError(HttpApiError.InternalServerError)
+      .addError(HttpApiError.BadRequest)
       .annotateContext(
         OpenApi.annotations({
           title: 'Create App',
@@ -70,6 +78,7 @@ const ApiAppsLive = HttpApiBuilder.group(Api, 'Api', (handlers) =>
     const generator = yield* SchemaGenerator.SchemaGenerator;
 
     return handlers
+      .handle('CWD', () => Effect.succeed({ cwd: process.cwd() }))
       .handle('FetchApps', (_) =>
         db.Apps.fetchAll().pipe(
           Effect.tapError((err) => Console.error('GET /v1/apps - failure fetching apps', { err })),
@@ -92,27 +101,42 @@ const ApiAppsLive = HttpApiBuilder.group(Api, 'Api', (handlers) =>
           Effect.mapError((_) => new HttpApiError.InternalServerError()),
         ),
       )
-      .handle('CreateApp', ({ payload }) =>
+      .handle('CreateApp', () =>
         Effect.gen(function* () {
-          const app = yield* db.Apps.create(payload).pipe(
+          const body = yield* HttpServerRequest.HttpServerRequest.pipe(
+            Effect.flatMap((req) => req.json),
+            Effect.tapError((err) => Console.error('Apps.CreateApp() failure parsing InsertApp request JSON', { err })),
+            Effect.catchAll(() => new HttpApiError.BadRequest()),
+          );
+
+          const payload = Schema.decodeUnknownSync(Domain.InsertAppSchema)(body);
+
+          return yield* db.Apps.create(payload).pipe(
             Effect.tapError((err) => Console.error('POST /v1/apps - failure creating app schema', { err })),
             Effect.mapError((_) => new HttpApiError.InternalServerError()),
-          );
-
-          // generate files
-          yield* generator.codegen(payload).pipe(
-            Effect.andThen(({ directory }) =>
-              db.AppEvents.create({
-                app_id: app.id,
-                event_type: 'generated',
-                metadata: `App "${app.name}" initial codegen completed and generated "${directory}"`,
-              }),
+            Effect.tap((app) =>
+              // generate the files in the given directory
+              generator
+                .codegen(payload)
+                .pipe(
+                  Effect.tap(({ directory }) =>
+                    db.AppEvents.create({
+                      app_id: app.id,
+                      event_type: 'generated',
+                      metadata: `App "${app.name}" initial codegen completed and generated "${directory}"`,
+                    }),
+                  ),
+                  Effect.tapError((err) =>
+                    Effect.gen(function* () {
+                      yield* Console.error('POST /v1/apps - failure generating app files', { err });
+                      // delete the app and related types if the codegen fails
+                      yield* db.Apps.delete(app.id);
+                    }),
+                  ),
+                  Effect.mapError((_) => new HttpApiError.InternalServerError()),
+                ),
             ),
-            Effect.tapError((err) => Console.error('POST /v1/apps - failure generating app files', { err })),
-            Effect.mapError((_) => new HttpApiError.InternalServerError()),
           );
-
-          return app;
         }),
       )
       .handle('DeleteApp', ({ path }) =>

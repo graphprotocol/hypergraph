@@ -12,16 +12,25 @@ function fieldToEntityString({
 
   // Convert type to Entity type
   const entityType = (() => {
-    switch (typeName) {
-      case 'Text':
-        return 'Entity.Text';
-      case 'Number':
-        return 'Entity.Number';
-      case 'Checkbox':
-        return 'Entity.Checkbox';
+    switch (true) {
+      case typeName === 'Text':
+        return 'Type.Text';
+      case typeName === 'Number':
+        return 'Type.Number';
+      case typeName === 'Boolean':
+        return 'Type.Boolean';
+      case typeName === 'Date':
+        return 'Type.Date';
+      case typeName === 'Url':
+        return 'Type.Url';
+      case typeName === 'Point':
+        return 'Type.Point';
+      case typeName.startsWith('Relation'):
+        // renders the type as `Type.Relation(Entity)`
+        return `Type.${typeName}`;
       default:
         // how to handle complex types
-        return 'Entity.Any';
+        return 'Type.Text';
     }
   })();
 
@@ -50,7 +59,7 @@ function typeDefinitionToString(type: {
   const fieldStrings = fields.map(fieldToEntityString);
 
   const capitalizedName = type.name.charAt(0).toUpperCase() + type.name.slice(1);
-  return `class ${capitalizedName} extends Entity.Class<${capitalizedName}>('${capitalizedName}')({
+  return `export class ${capitalizedName} extends Entity.Class<${capitalizedName}>('${capitalizedName}')({
 ${fieldStrings.join(',\n')}
 }) {}`;
 }
@@ -77,7 +86,7 @@ ${fieldStrings.join(',\n')}
  * expect(code).toEqual(`
  *  import * as Entity from '@graphprotocol/hypergraph/Entity';
  *
- *  class Event extends Entity.Class<Event>('Event')({
+ *  export class Event extends Entity.Class<Event>('Event')({
  *    // Name of the event
  *    name: string;
  *    description: string | null;
@@ -90,7 +99,7 @@ ${fieldStrings.join(',\n')}
  */
 export function buildAppSchemaFormCode(schema: AppSchemaForm): Readonly<{ code: string; hash: string }> {
   const fileCommentStatement = '// src/schema.ts';
-  const importStatement = `import * as Entity from '@graphprotocol/hypergraph/Entity';\nimport * as Schema from 'effect/Schema';`;
+  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';\nimport * as Schema from 'effect/Schema';`;
   const typeDefinitions = schema.types
     .map(typeDefinitionToString)
     .filter((def) => def != null)

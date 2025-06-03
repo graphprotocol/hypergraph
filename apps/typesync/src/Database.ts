@@ -201,7 +201,11 @@ export class DatabaseService extends Effect.Service<DatabaseService>()('/typesyn
           );
         },
         create(insert: Domain.InsertAppSchema) {
-          return InsertApp.execute(insert).pipe(
+          return InsertApp.execute({
+            name: insert.name,
+            directory: insert.directory,
+            description: insert.description,
+          }).pipe(
             Effect.tapError((err) =>
               Effect.gen(function* () {
                 yield* Console.error('failure creating app record', { err });

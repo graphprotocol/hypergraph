@@ -15,7 +15,7 @@ export class App extends Schema.Class<App>('App')({
   id: AppIdentifier,
   name: Schema.NonEmptyTrimmedString,
   description: Schema.NullOr(Schema.String),
-  directory: Schema.NullOr(Schema.String),
+  directory: Schema.NullOr(Schema.String.pipe(Schema.pattern(/^(\.\/|~\/|\/|[a-zA-Z]:\/)[\w\-\.\s\/]*[\w\-\.]$/))),
   status: Schema.Literal('draft', 'generated', 'published', 'change_detected'),
   created_at: Schema.NonEmptyTrimmedString,
   updated_at: Schema.NonEmptyTrimmedString,
@@ -169,52 +169,22 @@ export const InsertAppSchema = App.pipe(
   Schema.pick('name', 'description', 'directory'),
   Schema.extend(
     Schema.Struct({
+      template: Schema.Literal('vite_react'),
       types: Schema.Array(
         InsertAppSchemaType.pipe(
           Schema.omit('app_id'),
           Schema.extend(
             Schema.Struct({
-              properties: Schema.Array(InsertAppSchemaTypeProperty.pipe(Schema.omit('app_schema_type_id'))).pipe(
-                Schema.minItems(1),
-              ),
+              properties: Schema.Array(
+                InsertAppSchemaTypeProperty.pipe(
+                  Schema.omit('app_schema_type_id', 'description', 'nullable', 'optional'),
+                ),
+              ).pipe(Schema.minItems(1)),
             }),
           ),
         ),
       ).pipe(Schema.minItems(1)),
     }),
   ),
-).annotations({
-  identifier: 'App Schema',
-  title: 'App with built schema definitions',
-  description: 'The app record with built out schema with types and properties',
-  documentation: 'The app record with built out schema with types and properties',
-  examples: [
-    {
-      name: 'Mesh',
-      description: 'Event builder powered by Hypergraph',
-      directory: '~/dev/mesh',
-      types: [
-        {
-          name: 'Event',
-          properties: [
-            {
-              name: 'id',
-              type_name: 'Number',
-              description: 'unique id of the Event on hypergraph',
-              nullable: false,
-              optional: false,
-            },
-            {
-              name: 'name',
-              type_name: 'Text',
-              description: 'Event name',
-              nullable: false,
-              optional: false,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-});
+);
 export type InsertAppSchema = typeof InsertAppSchema.Type;
