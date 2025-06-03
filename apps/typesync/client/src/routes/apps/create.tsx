@@ -14,6 +14,8 @@ import { SchemaBuilder } from '../../Components/App/SchemaBuilder/SchemaBuilder.
 import { Loading } from '../../Components/Loading.js';
 import { appsQueryOptions, useAppsSuspenseQuery, useCreateAppMutation } from '../../hooks/useAppQuery.js';
 import { cwdQueryOptions, useCWDSuspenseQuery } from '../../hooks/useCWDQuery.js';
+import reactLogo from '../../images/react_logo.png';
+import viteLogo from '../../images/vitejs_logo.png';
 import { type App, InsertAppSchema } from '../../schema.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: appears to be an issue with the effectTsResolver
@@ -235,7 +237,7 @@ function CreateAppPage() {
                       <RadioGroup
                         id="template"
                         {...register('template')}
-                        className="mt-6 grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-4"
+                        className="mt-6 grid grid-cols-1 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-x-4"
                       >
                         <Radio
                           key="vite_react"
@@ -249,9 +251,9 @@ function CreateAppPage() {
                                 Vite + React
                               </span>
                               <div className="flex items-center justify-between gap-x-4 w-fit">
-                                <img src="/vitejs_logo.png" alt="" width={64} height={64} className="size-16" />
+                                <img src={viteLogo} alt="" width={64} height={64} className="size-16" />
                                 <span className="text-gray-500 dark:text-gray-50">+</span>
-                                <img src="/react_logo.png" alt="" width={64} height={64} className="size-16" />
+                                <img src={reactLogo} alt="" width={64} height={64} className="size-16" />
                               </div>
                             </div>
                           </div>
