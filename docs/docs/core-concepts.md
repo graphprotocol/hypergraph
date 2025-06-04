@@ -155,13 +155,14 @@ Let's bring together everything we've learned above—including our example sent
 
 ```ts title="example.ts"
 // Example: "Teresa, a photographer, owns a Fujifilm camera."
+// This script uses the @graphprotocol/grc-20 SDK to:
 // 1. Create a Camera entity with a brand property
 // 2. Create a Teresa entity with a profession property
-// 3. Create an 'owns' relation entity linking Teresa to the Camera
-// 4. Bundle all operations into a single edit (ops array)
+// 3. Check for an existing 'owns' relation from Teresa to the Camera
+// 4. If none exists, create the 'owns' relation entity
+// 5. Bundle all operations into a single edit (ops array)
 
-import { Graph } from '@graphprotocol/grc-20';
-import { getEntityRelations } from '@graphprotocol/grc-20';
+import { Graph, getEntityRelations } from '@graphprotocol/grc-20';
 
 // Replace these with actual IDs from your schema/space
 const PERSON_TYPE_ID = 'PERSON_TYPE_ID';
@@ -173,28 +174,29 @@ const DATE_ACQUIRED_ATTR_ID = 'DATE_ACQUIRED_ATTR_ID';
 
 // 1️⃣ Create the Camera entity with a brand property
 const { id: cameraId, ops: cameraOps } = Graph.createEntity({
-  name: 'Fujifilm camera',      // Human-readable label
-  types: [DEVICE_TYPE_ID],        // Device type
+  name: 'Fujifilm camera',
+  types: [DEVICE_TYPE_ID],
   values: [
-    { property: BRAND_ATTR_ID, value: 'Fujifilm' },  // brand property
+    { property: BRAND_ATTR_ID, value: 'Fujifilm' },
   ],
 });
 
 // 2️⃣ Create the Teresa entity with a profession property
 const { id: teresaId, ops: teresaOps } = Graph.createEntity({
-  name: 'Teresa',                 // Human-readable label
-  types: [PERSON_TYPE_ID],        // Person type
+  name: 'Teresa',
+  types: [PERSON_TYPE_ID],
   values: [
-    { property: PROFESSION_ATTR_ID, value: 'photographer' }, // profession property
+    { property: PROFESSION_ATTR_ID, value: 'photographer' },
   ],
 });
 
-// 1️⃣ Fetch existing owns relations for Teresa
+// 3️⃣ Fetch existing 'owns' relations for Teresa
 const existingOwns = getEntityRelations(teresaId, PersonSchema, doc).owns;
 
-// 2️⃣ Only create if none exists pointing to this camera
+// 4️⃣ Only create if none exists pointing to this camera
+let ownsOps = [];
 if (!existingOwns.find(rel => rel.id === cameraId)) {
-  const { ops: ownsOps } = Graph.createRelation({
+  const { ops } = Graph.createRelation({
     fromEntity: teresaId,
     toEntity: cameraId,
     relationType: OWNS_REL_TYPE_ID,
@@ -202,10 +204,10 @@ if (!existingOwns.find(rel => rel.id === cameraId)) {
       { property: DATE_ACQUIRED_ATTR_ID, value: Graph.serializeDate(new Date('2020-03-15')) },
     ],
   });
-  // add ownsOps to your edit batch…
+  ownsOps = ops;
 }
 
-// 4️⃣ Combine all ops into a single edit
+// 5️⃣ Combine all ops into a single edit
 const ops = [...cameraOps, ...teresaOps, ...ownsOps];
 console.log('Ops ready for publishing:', ops);
 
