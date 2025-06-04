@@ -4,36 +4,13 @@ import { type PrivateKeyAccount, privateKeyToAccount } from 'viem/accounts';
 import { describe, expect, it } from 'vitest';
 
 import type { Hex } from 'viem';
-import {
-  loadAccountId,
-  loadKeys,
-  loadSyncServerSessionToken,
-  storeAccountId,
-  storeKeys,
-  storeSyncServerSessionToken,
-  wipeAccountId,
-  wipeKeys,
-  wipeSyncServerSessionToken,
-} from '../../src/identity/auth-storage.js';
-import { createIdentityKeys } from '../../src/identity/create-identity-keys.js';
+
+import { createIdentityKeys } from '../../src/connect/create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from '../../src/identity/identity-encryption.js';
 import { proveIdentityOwnership, verifyIdentityOwnership } from '../../src/identity/prove-ownership.js';
 import type { Signer } from '../../src/identity/types.js';
 import { decryptKeyBox, encryptKeyBox } from '../../src/key/key-box.js';
 import { bytesToHex, hexToBytes } from '../../src/utils/hexBytesAddressUtils.js';
-
-const storageMockDict = {} as { [key: string]: string };
-const storageMock = {
-  getItem: (key: string) => {
-    return storageMockDict[key] || null;
-  },
-  setItem: (key: string, value: string) => {
-    storageMockDict[key] = value;
-  },
-  removeItem: (key: string) => {
-    delete storageMockDict[key];
-  },
-};
 
 const accountSigner = (account: PrivateKeyAccount): Signer => {
   return {
@@ -96,42 +73,15 @@ describe('identity encryption', () => {
     // generate a random private key to simulate a user wallet
     const account = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
     const signer = accountSigner(account);
-    const accountId = await signer.getAddress();
+    const accountAddress = await signer.getAddress();
     const keys = createIdentityKeys();
-    const { ciphertext, nonce } = await encryptIdentity(signer, accountId, keys);
-    const decrypted = await decryptIdentity(signer, accountId, ciphertext, nonce);
+    const { ciphertext, nonce } = await encryptIdentity(signer, accountAddress, keys);
+    const decrypted = await decryptIdentity(signer, accountAddress, ciphertext, nonce);
 
     expect(decrypted.encryptionPublicKey).toEqual(keys.encryptionPublicKey);
     expect(decrypted.encryptionPrivateKey).toEqual(keys.encryptionPrivateKey);
     expect(decrypted.signaturePublicKey).toEqual(keys.signaturePublicKey);
     expect(decrypted.signaturePrivateKey).toEqual(keys.signaturePrivateKey);
-  });
-});
-
-describe('auth/identity storage', () => {
-  it('stores, loads and wipes an account ID', () => {
-    expect(loadAccountId(storageMock)).toBeNull();
-    const accountId = '0x1234';
-    storeAccountId(storageMock, accountId);
-    expect(loadAccountId(storageMock)).toEqual(accountId);
-    wipeAccountId(storageMock);
-    expect(loadAccountId(storageMock)).toBeNull();
-  });
-  it('stores, loads and wipes keys', () => {
-    expect(loadKeys(storageMock, '0x1234')).toBeNull();
-    const keys = createIdentityKeys();
-    storeKeys(storageMock, '0x1234', keys);
-    expect(loadKeys(storageMock, '0x1234')).toEqual(keys);
-    wipeKeys(storageMock, '0x1234');
-    expect(loadKeys(storageMock, '0x1234')).toBeNull();
-  });
-  it('stores, loads and wipes a session token', () => {
-    expect(loadSyncServerSessionToken(storageMock, '0x1234')).toBeNull();
-    const token = '0x6789';
-    storeSyncServerSessionToken(storageMock, '0x1234', token);
-    expect(loadSyncServerSessionToken(storageMock, '0x1234')).toEqual(token);
-    wipeSyncServerSessionToken(storageMock, '0x1234');
-    expect(loadSyncServerSessionToken(storageMock, '0x1234')).toBeNull();
   });
 });
 
@@ -141,40 +91,40 @@ describe('identity ownership proofs', () => {
     const account = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
 
     const signer = accountSigner(account);
-    const accountId = await signer.getAddress();
+    const accountAddress = await signer.getAddress();
     const keys = createIdentityKeys();
-    const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountId, keys);
+    const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountAddress, keys);
 
-    const valid = await verifyIdentityOwnership(accountId, keys.signaturePublicKey, accountProof, keyProof);
+    const valid = await verifyIdentityOwnership(accountAddress, keys.signaturePublicKey, accountProof, keyProof);
     expect(valid).toBe(true);
   });
   it('should fail to verify ownership proofs with invalid proofs', async () => {
     // generate a random private key to simulate a user wallet
     const account = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
     const signer = accountSigner(account);
-    const accountId = await signer.getAddress();
+    const accountAddress = await signer.getAddress();
     const keys = createIdentityKeys();
-    const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountId, keys);
+    const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountAddress, keys);
 
     // Create invalid proofs using a different account
     const account2 = privateKeyToAccount(bytesToHex(randomBytes(32)) as Hex);
     const signer2 = accountSigner(account2);
-    const accountId2 = await signer2.getAddress();
+    const accountAddress2 = await signer2.getAddress();
     const keys2 = createIdentityKeys();
     const { accountProof: accountProof2, keyProof: keyProof2 } = await proveIdentityOwnership(
       signer2,
-      accountId2,
+      accountAddress2,
       keys2,
     );
 
     // Check with invalid wallet proof, key proof, and with both invalid proofs
-    const valid = await verifyIdentityOwnership(accountId, keys.signaturePublicKey, accountProof2, keyProof);
+    const valid = await verifyIdentityOwnership(accountAddress, keys.signaturePublicKey, accountProof2, keyProof);
     expect(valid).toBe(false);
 
-    const valid2 = await verifyIdentityOwnership(accountId, keys.signaturePublicKey, accountProof, keyProof2);
+    const valid2 = await verifyIdentityOwnership(accountAddress, keys.signaturePublicKey, accountProof, keyProof2);
     expect(valid2).toBe(false);
 
-    const valid3 = await verifyIdentityOwnership(accountId, keys.signaturePublicKey, accountProof2, keyProof2);
+    const valid3 = await verifyIdentityOwnership(accountAddress, keys.signaturePublicKey, accountProof2, keyProof2);
 
     expect(valid3).toBe(false);
   });

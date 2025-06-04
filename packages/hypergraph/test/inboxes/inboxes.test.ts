@@ -9,6 +9,7 @@ import {
   createSpaceInboxCreationMessage,
   decryptInboxMessage,
   encryptInboxMessage,
+  mergeMessages,
   prepareAccountInboxMessage,
   prepareSpaceInboxMessage,
   recoverAccountInboxCreatorKey,
@@ -18,7 +19,6 @@ import {
   validateAccountInboxMessage,
   validateSpaceInboxMessage,
 } from '../../src/inboxes';
-import { mergeMessages } from '../../src/inboxes';
 import * as Messages from '../../src/messages';
 import type { AccountInboxStorageEntry, InboxMessageStorageEntry, SpaceInboxStorageEntry } from '../../src/store';
 import { bytesToHex, canonicalize, generateId, hexToBytes, stringToUint8Array } from '../../src/utils';
@@ -37,7 +37,7 @@ describe('inboxes', () => {
   const messageEncryptionPublicKey = bytesToHex(messageEncryptionPublicKeyUint8Array);
 
   const testParams = {
-    accountId: '0x1234567890123456789012345678901234567890', // 40-char ethereum address
+    accountAddress: '0x1234567890123456789012345678901234567890', // 40-char ethereum address
     isPublic: true,
     spaceId: generateId(),
     authPolicy: 'requires_auth',
@@ -52,7 +52,7 @@ describe('inboxes', () => {
       });
 
       expect(result.type).toBe('create-account-inbox');
-      expect(result.accountId).toBe(testParams.accountId);
+      expect(result.accountAddress).toBe(testParams.accountAddress);
       expect(result.isPublic).toBe(testParams.isPublic);
       expect(result.authPolicy).toBe(testParams.authPolicy);
       expect(result.encryptionPublicKey).toBe(bytesToHex(encryptionPublicKey));
@@ -90,7 +90,7 @@ describe('inboxes', () => {
       // Reconstruct the message that was signed
       const messageToVerify = stringToUint8Array(
         canonicalize({
-          accountId: testParams.accountId,
+          accountAddress: testParams.accountAddress,
           inboxId: result.inboxId,
           encryptionPublicKey: bytesToHex(encryptionPublicKey),
         }),
@@ -140,7 +140,7 @@ describe('inboxes', () => {
     it('should create a valid space inbox creation message', async () => {
       const result = await createSpaceInboxCreationMessage({
         author: {
-          accountId: testParams.accountId,
+          accountAddress: testParams.accountAddress,
           signaturePrivateKey: bytesToHex(signaturePrivateKey),
           encryptionPublicKey: bytesToHex(encryptionPublicKey),
         },
@@ -167,7 +167,7 @@ describe('inboxes', () => {
     it('should encrypt the inbox secret key', async () => {
       const result = await createSpaceInboxCreationMessage({
         author: {
-          accountId: testParams.accountId,
+          accountAddress: testParams.accountAddress,
           signaturePrivateKey: bytesToHex(signaturePrivateKey),
           encryptionPublicKey: bytesToHex(encryptionPublicKey),
         },
@@ -193,7 +193,7 @@ describe('inboxes', () => {
     describe('recoverAccountInboxCreatorKey', () => {
       it('should recover the creator key', () => {
         const inbox = createAccountInboxCreationMessage({
-          accountId: '0x1234567890123456789012345678901234567890',
+          accountAddress: '0x1234567890123456789012345678901234567890',
           isPublic: true,
           authPolicy: 'requires_auth',
           encryptionPublicKey: bytesToHex(secp256k1.getPublicKey(encryptionPrivateKey, true)),
@@ -207,7 +207,7 @@ describe('inboxes', () => {
       it('should recover the creator key', async () => {
         const inbox = await createSpaceInboxCreationMessage({
           author: {
-            accountId: '0x1234567890123456789012345678901234567890',
+            accountAddress: '0x1234567890123456789012345678901234567890',
             signaturePrivateKey: bytesToHex(signaturePrivateKey),
             encryptionPublicKey: bytesToHex(secp256k1.getPublicKey(encryptionPrivateKey, true)),
           },
@@ -278,31 +278,31 @@ describe('inboxes', () => {
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: messageEncryptionPrivateKey,
-        authorAccountId: '0x1234567890123456789012345678901234567890',
+        authorAccountAddress: '0x1234567890123456789012345678901234567890',
       });
       expect(messageToSend.ciphertext).toMatch(/^0x[0-9a-f]+$/i);
       expect(messageToSend.signature).toBeDefined();
       expect(messageToSend.signature?.hex).toMatch(/^[0-9a-f]+$/i);
       expect(messageToSend.signature?.recovery).toBeDefined();
-      expect(messageToSend.authorAccountId).toBe('0x1234567890123456789012345678901234567890');
+      expect(messageToSend.authorAccountAddress).toBe('0x1234567890123456789012345678901234567890');
     });
     it('should prepare (encrypt and sign) an account inbox message', async () => {
       const message = 'Hello, this is a secret message!';
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
       const messageToSend = await prepareAccountInboxMessage({
         message,
-        accountId,
+        accountAddress,
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: messageEncryptionPrivateKey,
-        authorAccountId: '0xabcde567890123456789012345678901234567890',
+        authorAccountAddress: '0xabcde567890123456789012345678901234567890',
       });
       expect(messageToSend.ciphertext).toMatch(/^0x[0-9a-f]+$/i);
       expect(messageToSend.signature).toBeDefined();
       expect(messageToSend.signature?.hex).toMatch(/^[0-9a-f]+$/i);
       expect(messageToSend.signature?.recovery).toBeDefined();
-      expect(messageToSend.authorAccountId).toBe('0xabcde567890123456789012345678901234567890');
+      expect(messageToSend.authorAccountAddress).toBe('0xabcde567890123456789012345678901234567890');
     });
   });
 
@@ -317,24 +317,24 @@ describe('inboxes', () => {
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: '0x1234567890123456789012345678901234567890',
+        authorAccountAddress: '0x1234567890123456789012345678901234567890',
       });
       const signer = recoverSpaceInboxMessageSigner(messageToSend, spaceId, inboxId);
       expect(signer).toBe(bytesToHex(secp256k1.getPublicKey(signaturePrivateKey, true)));
     });
     it('should recover the signer of an account inbox message', async () => {
       const message = 'Hello, this is a secret message!';
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
       const messageToSend = await prepareAccountInboxMessage({
         message,
-        accountId,
+        accountAddress,
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: '0xabcde567890123456789012345678901234567890',
+        authorAccountAddress: '0xabcde567890123456789012345678901234567890',
       });
-      const signer = recoverAccountInboxMessageSigner(messageToSend, accountId, inboxId);
+      const signer = recoverAccountInboxMessageSigner(messageToSend, accountAddress, inboxId);
       expect(signer).toBe(bytesToHex(signaturePublicKey));
     });
   });
@@ -344,8 +344,8 @@ describe('inboxes', () => {
       vi.clearAllMocks();
     });
 
-    vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountId: string) => ({
-      accountId,
+    vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountAddress: string) => ({
+      accountAddress,
       signaturePublicKey: bytesToHex(signaturePublicKey),
       encryptionPublicKey: bytesToHex(encryptionPublicKey),
     }));
@@ -360,7 +360,7 @@ describe('inboxes', () => {
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: SpaceInboxStorageEntry = {
@@ -377,7 +377,7 @@ describe('inboxes', () => {
       const isValid = await validateSpaceInboxMessage(message, inbox, spaceId, 'https://sync.example.com');
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountId, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
     });
 
     it('should reject unsigned messages for RequiresAuth inboxes', async () => {
@@ -434,7 +434,7 @@ describe('inboxes', () => {
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: SpaceInboxStorageEntry = {
@@ -467,7 +467,7 @@ describe('inboxes', () => {
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: SpaceInboxStorageEntry = {
@@ -496,7 +496,7 @@ describe('inboxes', () => {
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: SpaceInboxStorageEntry = {
@@ -513,7 +513,7 @@ describe('inboxes', () => {
       const isValid = await validateSpaceInboxMessage(message, inbox, spaceId, 'https://sync.example.com');
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountId, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
     });
 
     it('should accept unsigned messages on inboxes with optional auth', async () => {
@@ -538,26 +538,26 @@ describe('inboxes', () => {
       expect(Identity.getVerifiedIdentity).not.toHaveBeenCalled();
     });
 
-    it('should reject messages with mismatched signature and authorAccountId', async () => {
+    it('should reject messages with mismatched signature and authorAccountAddress', async () => {
       const spaceId = generateId();
       const inboxId = generateId();
 
       // Create a different key pair for the "wrong" signer
       const differentSignaturePrivateKey = secp256k1.utils.randomPrivateKey();
       const differentSignaturePublicKey = secp256k1.getPublicKey(differentSignaturePrivateKey, true);
-      const differentAccountId = '0x2222222222222222222222222222222222222222';
+      const differentAccountAddress = '0x2222222222222222222222222222222222222222';
 
       // Mock to return the correct public key for each account
-      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountId: string) => {
-        if (accountId === differentAccountId) {
+      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountAddress: string) => {
+        if (accountAddress === differentAccountAddress) {
           return {
-            accountId,
+            accountAddress,
             signaturePublicKey: bytesToHex(differentSignaturePublicKey),
             encryptionPublicKey: bytesToHex(encryptionPublicKey),
           };
         }
         return {
-          accountId,
+          accountAddress,
           signaturePublicKey: bytesToHex(signaturePublicKey),
           encryptionPublicKey: bytesToHex(encryptionPublicKey),
         };
@@ -570,7 +570,7 @@ describe('inboxes', () => {
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(differentSignaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: SpaceInboxStorageEntry = {
@@ -587,7 +587,7 @@ describe('inboxes', () => {
       const isValid = await validateSpaceInboxMessage(message, inbox, spaceId, 'https://sync.example.com');
 
       expect(isValid).toBe(false);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountId, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
     });
   });
 
@@ -595,24 +595,24 @@ describe('inboxes', () => {
     beforeEach(() => {
       vi.clearAllMocks();
 
-      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountId: string) => ({
-        accountId,
+      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountAddress: string) => ({
+        accountAddress,
         signaturePublicKey: bytesToHex(signaturePublicKey),
         encryptionPublicKey: bytesToHex(encryptionPublicKey),
       }));
     });
 
     it('should validate a properly signed account inbox message', async () => {
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
 
       const message = await prepareAccountInboxMessage({
         message: 'test message',
-        accountId,
+        accountAddress,
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: AccountInboxStorageEntry = {
@@ -625,14 +625,14 @@ describe('inboxes', () => {
         seenMessageIds: new Set(),
       };
 
-      const isValid = await validateAccountInboxMessage(message, inbox, accountId, 'https://sync.example.com');
+      const isValid = await validateAccountInboxMessage(message, inbox, accountAddress, 'https://sync.example.com');
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountId, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
     });
 
     it('should reject unsigned messages for RequiresAuth inboxes', async () => {
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
 
       const message = {
@@ -649,32 +649,32 @@ describe('inboxes', () => {
         seenMessageIds: new Set(),
       };
 
-      const isValid = await validateAccountInboxMessage(message, inbox, accountId, 'https://sync.example.com');
+      const isValid = await validateAccountInboxMessage(message, inbox, accountAddress, 'https://sync.example.com');
 
       expect(isValid).toBe(false);
       expect(Identity.getVerifiedIdentity).not.toHaveBeenCalled();
     });
 
-    it('should reject messages with mismatched signature and authorAccountId', async () => {
-      const accountId = '0x1234567890123456789012345678901234567890';
+    it('should reject messages with mismatched signature and authorAccountAddress', async () => {
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
 
       // Create a different key pair for the "wrong" signer
       const differentSignaturePrivateKey = secp256k1.utils.randomPrivateKey();
       const differentSignaturePublicKey = secp256k1.getPublicKey(differentSignaturePrivateKey, true);
-      const differentAccountId = '0x2222222222222222222222222222222222222222';
+      const differentAccountAddress = '0x2222222222222222222222222222222222222222';
 
       // Mock to return the correct public key for each account
-      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountId: string) => {
-        if (accountId === differentAccountId) {
+      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountAddress: string) => {
+        if (accountAddress === differentAccountAddress) {
           return {
-            accountId,
+            accountAddress,
             signaturePublicKey: bytesToHex(differentSignaturePublicKey),
             encryptionPublicKey: bytesToHex(encryptionPublicKey),
           };
         }
         return {
-          accountId,
+          accountAddress,
           signaturePublicKey: bytesToHex(signaturePublicKey),
           encryptionPublicKey: bytesToHex(encryptionPublicKey),
         };
@@ -683,11 +683,11 @@ describe('inboxes', () => {
       // Create message signed by the different key but claiming to be from the original account
       const message = await prepareAccountInboxMessage({
         message: 'test message',
-        accountId,
+        accountAddress,
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(differentSignaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: AccountInboxStorageEntry = {
@@ -700,14 +700,14 @@ describe('inboxes', () => {
         seenMessageIds: new Set(),
       };
 
-      const isValid = await validateAccountInboxMessage(message, inbox, accountId, 'https://sync.example.com');
+      const isValid = await validateAccountInboxMessage(message, inbox, accountAddress, 'https://sync.example.com');
 
       expect(isValid).toBe(false);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountId, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
     });
 
     it('should accept unsigned messages for Anonymous inboxes', async () => {
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
 
       const message = {
@@ -724,23 +724,23 @@ describe('inboxes', () => {
         seenMessageIds: new Set(),
       };
 
-      const isValid = await validateAccountInboxMessage(message, inbox, accountId, 'https://sync.example.com');
+      const isValid = await validateAccountInboxMessage(message, inbox, accountAddress, 'https://sync.example.com');
 
       expect(isValid).toBe(true);
       expect(Identity.getVerifiedIdentity).not.toHaveBeenCalled();
     });
 
     it('should reject signed messages for Anonymous inboxes', async () => {
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
 
       const message = await prepareAccountInboxMessage({
         message: 'test message',
-        accountId,
+        accountAddress,
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: AccountInboxStorageEntry = {
@@ -753,23 +753,23 @@ describe('inboxes', () => {
         seenMessageIds: new Set(),
       };
 
-      const isValid = await validateAccountInboxMessage(message, inbox, accountId, 'https://sync.example.com');
+      const isValid = await validateAccountInboxMessage(message, inbox, accountAddress, 'https://sync.example.com');
 
       expect(isValid).toBe(false);
       expect(Identity.getVerifiedIdentity).not.toHaveBeenCalled();
     });
 
     it('should accept signed messages on inboxes with optional auth', async () => {
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
       const inboxId = generateId();
 
       const message = await prepareAccountInboxMessage({
         message: 'test message',
-        accountId,
+        accountAddress,
         inboxId,
         encryptionPublicKey: messageEncryptionPublicKey,
         signaturePrivateKey: bytesToHex(signaturePrivateKey),
-        authorAccountId: testParams.accountId,
+        authorAccountAddress: testParams.accountAddress,
       });
 
       const inbox: AccountInboxStorageEntry = {
@@ -782,14 +782,14 @@ describe('inboxes', () => {
         seenMessageIds: new Set(),
       };
 
-      const isValid = await validateAccountInboxMessage(message, inbox, accountId, 'https://sync.example.com');
+      const isValid = await validateAccountInboxMessage(message, inbox, accountAddress, 'https://sync.example.com');
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountId, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
     });
 
     it('should accept unsigned messages on inboxes with optional auth', async () => {
-      const accountId = '0x1234567890123456789012345678901234567890';
+      const accountAddress = '0x1234567890123456789012345678901234567890';
 
       const message = {
         ciphertext: '0x123',
@@ -805,7 +805,7 @@ describe('inboxes', () => {
         seenMessageIds: new Set(),
       };
 
-      const isValid = await validateAccountInboxMessage(message, inbox, accountId, 'https://sync.example.com');
+      const isValid = await validateAccountInboxMessage(message, inbox, accountAddress, 'https://sync.example.com');
 
       expect(isValid).toBe(true);
       expect(Identity.getVerifiedIdentity).not.toHaveBeenCalled();
@@ -819,7 +819,7 @@ describe('inboxes', () => {
       ciphertext: '0x123',
       signature: null,
       createdAt: date.toISOString(),
-      authorAccountId: null,
+      authorAccountAddress: null,
     });
 
     it('should merge new messages with existing messages', () => {

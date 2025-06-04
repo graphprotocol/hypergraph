@@ -25,7 +25,7 @@ export const deleteSpace = ({ author, id, previousEventHash }: Params): Effect.E
   const event: DeleteSpaceEvent = {
     transaction,
     author: {
-      accountId: author.accountId,
+      accountAddress: author.accountAddress,
       signature: {
         hex: signatureResult.toCompactHex(),
         recovery: signatureResult.recovery,

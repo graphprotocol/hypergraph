@@ -11,7 +11,7 @@ import {
 import { SignatureWithRecovery } from '../types.js';
 export const SignedUpdate = Schema.Struct({
   update: Schema.Uint8Array,
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   signature: SignatureWithRecovery,
   updateId: Schema.String,
 });
@@ -25,7 +25,7 @@ export const Updates = Schema.Struct({
 export type Updates = Schema.Schema.Type<typeof Updates>;
 
 export const KeyBox = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   ciphertext: Schema.String,
   nonce: Schema.String,
   authorPublicKey: Schema.String,
@@ -41,7 +41,7 @@ export const KeyBoxWithKeyId = Schema.Struct({
 export type KeyBoxWithKeyId = Schema.Schema.Type<typeof KeyBoxWithKeyId>;
 
 export const IdentityKeyBox = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   ciphertext: Schema.String,
   nonce: Schema.String,
 });
@@ -52,11 +52,23 @@ export const RequestCreateSpaceEvent = Schema.Struct({
   type: Schema.Literal('create-space-event'),
   spaceId: Schema.String,
   event: CreateSpaceEvent,
-  keyId: Schema.String,
-  keyBox: KeyBox, // TODO change to KeyBoxWithKeyId and remove keyId
+  keyBox: KeyBoxWithKeyId,
+  name: Schema.String,
 });
 
 export type RequestCreateSpaceEvent = Schema.Schema.Type<typeof RequestCreateSpaceEvent>;
+
+export const RequestConnectCreateSpaceEvent = Schema.Struct({
+  type: Schema.Literal('connect-create-space-event'),
+  spaceId: Schema.String,
+  event: CreateSpaceEvent,
+  keyBox: KeyBoxWithKeyId,
+  infoContent: Schema.String,
+  infoSignature: SignatureWithRecovery,
+  name: Schema.String,
+});
+
+export type RequestConnectCreateSpaceEvent = Schema.Schema.Type<typeof RequestConnectCreateSpaceEvent>;
 
 export const RequestCreateInvitationEvent = Schema.Struct({
   type: Schema.Literal('create-invitation-event'),
@@ -64,6 +76,19 @@ export const RequestCreateInvitationEvent = Schema.Struct({
   event: CreateInvitationEvent,
   keyBoxes: Schema.Array(KeyBoxWithKeyId),
 });
+
+export const RequestConnectAddAppIdentityToSpaces = Schema.Struct({
+  type: Schema.Literal('connect-add-app-identity-to-spaces'),
+  appIdentityAddress: Schema.String,
+  spacesInput: Schema.Array(
+    Schema.Struct({
+      id: Schema.String,
+      keyBoxes: Schema.Array(KeyBoxWithKeyId),
+    }),
+  ),
+});
+
+export type RequestConnectAddAppIdentityToSpaces = Schema.Schema.Type<typeof RequestConnectAddAppIdentityToSpaces>;
 
 export type RequestCreateInvitationEvent = Schema.Schema.Type<typeof RequestCreateInvitationEvent>;
 
@@ -97,7 +122,7 @@ export type RequestListInvitations = Schema.Schema.Type<typeof RequestListInvita
 
 export const RequestCreateUpdate = Schema.Struct({
   type: Schema.Literal('create-update'),
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   update: Schema.Uint8Array,
   spaceId: Schema.String,
   updateId: Schema.String, // used to identify the confirmation message
@@ -106,7 +131,7 @@ export const RequestCreateUpdate = Schema.Struct({
 
 export const RequestCreateAccountInbox = Schema.Struct({
   type: Schema.Literal('create-account-inbox'),
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   inboxId: Schema.String,
   isPublic: Schema.Boolean,
   authPolicy: InboxSenderAuthPolicy,
@@ -135,7 +160,7 @@ export type RequestGetLatestSpaceInboxMessages = Schema.Schema.Type<typeof Reque
 
 export const RequestGetLatestAccountInboxMessages = Schema.Struct({
   type: Schema.Literal('get-latest-account-inbox-messages'),
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   inboxId: Schema.String,
   since: Schema.Date,
 });
@@ -168,13 +193,13 @@ export type RequestMessage = Schema.Schema.Type<typeof RequestMessage>;
 export type RequestCreateUpdate = Schema.Schema.Type<typeof RequestCreateUpdate>;
 
 export const RequestLoginNonce = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
 });
 
 export type RequestLoginNonce = Schema.Schema.Type<typeof RequestLoginNonce>;
 
 export const RequestLogin = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   message: Schema.String,
   signature: Schema.String,
 });
@@ -182,7 +207,7 @@ export const RequestLogin = Schema.Struct({
 export type RequestLogin = Schema.Schema.Type<typeof RequestLogin>;
 
 export const RequestLoginWithSigningKey = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   message: Schema.String,
   publicKey: Schema.String,
   signature: Schema.String,
@@ -202,10 +227,39 @@ export const RequestCreateIdentity = Schema.Struct({
 
 export type RequestCreateIdentity = Schema.Schema.Type<typeof RequestCreateIdentity>;
 
+export const RequestConnectCreateIdentity = Schema.Struct({
+  keyBox: IdentityKeyBox,
+  accountProof: Schema.String,
+  keyProof: Schema.String,
+  signaturePublicKey: Schema.String,
+  encryptionPublicKey: Schema.String,
+});
+
+export type RequestConnectCreateIdentity = Schema.Schema.Type<typeof RequestConnectCreateIdentity>;
+
+export const RequestConnectCreateAppIdentity = Schema.Struct({
+  appId: Schema.String,
+  address: Schema.String,
+  ciphertext: Schema.String,
+  nonce: Schema.String,
+  signaturePublicKey: Schema.String,
+  encryptionPublicKey: Schema.String,
+  accountProof: Schema.String,
+  keyProof: Schema.String,
+});
+
+export type RequestConnectCreateAppIdentity = Schema.Schema.Type<typeof RequestConnectCreateAppIdentity>;
+
+export const ResponseConnectCreateIdentity = Schema.Struct({
+  success: Schema.Boolean,
+});
+
+export type ResponseConnectCreateIdentity = Schema.Schema.Type<typeof ResponseConnectCreateIdentity>;
+
 export const RequestCreateSpaceInboxMessage = Schema.Struct({
   ciphertext: Schema.String,
   signature: Schema.optional(SignatureWithRecovery),
-  authorAccountId: Schema.optional(Schema.String),
+  authorAccountAddress: Schema.optional(Schema.String),
 });
 
 export type RequestCreateSpaceInboxMessage = Schema.Schema.Type<typeof RequestCreateSpaceInboxMessage>;
@@ -213,7 +267,7 @@ export type RequestCreateSpaceInboxMessage = Schema.Schema.Type<typeof RequestCr
 export const RequestCreateAccountInboxMessage = Schema.Struct({
   ciphertext: Schema.String,
   signature: Schema.optional(SignatureWithRecovery),
-  authorAccountId: Schema.optional(Schema.String),
+  authorAccountAddress: Schema.optional(Schema.String),
 });
 
 export type RequestCreateAccountInboxMessage = Schema.Schema.Type<typeof RequestCreateAccountInboxMessage>;
@@ -256,7 +310,7 @@ export const InboxMessage = Schema.Struct({
   id: Schema.String,
   ciphertext: Schema.String,
   signature: Schema.optional(SignatureWithRecovery),
-  authorAccountId: Schema.optional(Schema.String),
+  authorAccountAddress: Schema.optional(Schema.String),
   createdAt: Schema.Date,
 });
 
@@ -273,7 +327,7 @@ export const SpaceInbox = Schema.Struct({
 export type SpaceInbox = Schema.Schema.Type<typeof SpaceInbox>;
 
 export const AccountInbox = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   inboxId: Schema.String,
   isPublic: Schema.Boolean,
   authPolicy: InboxSenderAuthPolicy,
@@ -338,7 +392,7 @@ export type ResponseSpaceInboxMessages = Schema.Schema.Type<typeof ResponseSpace
 
 export const ResponseAccountInboxMessage = Schema.Struct({
   type: Schema.Literal('account-inbox-message'),
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   inboxId: Schema.String,
   message: InboxMessage,
 });
@@ -347,7 +401,7 @@ export type ResponseAccountInboxMessage = Schema.Schema.Type<typeof ResponseAcco
 
 export const ResponseAccountInboxMessages = Schema.Struct({
   type: Schema.Literal('account-inbox-messages'),
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   inboxId: Schema.String,
   messages: Schema.Array(InboxMessage),
 });
@@ -378,24 +432,6 @@ export const ResponseMessage = Schema.Union(
 
 export type ResponseMessage = Schema.Schema.Type<typeof ResponseMessage>;
 
-export const ResponseLoginNonce = Schema.Struct({
-  sessionNonce: Schema.String,
-});
-
-export type ResponseLoginNonce = Schema.Schema.Type<typeof ResponseLoginNonce>;
-
-export const ResponseLogin = Schema.Struct({
-  sessionToken: Schema.String,
-});
-
-export type ResponseLogin = Schema.Schema.Type<typeof ResponseLogin>;
-
-export const ResponseCreateIdentity = Schema.Struct({
-  sessionToken: Schema.String,
-});
-
-export type ResponseCreateIdentity = Schema.Schema.Type<typeof ResponseCreateIdentity>;
-
 export const ResponseIdentityEncrypted = Schema.Struct({
   keyBox: IdentityKeyBox,
 });
@@ -403,7 +439,7 @@ export const ResponseIdentityEncrypted = Schema.Struct({
 export type ResponseIdentityEncrypted = Schema.Schema.Type<typeof ResponseIdentityEncrypted>;
 
 export const ResponseIdentity = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   signaturePublicKey: Schema.String,
   encryptionPublicKey: Schema.String,
   accountProof: Schema.String,
@@ -435,7 +471,7 @@ export const ResponseListSpaceInboxesPublic = Schema.Struct({
 export type ResponseListSpaceInboxesPublic = Schema.Schema.Type<typeof ResponseListSpaceInboxesPublic>;
 
 export const AccountInboxPublic = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   inboxId: Schema.String,
   isPublic: Schema.Boolean,
   authPolicy: InboxSenderAuthPolicy,
@@ -458,13 +494,13 @@ export const ResponseListAccountInboxesPublic = Schema.Struct({
 export type ResponseListAccountInboxesPublic = Schema.Schema.Type<typeof ResponseListAccountInboxesPublic>;
 
 export const ResponseIdentityNotFoundError = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
 });
 
 export type ResponseIdentityNotFoundError = Schema.Schema.Type<typeof ResponseIdentityNotFoundError>;
 
 export const ResponseIdentityExistsError = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
 });
 
 export type ResponseIdentityExistsError = Schema.Schema.Type<typeof ResponseIdentityExistsError>;

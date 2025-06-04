@@ -27,13 +27,20 @@ model SpaceEvent {
 }
 
 model Space {
-  id          String       @id
-  events      SpaceEvent[]
-  members     Account[]
-  invitations Invitation[]
-  keys        SpaceKey[]
-  updates     Update[]
-  inboxes     SpaceInbox[]
+  id                    String        @id
+  events                SpaceEvent[]
+  members               Account[]     @relation("space-members")
+  invitations           Invitation[]
+  keys                  SpaceKey[]
+  updates               Update[]
+  inboxes               SpaceInbox[]
+  appIdentities         AppIdentity[]
+  name                  String // TODO: remove this field and use infoContent instead
+  infoContent           Bytes
+  infoAuthor            Account       @relation(fields: [infoAuthorAddress], references: [address])
+  infoAuthorAddress     String
+  infoSignatureHex      String
+  infoSignatureRecovery Int
 }
 
 model SpaceKey {
@@ -45,15 +52,19 @@ model SpaceKey {
 }
 
 model SpaceKeyBox {
-  id              String   @id
-  spaceKey        SpaceKey @relation(fields: [spaceKeyId], references: [id])
-  spaceKeyId      String
-  account         Account  @relation(fields: [accountId], references: [id])
-  accountId       String
-  ciphertext      String
-  nonce           String
-  authorPublicKey String
-  createdAt       DateTime @default(now())
+  id                 String       @id
+  spaceKey           SpaceKey     @relation(fields: [spaceKeyId], references: [id])
+  spaceKeyId         String
+  ciphertext         String
+  nonce              String
+  authorPublicKey    String
+  createdAt          DateTime     @default(now())
+  account            Account      @relation(fields: [accountAddress], references: [address])
+  accountAddress     String
+  appIdentity        AppIdentity? @relation(fields: [appIdentityAddress], references: [address])
+  appIdentityAddress String?
+
+  @@unique([spaceKeyId, nonce])
 }
 
 model SpaceInbox {
@@ -71,35 +82,60 @@ model SpaceInbox {
 }
 
 model SpaceInboxMessage {
-  id                String     @id @default(uuid(4))
-  spaceInbox        SpaceInbox @relation(fields: [spaceInboxId], references: [id])
-  spaceInboxId      String
-  ciphertext        String
-  signatureHex      String?
-  signatureRecovery Int?
-  authorAccountId   String?
-  createdAt         DateTime   @default(now())
+  id                   String     @id @default(uuid(4))
+  spaceInbox           SpaceInbox @relation(fields: [spaceInboxId], references: [id])
+  spaceInboxId         String
+  ciphertext           String
+  signatureHex         String?
+  signatureRecovery    Int?
+  authorAccountAddress String?
+  createdAt            DateTime   @default(now())
 }
 
 model Account {
-  id                  String         @id
-  spaces              Space[]
-  invitations         Invitation[]
-  keyBoxes            SpaceKeyBox[]
-  identities          Identity[]
-  sessionNonce        String?
-  sessionToken        String?
-  sessionTokenExpires DateTime?
-  updates             Update[]
-  inboxes             AccountInbox[]
+  address       String        @id
+  spaces        Space[]       @relation("space-members")
+  invitations   Invitation[]
+  appIdentities AppIdentity[]
 
+  updates                    Update[]
+  inboxes                    AccountInbox[]
+  connectAddress             String         @unique
+  connectCiphertext          String
+  connectNonce               String
+  connectSignaturePublicKey  String
+  connectEncryptionPublicKey String
+  connectAccountProof        String
+  connectKeyProof            String
+  infoAuthor                 Space[]
+  spaceKeyBoxes              SpaceKeyBox[]
+}
+
+model AppIdentity {
+  address             String        @id
+  ciphertext          String
+  nonce               String
+  signaturePublicKey  String
+  encryptionPublicKey String
+  accountProof        String
+  keyProof            String
+  account             Account       @relation(fields: [accountAddress], references: [address])
+  accountAddress      String
+  spaces              Space[]
+  spaceKeyBoxes       SpaceKeyBox[]
+  appId               String
+  sessionToken        String
+  sessionTokenExpires DateTime
+
+  @@unique([accountAddress, appId])
+  @@unique([accountAddress, nonce])
   @@index([sessionToken])
 }
 
 model AccountInbox {
   id                  String                @id
-  account             Account               @relation(fields: [accountId], references: [id])
-  accountId           String
+  account             Account               @relation(fields: [accountAddress], references: [address])
+  accountAddress      String
   isPublic            Boolean
   authPolicy          String
   encryptionPublicKey String
@@ -110,26 +146,33 @@ model AccountInbox {
 }
 
 model AccountInboxMessage {
-  id                String       @id @default(uuid(7))
-  accountInbox      AccountInbox @relation(fields: [accountInboxId], references: [id])
-  accountInboxId    String
-  ciphertext        String
-  signatureHex      String?
-  signatureRecovery Int?
-  authorAccountId   String?
-  createdAt         DateTime     @default(now())
+  id                   String       @id @default(uuid(7))
+  accountInbox         AccountInbox @relation(fields: [accountInboxId], references: [id])
+  accountInboxId       String
+  ciphertext           String
+  signatureHex         String?
+  signatureRecovery    Int?
+  authorAccountAddress String?
+  createdAt            DateTime     @default(now())
 }
 
 model Invitation {
-  id               String   @id
-  space            Space    @relation(fields: [spaceId], references: [id])
-  spaceId          String
-  account          Account  @relation(fields: [accountId], references: [id])
-  accountId        String
-  inviteeAccountId String
-  createdAt        DateTime @default(now())
+  id                    String                @id
+  space                 Space                 @relation(fields: [spaceId], references: [id])
+  spaceId               String
+  account               Account               @relation(fields: [accountAddress], references: [address])
+  accountAddress        String
+  inviteeAccountAddress String
+  createdAt             DateTime              @default(now())
+  targetApps            InvitationTargetApp[]
 
-  @@unique([spaceId, inviteeAccountId])
+  @@unique([spaceId, inviteeAccountAddress])
+}
+
+model InvitationTargetApp {
+  id           String     @id
+  invitation   Invitation @relation(fields: [invitationId], references: [id])
+  invitationId String
 }
 
 model Update {
@@ -137,24 +180,11 @@ model Update {
   spaceId           String
   clock             Int
   content           Bytes
-  account           Account @relation(fields: [accountId], references: [id])
-  accountId         String
+  account           Account @relation(fields: [accountAddress], references: [address])
+  accountAddress    String
   signatureHex      String
   signatureRecovery Int
   updateId          String
 
   @@id([spaceId, clock])
-}
-
-model Identity {
-  account             Account @relation(fields: [accountId], references: [id])
-  accountId           String
-  ciphertext          String
-  nonce               String
-  signaturePublicKey  String
-  encryptionPublicKey String
-  accountProof        String
-  keyProof            String
-
-  @@id([accountId, nonce])
 }

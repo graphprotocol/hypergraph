@@ -67,3 +67,5 @@ typings/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.DS_Store

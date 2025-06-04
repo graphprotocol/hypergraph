@@ -5,15 +5,15 @@ import { SpaceEvents } from '@graphprotocol/hypergraph';
 import { prisma } from '../prisma.js';
 
 type Params = {
-  accountId: string;
+  accountAddress: string;
 };
 
 const decodeSpaceState = Schema.decodeUnknownEither(SpaceEvents.SpaceState);
 
-export const listInvitations = async ({ accountId }: Params) => {
+export const listInvitations = async ({ accountAddress }: Params) => {
   const result = await prisma.invitation.findMany({
     where: {
-      inviteeAccountId: accountId,
+      inviteeAccountAddress: accountAddress,
     },
     include: {
       space: {

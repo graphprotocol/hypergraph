@@ -5,21 +5,21 @@ import { InboxSenderAuthPolicy } from '../inboxes/types.js';
 import { SignatureWithRecovery } from '../types.js';
 
 export const EventAuthor = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   signature: SignatureWithRecovery,
 });
 
 export type EventAuthor = Schema.Schema.Type<typeof Author>;
 
 export const SpaceMember = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   role: Schema.Union(Schema.Literal('admin'), Schema.Literal('member')),
 });
 
 export type SpaceMember = Schema.Schema.Type<typeof SpaceMember>;
 
 export const SpaceInvitation = Schema.Struct({
-  inviteeAccountId: Schema.String,
+  inviteeAccountAddress: Schema.String,
 });
 
 export type SpaceInvitation = Schema.Schema.Type<typeof SpaceInvitation>;
@@ -49,7 +49,7 @@ export const CreateSpaceEvent = Schema.Struct({
   transaction: Schema.Struct({
     type: Schema.Literal('create-space'),
     id: Schema.String,
-    creatorAccountId: Schema.String,
+    creatorAccountAddress: Schema.String,
   }),
   author: EventAuthor,
 });
@@ -71,7 +71,7 @@ export const CreateInvitationEvent = Schema.Struct({
   transaction: Schema.Struct({
     type: Schema.Literal('create-invitation'),
     id: Schema.String,
-    inviteeAccountId: Schema.String,
+    inviteeAccountAddress: Schema.String,
     previousEventHash: Schema.String,
   }),
   author: EventAuthor,
@@ -118,7 +118,7 @@ export const SpaceEvent = Schema.Union(
 export type SpaceEvent = Schema.Schema.Type<typeof SpaceEvent>;
 
 export const Author = Schema.Struct({
-  accountId: Schema.String,
+  accountAddress: Schema.String,
   signaturePublicKey: Schema.String,
   signaturePrivateKey: Schema.String,
   encryptionPublicKey: Schema.String,

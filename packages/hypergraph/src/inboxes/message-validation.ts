@@ -14,12 +14,12 @@ export const validateSpaceInboxMessage = async (
       console.error('Signed message in anonymous inbox');
       return false;
     }
-    if (!message.authorAccountId) {
-      console.error('Signed message without authorAccountId');
+    if (!message.authorAccountAddress) {
+      console.error('Signed message without authorAccountAddress');
       return false;
     }
     const signer = recoverSpaceInboxMessageSigner(message, spaceId, inbox.inboxId);
-    const verifiedIdentity = await Identity.getVerifiedIdentity(message.authorAccountId, syncServerUri);
+    const verifiedIdentity = await Identity.getVerifiedIdentity(message.authorAccountAddress, syncServerUri);
     const isValid = signer === verifiedIdentity.signaturePublicKey;
     if (!isValid) {
       console.error('Invalid signature', signer, verifiedIdentity.signaturePublicKey);
@@ -37,7 +37,7 @@ export const validateSpaceInboxMessage = async (
 export const validateAccountInboxMessage = async (
   message: Messages.InboxMessage,
   inbox: AccountInboxStorageEntry,
-  accountId: string,
+  accountAddress: string,
   syncServerUri: string,
 ) => {
   if (message.signature) {
@@ -45,12 +45,12 @@ export const validateAccountInboxMessage = async (
       console.error('Signed message in anonymous inbox');
       return false;
     }
-    if (!message.authorAccountId) {
-      console.error('Signed message without authorAccountId');
+    if (!message.authorAccountAddress) {
+      console.error('Signed message without authorAccountAddress');
       return false;
     }
-    const signer = recoverAccountInboxMessageSigner(message, accountId, inbox.inboxId);
-    const verifiedIdentity = await Identity.getVerifiedIdentity(message.authorAccountId, syncServerUri);
+    const signer = recoverAccountInboxMessageSigner(message, accountAddress, inbox.inboxId);
+    const verifiedIdentity = await Identity.getVerifiedIdentity(message.authorAccountAddress, syncServerUri);
     const isValid = signer === verifiedIdentity.signaturePublicKey;
     if (!isValid) {
       console.error('Invalid signature', signer, verifiedIdentity.signaturePublicKey);
