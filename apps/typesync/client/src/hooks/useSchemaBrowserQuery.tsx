@@ -17,19 +17,14 @@ import type { SchemaBrowserTypesQuery } from '../generated/graphql.js';
 
 const SchemaBrowser = graphql(`
   query SchemaBrowserTypes($spaceId: String!) {
-    space(id:$spaceId) {
-      types {
+    types(spaceId: $spaceId) {
+      id
+      name
+      properties {
         id
-        name
-        properties {
-          id
+        dataType
+        entity {
           name
-          valueType {
-            name
-          }
-          relationValueType {
-            name
-          }
         }
       }
     }
@@ -41,7 +36,7 @@ export async function fetchSchemaTypes(spaceId = ROOT_SPACE_ID) {
     return await graphqlClient.request(SchemaBrowser, { spaceId });
   } catch (err) {
     console.error('failure fetching schema types');
-    return { __typename: 'RootQuery' } as SchemaBrowserTypesQuery;
+    return { __typename: 'Query', types: [] } as SchemaBrowserTypesQuery;
   }
 }
 
