@@ -16,7 +16,7 @@ import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import * as Schema from 'effect/Schema';
 import { useEffect, useState } from 'react';
 
-import { SchemaPreview } from '../../../Components/App/SchemaBuilder/SchemaPreview.js';
+import { SchemaPreview } from '../../../Components/App/Schema/SchemaPreview.js';
 import { AppStatusBadge } from '../../../Components/App/StatusBadge.js';
 import { Loading } from '../../../Components/Loading.js';
 import { appEventsQueryOptions, appQueryOptions } from '../../../hooks/useAppQuery.js';
@@ -163,20 +163,7 @@ function AppDetailsPage() {
             </dl>
           </TabPanel>
           <TabPanel>
-            <SchemaPreview
-              schema={{
-                types: app.types.map((type) => ({
-                  name: type.name,
-                  properties: type.properties.map((prop) => ({
-                    name: prop.name,
-                    typeName: prop.type_name,
-                    description: prop.description,
-                    nullable: prop.nullable,
-                    optional: prop.optional,
-                  })),
-                })),
-              }}
-            />
+            <SchemaPreview schema={app} />
           </TabPanel>
           <TabPanel>
             <div className="flow-root w-full max-w-5xl mx-auto">

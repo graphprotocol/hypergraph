@@ -1,33 +1,33 @@
-import type { AppSchemaField, AppSchemaForm } from './types.js';
+import type { AppSchema } from '../../../schema.js';
 
 function fieldToEntityString({
   name,
-  typeName,
+  type_name,
   nullable = false,
   optional = false,
   description,
-}: AppSchemaField): string {
+}: AppSchema['types'][number]['properties'][number]): string {
   // Add JSDoc comment if description exists
   const jsDoc = description ? `  /** ${description} */\n` : '';
 
   // Convert type to Entity type
   const entityType = (() => {
     switch (true) {
-      case typeName === 'Text':
+      case type_name === 'Text':
         return 'Type.Text';
-      case typeName === 'Number':
+      case type_name === 'Number':
         return 'Type.Number';
-      case typeName === 'Boolean':
+      case type_name === 'Boolean':
         return 'Type.Boolean';
-      case typeName === 'Date':
+      case type_name === 'Date':
         return 'Type.Date';
-      case typeName === 'Url':
+      case type_name === 'Url':
         return 'Type.Url';
-      case typeName === 'Point':
+      case type_name === 'Point':
         return 'Type.Point';
-      case typeName.startsWith('Relation'):
+      case type_name.startsWith('Relation'):
         // renders the type as `Type.Relation(Entity)`
-        return `Type.${typeName}`;
+        return `Type.${type_name}`;
       default:
         // how to handle complex types
         return 'Type.Text';
@@ -46,7 +46,7 @@ function fieldToEntityString({
 
 function typeDefinitionToString(type: {
   name: string;
-  properties: Readonly<Array<AppSchemaField>>;
+  properties: ReadonlyArray<AppSchema['types'][number]['properties'][number]>;
 }): string | null {
   if (!type.name) {
     return null;
@@ -97,7 +97,7 @@ ${fieldStrings.join(',\n')}
  * @param schema the app schema being built by the user
  * @returns a typescript string representation of the schema as well as a 20bit hash to pass to the useQuery hook
  */
-export function buildAppSchemaFormCode(schema: AppSchemaForm): Readonly<{ code: string; hash: string }> {
+export function buildAppSchemaFormCode(schema: AppSchema): Readonly<{ code: string; hash: string }> {
   const fileCommentStatement = '// src/schema.ts';
   const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';\nimport * as Schema from 'effect/Schema';`;
   const typeDefinitions = schema.types

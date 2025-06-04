@@ -55,10 +55,10 @@
     "@graphql-typed-document-node/core": "^3.2.0",
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
-    "@hookform/resolvers": "^5.0.1",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-tabs": "^1.1.12",
     "@tailwindcss/vite": "^4.1.8",
+    "@tanstack/react-form": "^1.12.1",
     "@tanstack/react-query": "^5.79.2",
     "@tanstack/react-query-devtools": "^5.79.2",
     "@tanstack/react-router": "^1.120.15",
@@ -72,7 +72,6 @@
     "open": "^10.1.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-hook-form": "^7.57.0",
     "shiki": "^3.4.2",
     "tailwindcss": "^4.1.8"
   }
