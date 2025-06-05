@@ -21,7 +21,7 @@ Hypergraph re-imagines traditional client–server apps as **local-first**, **pe
 ---
 ## Knowledge Graphs and GRC-20
 
-Hypergraph adopts **GRC-20** as its canonical data format. Every mutation you perform through the Hypergraph SDK—whether it's adding a note, uploading a photo, or inviting a collaborator—ultimately becomes a set of GRC-20 values bundled into an edit. Each **[Space](#spaces)** you create is simply a scoped knowledge graph that can reference and be referenced by any other space, giving your app instant access to a global pool of interoperable data.
+Hypergraph adopts **GRC-20** as its canonical data format. Every mutation you perform through the Hypergraph SDK—whether it's adding a note, uploading a photo, or inviting a collaborator—ultimately becomes a set of GRC-20 values bundled into an edit. Once the edit is posted, it becomes part of the global knowledge graph—instantly connecting your data to a world of interoperable apps, spaces, and users.
 
 ### 1. The GRC-20 Standard
 The GRC-20 standard defines how knowledge is structured, shared, and connected in a decentralized, composable way—enabling interoperability across web3 applications. It specifies the core building blocks: entities, types, properties, relations, and values. Read the [GRC-20 spec on GitHub](https://github.com/graphprotocol/graph-improvement-proposals/blob/main/grcs/0020-knowledge-graph.md).
