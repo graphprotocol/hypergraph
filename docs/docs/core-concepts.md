@@ -21,10 +21,10 @@ Hypergraph re-imagines traditional client–server apps as **local-first**, **pe
 ---
 ## Knowledge Graphs and GRC-20
 
-Hypergraph adopts **GRC-20** as its canonical data format. Every mutation you perform through the Hypergraph SDK—whether it's adding a note, uploading a photo, or inviting a collaborator—ultimately becomes a set of GRC-20 triples bundled into an edit. Each **[Space](#spaces)** you create is simply a scoped knowledge graph that can reference and be referenced by any other space, giving your app instant access to a global pool of interoperable data.
+Hypergraph adopts **GRC-20** as its canonical data format. Every mutation you perform through the Hypergraph SDK—whether it's adding a note, uploading a photo, or inviting a collaborator—ultimately becomes a set of GRC-20 values bundled into an edit. Each **[Space](#spaces)** you create is simply a scoped knowledge graph that can reference and be referenced by any other space, giving your app instant access to a global pool of interoperable data.
 
 ### 1. The GRC-20 Standard
-The GRC-20 standard defines how knowledge is structured, shared, and connected in a decentralized, composable way—enabling interoperability across web3 applications. It specifies the core building blocks: entities, types, properties, relations, and triples. Read the [GRC-20 spec on GitHub](https://github.com/graphprotocol/graph-improvement-proposals/blob/main/grcs/0020-knowledge-graph.md).
+The GRC-20 standard defines how knowledge is structured, shared, and connected in a decentralized, composable way—enabling interoperability across web3 applications. It specifies the core building blocks: entities, types, properties, relations, and values. Read the [GRC-20 spec on GitHub](https://github.com/graphprotocol/graph-improvement-proposals/blob/main/grcs/0020-knowledge-graph.md).
 
 ### 2. Core Data Model Concepts
 
@@ -32,22 +32,28 @@ To illustrate the core pieces of a knowledge graph, we'll break down a single se
 
 > **"Teresa, a photographer, owns a Fujifilm camera."**
 
-#### The Triple Model (EAV)
-At the heart of GRC-20 is the **triple**: every fact is stored as a tuple of **Entity**, **Attribute** (property or relation), and **Value** (EAV).
+#### The Value Model (EAV)
+At the heart of GRC-20 is the **value**: every fact is stored as a tuple of **Entity**, **Property**, and **Value** (EAV). The data type is defined on the property.
 
-**Example triple in JSON:**
+**Example property definition:**
 ```json
 {
-  "entity": "Teresa_ID",
-  "attribute": "profession",
-  "value": {
-    "type": 1, // Text
-    "value": "photographer"
-  }
+  "id": "PROFESSION_ATTR_ID",
+  "data_type": "TEXT"
 }
 ```
 
-**Example triple in code:**
+**Example entity with values:**
+```json
+{
+  "id": "Teresa_ID",
+  "values": [
+    { "property": "PROFESSION_ATTR_ID", "value": "photographer" }
+  ]
+}
+```
+
+**Example in code:**
 ```ts
 Graph.createEntity({
   name: 'Teresa',
@@ -218,9 +224,9 @@ console.log('Ops ready for publishing:', ops);
 
 #### Mental Model Recap
 - **Entities** are things.
-- **Properties** are facts about things.
+- **Properties** are facts about things, and define the data type.
 - **Relations** connect things (and can have their own properties).
-- **Triples** are atomic facts (entity, attribute, value).
+- **Values** are atomic facts (entity, property, value).
 - **Edits** are batches of changes.
 
 #### Cheat Sheet Table
@@ -228,13 +234,14 @@ console.log('Ops ready for publishing:', ops);
 |----------|---------------------|-------------|--------------|
 | Entity   | Teresa, Camera      | Entity      | `{ id, name }` |
 | Type     | Person, Device      | Type        | `types: [PERSON_TYPE_ID]` |
-| Property | profession, brand   | Attribute   | `{ property: BRAND_ATTR_ID, value: 'Fujifilm' }` |
+| Property | profession, brand   | Property    | `{ id: BRAND_ATTR_ID, data_type: 'TEXT' }` |
 | Relation | owns                | Relation Entity | `createRelation()` |
-| Edit     | batch of all triples | Edit        | `ops: [...]` |
+| Value    | `Teresa → profession → photographer` | Value | `{ property: PROFESSION_ATTR_ID, value: 'photographer' }` |
+| Edit     | batch of all values | Edit        | `ops: [...]` |
 
 ---
 
-_All of the above is not just theory—Hypergraph puts it to work for you._ **When you call the SDK or its React hooks, Hypergraph turns your mutations into triples, bundles them into edits, encrypts them (if the Space is private), and syncs them peer-to-peer or anchors them on-chain if the data is public.** As a developer you think in entities and hooks; behind the scenes Hypergraph speaks pure GRC-20.
+_All of the above is not just theory—Hypergraph puts it to work for you._ **When you call the SDK or its React hooks, Hypergraph turns your mutations into values, bundles them into edits, encrypts them (if the Space is private), and syncs them peer-to-peer or anchors them on-chain if the data is public.** As a developer you think in entities and hooks; behind the scenes Hypergraph speaks pure GRC-20.
 
 ---
 
@@ -316,4 +323,10 @@ When the event log grows large, a peer may emit `sendCompactedUpdate`—a snapsh
 
 This prevents duplicate relations, keeps your data model clean, and avoids ambiguity in queries and UI. The GRC-20 SDK will create a new relation entity every time unless you check first.
 :::
+
+:::info Terminology Update
+In the latest GRC-20 spec, what were previously called "triples" are now called "values." The "value type" is now called "data type," and data types are defined on the property, not the value. This change makes the model simpler and validation more robust.
+:::
+
+**Note:** The data service validates that each value matches the property's data type.
 

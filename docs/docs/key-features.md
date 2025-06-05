@@ -45,7 +45,7 @@ Build, link, and publish knowledge as entities and relations using the [`@graphp
 
 ## Graph-based data model
 
-Under the hood, Hypergraph stores JSON-LD triples that map nicely to **knowledge graphs**. This makes it trivial to expose public data on-chain or query it with SPARQL later.
+Under the hood, Hypergraph stores JSON-LD values that map nicely to **knowledge graphs**. This makes it trivial to expose public data on-chain or query it with SPARQL later.
 
 ## Conflict-free sync (CRDTs)
 
