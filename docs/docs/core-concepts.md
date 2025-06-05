@@ -32,8 +32,8 @@ To illustrate the core pieces of a knowledge graph, we'll break down a single se
 
 > **"Teresa, a photographer, owns a Fujifilm camera."**
 
-#### The Value Model (EAV)
-At the heart of GRC-20 is the **value**: every fact is stored as a tuple of **Entity**, **Property**, and **Value** (EAV). The data type is defined on the property.
+#### The Value Model
+In GRC-20, each **entity** is a node in the graph with a list of **values**. Each value attaches a **property** (by ID) and a literal value (plus options). Properties define the data type and constraints for their values. **Relations** are first-class objects that connect entities and can have their own properties and metadata.
 
 **Example property definition:**
 ```json
