@@ -21,7 +21,7 @@ Hypergraph re-imagines traditional client–server apps as **local-first**, **pe
 ---
 ## Knowledge Graphs and GRC-20
 
-Hypergraph adopts **GRC-20** as its canonical data format. Every mutation you perform through the Hypergraph SDK—whether it's adding a note, uploading a photo, or inviting a collaborator—ultimately becomes a set of GRC-20 values bundled into an edit. Once the edit is posted, it becomes part of the global knowledge graph—instantly connecting your data to a world of interoperable apps, spaces, and users.
+Hypergraph adopts **GRC-20** as its canonical data format. Every mutation you perform through the Hypergraph SDK—whether it's adding a note, uploading a photo, or inviting a collaborator—ultimately becomes a set of GRC-20 values bundled into an edit. Once the edit is posted, it becomes part of the global knowledge graph—instantly connecting your data to a world of interoperable apps, spaces, and users. From that moment the edit is immutable and immediately queryable via Hypergraph's hooks and GraphQL APIs.
 
 ### 1. The GRC-20 Standard
 The GRC-20 standard defines how knowledge is structured, shared, and connected in a decentralized, composable way—enabling interoperability across web3 applications. It specifies the core building blocks: entities, types, properties, relations, and values. Read the [GRC-20 spec on GitHub](https://github.com/graphprotocol/graph-improvement-proposals/blob/main/grcs/0020-knowledge-graph.md).
@@ -121,15 +121,16 @@ if (!existingOwns.find(rel => rel.id === cameraId)) {
 }
 ```
 
-**Relation as triple in JSON:**
+**Relation JSON example:**
 ```json
 {
-  "entity": "OwnsRelation_ID",
-  "attribute": "date_acquired",
-  "value": {
-    "type": 5, // Time
-    "value": "2020-03-15T00:00:00.000Z"
-  }
+  "id":          "OwnsRelation_ID",
+  "type":        "OWNS_REL_TYPE_ID",
+  "from_entity": "Teresa_ID",
+  "to_entity":   "Camera_ID",
+  "entity":      "OwnsRelationEntity_ID",  // rich relation entity UUID (optional)
+  "position":    "a",
+  "verified":    false
 }
 ```
 
@@ -235,7 +236,7 @@ console.log('Ops ready for publishing:', ops);
 | Entity   | Teresa, Camera      | Entity      | `{ id, name }` |
 | Type     | Person, Device      | Type        | `types: [PERSON_TYPE_ID]` |
 | Property | profession, brand   | Property    | `{ id: BRAND_ATTR_ID, data_type: 'TEXT' }` |
-| Relation | owns                | Relation Entity | `createRelation()` |
+| Relation | owns                | Relation    | `{ from_entity, to_entity, type }` |
 | Value    | `Teresa → profession → photographer` | Value | `{ property: PROFESSION_ATTR_ID, value: 'photographer' }` |
 | Edit     | batch of all values | Edit        | `ops: [...]` |
 
