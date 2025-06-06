@@ -13,6 +13,7 @@ Hypergraph is **more than a database**—it's a complete data layer for building
 
 - [Local-first by design](#local-first-by-design)
 - [End-to-end encryption](#end-to-end-encryption)
+- [Knowledge Graph SDK](#knowledge-graph-sdk)
 - [Graph-based data model](#graph-based-data-model)
 - [Conflict-free sync (CRDTs)](#conflict-free-sync-crdts)
 - [Spaces & fine-grained auth](#spaces--fine-grained-auth)
@@ -38,9 +39,13 @@ Every update is encrypted **on the client** using XChaCha20-Poly1305. Only membe
 * **Automatic key rotation** when members join/leave.
 * **Multi-device**: each device holds its own key pair.
 
+## Knowledge Graph SDK
+
+Build, link, and publish knowledge as entities and relations using the [`@graphprotocol/grc-20`](https://www.npmjs.com/package/@graphprotocol/grc-20) Knowledge Graph SDK. It makes it easy to organize data into spaces, anchor edits onchain, and work with The Graph's knowledge graph standard.
+
 ## Graph-based data model
 
-Under the hood, Hypergraph stores JSON-LD triples that map nicely to **knowledge graphs**. This makes it trivial to expose public data on-chain or query it with SPARQL later.
+Under the hood, Hypergraph stores JSON-LD values that map nicely to **knowledge graphs**. This makes it trivial to expose public data on-chain or query it with SPARQL later.
 
 ## Conflict-free sync (CRDTs)
 
