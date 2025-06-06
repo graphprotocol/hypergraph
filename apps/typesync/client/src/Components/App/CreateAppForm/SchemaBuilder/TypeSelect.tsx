@@ -67,14 +67,16 @@ export function TypeSelect({ id, name, schemaTypes = [], disabled = false }: Rea
     >
       <Label className="sr-only">Prop type</Label>
       <div className="relative">
-        <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white dark:bg-slate-900 py-1.5 pr-2 pl-3 text-left text-white outline-1 -outline-offset-1 outline-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
+        <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white dark:bg-slate-900 disabled:bg-gray-100 dark:disabled:bg-slate-700 py-1.5 pr-2 pl-3 text-left text-white outline-1 -outline-offset-1 outline-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 disabled:cursor-not-allowed">
           <span className="col-start-1 row-start-1 truncate pr-6 text-gray-950 dark:text-white">
             {field.state.value}
           </span>
-          <ChevronUpDownIcon
-            aria-hidden="true"
-            className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-300 dark:text-gray-50 sm:size-4"
-          />
+          {!disabled ? (
+            <ChevronUpDownIcon
+              aria-hidden="true"
+              className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-300 dark:text-gray-50 sm:size-4"
+            />
+          ) : null}
         </ListboxButton>
 
         <ListboxOptions

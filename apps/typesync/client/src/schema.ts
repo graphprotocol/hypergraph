@@ -178,8 +178,15 @@ export const InsertAppSchema = App.pipe(
           Schema.omit('app_id'),
           Schema.extend(
             Schema.Struct({
+              knowledge_graph_id: Schema.NullOr(Schema.UUID),
               properties: Schema.Array(
-                InsertAppSchemaTypeProperty.omit('app_schema_type_id', 'description', 'nullable', 'optional'),
+                InsertAppSchemaTypeProperty.omit('app_schema_type_id', 'description', 'nullable', 'optional').pipe(
+                  Schema.extend(
+                    Schema.Struct({
+                      knowledge_graph_id: Schema.NullOr(Schema.UUID),
+                    }),
+                  ),
+                ),
               ).pipe(Schema.minItems(1)),
             }),
           ),

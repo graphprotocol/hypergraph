@@ -16,19 +16,21 @@ import { useState } from 'react';
 
 import { SchemaBrowser } from '../../Components/App/CreateAppForm/SchemaBuilder/SchemaBrowser.js';
 import { useAppForm } from '../../Components/App/CreateAppForm/useCreateAppForm.js';
-import type { DataType } from '../../generated/graphql.js';
 import { appsQueryOptions, useCreateAppMutation } from '../../hooks/useAppQuery.js';
 import { cwdQueryOptions, useCWDSuspenseQuery } from '../../hooks/useCWDQuery.js';
 import reactLogo from '../../images/react_logo.png';
 import viteLogo from '../../images/vitejs_logo.png';
 import { type App, InsertAppSchema } from '../../schema.js';
+import { mapKGDataTypeToPrimitiveType } from '../../utils/mapper.js';
 
 const defaultValues: InsertAppSchema = {
   name: '',
   description: '',
   template: 'vite_react',
   directory: '',
-  types: [{ name: '', properties: [{ name: '', type_name: 'Text' }] }],
+  types: [
+    { name: '', knowledge_graph_id: null, properties: [{ name: '', knowledge_graph_id: null, type_name: 'Text' }] },
+  ],
 };
 
 const CreateAppFormTab = Schema.Literal('app_details', 'schema', 'generate');
@@ -182,10 +184,12 @@ function CreateAppPage() {
                         ) {
                           field.replaceValue(0, {
                             name: selected.name,
+                            knowledge_graph_id: selected.id,
                             properties: (selected.properties ?? [])
                               .filter((prop) => prop != null)
                               .map((prop) => ({
                                 name: prop.entity?.name || prop.id,
+                                knowledge_graph_id: prop.id,
                                 type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
                               })),
                           } as never);
@@ -195,10 +199,12 @@ function CreateAppPage() {
                       // add as a new Type on the schema
                       field.pushValue({
                         name: selected.name,
+                        knowledge_graph_id: selected.id,
                         properties: (selected.properties ?? [])
                           .filter((prop) => prop != null)
                           .map((prop) => ({
                             name: prop.entity?.name || prop.id,
+                            knowledge_graph_id: prop.id,
                             type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
                           })),
                       } as never);
@@ -233,10 +239,12 @@ function CreateAppPage() {
                                     typeSelected={(selected) => {
                                       field.replaceValue(idx, {
                                         name: selected.name,
+                                        knowledge_graph_id: selected.id,
                                         properties: (selected.properties ?? [])
                                           .filter((prop) => prop != null)
                                           .map((prop) => ({
                                             name: prop.entity?.name || prop.id,
+                                            knowledge_graph_id: prop.id,
                                             type_name: mapKGDataTypeToPrimitiveType(
                                               prop.dataType,
                                               prop.entity?.name || prop.id,
@@ -271,10 +279,20 @@ function CreateAppPage() {
                                             name={`types[${idx}].properties[${typePropIdx}].name` as const}
                                           >
                                             {(subPropField) => (
-                                              <subPropField.FormComponentTextField
+                                              <subPropField.PropertyCombobox
                                                 id={`types[${idx}].properties[${typePropIdx}].name` as const}
                                                 name={`types[${idx}].properties[${typePropIdx}].name` as const}
                                                 required
+                                                propertySelected={(prop) =>
+                                                  propsField.replaceValue(typePropIdx, {
+                                                    name: prop.entity.name || prop.id,
+                                                    knowledge_graph_id: prop.id,
+                                                    type_name: mapKGDataTypeToPrimitiveType(
+                                                      prop.dataType,
+                                                      prop.entity.name || prop.id,
+                                                    ),
+                                                  } as never)
+                                                }
                                               />
                                             )}
                                           </createAppForm.AppField>
@@ -291,6 +309,7 @@ function CreateAppPage() {
                                                   appTypes,
                                                   (thisType) => thisType.type !== _type.name,
                                                 )}
+                                                disabled={_prop.knowledge_graph_id != null}
                                               />
                                             )}
                                           </createAppForm.AppField>
@@ -314,7 +333,13 @@ function CreateAppPage() {
                                     <button
                                       type="button"
                                       className="inline-flex items-center gap-x-1.5 text-sm/4 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 rounded-md px-2 py-1.5"
-                                      onClick={() => propsField.pushValue({ name: '', type_name: 'Text' } as never)}
+                                      onClick={() =>
+                                        propsField.pushValue({
+                                          name: '',
+                                          knowledge_graph_id: null,
+                                          type_name: 'Text',
+                                        } as never)
+                                      }
                                     >
                                       <PlusIcon aria-hidden="true" className="-ml-0.5 size-4" />
                                       Add Property
@@ -342,7 +367,8 @@ function CreateAppPage() {
                         onClick={() =>
                           field.pushValue({
                             name: '',
-                            properties: [{ name: '', type_name: 'Text' }],
+                            knowledge_graph_id: null,
+                            properties: [{ name: '', knowledge_graph_id: null, type_name: 'Text' }],
                           } as never)
                         }
                       >
@@ -491,30 +517,4 @@ function CreateAppPage() {
       </form>
     </TabsPrimitive.Root>
   );
-}
-
-function mapKGDataTypeToPrimitiveType(
-  dataType: DataType,
-  entity: string,
-): 'Text' | 'Number' | 'Boolean' | 'Date' | 'Point' | 'Url' | `Relation(${string})` {
-  switch (dataType) {
-    case 'CHECKBOX': {
-      return 'Boolean';
-    }
-    case 'NUMBER': {
-      return 'Number';
-    }
-    case 'POINT': {
-      return 'Point';
-    }
-    case 'TIME': {
-      return 'Date';
-    }
-    case 'RELATION': {
-      return `Relation(${entity})`;
-    }
-    default: {
-      return 'Text';
-    }
-  }
 }

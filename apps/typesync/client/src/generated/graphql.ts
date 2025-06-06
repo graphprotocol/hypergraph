@@ -1,6 +1,5 @@
 /* eslint-disable */
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
-
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -105,12 +104,18 @@ export type Property = {
   dataType: DataType;
   entity?: Maybe<Entity>;
   id: Scalars['ID']['output'];
+  relationValueTypes?: Maybe<Array<Maybe<Entity>>>;
+};
+
+export type PropertyFilter = {
+  dataType?: InputMaybe<DataType>;
 };
 
 export type Query = {
   __typename?: 'Query';
   entities: Array<Maybe<Entity>>;
   entity?: Maybe<Entity>;
+  properties: Array<Maybe<Property>>;
   search: Array<Maybe<Entity>>;
   types: Array<Maybe<Type>>;
 };
@@ -127,6 +132,13 @@ export type QueryEntitiesArgs = {
 export type QueryEntityArgs = {
   id: Scalars['String']['input'];
   spaceId?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPropertiesArgs = {
+  filter?: InputMaybe<PropertyFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -215,5 +227,11 @@ export type SchemaBrowserTypesQueryVariables = Exact<{
 
 export type SchemaBrowserTypesQuery = { __typename?: 'Query', types: Array<{ __typename?: 'Type', id: string, name?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', name?: string | null } | null } | null> | null } | null> };
 
+export type PropertiesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PropertiesQuery = { __typename?: 'Query', properties: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', name?: string | null, description?: string | null } | null } | null> };
+
 
 export const SchemaBrowserTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SchemaBrowserTypes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"types"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"spaceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
+export const PropertiesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<PropertiesQuery, PropertiesQueryVariables>;

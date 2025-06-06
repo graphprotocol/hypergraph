@@ -6,7 +6,7 @@ import { Array as EffectArray, Order, pipe } from 'effect';
 import { graphqlClient } from '../clients/graphql.js';
 import { ROOT_SPACE_ID } from '../constants.js';
 import { graphql } from '../generated/gql.js';
-import type { SchemaBrowserTypesQuery } from '../generated/graphql.js';
+import type { PropertiesQuery, SchemaBrowserTypesQuery } from '../generated/graphql.js';
 
 const SchemaBrowser = graphql(`
   query SchemaBrowserTypes($spaceId: String!) {
@@ -81,6 +81,74 @@ export function useSchemaBrowserQuery(
 ): UseQueryResult<Array<ExtendedSchemaBrowserType>, Error> {
   return useQuery({
     ...schemaBrowserQueryOptions,
+    ...options,
+  });
+}
+
+const PropertyBrowser = graphql(`
+  query Properties {
+    properties {
+      id
+      dataType    
+      entity {
+        name
+        description
+      }
+    }
+  }
+`);
+export async function fetchProperties() {
+  try {
+    return await graphqlClient.request(PropertyBrowser);
+  } catch (err) {
+    console.error('failure fetching schema types');
+    return { __typename: 'Query', properties: [] } as PropertiesQuery;
+  }
+}
+
+type KGProperty = NonNullable<PropertiesQuery['properties'][number]>;
+export type ExtendedProperty = Omit<KGProperty, 'entity'> & {
+  entity: NonNullable<KGProperty['entity']>;
+  slug: string;
+};
+
+const PropertyNameOrder = Order.mapInput(Order.string, (prop: ExtendedProperty) => prop.entity.name || prop.id);
+
+export const propertiesQueryOptions = queryOptions({
+  queryKey: ['SchemaBrowser', 'properties'] as const,
+  async queryFn() {
+    const data = await fetchProperties();
+    const properties = data.properties ?? [];
+
+    return pipe(
+      properties,
+      EffectArray.filter((prop) => prop != null && prop?.entity?.name != null && prop.dataType != null),
+      EffectArray.map((prop) => {
+        // biome-ignore lint/style/noNonNullAssertion: null properties are filtered out above
+        const _prop = prop!;
+        const slug = `${_prop.dataType}${_prop.entity?.name || ''}${_prop.id}`.toLowerCase();
+
+        return {
+          id: _prop.id,
+          dataType: _prop.dataType,
+          // biome-ignore lint/style/noNonNullAssertion: we filter out properties where entity is null above
+          entity: _prop.entity!,
+          slug,
+        } as const satisfies ExtendedProperty;
+      }),
+      EffectArray.sort(PropertyNameOrder),
+    );
+  },
+});
+
+export function usePropertiesQuery(
+  options: Omit<
+    UseQueryOptions<Array<ExtendedProperty>, Error, Array<ExtendedProperty>, readonly ['SchemaBrowser', 'properties']>,
+    'queryKey' | 'queryFn'
+  > = {},
+) {
+  return useQuery({
+    ...propertiesQueryOptions,
     ...options,
   });
 }

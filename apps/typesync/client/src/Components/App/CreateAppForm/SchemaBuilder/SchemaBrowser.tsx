@@ -6,6 +6,7 @@ import { Array as EffectArray, pipe } from 'effect';
 import { useState } from 'react';
 
 import { type SchemaBrowserType, useSchemaBrowserQuery } from '../../../../hooks/useSchemaBrowserQuery.js';
+import { mapKGDataTypeToPrimitiveType } from '../../../../utils/mapper.js';
 import { InlineCode } from '../../../InlineCode.js';
 import { Loading } from '../../../Loading.js';
 
@@ -92,7 +93,11 @@ export function SchemaBrowser({ typeSelected }: SchemaBrowserProps) {
                     {properties.map((prop) => (
                       <li key={prop.id} className="w-full text-xs py-1.5 flex items-center gap-x-2 list-disc">
                         {prop.entity?.name || prop.id}
-                        {prop.dataType != null ? <InlineCode>{prop.dataType}</InlineCode> : null}
+                        {prop.dataType != null ? (
+                          <InlineCode>
+                            {mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id)}
+                          </InlineCode>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
