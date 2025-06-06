@@ -54,9 +54,7 @@ export type AppEvents = typeof AppEvents.Type;
 export const AppEventDecoder = Schema.decodeUnknownSync(AppEvent);
 export const AppEventsDecoder = Schema.decodeUnknownSync(AppEvents);
 
-export const InsertAppEventSchema = Schema.Struct(AppEvent.fields).pipe(
-  Schema.pick('app_id', 'event_type', 'metadata'),
-);
+export const InsertAppEventSchema = Schema.Struct(AppEvent.fields).pick('app_id', 'event_type', 'metadata');
 export type InsertAppEventSchema = typeof InsertAppEventSchema.Type;
 
 export const AppSchemaTypeIdentifier = Schema.Number.pipe(
@@ -77,7 +75,7 @@ export class AppSchemaType extends Schema.Class<AppSchemaType>('AppSchemaType')(
   updated_at: Schema.NonEmptyTrimmedString,
 }) {}
 
-export const InsertAppSchemaType = AppSchemaType.pipe(Schema.pick('app_id', 'name'));
+export const InsertAppSchemaType = Schema.Struct(AppSchemaType.fields).pick('app_id', 'name');
 export type InsertAppSchemaType = typeof InsertAppSchemaType.Type;
 
 export const AppSchemaTypePropertyIdentifier = Schema.Number.pipe(
@@ -135,8 +133,13 @@ export class AppSchemaTypePropery extends Schema.Class<AppSchemaTypePropery>('Ap
   updated_at: Schema.NonEmptyTrimmedString,
 }) {}
 
-export const InsertAppSchemaTypeProperty = AppSchemaTypePropery.pipe(
-  Schema.pick('name', 'type_name', 'description', 'nullable', 'optional', 'app_schema_type_id'),
+export const InsertAppSchemaTypeProperty = Schema.Struct(AppSchemaTypePropery.fields).pick(
+  'name',
+  'type_name',
+  'description',
+  'nullable',
+  'optional',
+  'app_schema_type_id',
 );
 export type InsertAppSchemaTypeProperty = typeof InsertAppSchemaTypeProperty.Type;
 
@@ -176,9 +179,7 @@ export const InsertAppSchema = App.pipe(
           Schema.extend(
             Schema.Struct({
               properties: Schema.Array(
-                InsertAppSchemaTypeProperty.pipe(
-                  Schema.omit('app_schema_type_id', 'description', 'nullable', 'optional'),
-                ),
+                InsertAppSchemaTypeProperty.omit('app_schema_type_id', 'description', 'nullable', 'optional'),
               ).pipe(Schema.minItems(1)),
             }),
           ),

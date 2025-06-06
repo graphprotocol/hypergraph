@@ -1,6 +1,12 @@
 'use client';
 
-import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/20/solid';
+import {
+  ArrowUturnLeftIcon,
+  CheckCircleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusIcon,
+} from '@heroicons/react/20/solid';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { useStore } from '@tanstack/react-form';
@@ -86,7 +92,7 @@ function CreateAppPage() {
       onChange: Schema.standardSchemaV1(InsertAppSchema),
     },
     async onSubmit({ formApi, value }) {
-      await mutateAsync(value);
+      await mutateAsync(value).then(() => formApi.reset(undefined, { keepDefaultValues: true }));
     },
   });
   const formattedAppName = useStore(createAppForm.store, (state) =>
@@ -158,78 +164,49 @@ function CreateAppPage() {
         <TabsPrimitive.Content value="schema" className="pb-10">
           <createAppForm.AppField name="types" mode="array">
             {(field) => (
-              <div className="grid grid-cols-3 gap-x-4 2xl:gap-x-8">
-                <div className="w-full flex flex-col gap-y-4 pb-10">
+              <div className="grid md:grid-cols-5 2xl:grid-cols-3 gap-x-4 2xl:gap-x-8">
+                <div className="w-full flex flex-col gap-y-4 pb-10 md:col-span-2 2xl:col-span-1">
                   <SchemaBrowser
-                    schemaTypes={appTypes}
                     typeSelected={(selected) => {
-                      if (selected.type.name == null) {
+                      if (selected.name == null) {
                         return;
                       }
-                      if (selected.op.type === 'ADD_AS_TYPE') {
-                        // if schema is currently empty, set as first type
-                        if (field.state.value.length === 1) {
-                          const initialType = field.state.value[0];
-                          const properties = initialType.properties;
-                          if (
-                            EffectString.isEmpty(initialType.name) &&
-                            properties.length === 1 &&
-                            EffectString.isEmpty(initialType.properties[0].name)
-                          ) {
-                            field.replaceValue(0, {
-                              name: selected.type.name,
-                              properties: (selected.type.properties ?? [])
-                                .filter((prop) => prop != null)
-                                .map((prop) => ({
-                                  name: prop.entity?.name || prop.id,
-                                  type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
-                                })),
-                            } as never);
-                            return;
-                          }
+                      // if schema is currently empty, set as first type
+                      if (field.state.value.length === 1) {
+                        const initialType = field.state.value[0];
+                        const properties = initialType.properties;
+                        if (
+                          EffectString.isEmpty(initialType.name) &&
+                          properties.length === 1 &&
+                          EffectString.isEmpty(initialType.properties[0].name)
+                        ) {
+                          field.replaceValue(0, {
+                            name: selected.name,
+                            properties: (selected.properties ?? [])
+                              .filter((prop) => prop != null)
+                              .map((prop) => ({
+                                name: prop.entity?.name || prop.id,
+                                type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
+                              })),
+                          } as never);
+                          return;
                         }
-                        // add as a new Type on the schema
-                        field.pushValue({
-                          name: selected.type.name,
-                          properties: (selected.type.properties ?? [])
-                            .filter((prop) => prop != null)
-                            .map((prop) => ({
-                              name: prop.entity?.name || prop.id,
-                              type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
-                            })),
-                        } as never);
-                        return;
                       }
-                      const schemaTypeIdx = selected.op.schemaTypeIdx;
-                      // add as a property to the given type on the schema
-                      const existingSchemaType = field.state.value[schemaTypeIdx];
-                      // map the new property into the existing properties and replace the value in the array at the selected index
-                      if (
-                        existingSchemaType.properties.length === 1 &&
-                        EffectString.isEmpty(existingSchemaType.properties[0].name)
-                      ) {
-                        // type has no filled out properties, set as first
-                        field.replaceValue(schemaTypeIdx, {
-                          name: existingSchemaType.name,
-                          properties: [
-                            { name: selected.type.name, type_name: `Relation(${selected.type.name})` },
-                            // add empty property
-                            { name: '', type_name: 'Text' },
-                          ],
-                        } as never);
-                        return;
-                      }
-                      field.replaceValue(schemaTypeIdx, {
-                        name: existingSchemaType.name,
-                        properties: [
-                          ...existingSchemaType.properties,
-                          { name: selected.type.name, type_name: `Relation(${selected.type.name})` },
-                        ],
+                      // add as a new Type on the schema
+                      field.pushValue({
+                        name: selected.name,
+                        properties: (selected.properties ?? [])
+                          .filter((prop) => prop != null)
+                          .map((prop) => ({
+                            name: prop.entity?.name || prop.id,
+                            type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
+                          })),
                       } as never);
+                      return;
                     }}
                   />
                 </div>
-                <div className="w-full flex flex-col gap-y-4 pb-10 col-span-2">
+                <div className="w-full flex flex-col gap-y-4 pb-10 md:col-span-3 2xl:col-span-2">
                   <div className="border-b border-gray-200 dark:border-white/20 pb-5 h-20">
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white">Schema</h3>
                     <p className="mt-2 max-w-4xl text-sm text-gray-500 dark:text-gray-200">
@@ -244,22 +221,36 @@ function CreateAppPage() {
                           key={typeEntryKey}
                           className="border-l-2 border-indigo-600 dark:border-indigo-400 pl-2 py-2 flex flex-col gap-y-4"
                         >
-                          <div className="flex items-center justify-between gap-x-3">
+                          <div className="flex items-start justify-between gap-x-3">
                             <div className="flex-1 shrink-0">
                               <createAppForm.AppField name={`types[${idx}].name` as const}>
                                 {(subfield) => (
-                                  <subfield.FormComponentTextField
+                                  <subfield.TypeNameCombobox
                                     id={`types[${idx}].name` as const}
                                     name={`types[${idx}].name` as const}
                                     required
                                     label="Type Name"
+                                    typeSelected={(selected) => {
+                                      field.replaceValue(idx, {
+                                        name: selected.name,
+                                        properties: (selected.properties ?? [])
+                                          .filter((prop) => prop != null)
+                                          .map((prop) => ({
+                                            name: prop.entity?.name || prop.id,
+                                            type_name: mapKGDataTypeToPrimitiveType(
+                                              prop.dataType,
+                                              prop.entity?.name || prop.id,
+                                            ),
+                                          })),
+                                      } as never);
+                                    }}
                                   />
                                 )}
                               </createAppForm.AppField>
                             </div>
                             <button
                               type="button"
-                              className="min-w-fit rounded-md bg-transparent p-2 shadow-xs hover:bg-gray-100 dark:hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer mt-6 text-red-700 dark:text-red-400 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                              className="min-w-fit rounded-md bg-transparent p-2 shadow-xs hover:bg-gray-100 dark:hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer mt-8 text-red-700 dark:text-red-400 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                               onClick={() => field.removeValue(idx)}
                               disabled={field.state.value.length === 1}
                             >
@@ -293,7 +284,7 @@ function CreateAppPage() {
                                             name={`types[${idx}].properties[${typePropIdx}].type_name` as const}
                                           >
                                             {(subPropField) => (
-                                              <subPropField.TypeCombobox
+                                              <subPropField.TypeSelect
                                                 id={`types[${idx}].properties[${typePropIdx}].type_name` as const}
                                                 name={`types[${idx}].properties[${typePropIdx}].type_name` as const}
                                                 schemaTypes={EffectArray.filter(
@@ -336,7 +327,15 @@ function CreateAppPage() {
                         </div>
                       );
                     })}
-                    <div className="w-full flex items-center justify-end border-t border-gray-500 dark:border-gray-400 mt-4 pt-2">
+                    <div className="w-full flex items-center justify-between border-t border-gray-500 dark:border-gray-400 mt-4 pt-2">
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-x-1.5 text-sm/6 font-semibold text-gray-600 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 rounded-md px-2 py-1.5"
+                        onClick={() => createAppForm.reset(undefined, { keepDefaultValues: true })}
+                      >
+                        <ArrowUturnLeftIcon aria-hidden="true" className="-ml-0.5 size-4" />
+                        Reset
+                      </button>
                       <button
                         type="button"
                         className="inline-flex items-center gap-x-1.5 text-sm/6 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 rounded-md px-2 py-1.5"

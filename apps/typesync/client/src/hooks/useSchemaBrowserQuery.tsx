@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  type UseQueryOptions,
-  type UseQueryResult,
-  type UseSuspenseQueryOptions,
-  type UseSuspenseQueryResult,
-  queryOptions,
-  useQuery,
-  useSuspenseQuery,
-} from '@tanstack/react-query';
+import { type UseQueryOptions, type UseQueryResult, queryOptions, useQuery } from '@tanstack/react-query';
+import { Array as EffectArray, Order, pipe } from 'effect';
 
 import { graphqlClient } from '../clients/graphql.js';
 import { ROOT_SPACE_ID } from '../constants.js';
@@ -40,42 +33,53 @@ export async function fetchSchemaTypes(spaceId = ROOT_SPACE_ID) {
   }
 }
 
+type KGType = NonNullable<SchemaBrowserTypesQuery['types'][number]>;
+export type SchemaBrowserType = Omit<KGType, 'properties'> & {
+  properties: NonNullable<KGType['properties']>;
+};
+export type ExtendedSchemaBrowserType = SchemaBrowserType & { slug: string };
+const SchemaTypeOrder = Order.mapInput(Order.string, (type: SchemaBrowserType) => type.name || type.id);
+
 export const schemaBrowserQueryOptions = queryOptions({
   queryKey: ['SchemaBrowser', 'types', ROOT_SPACE_ID] as const,
   async queryFn() {
-    return await fetchSchemaTypes();
+    // fetch schema browser types, filter, sort, and add a slug
+    const data = await fetchSchemaTypes();
+    const types = data.types ?? [];
+    return pipe(
+      types,
+      EffectArray.filter((type) => type?.name != null && type?.properties != null && type.properties.length > 0),
+      EffectArray.filter((type) => type != null),
+      EffectArray.map((type) => {
+        const slugifiedProps = pipe(
+          type.properties ?? [],
+          EffectArray.filter((prop) => prop != null),
+          EffectArray.reduce('', (slug, curr) => `${slug}${curr.entity?.name || ''}`),
+        );
+        const slug = `${type.name || ''}${slugifiedProps}`.toLowerCase();
+        return {
+          ...type,
+          properties: type.properties ?? [],
+          slug,
+        } as const satisfies ExtendedSchemaBrowserType;
+      }),
+      EffectArray.sort(SchemaTypeOrder),
+    );
   },
 });
 
 export function useSchemaBrowserQuery(
   options: Omit<
     UseQueryOptions<
-      SchemaBrowserTypesQuery,
+      Array<ExtendedSchemaBrowserType>,
       Error,
-      SchemaBrowserTypesQuery,
+      Array<ExtendedSchemaBrowserType>,
       readonly ['SchemaBrowser', 'types', typeof ROOT_SPACE_ID]
     >,
     'queryKey' | 'queryFn'
   > = {},
-): UseQueryResult<SchemaBrowserTypesQuery, Error> {
+): UseQueryResult<Array<ExtendedSchemaBrowserType>, Error> {
   return useQuery({
-    ...schemaBrowserQueryOptions,
-    ...options,
-  });
-}
-
-export function useSuspenseSchemaBrowserQuery(
-  options: Omit<
-    UseSuspenseQueryOptions<
-      SchemaBrowserTypesQuery,
-      Error,
-      SchemaBrowserTypesQuery,
-      readonly ['SchemaBrowser', 'types', typeof ROOT_SPACE_ID]
-    >,
-    'queryKey' | 'queryFn'
-  > = {},
-): UseSuspenseQueryResult<SchemaBrowserTypesQuery, Error> {
-  return useSuspenseQuery({
     ...schemaBrowserQueryOptions,
     ...options,
   });

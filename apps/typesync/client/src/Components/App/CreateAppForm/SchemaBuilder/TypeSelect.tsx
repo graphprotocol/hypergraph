@@ -1,6 +1,6 @@
 'use client';
 
-import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
+import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions, type ListboxProps } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/16/solid';
 import { Array as EffectArray, String as EffectString, Schema, pipe } from 'effect';
 
@@ -25,11 +25,7 @@ const typeOptions: Array<TypeOption> = [
   TypeOption.make({ id: 'DefaultEntityPoint', name: 'Point' }),
 ];
 
-export function TypeCombobox({
-  id,
-  name,
-  schemaTypes = [],
-}: Readonly<{
+export type TypeSelectProps = Pick<ListboxProps, 'disabled'> & {
   id: string;
   name: string;
   /**
@@ -39,7 +35,8 @@ export function TypeCombobox({
    * @default []
    */
   schemaTypes?: Array<{ type: string; schemaTypeIdx: number }> | undefined;
-}>) {
+};
+export function TypeSelect({ id, name, schemaTypes = [], disabled = false }: Readonly<TypeSelectProps>) {
   const field = useFieldContext<string>();
 
   const relationTypeOptions = pipe(
@@ -61,6 +58,7 @@ export function TypeCombobox({
       name={name}
       value={field.state.value}
       onBlur={field.handleBlur}
+      disabled={disabled}
       onChange={(value) => {
         if (value) {
           field.handleChange(value);
