@@ -33,6 +33,9 @@ ENV NODE_ENV=production
 # Copy the standalone deployment from the build stage
 COPY --from=build /app/dist .
 
+# Copy the generated Prisma client
+COPY --from=build /app/apps/server/generated ./generated
+
 # Copy the SQLite database file and set DATABASE_URL for Prisma
 COPY --from=build /app/apps/server/prisma/dev.db ./dev.db
 
@@ -40,4 +43,4 @@ COPY --from=build /app/apps/server/prisma/dev.db ./dev.db
 ENV DATABASE_URL="file:./dev.db"
 
 EXPOSE 3030
-CMD ["node", "dist/index.cjs"]
+CMD ["node", "dist/index.js"]
