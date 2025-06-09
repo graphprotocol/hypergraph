@@ -14,6 +14,7 @@
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "@privy-io/react-auth": "^2.13.0",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^5.22.0",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

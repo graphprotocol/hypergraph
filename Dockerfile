@@ -1,49 +1,43 @@
-# syntax=docker/dockerfile:1.4
+# ---- Builder stage ----
+FROM node:22-alpine AS build
 
-# Installation stage.
-FROM node:22-alpine AS base
-WORKDIR /workspace
-RUN apk add --update --no-cache openssl python3 make g++
-# Install pnpm.
-ADD package.json .
-# TODO: Remove this once it's no longer needed.
-# - https://github.com/pnpm/pnpm/issues/9014#issuecomment-2618565344
-# - https://github.com/nodejs/corepack/issues/612
-RUN npm install --global corepack@latest
-RUN corepack enable && corepack prepare --activate
-# Skip prisma code generation during install.
-ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
-ENV CI=true
-# Fetch all node modules purely based on the pnpm lock file.
-COPY pnpm-lock.yaml .
-RUN --mount=type=cache,id=workspace,target=/root/.local/share/pnpm/store pnpm fetch
-# Copy the entire workspace into the scope and perform the actual installation.
-COPY . .
-RUN --mount=type=cache,id=workspace,target=/root/.local/share/pnpm/store pnpm install
-
-# Build stage for the server.
-FROM base AS build
-# TODO: Remove this when we switch to an actual database.
-ENV DATABASE_URL="file:./dev.db"
-RUN \
-  # TODO: This initalizes the database. But we should probably remove this later.
-  pnpm --filter server prisma migrate reset --force && \
-  # Build the monorepo packages
-  pnpm build && \
-  # Generate the prisma client
-  pnpm --filter server prisma generate && \
-  # Build the server.
-  pnpm --filter server build && \
-  # Create an isolated deployment for the server.
-  pnpm --filter server deploy --prod deployment --legacy && \
-  # Move the runtime build artifacts into a separate directory.
-  mkdir -p deployment/out && mv deployment/dist deployment/prisma deployment/node_modules deployment/package.json deployment/out
-
-# Slim runtime image.
-FROM node:22-alpine AS server
+# 1. Set up pnpm & workspace root
 WORKDIR /app
-COPY --from=build /workspace/deployment/out .
-# TODO: Remove this when we switch to an actual database.
+RUN corepack enable && corepack prepare pnpm@8.15.5 --activate
+
+#   Copy root manifests first (leverage cache)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY tsconfig.base.json ./
+COPY scripts ./scripts
+
+#   Copy workspace packages
+COPY packages ./packages
+COPY apps ./apps
+
+# 2. Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# 3. Build all workspace packages
+RUN pnpm --filter @graphprotocol/hypergraph run build
+RUN pnpm --filter server run build
+
+# 4. Create a standalone server deployment
+RUN pnpm --filter server deploy --legacy dist
+
+# ------------------------------------------------------------
+# ---- Runtime stage ----
+FROM node:22-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Copy the standalone deployment from the build stage
+COPY --from=build /app/dist .
+
+# Copy the SQLite database file and set DATABASE_URL for Prisma
+COPY --from=build /app/apps/server/prisma/dev.db ./dev.db
+
+# Point Prisma at the bundled SQLite database
 ENV DATABASE_URL="file:./dev.db"
+
 EXPOSE 3030
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/index.cjs"]

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun run --watch ./src/index.ts",
     "prisma": "prisma",
-    "build": "tsup"
+    "build": "tsup",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
