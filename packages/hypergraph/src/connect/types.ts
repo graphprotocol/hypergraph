@@ -58,6 +58,7 @@ export type PublicAppIdentity = {
 export type PrivateAppIdentity = IdentityKeys & {
   address: string;
   addressPrivateKey: string;
+  permissionId: string;
   sessionToken: string;
   sessionTokenExpires: Date;
   accountAddress: string;

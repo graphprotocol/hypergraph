@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Connect, type Identity } from '@graphprotocol/hypergraph';
-import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
+import { GEOGENESIS, GEO_TESTNET } from '@graphprotocol/hypergraph/connect/smart-account';
+import { type ConnectedWallet, useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
-import { createWalletClient, custom, getAddress } from 'viem';
-import { mainnet } from 'viem/chains';
+import { type WalletClient, createWalletClient, custom } from 'viem';
 
+const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
 const syncServerUri = import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN;
 const storage = localStorage;
 
@@ -21,18 +22,35 @@ function Login() {
   const { identityToken } = useIdentityToken();
 
   const hypergraphLogin = useCallback(
-    async (signer: Identity.Signer) => {
-      if (!signer || !identityToken) {
+    async (walletClient: WalletClient, embeddedWallet: ConnectedWallet) => {
+      if (!identityToken) {
         return;
       }
+      const signer: Identity.Signer = {
+        getAddress: async () => {
+          const [address] = await walletClient.getAddresses();
+          return address;
+        },
+        signMessage: async (message: string) => {
+          if (embeddedWallet.walletClientType === 'privy') {
+            const { signature } = await signMessage({ message });
+            return signature;
+          }
+          const [address] = await walletClient.getAddresses();
+          return await walletClient.signMessage({ account: address, message });
+        },
+      };
+
       const address = await signer.getAddress();
       if (!address) {
         return;
       }
-      const accountAddress = getAddress(address);
-      await Connect.login(signer, accountAddress, syncServerUri, storage, identityToken);
+
+      const rpcUrl = import.meta.env.VITE_HYPERGRAPH_RPC_URL;
+
+      await Connect.login({ walletClient, signer, syncServerUri, storage, identityToken, rpcUrl, chain: CHAIN });
     },
-    [identityToken],
+    [identityToken, signMessage],
   );
 
   useEffect(() => {
@@ -48,26 +66,11 @@ function Login() {
           const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
           const privyProvider = await embeddedWallet.getEthereumProvider();
           const walletClient = createWalletClient({
-            chain: mainnet,
+            chain: CHAIN,
             transport: custom(privyProvider),
           });
 
-          const signer: Identity.Signer = {
-            getAddress: async () => {
-              const [address] = await walletClient.getAddresses();
-              return address;
-            },
-            signMessage: async (message: string) => {
-              if (embeddedWallet.walletClientType === 'privy') {
-                const { signature } = await signMessage({ message });
-                return signature;
-              }
-              const [address] = await walletClient.getAddresses();
-              return await walletClient.signMessage({ account: address, message });
-            },
-          };
-
-          await hypergraphLogin(signer);
+          await hypergraphLogin(walletClient, embeddedWallet);
 
           const redirect = localStorage.getItem('geo-connect-authenticate-redirect');
           if (redirect) {
@@ -83,7 +86,7 @@ function Login() {
         }
       })();
     }
-  }, [privyAuthenticated, walletsReady, wallets, signMessage, hypergraphLogin, navigate, hypergraphLoginStarted]);
+  }, [privyAuthenticated, walletsReady, wallets, hypergraphLogin, navigate, hypergraphLoginStarted]);
 
   return (
     <div className="flex flex-1 justify-center items-center flex-col gap-4">

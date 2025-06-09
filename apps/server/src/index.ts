@@ -1,5 +1,6 @@
 import { parse } from 'node:url';
 import { Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
+import { GEOGENESIS, GEO_TESTNET } from '@graphprotocol/hypergraph/connect/smart-account';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
@@ -22,6 +23,7 @@ import { getLatestAccountInboxMessages } from './handlers/getLatestAccountInboxM
 import { getLatestSpaceInboxMessages } from './handlers/getLatestSpaceInboxMessages.js';
 import { getSpace } from './handlers/getSpace.js';
 import { getSpaceInbox } from './handlers/getSpaceInbox.js';
+import { isSignerForAccount } from './handlers/is-signer-for-account.js';
 import { listAccountInboxes } from './handlers/list-account-inboxes.js';
 import { listPublicAccountInboxes } from './handlers/list-public-account-inboxes.js';
 import { listSpacesByAccount } from './handlers/list-spaces-by-account.js';
@@ -41,6 +43,8 @@ const decodeRequestMessage = Schema.decodeUnknownEither(Messages.RequestMessage)
 const webSocketServer = new WebSocketServer({ noServer: true });
 const PORT = process.env.PORT !== undefined ? Number.parseInt(process.env.PORT) : 3030;
 const app = express();
+const CHAIN = process.env.HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
+const RPC_URL = process.env.HYPERGRAPH_RPC_URL ?? CHAIN.rpcUrls.default.http[0];
 
 type AuthenticatedRequest = Request & { accountAddress?: string };
 
@@ -73,7 +77,12 @@ app.get('/connect/spaces', async (req, res) => {
   console.log('GET connect/spaces');
   try {
     const idToken = req.headers['privy-id-token'];
-    const accountAddress = await getAddressByPrivyToken(Array.isArray(idToken) ? idToken[0] : idToken);
+    const accountAddress = req.headers['account-address'] as string;
+    const signerAddress = await getAddressByPrivyToken(idToken);
+    if (!(await isSignerForAccount(signerAddress, accountAddress))) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
     const spaces = await listSpacesByAccount({ accountAddress });
     const spaceResults = spaces.map((space) => ({
       id: space.id,
@@ -114,8 +123,13 @@ app.post('/connect/spaces', async (req, res) => {
   console.log('POST connect/spaces');
   try {
     const idToken = req.headers['privy-id-token'];
-    const accountAddress = await getAddressByPrivyToken(Array.isArray(idToken) ? idToken[0] : idToken);
     const message = Schema.decodeUnknownSync(Messages.RequestConnectCreateSpaceEvent)(req.body);
+    const accountAddress = message.accountAddress;
+    const signerAddress = await getAddressByPrivyToken(idToken);
+    if (!(await isSignerForAccount(signerAddress, accountAddress))) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
     const space = await createSpace({
       accountAddress,
       event: message.event,
@@ -142,10 +156,15 @@ app.post('/connect/add-app-identity-to-spaces', async (req, res) => {
   console.log('POST connect/add-app-identity-to-spaces');
   try {
     const idToken = req.headers['privy-id-token'];
-    const accountAddress = await getAddressByPrivyToken(Array.isArray(idToken) ? idToken[0] : idToken);
+
+    const signerAddress = await getAddressByPrivyToken(idToken);
     const message = Schema.decodeUnknownSync(Messages.RequestConnectAddAppIdentityToSpaces)(req.body);
+    if (!(await isSignerForAccount(signerAddress, message.accountAddress))) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
     const space = await addAppIdentityToSpaces({
-      accountAddress,
+      accountAddress: message.accountAddress,
       appIdentityAddress: message.appIdentityAddress,
       spacesInput: message.spacesInput,
     });
@@ -166,10 +185,11 @@ app.post('/connect/identity', async (req, res) => {
   console.log('POST connect/identity');
   try {
     const idToken = req.headers['privy-id-token'];
-    const accountAddressPrivy = await getAddressByPrivyToken(Array.isArray(idToken) ? idToken[0] : idToken);
+    const signerAddress = await getAddressByPrivyToken(idToken);
     const message = Schema.decodeUnknownSync(Messages.RequestConnectCreateIdentity)(req.body);
     const accountAddress = message.keyBox.accountAddress;
-    if (accountAddressPrivy !== accountAddress) {
+
+    if (signerAddress !== message.keyBox.signer) {
       res.status(401).send('Unauthorized');
       return;
     }
@@ -179,6 +199,8 @@ app.post('/connect/identity', async (req, res) => {
         message.signaturePublicKey,
         message.accountProof,
         message.keyProof,
+        CHAIN,
+        RPC_URL,
       )
     ) {
       console.log('Ownership proof is invalid');
@@ -188,6 +210,7 @@ app.post('/connect/identity', async (req, res) => {
 
     try {
       await createIdentity({
+        signerAddress,
         accountAddress,
         ciphertext: message.keyBox.ciphertext,
         nonce: message.keyBox.nonce,
@@ -220,17 +243,23 @@ app.post('/connect/identity', async (req, res) => {
   }
 });
 
-app.post('/connect/identity/encrypted', async (req, res) => {
-  console.log('POST connect/identity/encrypted');
+app.get('/connect/identity/encrypted', async (req, res) => {
+  console.log('GET connect/identity/encrypted');
   try {
     const idToken = req.headers['privy-id-token'];
-    const accountAddress = await getAddressByPrivyToken(Array.isArray(idToken) ? idToken[0] : idToken);
+    const signerAddress = await getAddressByPrivyToken(idToken);
+    const accountAddress = req.headers['account-address'] as string;
+    if (!(await isSignerForAccount(signerAddress, accountAddress))) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
     const identity = await getConnectIdentity({ accountAddress });
     const outgoingMessage: Messages.ResponseIdentityEncrypted = {
       keyBox: {
         accountAddress,
         ciphertext: identity.ciphertext,
         nonce: identity.nonce,
+        signer: signerAddress,
       },
     };
     res.status(200).send(outgoingMessage);
@@ -250,7 +279,12 @@ app.get('/connect/app-identity/:appId', async (req, res) => {
   console.log('GET connect/app-identity/:appId');
   try {
     const idToken = req.headers['privy-id-token'];
-    const accountAddress = await getAddressByPrivyToken(Array.isArray(idToken) ? idToken[0] : idToken);
+    const signerAddress = await getAddressByPrivyToken(idToken);
+    const accountAddress = req.headers['account-address'] as string;
+    if (!(await isSignerForAccount(signerAddress, accountAddress))) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
     const appId = req.params.appId;
     const appIdentity = await findAppIdentity({ accountAddress, appId });
     if (!appIdentity) {
@@ -274,8 +308,13 @@ app.post('/connect/app-identity', async (req, res) => {
   console.log('POST connect/app-identity');
   try {
     const idToken = req.headers['privy-id-token'];
-    const accountAddress = await getAddressByPrivyToken(Array.isArray(idToken) ? idToken[0] : idToken);
+    const signerAddress = await getAddressByPrivyToken(idToken);
     const message = Schema.decodeUnknownSync(Messages.RequestConnectCreateAppIdentity)(req.body);
+    const accountAddress = message.accountAddress;
+    if (!(await isSignerForAccount(signerAddress, accountAddress))) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
     const sessionToken = bytesToHex(randomBytes(32));
     const sessionTokenExpires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
     const appIdentity = await createAppIdentity({

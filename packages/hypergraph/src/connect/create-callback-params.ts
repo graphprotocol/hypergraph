@@ -6,6 +6,7 @@ type CreateAuthUrlParams = {
   expiry: number;
   nonce: string;
   appId: string;
+  permissionId: string;
   appIdentityAddress: string;
   appIdentityAddressPrivateKey: string;
   accountAddress: string;

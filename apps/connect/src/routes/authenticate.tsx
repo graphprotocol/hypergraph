@@ -2,6 +2,7 @@ import { CreateSpace } from '@/components/create-space';
 import { Button } from '@/components/ui/button';
 import { useSpaces } from '@/hooks/use-spaces';
 import { Connect, type Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
+import { GEOGENESIS, GEO_TESTNET } from '@graphprotocol/hypergraph/connect/smart-account';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
@@ -9,7 +10,8 @@ import { useSelector } from '@xstate/store/react';
 import { Effect, Schema } from 'effect';
 import { useEffect } from 'react';
 import { createWalletClient, custom } from 'viem';
-import { mainnet } from 'viem/chains';
+
+const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
 
 type AuthenticateSearch = {
   data: unknown;
@@ -150,6 +152,7 @@ function AuthenticateComponent() {
           {
             headers: {
               'privy-id-token': identityToken,
+              'account-address': accountAddress,
               'Content-Type': 'application/json',
             },
           },
@@ -261,6 +264,7 @@ function AuthenticateComponent() {
     const message: Messages.RequestConnectAddAppIdentityToSpaces = {
       type: 'connect-add-app-identity-to-spaces',
       appIdentityAddress: appIdentity.address,
+      accountAddress,
       spacesInput,
     };
 
@@ -284,6 +288,7 @@ function AuthenticateComponent() {
         appIdentityAddress: appIdentity.address,
         appIdentityAddressPrivateKey: appIdentity.addressPrivateKey,
         accountAddress: accountAddress,
+        permissionId: appIdentity.permissionId,
         encryptionPrivateKey: appIdentity.encryptionPrivateKey,
         signaturePrivateKey: appIdentity.signaturePrivateKey,
         signaturePublicKey: appIdentity.signaturePublicKey,
@@ -311,7 +316,7 @@ function AuthenticateComponent() {
     try {
       const privyProvider = await embeddedWallet.getEthereumProvider();
       const walletClient = createWalletClient({
-        chain: mainnet,
+        chain: CHAIN,
         transport: custom(privyProvider),
       });
 
@@ -331,11 +336,25 @@ function AuthenticateComponent() {
       };
 
       const newAppIdentity = Connect.createAppIdentity();
+      // TODO: add spaces and additional actions
+      const permissionId = await Connect.createSmartSession(
+        walletClient,
+        accountAddress,
+        newAppIdentity.addressPrivateKey,
+        CHAIN,
+        import.meta.env.VITE_HYPERGRAPH_RPC_URL,
+        {
+          allowCreateSpace: true,
+          spaces: [],
+          additionalActions: [],
+        },
+      );
+
       const { ciphertext, nonce } = await Connect.encryptAppIdentity(
         signer,
-        accountAddress,
         newAppIdentity.address,
         newAppIdentity.addressPrivateKey,
+        permissionId,
         keys,
       );
       const { accountProof, keyProof } = await Connect.proveIdentityOwnership(signer, accountAddress, keys);
@@ -343,6 +362,7 @@ function AuthenticateComponent() {
       const message: Messages.RequestConnectCreateAppIdentity = {
         appId: state.appInfo.appId,
         address: newAppIdentity.address,
+        accountAddress,
         signaturePublicKey: newAppIdentity.signaturePublicKey,
         encryptionPublicKey: newAppIdentity.encryptionPublicKey,
         ciphertext,
@@ -372,6 +392,7 @@ function AuthenticateComponent() {
           signaturePublicKey: newAppIdentity.signaturePublicKey,
           sessionToken: appIdentityResponse.appIdentity.sessionToken,
           sessionTokenExpires: new Date(appIdentityResponse.appIdentity.sessionTokenExpires),
+          permissionId,
         },
         appInfo: state.appInfo,
       });
@@ -392,7 +413,7 @@ function AuthenticateComponent() {
 
     const privyProvider = await embeddedWallet.getEthereumProvider();
     const walletClient = createWalletClient({
-      chain: mainnet,
+      chain: CHAIN,
       transport: custom(privyProvider),
     });
 
@@ -413,7 +434,6 @@ function AuthenticateComponent() {
 
     const decryptedIdentity = await Connect.decryptAppIdentity(
       signer,
-      state.appIdentityResponse.accountAddress,
       state.appIdentityResponse.ciphertext,
       state.appIdentityResponse.nonce,
     );
@@ -422,7 +442,8 @@ function AuthenticateComponent() {
       appIdentity: {
         address: decryptedIdentity.address,
         addressPrivateKey: decryptedIdentity.addressPrivateKey,
-        accountAddress: decryptedIdentity.accountAddress,
+        accountAddress: state.appIdentityResponse.accountAddress,
+        permissionId: decryptedIdentity.permissionId,
         encryptionPrivateKey: decryptedIdentity.encryptionPrivateKey,
         signaturePrivateKey: decryptedIdentity.signaturePrivateKey,
         encryptionPublicKey: decryptedIdentity.encryptionPublicKey,

@@ -34,10 +34,12 @@
     "@noble/curves": "^1.9.0",
     "@noble/hashes": "^1.8.0",
     "@noble/secp256k1": "^2.2.3",
+    "@rhinestone/module-sdk": "^0.2.8",
     "@serenity-kit/noble-sodium": "^0.2.1",
     "@xstate/store": "^3.5.1",
     "bs58check": "^4.0.0",
     "effect": "^3.16.3",
+    "permissionless": "^0.2.47",
     "siwe": "^3.0.0",
     "uuid": "^11.1.0",
     "viem": "^2.30.6"

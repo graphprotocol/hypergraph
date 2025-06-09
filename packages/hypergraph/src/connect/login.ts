@@ -1,11 +1,12 @@
 import * as Schema from 'effect/Schema';
-import type { Address } from 'viem';
+import type { Address, Chain, Hex, WalletClient } from 'viem';
 import * as Messages from '../messages/index.js';
 import { store } from '../store-connect.js';
-import { storeAccountAddress, storeKeys } from './auth-storage.js';
+import { loadAccountAddress, storeAccountAddress, storeKeys } from './auth-storage.js';
 import { createIdentityKeys } from './create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from './identity-encryption.js';
 import { proveIdentityOwnership } from './prove-ownership.js';
+import { getSmartAccountWalletClient, smartAccountNeedsUpdate, updateLegacySmartAccount } from './smart-account.js';
 import type { IdentityKeys, Signer, Storage } from './types.js';
 
 export async function identityExists(accountAddress: string, syncServerUri: string) {
@@ -23,11 +24,11 @@ export async function signup(
   identityToken: string,
 ) {
   const keys = createIdentityKeys();
-  const { ciphertext, nonce } = await encryptIdentity(signer, accountAddress, keys);
+  const { ciphertext, nonce } = await encryptIdentity(signer, keys);
   const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountAddress, keys);
 
   const req: Messages.RequestConnectCreateIdentity = {
-    keyBox: { accountAddress, ciphertext, nonce },
+    keyBox: { signer: await signer.getAddress(), accountAddress, ciphertext, nonce },
     accountProof,
     keyProof,
     signaturePublicKey: keys.signaturePublicKey,
@@ -49,7 +50,6 @@ export async function signup(
   if (!decoded.success) {
     throw new Error('Error creating identity');
   }
-  storeAccountAddress(storage, accountAddress);
   storeKeys(storage, accountAddress, keys);
 
   return {
@@ -66,9 +66,10 @@ export async function restoreKeys(
   identityToken: string,
 ) {
   const res = await fetch(new URL('/connect/identity/encrypted', syncServerUri), {
-    method: 'POST',
+    method: 'GET',
     headers: {
       'privy-id-token': identityToken,
+      'account-address': accountAddress,
       'Content-Type': 'application/json',
     },
   });
@@ -77,7 +78,7 @@ export async function restoreKeys(
     const decoded = Schema.decodeUnknownSync(Messages.ResponseIdentityEncrypted)(await res.json());
     const { keyBox } = decoded;
     const { ciphertext, nonce } = keyBox;
-    const keys = await decryptIdentity(signer, accountAddress, ciphertext, nonce);
+    const keys = await decryptIdentity(signer, ciphertext, nonce);
     storeKeys(storage, accountAddress, keys);
     return {
       accountAddress,
@@ -87,13 +88,41 @@ export async function restoreKeys(
   throw new Error(`Error fetching identity ${res.status}`);
 }
 
-export async function login(
-  signer: Signer,
-  accountAddress: Address,
-  syncServerUri: string,
-  storage: Storage,
-  identityToken: string,
-) {
+export async function login({
+  walletClient,
+  signer,
+  syncServerUri,
+  storage,
+  identityToken,
+  rpcUrl,
+  chain,
+}: {
+  walletClient: WalletClient;
+  signer: Signer;
+  syncServerUri: string;
+  storage: Storage;
+  identityToken: string;
+  rpcUrl: string;
+  chain: Chain;
+}) {
+  const accountAddressFromStorage = (loadAccountAddress(storage) as Hex) ?? undefined;
+  const smartAccountWalletClient = await getSmartAccountWalletClient({
+    owner: walletClient,
+    address: accountAddressFromStorage,
+    rpcUrl,
+    chain,
+  });
+  if (!smartAccountWalletClient.account) {
+    throw new Error('Smart account wallet client not found');
+  }
+  // This will prompt the user to sign a user operation to update the smart account
+  if (await smartAccountNeedsUpdate(smartAccountWalletClient, chain, rpcUrl)) {
+    await updateLegacySmartAccount(smartAccountWalletClient, chain, rpcUrl);
+  }
+  const accountAddress = smartAccountWalletClient.account.address;
+  if (accountAddressFromStorage === undefined) {
+    storeAccountAddress(storage, accountAddress);
+  }
   // const keys = loadKeys(storage, accountAddress);
   let authData: {
     accountAddress: Address;

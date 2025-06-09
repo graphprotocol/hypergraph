@@ -53,6 +53,7 @@ export const parseCallbackParams = ({
       appIdentityAddress: data.appIdentityAddress,
       appIdentityAddressPrivateKey: data.appIdentityAddressPrivateKey,
       accountAddress: data.accountAddress,
+      permissionId: data.permissionId,
       signaturePublicKey: data.signaturePublicKey,
       signaturePrivateKey: data.signaturePrivateKey,
       encryptionPublicKey: data.encryptionPublicKey,
