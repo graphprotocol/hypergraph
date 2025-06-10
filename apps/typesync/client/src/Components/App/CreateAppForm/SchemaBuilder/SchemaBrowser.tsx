@@ -1,17 +1,17 @@
 'use client';
 
 import { Disclosure, DisclosureButton, DisclosurePanel, Input } from '@headlessui/react';
-import { ChevronDownIcon, PlusIcon } from '@heroicons/react/20/solid';
+import { ChevronDownIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { Array as EffectArray, pipe } from 'effect';
 import { useState } from 'react';
 
-import { type SchemaBrowserType, useSchemaBrowserQuery } from '../../../../hooks/useSchemaBrowserQuery.js';
+import { type ExtendedSchemaBrowserType, useSchemaBrowserQuery } from '../../../../hooks/useSchemaBrowserQuery.js';
 import { mapKGDataTypeToPrimitiveType } from '../../../../utils/mapper.js';
 import { InlineCode } from '../../../InlineCode.js';
 import { Loading } from '../../../Loading.js';
 
 export type SchemaBrowserProps = Readonly<{
-  typeSelected(type: SchemaBrowserType): void;
+  typeSelected(type: ExtendedSchemaBrowserType): void;
 }>;
 export function SchemaBrowser({ typeSelected }: SchemaBrowserProps) {
   const [typeSearch, setTypeSearch] = useState('');
@@ -63,10 +63,13 @@ export function SchemaBrowser({ typeSelected }: SchemaBrowserProps) {
                   <DisclosureButton
                     as="div"
                     data-interactive="clickable"
-                    className="min-w-0 data-[interactive=clickable]:cursor-pointer"
+                    className="min-w-0 data-[interactive=clickable]:cursor-pointer group"
                   >
                     <div className="flex items-center gap-x-2">
-                      <ChevronDownIcon className="size-4" aria-hidden="true" />
+                      {/* shown when the collapsible is open */}
+                      <ChevronDownIcon className="size-4 hidden group-data-open:flex" aria-hidden="true" />
+                      {/* shown when the collapsible is closed */}
+                      <ChevronRightIcon className="size-4 flex group-data-open:hidden" aria-hidden="true" />
                       <p className="text-sm/6 font-semibold text-gray-900 dark:text-white">{_type.name || _type.id}</p>
                       <InlineCode>{_type.id}</InlineCode>
                     </div>
@@ -87,7 +90,7 @@ export function SchemaBrowser({ typeSelected }: SchemaBrowserProps) {
                 <DisclosurePanel
                   as="div"
                   transition
-                  className="w-full transition duration-200 ease-in-out py-1.5 flex flex-col gap-y-1"
+                  className="w-full origin-top transition duration-200 ease-out data-closed:-translate-y-6 data-closed:opacity-0 py-1.5 flex flex-col gap-y-1"
                 >
                   <ul className="w-full pl-6 pr-3 divide-y divide-gray-300 dark:divide-gray-800">
                     {properties.map((prop) => (

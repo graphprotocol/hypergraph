@@ -104,7 +104,7 @@ export type Property = {
   dataType: DataType;
   entity?: Maybe<Entity>;
   id: Scalars['ID']['output'];
-  relationValueTypes?: Maybe<Array<Maybe<Entity>>>;
+  relationValueTypes?: Maybe<Array<Maybe<Type>>>;
 };
 
 export type PropertyFilter = {
@@ -159,16 +159,19 @@ export type QueryTypesArgs = {
 
 export type Relation = {
   __typename?: 'Relation';
+  entityId: Scalars['ID']['output'];
   from?: Maybe<Entity>;
   fromId: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   position?: Maybe<Scalars['String']['output']>;
+  relationEntity?: Maybe<Entity>;
   spaceId: Scalars['String']['output'];
   to?: Maybe<Entity>;
   toId: Scalars['String']['output'];
   toSpaceId?: Maybe<Scalars['String']['output']>;
-  type?: Maybe<Entity>;
+  type?: Maybe<Property>;
   typeId: Scalars['String']['output'];
+  verified?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type RelationFilter = {
@@ -200,8 +203,6 @@ export type Value = {
   entity?: Maybe<Entity>;
   entityId: Scalars['String']['output'];
   format?: Maybe<Scalars['String']['output']>;
-  hasDate?: Maybe<Scalars['Boolean']['output']>;
-  hasTime?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   language?: Maybe<Scalars['String']['output']>;
   property?: Maybe<Property>;
@@ -222,10 +223,11 @@ export type ValueFilter = {
 
 export type SchemaBrowserTypesQueryVariables = Exact<{
   spaceId: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type SchemaBrowserTypesQuery = { __typename?: 'Query', types: Array<{ __typename?: 'Type', id: string, name?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', name?: string | null } | null } | null> | null } | null> };
+export type SchemaBrowserTypesQuery = { __typename?: 'Query', types: Array<{ __typename?: 'Type', id: string, name?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', id: string, name?: string | null } | null, relationValueTypes?: Array<{ __typename?: 'Type', id: string, name?: string | null } | null> | null } | null> | null } | null> };
 
 export type PropertiesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -233,5 +235,5 @@ export type PropertiesQueryVariables = Exact<{ [key: string]: never; }>;
 export type PropertiesQuery = { __typename?: 'Query', properties: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', name?: string | null, description?: string | null } | null } | null> };
 
 
-export const SchemaBrowserTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SchemaBrowserTypes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"types"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"spaceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
+export const SchemaBrowserTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SchemaBrowserTypes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"types"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"spaceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
 export const PropertiesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<PropertiesQuery, PropertiesQueryVariables>;

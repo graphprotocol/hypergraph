@@ -1,9 +1,7 @@
 import type { DataType } from '../generated/graphql';
+import type { SchemaTypeName } from '../schema';
 
-export function mapKGDataTypeToPrimitiveType(
-  dataType: DataType,
-  entity: string,
-): 'Text' | 'Number' | 'Boolean' | 'Date' | 'Point' | 'Url' | `Relation(${string})` {
+export function mapKGDataTypeToPrimitiveType(dataType: DataType, entity: string): SchemaTypeName {
   switch (dataType) {
     case 'CHECKBOX': {
       return 'Boolean';

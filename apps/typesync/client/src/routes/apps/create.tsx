@@ -10,14 +10,16 @@ import {
 import { TrashIcon } from '@heroicons/react/24/outline';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { useStore } from '@tanstack/react-form';
+import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { Array as EffectArray, String as EffectString, Schema, pipe } from 'effect';
+import { Array as EffectArray, String as EffectString, Option, Schema, pipe } from 'effect';
 import { useState } from 'react';
 
 import { SchemaBrowser } from '../../Components/App/CreateAppForm/SchemaBuilder/SchemaBrowser.js';
 import { useAppForm } from '../../Components/App/CreateAppForm/useCreateAppForm.js';
 import { appsQueryOptions, useCreateAppMutation } from '../../hooks/useAppQuery.js';
 import { cwdQueryOptions, useCWDSuspenseQuery } from '../../hooks/useCWDQuery.js';
+import { type ExtendedSchemaBrowserType, schemaBrowserQueryOptions } from '../../hooks/useSchemaBrowserQuery.js';
 import reactLogo from '../../images/react_logo.png';
 import viteLogo from '../../images/vitejs_logo.png';
 import { type App, InsertAppSchema } from '../../schema.js';
@@ -29,7 +31,11 @@ const defaultValues: InsertAppSchema = {
   template: 'vite_react',
   directory: '',
   types: [
-    { name: '', knowledge_graph_id: null, properties: [{ name: '', knowledge_graph_id: null, type_name: 'Text' }] },
+    {
+      name: '',
+      knowledge_graph_id: null,
+      properties: [{ name: '', knowledge_graph_id: null, type_name: 'Text' }],
+    },
   ],
 };
 
@@ -84,6 +90,17 @@ function CreateAppPage() {
   });
 
   const { data: cwd } = useCWDSuspenseQuery();
+  const { data: types } = useQuery({
+    ...schemaBrowserQueryOptions,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    select(data) {
+      return EffectArray.reduce(data, new Map<string, ExtendedSchemaBrowserType>(), (map, curr) =>
+        map.set(curr.id, curr),
+      );
+    },
+  });
+  const typesMap = types ?? new Map<string, ExtendedSchemaBrowserType>();
 
   const [selectedFormStep, setSelectedFormStep] = useState<'app_details' | 'schema' | 'generate'>('app_details');
 
@@ -104,9 +121,114 @@ function CreateAppPage() {
     pipe(
       state.values.types,
       EffectArray.filter((_type) => EffectString.isNonEmpty(_type.name)),
-      EffectArray.map((_type, _idx) => ({ type: _type.name, schemaTypeIdx: _idx })),
+      EffectArray.map((_type, _idx) => ({
+        type: _type.name,
+        knowledgeGraphId: _type.knowledge_graph_id,
+        schemaTypeIdx: _idx,
+      })),
     ),
   );
+  // unique set of the types in the users schema that were added from the knowledge graph.
+  // this way, if the user has a type: Country in their schema and add the property/type: State,
+  // even if it is a _different_ type, we will use the "Country" already declared in the schema
+  const unqSchemaTypes = pipe(
+    appTypes,
+    EffectArray.map((schemaType) => schemaType.type),
+    EffectArray.reduce(new Set<string>(), (set, curr) => set.add(curr)),
+  );
+
+  /**
+   * If the user selects an already existing type from the Knowledge Graph,
+   * that type, and all of its properties are added as types to the users app schema.
+   * This encourages type/property reuse within the Hypergraph ecosystem.
+   *
+   * These types could have properties of `dataType === 'RELATION'`.
+   * This means the property is a relation to another type in the Knowledge Graph.
+   *
+   * When we add a property to the schema, of type `RELATION`, the generated hypergraph schema will look like this:
+   *
+   * ```ts
+   * // src/schema.ts
+   *
+   * import { Entity, Type } from '@graphprotocol/hypergraph'
+   *
+   * export class Account extends Entity.Class<Account>('Account')({
+   *    name: Type.Text,
+   * }) {}
+   *
+   * export class Event extends Entity.Class<Event>('Event')({
+   *    name: Type.Text,
+   * }) {}
+   *
+   * export class Attendance extends Entity.Class<Attendance>('Attendance')({
+   *    event: Type.Relation(Event),
+   *    attendee: Type.Relation(Account)
+   * }) {}
+   * ```
+   *
+   * In order for this to compile `Type.Relation({entity})` must _exist_ in the schema.
+   * So when the user selects a type from the Knowledge Graph, we need to go through that selected types properties,
+   * and for each property of `dataType === 'RELATION'`, we need to add the relation type into the schema as well.
+   *
+   * This fn maps through the selected type properties, and for each `RELATION`,
+   * attempts to resolve that relation type from the Knowledge Graph.
+   * This is a recursive lookup because if the `RELATION` type has properties that are relations,
+   * these types also need to be brought into the schema.
+   *
+   * If no type can be found in the Knowledge Graph, we create a default type with the name and default: name, description properties
+   *
+   * @param selected the user-selected type already existing on the Knowledge Graph to add to the schema
+   * @param mapped the already mapped types for recursive lookup
+   * @returns an array of mapped relation properties -> types to add to the users schema
+   */
+  const mapSelectedTypeRelationPropertiesToTypes = (
+    selected: ExtendedSchemaBrowserType,
+    mapped: Array<InsertAppSchema['types'][number]> = [],
+  ) => {
+    // grab all the properties from the type where the dataType is `RELATION` and create as a type on the Schema
+    const relationProperties = pipe(
+      selected.properties,
+      EffectArray.filter((prop) => prop.dataType === 'RELATION'),
+      EffectArray.filter((prop) => !unqSchemaTypes.has(prop.entity.name)),
+    );
+    // map the relation properties into types to add to the schema
+    const relationSchemaTypes: Array<InsertAppSchema['types'][number]> = mapped;
+    for (const prop of relationProperties) {
+      const alreadyMappedType = EffectArray.findFirst(relationSchemaTypes, ({ name }) => name === prop.entity.name);
+      if (Option.isSome(alreadyMappedType) || unqSchemaTypes.has(prop.entity.name)) {
+        // there already a type in the schema with this name, don't duplicate
+        continue;
+      }
+      // attempt to lookup type from knowledge graph
+      const found = typesMap.get(prop.id);
+      if (found) {
+        relationSchemaTypes.push({
+          name: prop.entity.name,
+          knowledge_graph_id: prop.id,
+          properties: EffectArray.map(found.properties, (_prop) => ({
+            name: _prop.entity.name,
+            knowledge_graph_id: _prop.id,
+            type_name: mapKGDataTypeToPrimitiveType(_prop.dataType, _prop.entity.name),
+          })),
+        });
+
+        // need to recursively go through the properties, and if any are dataType === 'RELATION', lookup those types as well
+
+        continue;
+      }
+      // no type found, add default
+      relationSchemaTypes.push({
+        name: prop.entity.name,
+        knowledge_graph_id: prop.id,
+        properties: [
+          { name: 'name', knowledge_graph_id: null, type_name: 'Text' },
+          { name: 'description', knowledge_graph_id: null, type_name: 'Text' },
+        ],
+      });
+    }
+
+    return relationSchemaTypes;
+  };
 
   return (
     <TabsPrimitive.Root
@@ -166,38 +288,16 @@ function CreateAppPage() {
         <TabsPrimitive.Content value="schema" className="pb-10">
           <createAppForm.AppField name="types" mode="array">
             {(field) => (
-              <div className="grid md:grid-cols-5 2xl:grid-cols-3 gap-x-4 2xl:gap-x-8">
-                <div className="w-full flex flex-col gap-y-4 pb-10 md:col-span-2 2xl:col-span-1">
+              <div className="grid grid-cols-2 2xl:grid-cols-3 gap-x-4 2xl:gap-x-8">
+                <div className="w-full flex flex-col gap-y-4 pb-10">
                   <SchemaBrowser
                     typeSelected={(selected) => {
                       if (selected.name == null) {
                         return;
                       }
-                      // if schema is currently empty, set as first type
-                      if (field.state.value.length === 1) {
-                        const initialType = field.state.value[0];
-                        const properties = initialType.properties;
-                        if (
-                          EffectString.isEmpty(initialType.name) &&
-                          properties.length === 1 &&
-                          EffectString.isEmpty(initialType.properties[0].name)
-                        ) {
-                          field.replaceValue(0, {
-                            name: selected.name,
-                            knowledge_graph_id: selected.id,
-                            properties: (selected.properties ?? [])
-                              .filter((prop) => prop != null)
-                              .map((prop) => ({
-                                name: prop.entity?.name || prop.id,
-                                knowledge_graph_id: prop.id,
-                                type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
-                              })),
-                          } as never);
-                          return;
-                        }
-                      }
-                      // add as a new Type on the schema
-                      field.pushValue({
+                      const relationSchemaTypes = mapSelectedTypeRelationPropertiesToTypes(selected);
+
+                      const selectedMappedToType = {
                         name: selected.name,
                         knowledge_graph_id: selected.id,
                         properties: (selected.properties ?? [])
@@ -207,12 +307,57 @@ function CreateAppPage() {
                             knowledge_graph_id: prop.id,
                             type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
                           })),
-                      } as never);
+                      } satisfies InsertAppSchema['types'][number];
+                      // if schema is currently empty, set as first type
+                      if (field.state.value.length === 1) {
+                        const initialType = field.state.value[0];
+                        const properties = initialType.properties;
+                        if (
+                          EffectString.isEmpty(initialType.name) &&
+                          properties.length === 1 &&
+                          EffectString.isEmpty(initialType.properties[0].name)
+                        ) {
+                          EffectArray.match(relationSchemaTypes, {
+                            onEmpty() {
+                              field.replaceValue(0, selectedMappedToType as never);
+                            },
+                            onNonEmpty(mappedRelationTypes) {
+                              EffectArray.forEach(mappedRelationTypes, (mapped, idx) => {
+                                if (idx === 0) {
+                                  field.replaceValue(0, {
+                                    name: mapped.name,
+                                    knowledge_graph_id: mapped.knowledge_graph_id,
+                                    properties: mapped.properties,
+                                  } as never);
+                                  return;
+                                }
+                                field.pushValue(mapped as never);
+                              });
+                              // push selected type
+                              field.pushValue(selectedMappedToType as never);
+                            },
+                          });
+                          return;
+                        }
+                      }
+                      // add any relation types, and the selected type, as a new Type on the schema
+                      EffectArray.match(relationSchemaTypes, {
+                        onEmpty() {
+                          field.pushValue(selectedMappedToType as never);
+                        },
+                        onNonEmpty(mappedRelationTypes) {
+                          EffectArray.forEach(mappedRelationTypes, (mapped) => {
+                            field.pushValue(mapped as never);
+                          });
+                          // push selected type
+                          field.pushValue(selectedMappedToType as never);
+                        },
+                      });
                       return;
                     }}
                   />
                 </div>
-                <div className="w-full flex flex-col gap-y-4 pb-10 md:col-span-3 2xl:col-span-2">
+                <div className="w-full flex flex-col gap-y-4 pb-10 2xl:col-span-2">
                   <div className="border-b border-gray-200 dark:border-white/20 pb-5 h-20">
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white">Schema</h3>
                     <p className="mt-2 max-w-4xl text-sm text-gray-500 dark:text-gray-200">
@@ -237,7 +382,9 @@ function CreateAppPage() {
                                     required
                                     label="Type Name"
                                     typeSelected={(selected) => {
-                                      field.replaceValue(idx, {
+                                      const relationSchemaTypes = mapSelectedTypeRelationPropertiesToTypes(selected);
+
+                                      const selectedMappedToType = {
                                         name: selected.name,
                                         knowledge_graph_id: selected.id,
                                         properties: (selected.properties ?? [])
@@ -250,7 +397,20 @@ function CreateAppPage() {
                                               prop.entity?.name || prop.id,
                                             ),
                                           })),
-                                      } as never);
+                                      } satisfies InsertAppSchema['types'][number];
+                                      // add any relation types to the schema (that don't already exist),
+                                      // and the selected type as a new Type on the schema
+                                      EffectArray.match(relationSchemaTypes, {
+                                        onEmpty() {
+                                          field.replaceValue(idx, selectedMappedToType as never);
+                                        },
+                                        onNonEmpty(mappedRelationTypes) {
+                                          EffectArray.forEach(mappedRelationTypes, (mapped) => {
+                                            field.pushValue(mapped as never);
+                                          });
+                                          field.replaceValue(idx, selectedMappedToType as never);
+                                        },
+                                      });
                                     }}
                                   />
                                 )}
@@ -283,16 +443,41 @@ function CreateAppPage() {
                                                 id={`types[${idx}].properties[${typePropIdx}].name` as const}
                                                 name={`types[${idx}].properties[${typePropIdx}].name` as const}
                                                 required
-                                                propertySelected={(prop) =>
-                                                  propsField.replaceValue(typePropIdx, {
+                                                propertySelected={(prop) => {
+                                                  const selectedProp = {
                                                     name: prop.entity.name || prop.id,
                                                     knowledge_graph_id: prop.id,
                                                     type_name: mapKGDataTypeToPrimitiveType(
                                                       prop.dataType,
                                                       prop.entity.name || prop.id,
                                                     ),
-                                                  } as never)
-                                                }
+                                                  } as never;
+                                                  if (prop.dataType === 'RELATION') {
+                                                    // if the user selects a property that is a relation,
+                                                    // - attempt to find the type from the types query
+                                                    // - add as a type (with nested types) to the schema
+                                                    const maybeFoundType = typesMap.get(prop.id);
+                                                    if (maybeFoundType && !unqSchemaTypes.has(prop.id)) {
+                                                      field.pushValue({
+                                                        name: maybeFoundType.name,
+                                                        knowledge_graph_id: maybeFoundType.id,
+                                                        properties: (maybeFoundType.properties ?? [])
+                                                          .filter((prop) => prop != null)
+                                                          .map((prop) => ({
+                                                            name: prop.entity?.name || prop.id,
+                                                            knowledge_graph_id: prop.id,
+                                                            type_name: mapKGDataTypeToPrimitiveType(
+                                                              prop.dataType,
+                                                              prop.entity?.name || prop.id,
+                                                            ),
+                                                          })),
+                                                      } satisfies InsertAppSchema['types'][number] as never);
+                                                    }
+                                                    propsField.replaceValue(typePropIdx, selectedProp);
+                                                    return;
+                                                  }
+                                                  propsField.replaceValue(typePropIdx, selectedProp);
+                                                }}
                                               />
                                             )}
                                           </createAppForm.AppField>
@@ -356,7 +541,7 @@ function CreateAppPage() {
                       <button
                         type="button"
                         className="inline-flex items-center gap-x-1.5 text-sm/6 font-semibold text-gray-600 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 rounded-md px-2 py-1.5"
-                        onClick={() => createAppForm.reset(undefined, { keepDefaultValues: true })}
+                        onClick={() => createAppForm.resetField('types')}
                       >
                         <ArrowUturnLeftIcon aria-hidden="true" className="-ml-0.5 size-4" />
                         Reset

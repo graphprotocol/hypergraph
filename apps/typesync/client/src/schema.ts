@@ -1,5 +1,16 @@
 import * as Schema from 'effect/Schema';
 
+export type Relation = `Relation(${string})`;
+export function isRelation(val: string): val is Relation {
+  return val.startsWith('Relation(') && val.endsWith(')');
+}
+
+export const SchemaTypeName = Schema.Union(
+  Schema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point', 'Url'),
+  Schema.String.pipe(Schema.filter((val) => isRelation(val))),
+);
+export type SchemaTypeName = typeof SchemaTypeName.Type;
+
 export const AppIdentifier = Schema.Number.pipe(
   Schema.int(),
   Schema.positive(),
@@ -104,7 +115,7 @@ export class AppSchemaTypePropery extends Schema.Class<AppSchemaTypePropery>('Ap
       'The name of the property type. Each property will have a name and a type that is used to build the schema.',
     documentation:
       'The name of the property type. Each property will have a name and a type that is used to build the schema.',
-    examples: ['Text', 'Number', 'Boolean'],
+    examples: ['Text', 'Number', 'Boolean', 'Date', 'Point', 'Relation(Account)'],
   }),
   nullable: Schema.NullOr(Schema.Boolean).annotations({
     identifier: 'AppSchemaTypePropertyNullable',
