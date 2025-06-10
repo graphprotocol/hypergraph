@@ -13,7 +13,19 @@ docusaurus:
   permalink: /docusaurus
   description: Docusaurus tag description
 
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
+
+release:
+  label: Release
+  permalink: /release
+  description: Product releases and updates
+
+alpha:
+  label: Alpha
+  permalink: /alpha
+  description: Early access and alpha releases
+
+hypergraph:
+  label: Hypergraph
+  permalink: /hypergraph
+  description: Posts about Hypergraph development and features
+

@@ -1,23 +1,23 @@
 yangshun:
-  name: Yangshun Tay
-  title: Front End Engineer @ Facebook
-  url: https://github.com/yangshun
-  image_url: https://github.com/yangshun.png
+  name: Pablo Carranza Velez
+  title: Engineering Manager @ Edge & Node
+  url: https://github.com/pcarranzav
+  image_url: https://avatars.githubusercontent.com/u/2223590?v=4
+  permalink: /all-pablo-articles
   page: true
   socials:
-    x: yangshunz
-    github: yangshun
+    x: https://x.com/pcarranzav
+    github: https://github.com/pcarranzav
 
 slorber:
-  name: Sébastien Lorber
-  title: Docusaurus maintainer
-  url: https://sebastienlorber.com
-  image_url: https://github.com/slorber.png
+  name: Nik
+  title: Hypergraph Lead Engineer @ Geo
+  # url: 
+  image_url: https://ca.slack-edge.com/T047DS7N1PE-U07PPQ3GN7Q-gafcee4ad6e3-512
   page:
-    # customize the url of the author page at /blog/authors/<permalink>
-    permalink: '/all-sebastien-lorber-articles'
-  socials:
-    x: sebastienlorber
-    linkedin: sebastienlorber
-    github: slorber
-    newsletter: https://thisweekinreact.com
+    permalink: /all-nik-articles
+  # socials:
+    # x: 
+    # linkedin: 
+    # github: 
+    # newsletter: https://thisweekinreact.com
