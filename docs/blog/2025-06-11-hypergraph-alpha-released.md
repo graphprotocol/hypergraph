@@ -58,6 +58,6 @@ We read every message and your feedback directly shapes our roadmap.
 
 ## Ready to Shape the Future?
 
-This is just the beginning. Hypergraph represents our vision for the future of Web3 development, but it's your creativity and feedback that will help us realize its full potential. [Get started with the Quickstart](/docs/quickstart), explore our [API Reference](/docs/api-reference), read the [Hypergraph Knowledge Graph series](/blog/understanding-entities-and-types), and join us in building the next generation of collaborative, decentralized applications.
+This is just the beginning. Hypergraph represents our vision for the future of Web3 development, but it's your creativity and feedback that will help us realize its full potential. [Get started with the Quickstart](/docs/quickstart), and explore our [API Reference](/docs/api-reference), and join us in building the next generation of collaborative, decentralized applications.
 
 We can't wait to see what you'll create.
