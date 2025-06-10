@@ -1,4 +1,5 @@
-import type { Id as Grc20Id } from '@graphprotocol/grc-20';
+import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@graphprotocol/grc-20';
+import { Array as EffectArray, Schema as EffectSchema, pipe } from 'effect';
 
 /**
  * Mappings for a schema type and its properties/relations
@@ -18,17 +19,21 @@ export type MappingEntry = {
    *
    * @since 0.0.1
    */
-  properties?: {
-    [key: string]: Grc20Id.Id;
-  };
+  properties?:
+    | {
+        [key: string]: Grc20Id.Id;
+      }
+    | undefined;
   /**
    * Record of schema type relation names to the `Id.Id` of the relation in the Knowledge Graph
    *
    * @since 0.0.1
    */
-  relations?: {
-    [key: string]: Grc20Id.Id;
-  };
+  relations?:
+    | {
+        [key: string]: Grc20Id.Id;
+      }
+    | undefined;
 };
 
 /**
@@ -63,3 +68,154 @@ export type MappingEntry = {
 export type Mapping = {
   [key: string]: MappingEntry;
 };
+
+export type DataTypeRelation = `Relation(${string})`;
+export function isDataTypeRelation(val: string): val is DataTypeRelation {
+  return /^Relation\((.+)\)$/.test(val);
+}
+export const SchemaDataTypeRelation = EffectSchema.NonEmptyTrimmedString.pipe(
+  EffectSchema.filter((val) => isDataTypeRelation(val)),
+);
+export type SchemaDataTypeRelation = typeof SchemaDataTypeRelation.Type;
+
+export const SchemaDataType = EffectSchema.Union(
+  EffectSchema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point', 'Url'),
+  SchemaDataTypeRelation,
+);
+export type SchemaDataType = typeof SchemaDataType.Type;
+
+export const Schema = EffectSchema.Struct({
+  types: EffectSchema.Array(
+    EffectSchema.Struct({
+      name: EffectSchema.NonEmptyTrimmedString,
+      knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+      properties: EffectSchema.Array(
+        EffectSchema.Struct({
+          name: EffectSchema.NonEmptyTrimmedString,
+          knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+          dataType: SchemaDataType,
+        }),
+      ).pipe(EffectSchema.minItems(1)),
+    }),
+  ).pipe(EffectSchema.minItems(1)),
+}).annotations({
+  identifier: 'typesync/Schema',
+  title: 'TypeSync app Schema',
+  description: 'An array of types in the schema defined by the user to generate a Mapping object for',
+  examples: [
+    {
+      types: [
+        {
+          name: 'Account',
+          knowledgeGraphId: null,
+          properties: [{ name: 'username', knowledgeGraphId: null, dataType: 'Text' }],
+        },
+      ],
+    },
+    {
+      types: [
+        {
+          name: 'Account',
+          knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+          properties: [{ name: 'name', knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935', dataType: 'Text' }],
+        },
+      ],
+    },
+  ],
+});
+export type Schema = typeof Schema.Type;
+
+export async function generateMapping(schema: Schema): Promise<Mapping> {
+  const entries: Array<MappingEntry & { typeName: string }> = [];
+  const ops: Array<Op> = [];
+
+  for (const type of schema.types) {
+    const typePropertyIds: Array<{ propName: string; id: Grc20Id.Id }> = [];
+    for (const property of type.properties) {
+      if (property.knowledgeGraphId) {
+        typePropertyIds.push({ propName: property.name, id: Grc20Id.Id(property.knowledgeGraphId) });
+        continue;
+      }
+      // create op for creating type property
+      const { id, ops: createTypePropOp } = Graph.createProperty({
+        name: property.name,
+        dataType: mapSchemaDataTypeToGRC20PropDataType(property.dataType),
+      });
+      typePropertyIds.push({ propName: property.name, id });
+      // add createProperty ops to array to submit in batch to KG
+      ops.push(...createTypePropOp);
+    }
+
+    const properties: MappingEntry['properties'] = pipe(
+      typePropertyIds,
+      EffectArray.reduce({} as NonNullable<MappingEntry['properties']>, (props, { propName, id }) => {
+        props[propName] = id;
+
+        return props;
+      }),
+    );
+
+    const relations: MappingEntry['relations'] = undefined;
+
+    if (type.knowledgeGraphId) {
+      entries.push({
+        typeName: type.name,
+        typeIds: [Grc20Id.Id(type.knowledgeGraphId)],
+        properties,
+        relations,
+      });
+      continue;
+    }
+    // create the type op, with its properties
+    const { id, ops: createTypeOp } = Graph.createType({
+      name: type.name,
+      properties: EffectArray.map(typePropertyIds, ({ id }) => id),
+    });
+    ops.push(...createTypeOp);
+
+    entries.push({
+      typeName: type.name,
+      typeIds: [id],
+      properties,
+      relations,
+    });
+  }
+
+  // @todo send ops to Knowledge Graph
+
+  return pipe(
+    entries,
+    EffectArray.reduce({} as Mapping, (mapping, entry) => {
+      const { typeName, ...rest } = entry;
+      mapping[typeName] = rest;
+
+      return mapping;
+    }),
+  );
+}
+
+export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): CreatePropertyParams['dataType'] {
+  switch (true) {
+    case dataType === 'Boolean': {
+      return 'CHECKBOX';
+    }
+    case dataType === 'Date': {
+      return 'TIME';
+    }
+    case dataType === 'Number': {
+      return 'NUMBER';
+    }
+    case dataType === 'Point': {
+      return 'POINT';
+    }
+    case dataType === 'Url': {
+      return 'TEXT';
+    }
+    case isDataTypeRelation(dataType): {
+      return 'RELATION';
+    }
+    default: {
+      return 'TEXT';
+    }
+  }
+}
