@@ -82,14 +82,77 @@ export type SchemaDataTypeRelation = typeof SchemaDataTypeRelation.Type;
 /**
  * @since 0.0.1
  */
-export const SchemaDataType = EffectSchema.Union(
-  EffectSchema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point', 'Url'),
-  SchemaDataTypeRelation,
-);
+export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point', 'Url');
+/**
+ * @since 0.0.1
+ */
+export type SchemaDataTypePrimitive = typeof SchemaDataTypePrimitive.Type;
+/**
+ * @since 0.0.1
+ */
+export const SchemaDataType = EffectSchema.Union(SchemaDataTypePrimitive, SchemaDataTypeRelation);
 /**
  * @since 0.0.1
  */
 export type SchemaDataType = typeof SchemaDataType.Type;
+/**
+ * @since 0.0.1
+ */
+export const SchemaTypePropertyRelation = EffectSchema.Struct({
+  name: EffectSchema.NonEmptyTrimmedString,
+  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  dataType: SchemaDataTypeRelation,
+  relationType: EffectSchema.NonEmptyTrimmedString.annotations({
+    identifier: 'SchemaTypePropertyRelation.relationType',
+    description: 'name of the type within the schema that this property is related to',
+    examples: ['Account'],
+  }),
+});
+/**
+ * @since 0.0.1
+ */
+export type SchemaTypePropertyRelation = typeof SchemaTypePropertyRelation.Type;
+/**
+ * @since 0.0.1
+ */
+export const SchemaTypePropertyPrimitive = EffectSchema.Struct({
+  name: EffectSchema.NonEmptyTrimmedString,
+  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  dataType: SchemaDataTypePrimitive,
+});
+/**
+ * @since 0.0.1
+ */
+export type SchemaTypePropertyPrimitive = typeof SchemaTypePropertyPrimitive.Type;
+
+/**
+ * @since 0.0.1
+ */
+export function propertyIsRelation(
+  property: SchemaTypePropertyPrimitive | SchemaTypePropertyRelation,
+): property is SchemaTypePropertyRelation {
+  return isDataTypeRelation(property.dataType);
+}
+
+/**
+ * @since 0.0.1
+ */
+export const SchemaType = EffectSchema.Struct({
+  name: EffectSchema.NonEmptyTrimmedString,
+  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  properties: EffectSchema.Array(EffectSchema.Union(SchemaTypePropertyPrimitive, SchemaTypePropertyRelation)).pipe(
+    EffectSchema.minItems(1),
+    EffectSchema.filter(namesAreUnique, {
+      identifier: 'DuplicatePropertyNames',
+      jsonSchema: {},
+      description: 'The property.name must be unique across all properties in the type',
+    }),
+  ),
+});
+/**
+ * @since 0.0.1
+ */
+export type SchemaType = typeof SchemaType.Type;
 
 /**
  * Represents the user-built schema object to generate a `Mappings` definition for
@@ -97,31 +160,17 @@ export type SchemaDataType = typeof SchemaDataType.Type;
  * @since 0.0.1
  */
 export const Schema = EffectSchema.Struct({
-  types: EffectSchema.Array(
-    EffectSchema.Struct({
-      name: EffectSchema.NonEmptyTrimmedString,
-      knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
-      properties: EffectSchema.Array(
-        EffectSchema.Struct({
-          name: EffectSchema.NonEmptyTrimmedString,
-          knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
-          dataType: SchemaDataType,
-        }),
-      ).pipe(
-        EffectSchema.minItems(1),
-        EffectSchema.filter(namesAreUnique, {
-          identifier: 'DuplicatePropertyNames',
-          jsonSchema: {},
-          description: 'The property.name must be unique across all properties in the type',
-        }),
-      ),
-    }),
-  ).pipe(
+  types: EffectSchema.Array(SchemaType).pipe(
     EffectSchema.minItems(1),
     EffectSchema.filter(namesAreUnique, {
       identifier: 'DuplicateTypeNames',
       jsonSchema: {},
       description: 'The type.name must be unique across all types in the schema',
+    }),
+    EffectSchema.filter(allRelationPropertyTypesExist, {
+      identifier: 'AllRelationTypesExist',
+      jsonSchema: {},
+      description: 'Each type property of dataType RELATION must have a type of the same name in the schema',
     }),
   ),
 }).annotations({
@@ -163,14 +212,88 @@ export const SchemaKnownDecoder = EffectSchema.decodeSync(Schema);
 export const SchemaUnknownDecoder = EffectSchema.decodeUnknownSync(Schema);
 
 /**
+ * Iterate through all properties in all types in the schema of `dataType` === `Relation(${string})`
+ * and validate that the schema.types have a type for the existing relation
  *
+ * @example <caption>All types exist</caption>
+ * ```ts
+ * import { allRelationPropertyTypesExist, type Mapping } from '@graphprotocol/typesync/Mapping'
+ *
+ * const types: Mapping['types'] = [
+ *   {
+ *     name: "Account",
+ *     knowledgeGraphId: null,
+ *     properties: [
+ *       {
+ *         name: "username",
+ *         dataType: "Text",
+ *         knowledgeGraphId: null
+ *       }
+ *     ]
+ *   },
+ *   {
+ *     name: "Event",
+ *     knowledgeGraphId: null,
+ *     properties: [
+ *       {
+ *         name: "speaker",
+ *         dataType: "Relation(Account)"
+ *         relationType: "Account",
+ *         knowledgeGraphId: null,
+ *       }
+ *     ]
+ *   }
+ * ]
+ * expect(allRelationPropertyTypesExist(types)).toEqual(true)
+ * ```
+ *
+ * @example <caption>Account type is missing</caption>
+ * ```ts
+ * import { allRelationPropertyTypesExist, type Mapping } from '@graphprotocol/typesync/Mapping'
+ *
+ * const types: Mapping['types'] = [
+ *   {
+ *     name: "Event",
+ *     knowledgeGraphId: null,
+ *     properties: [
+ *       {
+ *         name: "speaker",
+ *         dataType: "Relation(Account)",
+ *         relationType: "Account",
+ *         knowledgeGraphId: null,
+ *       }
+ *     ]
+ *   }
+ * ]
+ * expect(allRelationPropertyTypesExist(types)).toEqual(false)
+ * ```
  *
  * @since 0.0.1
  *
- * @param schema user-built and submitted schema
+ * @param types the user-submitted schema types
+ */
+export function allRelationPropertyTypesExist(types: ReadonlyArray<SchemaType>): boolean {
+  const unqTypeNames = EffectArray.reduce(types, new Set<string>(), (names, curr) => names.add(curr.name));
+  return pipe(
+    types,
+    EffectArray.flatMap((curr) => curr.properties),
+    EffectArray.filter((prop) => propertyIsRelation(prop)),
+    EffectArray.every((prop) => unqTypeNames.has(prop.relationType)),
+  );
+}
+
+/**
+ * Takes the user-submitted schema, validates it, and build the `Mapping` definition for the schema.
+ *
+ * @since 0.0.1
+ *
+ * @param input user-built and submitted schema
  * @returns the generated [Mapping] definition from the submitted schema
  */
-export async function generateMapping(schema: Schema): Promise<Mapping> {
+export async function generateMapping(input: Schema): Promise<Mapping> {
+  // validate the schema since the input is the type, but the schema has additional filters against it to validate as well
+  const schema = SchemaKnownDecoder(input);
+
   const entries: Array<MappingEntry & { typeName: string }> = [];
   const ops: Array<Op> = [];
 
@@ -188,6 +311,9 @@ export async function generateMapping(schema: Schema): Promise<Mapping> {
         const { id, ops: createTypePropOp } = Graph.createProperty({
           name: property.name,
           dataType: 'RELATION',
+          /**
+           * @todo fill in the relationValueTypes and properties for creating a relation property
+           */
           relationValueTypes: [],
           properties: [],
         });
@@ -198,7 +324,7 @@ export async function generateMapping(schema: Schema): Promise<Mapping> {
       }
       const { id, ops: createTypePropOp } = Graph.createProperty({
         name: property.name,
-        dataType: mapSchemaDataTypeToGRC20PropDataType(property.dataType),
+        dataType,
       });
       typePropertyIds.push({ propName: property.name, id });
       ops.push(...createTypePropOp);
@@ -250,6 +376,12 @@ export async function generateMapping(schema: Schema): Promise<Mapping> {
   );
 }
 
+/**
+ * @since 0.0.1
+ *
+ * @param dataType the dataType from the user-submitted schema
+ * @returns the mapped to GRC-20 dataType for the GRC-20 ops
+ */
 export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): CreatePropertyParams['dataType'] {
   switch (true) {
     case dataType === 'Boolean': {

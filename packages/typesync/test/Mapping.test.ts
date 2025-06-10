@@ -1,7 +1,13 @@
 import { Id } from '@graphprotocol/grc-20';
 import { describe, expect, it } from 'vitest';
 
-import { type Mapping, generateMapping, mapSchemaDataTypeToGRC20PropDataType } from '../src/Mapping.js';
+import {
+  type Mapping,
+  type Schema,
+  allRelationPropertyTypesExist,
+  generateMapping,
+  mapSchemaDataTypeToGRC20PropDataType,
+} from '../src/Mapping.js';
 
 describe('Mapping', () => {
   describe('mapSchemaDataTypeToGRC20PropDataType', () => {
@@ -13,6 +19,40 @@ describe('Mapping', () => {
       expect(mapSchemaDataTypeToGRC20PropDataType('Url')).toEqual('TEXT');
       expect(mapSchemaDataTypeToGRC20PropDataType('Text')).toEqual('TEXT');
       expect(mapSchemaDataTypeToGRC20PropDataType('Relation(Event)')).toEqual('RELATION');
+    });
+  });
+
+  describe('allRelationPropertyTypesExist', () => {
+    it('should return true if the submitted schema contains all required types', () => {
+      const types: Schema['types'] = [
+        {
+          name: 'Account',
+          knowledgeGraphId: null,
+          properties: [{ name: 'username', dataType: 'Text', knowledgeGraphId: null }],
+        },
+        {
+          name: 'Event',
+          knowledgeGraphId: null,
+          properties: [
+            { name: 'speaker', dataType: 'Relation(Account)', relationType: 'Account', knowledgeGraphId: null },
+          ],
+        },
+      ];
+
+      expect(allRelationPropertyTypesExist(types)).toEqual(true);
+    });
+    it('should return false if the submitted schema relation properties', () => {
+      const types: Schema['types'] = [
+        {
+          name: 'Event',
+          knowledgeGraphId: null,
+          properties: [
+            { name: 'speaker', dataType: 'Relation(Account)', relationType: 'Account', knowledgeGraphId: null },
+          ],
+        },
+      ];
+
+      expect(allRelationPropertyTypesExist(types)).toEqual(false);
     });
   });
 
@@ -53,6 +93,7 @@ describe('Mapping', () => {
               {
                 name: 'speaker',
                 dataType: 'Relation(Account)',
+                relationType: 'Account',
                 knowledgeGraphId: null,
               },
             ],
@@ -115,6 +156,7 @@ describe('Mapping', () => {
               {
                 name: 'speaker',
                 dataType: 'Relation(Account)',
+                relationType: 'Account',
                 knowledgeGraphId: null,
               },
             ],
@@ -140,6 +182,57 @@ describe('Mapping', () => {
       };
 
       expect(actual).toEqual(expected);
+    });
+    describe('schema validation failures', () => {
+      it('should throw an error if the Schema does not pass validation: type names are not unique', async () => {
+        await expect(() =>
+          generateMapping({
+            types: [
+              {
+                name: 'Account',
+                knowledgeGraphId: null,
+                properties: [{ name: 'username', dataType: 'Text', knowledgeGraphId: null }],
+              },
+              {
+                name: 'Account',
+                knowledgeGraphId: null,
+                properties: [{ name: 'image', dataType: 'Text', knowledgeGraphId: null }],
+              },
+            ],
+          }),
+        ).rejects.toThrowError();
+      });
+      it('should throw an error if the Schema does not pass validation: type property names are not unique', async () => {
+        await expect(() =>
+          generateMapping({
+            types: [
+              {
+                name: 'Account',
+                knowledgeGraphId: null,
+                properties: [
+                  { name: 'username', dataType: 'Text', knowledgeGraphId: null },
+                  { name: 'username', dataType: 'Text', knowledgeGraphId: null },
+                ],
+              },
+            ],
+          }),
+        ).rejects.toThrowError();
+      });
+      it('should throw an error if the Schema does not pass validation: referenced relation property does not have matching type in schema', async () => {
+        await expect(() =>
+          generateMapping({
+            types: [
+              {
+                name: 'Event',
+                knowledgeGraphId: null,
+                properties: [
+                  { name: 'speaker', dataType: 'Relation(Account)', relationType: 'Account', knowledgeGraphId: null },
+                ],
+              },
+            ],
+          }),
+        ).rejects.toThrowError();
+      });
     });
   });
 });
