@@ -1,0 +1,46 @@
+{
+  "name": "@graphprotocol/typesync",
+  "version": "0.0.1",
+  "description": "Package for generating the mappings used within the hypergraph ecosystem that is used to query for entities on the Knowledge Graph by the grc-20 id's.",
+  "publishConfig": {
+    "access": "public",
+    "directory": "publish",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/graphprotocol/hypergraph.git",
+    "directory": "packages/typesync"
+  },
+  "keywords": ["The Graph", "GRC-20", "hypergraph"],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./Mapping": {
+      "types": "./dist/Mapping.d.ts",
+      "default": "./dist/Mapping.js"
+    }
+  },
+  "sideEffects": [],
+  "scripts": {
+    "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
+    "test": "vitest"
+  },
+  "peerDependencies": {
+    "@graphprotocol/hypergraph": "workspace:*"
+  },
+  "devDependencies": {
+    "@graphprotocol/hypergraph": "workspace:*"
+  },
+  "dependencies": {
+    "@graphprotocol/grc-20": "^0.17.1",
+    "effect": "^3.16.5"
+  }
+}
