@@ -1,11 +1,12 @@
 ---
 slug: hypergraph-alpha-released
-title: Announcing Hypergraph Alpha—A New Chapter in Web Development
-authors: [slorber, yangshun]
+title: Announcing Hypergraph - A New Chapter in Web Development
+date: 2025-06-11
+authors: [nik, pablo]
 tags: [release, alpha, hypergraph]
 ---
 
-After months of development and countless conversations with developers like you, we're thrilled to unveil Hypergraph Alpha. This is more than just another data layer—it's a fundamental rethinking of how we build collaborative, secure, and offline-first Web3 applications.
+After months of development and countless conversations with developers like you, **we're thrilled to unveil the Alpha version of Hypergraph**. This is more than just another data layer—it's a fundamental rethinking of how we build collaborative, secure, and offline-first Web3 applications.
 
 <!-- truncate -->
 
@@ -13,7 +14,7 @@ After months of development and countless conversations with developers like you
 
 The challenges of modern app development are clear: users expect real-time collaboration, bulletproof security, and apps that work flawlessly even when offline. Traditional architectures force uncomfortable trade-offs between these needs. We knew there had to be a better way.
 
-Enter Hypergraph Alpha, built on two core innovations: a local-first architecture that puts your data where it belongs—on the client—and our implementation of the GRC-20 standard for truly composable knowledge graphs.
+Enter Hypergraph, built on two core innovations: a local-first architecture that puts your data where it belongs—on the client—and our implementation of the GRC-20 standard for truly composable knowledge graphs.
 
 <!-- TODO: ADD IMAGE OF HYPGRAPH UI -->
 
@@ -36,7 +37,7 @@ We're launching this alpha today, June 10, 2025, and we're targeting a beta rele
 Getting started is simple. Install our SDK:
 
 ```bash
-npm install @hypergraph/sdk-alpha
+# TODO: ADD INSTALLER TO NPM npm install @hypergraph/sdk-alpha
 ```
 
 Head to our [Quickstart guide](/docs/quickstart) to build your first Hypergraph app, or dive deep into our [API Reference](/docs/api-reference) to explore the possibilities. We support Node.js and modern browsers, with React hooks that make integration a breeze.
