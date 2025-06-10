@@ -9,7 +9,7 @@
 
 /* You can override the default Infima variables here. */
 :root {
-	/* Brand Colors – “The Graph” palette */
+	/* Brand Colors – "The Graph" palette */
 	--graph-purple: #6f4cff;
 	--astro-blue: #4c66ff;
 	--galactic-aqua: #66dbff;
@@ -45,7 +45,7 @@
 	/* Dark theme overrides keeping brand palette vibrant */
 	--ifm-color-primary: var(--graph-purple);
 	--ifm-background-color: #0b0b13;
-	--ifm-background-surface-color: #14141e;
+	--ifm-background-surface-color: #0b0b13;
 	--ifm-navbar-background-color: rgba(11, 11, 19, 0.9);
 	--ifm-footer-background-color: #0b0b13;
 	--ifm-toc-border-color: rgba(255, 255, 255, 0.08);
@@ -59,7 +59,7 @@ html {
 }
 
 body {
-	background: radial-gradient(ellipse at top, #13131f 0%, #09090e 100%);
+	background: #0b0b13;
 	color: var(--ifm-font-color-base);
 }
 
@@ -161,3 +161,9 @@ body {
 }
 
 /* End of custom aesthetic overrides */
+
+/* Make docs wrapper background match inspected color */
+.docs-wrapper,
+.plugin-docs.plugin-id-default.docs-version-current.docs-doc-page {
+	background: #0b0b13 !important;
+}
