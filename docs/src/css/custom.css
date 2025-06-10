@@ -167,3 +167,8 @@ body {
 .plugin-docs.plugin-id-default.docs-version-current.docs-doc-page {
 	background: #0b0b13 !important;
 }
+
+.blog-wrapper,
+.plugin-blog.plugin-id-default.docs-version-current.docs-blog-page {
+	background: #0b0b13 !important;
+}
