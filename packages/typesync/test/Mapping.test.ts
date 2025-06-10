@@ -1,3 +1,4 @@
+import { Id } from '@graphprotocol/grc-20';
 import { describe, expect, it } from 'vitest';
 
 import { type Mapping, generateMapping, mapSchemaDataTypeToGRC20PropDataType } from '../src/Mapping.js';
@@ -70,6 +71,68 @@ describe('Mapping', () => {
           typeIds: [expect.any(String)],
           properties: {
             name: expect.any(String),
+            description: expect.any(String),
+            speaker: expect.any(String),
+          },
+        },
+      };
+
+      expect(actual).toEqual(expected);
+    });
+    it('should use the existing KG ids if provided', async () => {
+      const actual = await generateMapping({
+        types: [
+          {
+            name: 'Account',
+            knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+            properties: [
+              {
+                name: 'username',
+                dataType: 'Text',
+                knowledgeGraphId: '994edcff-6996-4a77-9797-a13e5e3efad8',
+              },
+              {
+                name: 'createdAt',
+                dataType: 'Date',
+                knowledgeGraphId: '64bfba51-a69b-4746-be4b-213214a879fe',
+              },
+            ],
+          },
+          {
+            name: 'Event',
+            knowledgeGraphId: null,
+            properties: [
+              {
+                name: 'name',
+                dataType: 'Text',
+                knowledgeGraphId: '3808e060-fb4a-4d08-8069-35b8c8a1902b',
+              },
+              {
+                name: 'description',
+                dataType: 'Text',
+                knowledgeGraphId: null,
+              },
+              {
+                name: 'speaker',
+                dataType: 'Relation(Account)',
+                knowledgeGraphId: null,
+              },
+            ],
+          },
+        ],
+      });
+      const expected: Mapping = {
+        Account: {
+          typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          properties: {
+            username: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+            createdAt: Id.Id('64bfba51-a69b-4746-be4b-213214a879fe'),
+          },
+        },
+        Event: {
+          typeIds: [expect.any(String)],
+          properties: {
+            name: Id.Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
             description: expect.any(String),
             speaker: expect.any(String),
           },
