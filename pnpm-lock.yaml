@@ -613,10 +613,6 @@ importers:
       effect:
         specifier: ^3.16.5
         version: 3.16.5
-    devDependencies:
-      '@graphprotocol/hypergraph':
-        specifier: workspace:*
-        version: link:../hypergraph/publish
     publishDirectory: publish
 
 packages:

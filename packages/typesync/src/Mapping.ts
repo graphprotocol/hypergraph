@@ -1,6 +1,8 @@
 import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@graphprotocol/grc-20';
 import { Array as EffectArray, Schema as EffectSchema, pipe } from 'effect';
 
+import { namesAreUnique, toCamelCase, toPascalCase } from './Utils.js';
+
 /**
  * Mappings for a schema type and its properties/relations
  *
@@ -20,16 +22,6 @@ export type MappingEntry = {
    * @since 0.0.1
    */
   properties?:
-    | {
-        [key: string]: Grc20Id.Id;
-      }
-    | undefined;
-  /**
-   * Record of schema type relation names to the `Id.Id` of the relation in the Knowledge Graph
-   *
-   * @since 0.0.1
-   */
-  relations?:
     | {
         [key: string]: Grc20Id.Id;
       }
@@ -55,10 +47,8 @@ export type MappingEntry = {
  *     properties: {
  *       name: Id.Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
  *       description: Id.Id('1f0d9007-8da2-4b28-ab9f-3bc0709f4837'),
+ *       speaker: Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
  *     },
- *     relations: {
- *       account: Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
- *     }
  *   }
  * }
  * ```
@@ -69,21 +59,43 @@ export type Mapping = {
   [key: string]: MappingEntry;
 };
 
+/**
+ * @since 0.0.1
+ */
 export type DataTypeRelation = `Relation(${string})`;
+/**
+ * @since 0.0.1
+ */
 export function isDataTypeRelation(val: string): val is DataTypeRelation {
   return /^Relation\((.+)\)$/.test(val);
 }
+/**
+ * @since 0.0.1
+ */
 export const SchemaDataTypeRelation = EffectSchema.NonEmptyTrimmedString.pipe(
   EffectSchema.filter((val) => isDataTypeRelation(val)),
 );
+/**
+ * @since 0.0.1
+ */
 export type SchemaDataTypeRelation = typeof SchemaDataTypeRelation.Type;
-
+/**
+ * @since 0.0.1
+ */
 export const SchemaDataType = EffectSchema.Union(
   EffectSchema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point', 'Url'),
   SchemaDataTypeRelation,
 );
+/**
+ * @since 0.0.1
+ */
 export type SchemaDataType = typeof SchemaDataType.Type;
 
+/**
+ * Represents the user-built schema object to generate a `Mappings` definition for
+ *
+ * @since 0.0.1
+ */
 export const Schema = EffectSchema.Struct({
   types: EffectSchema.Array(
     EffectSchema.Struct({
@@ -95,9 +107,23 @@ export const Schema = EffectSchema.Struct({
           knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
           dataType: SchemaDataType,
         }),
-      ).pipe(EffectSchema.minItems(1)),
+      ).pipe(
+        EffectSchema.minItems(1),
+        EffectSchema.filter(namesAreUnique, {
+          identifier: 'DuplicatePropertyNames',
+          jsonSchema: {},
+          description: 'The property.name must be unique across all properties in the type',
+        }),
+      ),
     }),
-  ).pipe(EffectSchema.minItems(1)),
+  ).pipe(
+    EffectSchema.minItems(1),
+    EffectSchema.filter(namesAreUnique, {
+      identifier: 'DuplicateTypeNames',
+      jsonSchema: {},
+      description: 'The type.name must be unique across all types in the schema',
+    }),
+  ),
 }).annotations({
   identifier: 'typesync/Schema',
   title: 'TypeSync app Schema',
@@ -123,8 +149,27 @@ export const Schema = EffectSchema.Struct({
     },
   ],
 });
+/**
+ * @since 0.0.1
+ */
 export type Schema = typeof Schema.Type;
+/**
+ * @since 0.0.1
+ */
+export const SchemaKnownDecoder = EffectSchema.decodeSync(Schema);
+/**
+ * @since 0.0.1
+ */
+export const SchemaUnknownDecoder = EffectSchema.decodeUnknownSync(Schema);
 
+/**
+ *
+ *
+ * @since 0.0.1
+ *
+ * @param schema user-built and submitted schema
+ * @returns the generated [Mapping] definition from the submitted schema
+ */
 export async function generateMapping(schema: Schema): Promise<Mapping> {
   const entries: Array<MappingEntry & { typeName: string }> = [];
   const ops: Array<Op> = [];
@@ -134,35 +179,45 @@ export async function generateMapping(schema: Schema): Promise<Mapping> {
     for (const property of type.properties) {
       if (property.knowledgeGraphId) {
         typePropertyIds.push({ propName: property.name, id: Grc20Id.Id(property.knowledgeGraphId) });
+
         continue;
       }
       // create op for creating type property
+      const dataType = mapSchemaDataTypeToGRC20PropDataType(property.dataType);
+      if (dataType === 'RELATION') {
+        const { id, ops: createTypePropOp } = Graph.createProperty({
+          name: property.name,
+          dataType: 'RELATION',
+          relationValueTypes: [],
+          properties: [],
+        });
+        typePropertyIds.push({ propName: property.name, id });
+        ops.push(...createTypePropOp);
+
+        continue;
+      }
       const { id, ops: createTypePropOp } = Graph.createProperty({
         name: property.name,
         dataType: mapSchemaDataTypeToGRC20PropDataType(property.dataType),
       });
       typePropertyIds.push({ propName: property.name, id });
-      // add createProperty ops to array to submit in batch to KG
       ops.push(...createTypePropOp);
     }
 
     const properties: MappingEntry['properties'] = pipe(
       typePropertyIds,
       EffectArray.reduce({} as NonNullable<MappingEntry['properties']>, (props, { propName, id }) => {
-        props[propName] = id;
+        props[toCamelCase(propName)] = id;
 
         return props;
       }),
     );
 
-    const relations: MappingEntry['relations'] = undefined;
-
     if (type.knowledgeGraphId) {
       entries.push({
-        typeName: type.name,
+        typeName: toPascalCase(type.name),
         typeIds: [Grc20Id.Id(type.knowledgeGraphId)],
         properties,
-        relations,
       });
       continue;
     }
@@ -174,14 +229,15 @@ export async function generateMapping(schema: Schema): Promise<Mapping> {
     ops.push(...createTypeOp);
 
     entries.push({
-      typeName: type.name,
+      typeName: toPascalCase(type.name),
       typeIds: [id],
       properties,
-      relations,
     });
   }
 
-  // @todo send ops to Knowledge Graph
+  /**
+   * @todo publish the schema onchain to the Knowledge Graph with hypergraph connect app to the application space
+   */
 
   return pipe(
     entries,

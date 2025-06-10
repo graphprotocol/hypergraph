@@ -26,18 +26,16 @@
     "./Mapping": {
       "types": "./dist/Mapping.d.ts",
       "default": "./dist/Mapping.js"
+    },
+    "./Utils": {
+      "types": "./dist/Utils.d.ts",
+      "default": "./dist/Utils.js"
     }
   },
   "sideEffects": [],
   "scripts": {
     "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
     "test": "vitest"
-  },
-  "peerDependencies": {
-    "@graphprotocol/hypergraph": "workspace:*"
-  },
-  "devDependencies": {
-    "@graphprotocol/hypergraph": "workspace:*"
   },
   "dependencies": {
     "@graphprotocol/grc-20": "^0.17.1",
