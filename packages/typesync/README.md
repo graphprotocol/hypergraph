@@ -4,7 +4,7 @@ Package for generating the mappings used within the `hypergraph` ecosystem that 
 
 The `Mapping` is passed to the `<HypergraphSpaceProvider>` from the [@graphprotocol/hypergraph-react](../hypergraph-react/README.md) context to inform the query layer what entities to query from the Knowledge Graph.
 
-This package exposes a function: `generateMappings` that takes the schema with an array of types, each with properties. Both `types` and `properties` have a nullable `knowledgeGraphId` UUID value. If a value is provided, the `type/property` exists on the Knowledge Graph; this value will be plugged into to the `Mapping` values. If the `knowledgeGraphId` value is null, the `type/property` will be created using the `@graphprotocol/grc-20` ops and then returned in the mapping.
+This package exposes a function: `generateMapping` that takes the schema with an array of types, each with properties. Both `types` and `properties` have a nullable `knowledgeGraphId` UUID value. If a value is provided, the `type/property` exists on the Knowledge Graph; this value will be plugged into to the `Mapping` values. If the `knowledgeGraphId` value is null, the `type/property` will be created using the `@graphprotocol/grc-20` ops and then returned in the mapping.
 
 ## Mapping definition
 
@@ -12,9 +12,6 @@ This package exposes a function: `generateMappings` that takes the schema with a
 export type MappingEntry = {
   typeIds: Array<Grc20Id.Id>;
   properties?: {
-    [key: string]: Grc20Id.Id;
-  };
-  relations?: {
     [key: string]: Grc20Id.Id;
   };
 };
@@ -62,10 +59,8 @@ export const mapping: Mapping = {
     properties: {
       name: Id.Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
       description: Id.Id('1f0d9007-8da2-4b28-ab9f-3bc0709f4837'),
-    },
-    relations: {
       account: Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
-    }
+    },
   }
 }
 ```
