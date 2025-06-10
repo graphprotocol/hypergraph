@@ -192,9 +192,9 @@ function generatePackageJson(app: Domain.InsertAppSchema) {
       '@automerge/automerge': '^2.2.9',
       '@automerge/automerge-repo': '=2.0.0-beta.5',
       '@automerge/automerge-repo-react-hooks': '=2.0.0-beta.5',
-      '@graphprotocol/hypergraph': 'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
+      '@graphprotocol/hypergraph': 'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
       '@graphprotocol/hypergraph-react':
-        'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
+        'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph-react@82b867a',
       '@privy-io/react-auth': '^2.13.7',
       '@tailwindcss/vite': '^4.1.8',
       '@tanstack/react-query': '^5.79.2',
