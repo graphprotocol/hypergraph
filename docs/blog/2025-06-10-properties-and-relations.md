@@ -1,17 +1,17 @@
 ---
 slug: properties-and-relations-in-grc20
-title: "2. Properties and Relations in GRC-20: Building Connected Knowledge"
+title: "2. Defining Properties & Relations"
 date: 2025-06-09
 series_position: 2
 authors: [nik]
-tags: [knowledge-graphs, education, grc20]
+tags: [knowledge-graphs, education, grc20, hypergraph]
 ---
 
 > **Series:** GRC-20 Knowledge Graph (Part 2 of 6)  
 > **Previous:** [← Entities & Types](/blog/understanding-entities-and-types)  
 > **Next:** [UUIDs & Identifiers →](/blog/grc20-uuids-and-identifiers)
 
-The GRC-20 specification defines a robust system for representing properties and relations in knowledge graphs. Let's explore how these components work together to create rich, interconnected data structures that are both flexible and standardized.
+In the previous post we learned how Hypergraph models entities and types. Now we'll see how Hypergraph attaches **Properties** to entities and creates **Relations** between them, enabling rich, connected knowledge graphs while staying compliant with the GRC-20 standard.
 
 <!-- truncate -->
 

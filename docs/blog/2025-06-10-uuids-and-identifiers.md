@@ -1,17 +1,17 @@
 ---
 slug: grc20-uuids-and-identifiers
-title: "3. Working with UUIDs and Identifiers in GRC-20"
+title: "3. Managing UUIDs & Identifiers"
 date: 2025-06-08
 series_position: 3
 authors: [nik]
-tags: [knowledge-graphs, education, grc20]
+tags: [knowledge-graphs, education, grc20, hypergraph]
 ---
 
 > **Series:** GRC-20 Knowledge Graph (Part 3 of 6)  
 > **Previous:** [← Properties & Relations](/blog/properties-and-relations-in-grc20)  
 > **Next:** [Serialization & Encoding →](/blog/grc20-serialization-and-encoding)
 
-The GRC-20 specification uses UUID version 4 as the foundation for all identifiers in the knowledge graph system. Understanding how to work with these identifiers is crucial for building interoperable applications. Let's dive into the details of GRC-20's UUID implementation.
+Hypergraph relies on UUID v4 identifiers defined by GRC-20 to guarantee global uniqueness without centralized coordination. In this post we'll look at how Hypergraph generates, stores, and uses these UUIDs so your applications stay conflict-free and interoperable.
 
 <!-- truncate -->
 

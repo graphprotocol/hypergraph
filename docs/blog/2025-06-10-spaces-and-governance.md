@@ -1,17 +1,17 @@
 ---
 slug: grc20-spaces-and-governance
-title: "5. Understanding Spaces and Governance in GRC-20"
+title: "5. Spaces & Governance"
 date: 2025-06-06
 series_position: 5
 authors: [nik]
-tags: [knowledge-graphs, education, grc20]
+tags: [knowledge-graphs, education, grc20, hypergraph]
 ---
 
 > **Series:** GRC-20 Knowledge Graph (Part 5 of 6)  
 > **Previous:** [← Serialization & Encoding](/blog/grc20-serialization-and-encoding)  
 > **Next:** [Best Practices →](/blog/grc20-knowledge-graph-best-practices)
 
-The GRC-20 specification introduces the concept of **Spaces** as a way to organize and govern knowledge graphs. In this post, we'll explore how spaces work and how they enable different governance models for managing knowledge.
+Hypergraph lets you segment knowledge graphs into **Spaces**—isolated domains with their own governance and access rules—while still allowing inter-space linking via GRC-20 UUIDs. In this post we'll explore how to create and govern spaces in Hypergraph.
 
 <!-- truncate -->
 

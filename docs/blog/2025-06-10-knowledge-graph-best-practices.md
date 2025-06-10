@@ -1,16 +1,16 @@
 ---
 slug: grc20-knowledge-graph-best-practices
-title: "6. Best Practices for Building GRC-20 Knowledge Graphs"
+title: "6. Best Practices for Building Knowledge Graphs with Hypergraph"
 date: 2025-06-05
 series_position: 6
 authors: [nik]
-tags: [knowledge-graphs, education, grc20, best-practices]
+tags: [knowledge-graphs, education, grc20, hypergraph, best-practices]
 ---
 
 > **Series:** GRC-20 Knowledge Graph (Part 6 of 6)  
 > **Previous:** [← Spaces & Governance](/blog/grc20-spaces-and-governance)
 
-This post outlines key best practices and guidelines for implementing GRC-20 compliant systems.
+You've now seen how Hypergraph implements every facet of the GRC-20 spec. In this final article we'll summarize best practices, design tips, and performance tricks for shipping production-grade knowledge graphs with the Hypergraph toolkit.
 
 <!-- truncate -->
 

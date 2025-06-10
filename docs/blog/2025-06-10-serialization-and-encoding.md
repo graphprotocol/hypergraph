@@ -1,17 +1,17 @@
 ---
 slug: grc20-serialization-and-encoding
-title: "4. Serialization and Encoding in GRC-20"
+title: "4. Serialization & Encoding"
 date: 2025-06-07
 series_position: 4
 authors: [nik]
-tags: [knowledge-graphs, education, grc20]
+tags: [knowledge-graphs, education, grc20, hypergraph]
 ---
 
 > **Series:** GRC-20 Knowledge Graph (Part 4 of 6)  
 > **Previous:** [← UUIDs & Identifiers](/blog/grc20-uuids-and-identifiers)  
 > **Next:** [Spaces & Governance →](/blog/grc20-spaces-and-governance)
 
-Let's explore the details of how data is encoded and transmitted in GRC-20.
+Under the hood, Hypergraph stores and transmits data using Protocol Buffers and JSON exactly as defined by the GRC-20 spec. This article shows you how Hypergraph handles serialization so you can interface with it from any language.
 
 <!-- truncate -->
 

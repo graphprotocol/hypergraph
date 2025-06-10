@@ -1,16 +1,16 @@
 ---
 slug: understanding-entities-and-types
-title: "1. Understanding Entities and Types in GRC-20"
+title: "1. Modeling Entities and Types in Hypergraph with GRC-20"
 date: 2025-06-10
 series_position: 1
 authors: [nik]
-tags: [knowledge-graphs, education, grc20]
+tags: [knowledge-graphs, education, grc20, hypergraph]
 ---
 
 > **Series:** GRC-20 Knowledge Graph (Part 1 of 6)  
 > **Next:** [Properties and Relations in GRC-20 →](/blog/properties-and-relations-in-grc20)
 
-The GRC-20 specification introduces a standardized way to represent knowledge in The Graph ecosystem. At its core are two fundamental concepts: Entities and Types. Let's explore how these building blocks work together to create a flexible and powerful knowledge graph system.
+Hypergraph is an open-source framework that lets you build and query decentralized knowledge graphs using the GRC-20 standard. In this first tutorial, we'll see how Hypergraph represents **Entities** and **Types** and why they are the foundation of any knowledge graph you create.
 
 <!-- truncate -->
 
