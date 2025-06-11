@@ -49,6 +49,7 @@ const config = {
         },
         blog: {
           showReadingTime: true,
+          blogSidebarCount: 'ALL',
           feedOptions: {
             type: ['rss', 'atom'],
             xslt: true,
@@ -71,6 +72,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: { defaultMode: 'dark', disableSwitch: true },
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
