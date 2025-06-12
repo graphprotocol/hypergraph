@@ -29,6 +29,22 @@ export const KeysSchema = Schema.Struct({
 
 export type KeysSchema = Schema.Schema.Type<typeof KeysSchema>;
 
+export const AppIdentityResponse = Schema.Struct({
+  accountAddress: Schema.String,
+  signaturePublicKey: Schema.String,
+  encryptionPublicKey: Schema.String,
+  accountProof: Schema.String,
+  keyProof: Schema.String,
+  ciphertext: Schema.String,
+  nonce: Schema.String,
+  sessionToken: Schema.String,
+  address: Schema.String,
+  appId: Schema.String,
+  sessionTokenExpires: Schema.String,
+});
+
+export type AppIdentityResponse = Schema.Schema.Type<typeof AppIdentityResponse>;
+
 export type Identity = IdentityKeys & {
   accountAddress: string;
 };
