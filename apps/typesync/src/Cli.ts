@@ -48,21 +48,21 @@ const command = Command.make('typesync', { port, openApp }, ({ port, openApp }) 
       HttpServer.withLogAddress,
       Layer.provide(
         NodeHttpServer.layer(createServer, { port }).pipe(
-          Layer.tap(() =>
-            openBrowser.pipe(
-              Effect.tapBoth({
-                onFailure(e) {
-                  return Effect.logError('failure initializing and opening browser', e);
-                },
-                onSuccess(a) {
-                  if (a) {
-                    return Effect.logInfo(`TypeSync app opened in browser at http://localhost:${port}`);
-                  }
-                  return Effect.void;
-                },
-              }),
-            ),
-          ),
+          // Layer.tap(() =>
+          //   openBrowser.pipe(
+          //     Effect.tapBoth({
+          //       onFailure(e) {
+          //         return Effect.logError('failure initializing and opening browser', e);
+          //       },
+          //       onSuccess(a) {
+          //         if (a) {
+          //           return Effect.logInfo(`TypeSync app opened in browser at http://localhost:${port}`);
+          //         }
+          //         return Effect.void;
+          //       },
+          //     }),
+          //   ),
+          // ),
         ),
       ),
       Layer.launch,

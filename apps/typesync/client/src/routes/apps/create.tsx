@@ -18,7 +18,7 @@ import { SchemaBrowser } from '../../Components/App/CreateAppForm/SchemaBuilder/
 import { useAppForm } from '../../Components/App/CreateAppForm/useCreateAppForm.js';
 import { appsQueryOptions, useCreateAppMutation } from '../../hooks/useAppQuery.js';
 import { cwdQueryOptions, useCWDSuspenseQuery } from '../../hooks/useCWDQuery.js';
-import type { ExtendedSchemaBrowserType } from '../../hooks/useSchemaBrowserQuery.js';
+import type { ExtendedProperty, ExtendedSchemaBrowserType } from '../../hooks/useSchemaBrowserQuery.js';
 import reactLogo from '../../images/react_logo.png';
 import viteLogo from '../../images/vitejs_logo.png';
 import { type App, InsertAppSchema, isDataTypeRelation } from '../../schema.js';
@@ -165,21 +165,33 @@ function CreateAppPage() {
    *
    * If no type can be found in the Knowledge Graph, we create a default type with the name and default: name, description properties
    *
+   * @todo handle another layer of nesting
+   * @todo update the form to inform user if a type is missing
+   *
    * @param selected the user-selected type already existing on the Knowledge Graph to add to the schema
+   * @param mapped already existing added types to the schema for the recursive lookup
    * @returns an array of mapped relation properties -> types to add to the users schema
    */
   const mapSelectedTypeRelationPropertiesToTypes = (
     selected: ExtendedSchemaBrowserType,
     mapped: Array<InsertAppSchema['types'][number]> = [],
   ) => {
+    // map the relation properties into types to add to the schema
+    const relationSchemaTypes: Array<InsertAppSchema['types'][number]> = [...mapped];
+
+    function alreadyAddedToSchema<T extends { readonly name: string }>(type: T): boolean {
+      return (
+        EffectArray.length(EffectArray.filter(relationSchemaTypes, ({ name }) => name === type.name)) > 0 &&
+        !unqSchemaTypes.has(type.name)
+      );
+    }
+
     // grab all the properties from the type where the dataType is `RELATION` and create as a type on the Schema
     const relationProperties = pipe(
       selected.properties,
       EffectArray.filter((prop) => prop.dataType === 'RELATION'),
-      EffectArray.filter((prop) => !unqSchemaTypes.has(prop.entity.name)),
+      EffectArray.filter((prop) => !alreadyAddedToSchema({ name: prop.entity.name })),
     );
-    // map the relation properties into types to add to the schema
-    const relationSchemaTypes: Array<InsertAppSchema['types'][number]> = [...mapped];
 
     for (const relationProp of relationProperties) {
       if (EffectArray.isEmptyReadonlyArray(relationProp.relationValueTypes)) {
@@ -194,8 +206,7 @@ function CreateAppPage() {
       const relationValueType = relationProp.relationValueTypes[0];
 
       // check if already exists in schema
-      const alreadyAdded = EffectArray.findFirst(relationSchemaTypes, ({ name }) => name === relationValueType.name);
-      if (Option.isSome(alreadyAdded) || unqSchemaTypes.has(relationValueType.name)) {
+      if (alreadyAddedToSchema({ name: relationValueType.name })) {
         continue;
       }
 
@@ -236,17 +247,96 @@ function CreateAppPage() {
       );
       // merge new types into array
       for (const nestedType of nestedTypes) {
-        const nestedTypeAlreadyExists = EffectArray.findFirst(
-          relationSchemaTypes,
-          ({ name }) => name === nestedType.name,
-        );
-        if (Option.isNone(nestedTypeAlreadyExists)) {
+        if (!alreadyAddedToSchema({ name: nestedType.name })) {
           relationSchemaTypes.push(nestedType);
         }
       }
     }
 
-    return relationSchemaTypes;
+    // perform one final check for uniqueness on type name
+    // @todo figure out why this is needed in logic above.
+    return EffectArray.reduce(relationSchemaTypes, [] as Array<InsertAppSchema['types'][number]>, (final, curr) => {
+      const existsInFinal = EffectArray.findFirst(final, ({ name }) => name === curr.name);
+      if (Option.isNone(existsInFinal)) {
+        final.push(curr);
+      }
+      return final;
+    });
+  };
+
+  /**
+   * Similar to the `mapSelectedTypeRelationPropertiesToTypes` function above,
+   * takes the user-selected relation data type property, and maps its relationValueTypes into the schema
+   *
+   * @todo handle another layer of nesting
+   * @todo update the form to inform user if a type is missing
+   *
+   * @param property selected RELATION property
+   * @param mapped allows for recursive build of types
+   * @returns the types to add to the schema from the properties of the relation type
+   */
+  const mapSelectedRelationPropertyTypesToSchema = (
+    property: ExtendedProperty,
+    mapped: Array<InsertAppSchema['types'][number]> = [],
+  ) => {
+    const propRelationSchemaTypes: Array<InsertAppSchema['types'][number]> = [...mapped];
+
+    function alreadyAddedToSchema<T extends { readonly name: string }>(type: T): boolean {
+      return (
+        EffectArray.length(EffectArray.filter(propRelationSchemaTypes, ({ name }) => name === type.name)) > 0 &&
+        !unqSchemaTypes.has(type.name)
+      );
+    }
+
+    for (const relationValueType of EffectArray.filter(property.relationValueTypes, (type) => type != null)) {
+      if (relationValueType.name == null || alreadyAddedToSchema({ name: relationValueType.name })) {
+        continue;
+      }
+      const properties = pipe(
+        relationValueType.properties ?? [],
+        EffectArray.filter((prop) => prop?.entity?.name != null),
+        EffectArray.map((prop) => {
+          // biome-ignore lint/style/noNonNullAssertion: filtered out above
+          const _prop = prop!;
+          // biome-ignore lint/style/noNonNullAssertion: filtered out above
+          const _entity = _prop.entity!;
+          // biome-ignore lint/style/noNonNullAssertion: filtered out above
+          const name = _entity.name!;
+
+          const dataType = mapKGDataTypeToPrimitiveType(_prop.dataType, name);
+          if (isDataTypeRelation(dataType)) {
+            // relation type as a type to the schema if not existing
+            // @todo, this should recursively find those types, with properties
+            if (!alreadyAddedToSchema({ name })) {
+              propRelationSchemaTypes.push({
+                name,
+                knowledgeGraphId: null,
+                properties: [],
+              });
+            }
+
+            return {
+              name,
+              knowledgeGraphId: _prop.id,
+              dataType,
+              relationType: name,
+            };
+          }
+          return {
+            name,
+            knowledgeGraphId: _prop.id,
+            dataType,
+          };
+        }),
+      );
+      propRelationSchemaTypes.push({
+        name: relationValueType.name,
+        knowledgeGraphId: relationValueType.id,
+        properties,
+      });
+    }
+
+    return propRelationSchemaTypes;
   };
 
   return (
@@ -509,6 +599,15 @@ function CreateAppPage() {
                                                     // if the user selects a property that is a relation,
                                                     // - attempt to find the type from the types query
                                                     // - add as a type (with nested types) to the schema
+                                                    const propRelatedEntityTypes =
+                                                      mapSelectedRelationPropertyTypesToSchema(prop);
+                                                    EffectArray.forEach(propRelatedEntityTypes, (mapped) => {
+                                                      field.pushValue({
+                                                        name: mapped.name,
+                                                        knowledgeGraphId: mapped.knowledgeGraphId,
+                                                        properties: mapped.properties,
+                                                      } as never);
+                                                    });
 
                                                     propsField.replaceValue(typePropIdx, selectedProp);
                                                     return;
