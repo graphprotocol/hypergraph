@@ -8,6 +8,7 @@
 pnpm install
 cd apps/server
 cp .env.example .env
+# add the PRIVY_APP_SECRET & PRIVY_APP_ID to the apps/server/.env file
 pnpm prisma migrate dev
 ```
 

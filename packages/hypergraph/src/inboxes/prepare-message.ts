@@ -10,24 +10,24 @@ export async function prepareSpaceInboxMessage({
   inboxId,
   encryptionPublicKey,
   signaturePrivateKey,
-  authorAccountId,
+  authorAccountAddress,
 }: Readonly<{
   message: string;
   spaceId: string;
   inboxId: string;
   encryptionPublicKey: string;
   signaturePrivateKey: string | null;
-  authorAccountId: string | null;
+  authorAccountAddress: string | null;
 }>) {
   const { ciphertext } = encryptInboxMessage({ message, encryptionPublicKey });
   let signature: SignatureWithRecovery | undefined;
-  if (signaturePrivateKey && authorAccountId) {
+  if (signaturePrivateKey && authorAccountAddress) {
     const messageToSign = stringToUint8Array(
       canonicalize({
         spaceId,
         inboxId,
         ciphertext,
-        authorAccountId,
+        authorAccountAddress,
       }),
     );
     const signatureInstance = secp256k1.sign(messageToSign, hexToBytes(signaturePrivateKey), { prehash: true });
@@ -39,35 +39,35 @@ export async function prepareSpaceInboxMessage({
   const messageToSend: Messages.RequestCreateSpaceInboxMessage = {
     ciphertext,
     signature,
-    authorAccountId: authorAccountId ?? undefined,
+    authorAccountAddress: authorAccountAddress ?? undefined,
   };
   return messageToSend;
 }
 
 export async function prepareAccountInboxMessage({
   message,
-  accountId,
+  accountAddress,
   inboxId,
   encryptionPublicKey,
   signaturePrivateKey,
-  authorAccountId,
+  authorAccountAddress,
 }: Readonly<{
   message: string;
-  accountId: string;
+  accountAddress: string;
   inboxId: string;
   encryptionPublicKey: string;
   signaturePrivateKey: string | null;
-  authorAccountId: string | null;
+  authorAccountAddress: string | null;
 }>) {
   const { ciphertext } = encryptInboxMessage({ message, encryptionPublicKey });
   let signature: SignatureWithRecovery | undefined;
-  if (signaturePrivateKey && authorAccountId) {
+  if (signaturePrivateKey && authorAccountAddress) {
     const messageToSign = stringToUint8Array(
       canonicalize({
-        accountId,
+        accountAddress,
         inboxId,
         ciphertext,
-        authorAccountId,
+        authorAccountAddress,
       }),
     );
     const signatureInstance = secp256k1.sign(messageToSign, hexToBytes(signaturePrivateKey), { prehash: true });
@@ -79,7 +79,7 @@ export async function prepareAccountInboxMessage({
   const messageToSend: Messages.RequestCreateAccountInboxMessage = {
     ciphertext,
     signature,
-    authorAccountId: authorAccountId ?? undefined,
+    authorAccountAddress: authorAccountAddress ?? undefined,
   };
   return messageToSend;
 }

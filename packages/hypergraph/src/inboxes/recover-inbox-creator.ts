@@ -2,13 +2,12 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 import { sha256 } from '@noble/hashes/sha256';
 import type { AccountInbox } from '../messages/index.js';
 import type { CreateSpaceInboxEvent } from '../space-events/index.js';
-import { stringToUint8Array } from '../utils/index.js';
-import { canonicalize } from '../utils/index.js';
+import { canonicalize, stringToUint8Array } from '../utils/index.js';
 
 export const recoverAccountInboxCreatorKey = (inbox: AccountInbox): string => {
   const messageToVerify = stringToUint8Array(
     canonicalize({
-      accountId: inbox.accountId,
+      accountAddress: inbox.accountAddress,
       inboxId: inbox.inboxId,
       encryptionPublicKey: inbox.encryptionPublicKey,
     }),

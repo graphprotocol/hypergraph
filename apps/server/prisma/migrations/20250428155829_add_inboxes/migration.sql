@@ -19,7 +19,7 @@ CREATE TABLE "SpaceInboxMessage" (
     "ciphertext" TEXT NOT NULL,
     "signatureHex" TEXT,
     "signatureRecovery" INTEGER,
-    "authorAccountId" TEXT,
+    "authorAccountAddress" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "SpaceInboxMessage_spaceInboxId_fkey" FOREIGN KEY ("spaceInboxId") REFERENCES "SpaceInbox" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -27,14 +27,14 @@ CREATE TABLE "SpaceInboxMessage" (
 -- CreateTable
 CREATE TABLE "AccountInbox" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "accountId" TEXT NOT NULL,
+    "accountAddress" TEXT NOT NULL,
     "isPublic" BOOLEAN NOT NULL,
     "authPolicy" TEXT NOT NULL,
     "encryptionPublicKey" TEXT NOT NULL,
     "signatureHex" TEXT NOT NULL,
     "signatureRecovery" INTEGER NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "AccountInbox_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "AccountInbox_accountAddress_fkey" FOREIGN KEY ("accountAddress") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -44,7 +44,7 @@ CREATE TABLE "AccountInboxMessage" (
     "ciphertext" TEXT NOT NULL,
     "signatureHex" TEXT,
     "signatureRecovery" INTEGER,
-    "authorAccountId" TEXT,
+    "authorAccountAddress" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "AccountInboxMessage_accountInboxId_fkey" FOREIGN KEY ("accountInboxId") REFERENCES "AccountInbox" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );

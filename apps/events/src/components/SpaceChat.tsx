@@ -40,7 +40,7 @@ export function SpaceChat({ spaceId }: SpaceChatProps) {
           {messages?.map((msg) => (
             <div key={msg.id} className="bg-muted p-3 rounded">
               <div className="text-sm text-muted-foreground mb-1">
-                <div>From: {msg.authorAccountId?.substring(0, 6) || 'Anonymous'}</div>
+                <div>From: {msg.authorAccountAddress?.substring(0, 6) || 'Anonymous'}</div>
                 <div>{new Date(msg.createdAt).toLocaleString()}</div>
               </div>
               <div>{msg.plaintext}</div>

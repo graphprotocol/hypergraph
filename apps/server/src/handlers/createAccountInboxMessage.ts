@@ -2,17 +2,17 @@ import type { Messages } from '@graphprotocol/hypergraph';
 import { prisma } from '../prisma';
 
 type Params = {
-  accountId: string;
+  accountAddress: string;
   inboxId: string;
   message: Messages.RequestCreateAccountInboxMessage;
 };
 
 export const createAccountInboxMessage = async (params: Params): Promise<Messages.InboxMessage> => {
-  const { accountId, inboxId, message } = params;
+  const { accountAddress, inboxId, message } = params;
   const accountInbox = await prisma.accountInbox.findUnique({
     where: {
       id: inboxId,
-      accountId,
+      accountAddress,
     },
   });
   if (!accountInbox) {
@@ -24,7 +24,7 @@ export const createAccountInboxMessage = async (params: Params): Promise<Message
       ciphertext: message.ciphertext,
       signatureHex: message.signature?.hex ?? null,
       signatureRecovery: message.signature?.recovery ?? null,
-      authorAccountId: message.authorAccountId ?? null,
+      authorAccountAddress: message.authorAccountAddress ?? null,
       accountInbox: {
         connect: {
           id: accountInbox.id,
@@ -42,7 +42,7 @@ export const createAccountInboxMessage = async (params: Params): Promise<Message
             recovery: createdMessage.signatureRecovery,
           }
         : undefined,
-    authorAccountId: createdMessage.authorAccountId ?? undefined,
+    authorAccountAddress: createdMessage.authorAccountAddress ?? undefined,
     createdAt: createdMessage.createdAt,
   };
 };

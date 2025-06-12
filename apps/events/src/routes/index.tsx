@@ -1,12 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { availableAccounts } from '@/lib/availableAccounts';
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
+import { Input } from '@/components/ui/input';
 import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -14,6 +13,7 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const spaces = useSelector(store, (state) => state.context.spaces);
+  const [spaceName, setSpaceName] = useState('');
 
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
   const {
@@ -26,8 +26,6 @@ function Index() {
     getOwnAccountInboxes,
     isConnecting,
   } = useHypergraphApp();
-
-  const { identity } = useHypergraphAuth();
 
   useEffect(() => {
     if (!isConnecting) {
@@ -73,14 +71,18 @@ function Index() {
 
       <div className="flex flex-row gap-2 justify-between items-center">
         <h2 className="text-lg font-bold">Spaces</h2>
+      </div>
+      <div className="flex flex-row gap-2 justify-between items-center">
+        <Input value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
         <Button
           onClick={async (event) => {
             event.preventDefault();
-            const smartAccountWalletClient = await getSmartAccountWalletClient();
-            if (!smartAccountWalletClient) {
-              throw new Error('Missing smartAccountWalletClient');
-            }
-            createSpace(smartAccountWalletClient);
+            // const smartAccountWalletClient = await getSmartAccountWalletClient();
+            // if (!smartAccountWalletClient) {
+            //   throw new Error('Missing smartAccountWalletClient');
+            // }
+            createSpace({ name: spaceName });
+            setSpaceName('');
           }}
         >
           Create space
@@ -131,26 +133,6 @@ function Index() {
               </li>
             );
           })}
-        </ul>
-      </div>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-bold">Friends</h2>
-        <ul className="flex flex-col gap-2">
-          {availableAccounts
-            .filter((account) => account.accountId !== identity?.accountId)
-            .map((account) => {
-              return (
-                <li key={account.accountId}>
-                  <Link to="/friends/$accountId" params={{ accountId: account.accountId }}>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>{account.accountId}</CardTitle>
-                      </CardHeader>
-                    </Card>
-                  </Link>
-                </li>
-              );
-            })}
         </ul>
       </div>
     </div>

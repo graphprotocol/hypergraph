@@ -17,14 +17,14 @@ export const recoverSpaceInboxMessageSigner = (
     spaceId,
     inboxId,
     ciphertext: message.ciphertext,
-    authorAccountId: message.authorAccountId,
+    authorAccountAddress: message.authorAccountAddress,
   };
   return `0x${signatureInstance.recoverPublicKey(sha256(Utils.stringToUint8Array(Utils.canonicalize(signedMessage)))).toHex()}`;
 };
 
 export const recoverAccountInboxMessageSigner = (
   message: Messages.RequestCreateAccountInboxMessage,
-  accountId: string,
+  accountAddress: string,
   inboxId: string,
 ) => {
   if (!message.signature) {
@@ -33,10 +33,10 @@ export const recoverAccountInboxMessageSigner = (
   let signatureInstance = secp256k1.Signature.fromCompact(message.signature.hex);
   signatureInstance = signatureInstance.addRecoveryBit(message.signature.recovery);
   const signedMessage = {
-    accountId,
+    accountAddress,
     inboxId,
     ciphertext: message.ciphertext,
-    authorAccountId: message.authorAccountId,
+    authorAccountAddress: message.authorAccountAddress,
   };
   return `0x${signatureInstance.recoverPublicKey(sha256(Utils.stringToUint8Array(Utils.canonicalize(signedMessage)))).toHex()}`;
 };

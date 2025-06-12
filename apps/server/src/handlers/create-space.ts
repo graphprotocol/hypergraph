@@ -5,25 +5,36 @@ import type { Messages } from '@graphprotocol/hypergraph';
 import { Identity, SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
-import { getIdentity } from './getIdentity.js';
+import { getConnectIdentity } from './getConnectIdentity.js';
 
 type Params = {
-  accountId: string;
+  accountAddress: string;
   event: SpaceEvents.CreateSpaceEvent;
-  keyBox: Messages.KeyBox;
-  keyId: string;
+  keyBox: Messages.KeyBoxWithKeyId;
+  infoContent: Uint8Array;
+  infoSignatureHex: string;
+  infoSignatureRecovery: number;
+  name: string; // TODO: remove this field and use infoContent instead
 };
 
-export const createSpace = async ({ accountId, event, keyBox, keyId }: Params) => {
-  const getVerifiedIdentity = (accountIdToFetch: string) => {
+export const createSpace = async ({
+  accountAddress,
+  event,
+  keyBox,
+  infoContent,
+  infoSignatureHex,
+  infoSignatureRecovery,
+  name,
+}: Params) => {
+  const getVerifiedIdentity = (accountAddressToFetch: string) => {
     // applySpaceEvent is only allowed to be called by the account that is applying the event
-    if (accountIdToFetch !== accountId) {
+    if (accountAddressToFetch !== accountAddress) {
       return Effect.fail(new Identity.InvalidIdentityError());
     }
 
     return Effect.gen(function* () {
       const identity = yield* Effect.tryPromise({
-        try: () => getIdentity({ accountId: accountIdToFetch }),
+        try: () => getConnectIdentity({ accountAddress: accountAddressToFetch }),
         catch: () => new Identity.InvalidIdentityError(),
       });
       return identity;
@@ -35,6 +46,8 @@ export const createSpace = async ({ accountId, event, keyBox, keyId }: Params) =
     throw new Error('Invalid event');
   }
 
+  const keyBoxId = `${keyBox.id}-${accountAddress}`;
+
   return await prisma.spaceEvent.create({
     data: {
       event: JSON.stringify(event),
@@ -44,21 +57,30 @@ export const createSpace = async ({ accountId, event, keyBox, keyId }: Params) =
       space: {
         create: {
           id: event.transaction.id,
+          infoContent,
+          infoSignatureHex,
+          infoSignatureRecovery,
+          infoAuthorAddress: accountAddress,
+          name, // TODO: remove this field and use infoContent instead
           members: {
             connect: {
-              id: accountId,
+              address: accountAddress,
             },
           },
           keys: {
             create: {
-              id: keyId,
+              id: keyBox.id,
               keyBoxes: {
                 create: {
-                  id: `${keyId}-${accountId}`,
+                  id: keyBoxId,
                   nonce: keyBox.nonce,
                   ciphertext: keyBox.ciphertext,
-                  accountId: accountId,
                   authorPublicKey: keyBox.authorPublicKey,
+                  account: {
+                    connect: {
+                      address: accountAddress,
+                    },
+                  },
                 },
               },
             },

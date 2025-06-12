@@ -8,7 +8,7 @@ import { bytesToHex, canonicalize, hexToBytes, stringToUint8Array } from '../uti
 import type * as Inboxes from './types.js';
 
 type CreateAccountInboxParams = {
-  accountId: string;
+  accountAddress: string;
   isPublic: boolean;
   authPolicy: Inboxes.InboxSenderAuthPolicy;
   encryptionPublicKey: string;
@@ -26,9 +26,9 @@ type CreateSpaceInboxParams = {
   previousEventHash: string;
 };
 
-// The caller should have already verified that the accountId, signaturePrivateKey and encryptionPublicKey belong to the same account
+// The caller should have already verified that the accountAddress, signaturePrivateKey and encryptionPublicKey belong to the same account
 export function createAccountInboxCreationMessage({
-  accountId,
+  accountAddress,
   isPublic,
   authPolicy,
   encryptionPublicKey,
@@ -41,7 +41,7 @@ export function createAccountInboxCreationMessage({
   // and that the public key belongs to the account
   const messageToSign = stringToUint8Array(
     canonicalize({
-      accountId,
+      accountAddress,
       inboxId,
       encryptionPublicKey,
     }),
@@ -52,7 +52,7 @@ export function createAccountInboxCreationMessage({
   return {
     type: 'create-account-inbox',
     inboxId: inboxId,
-    accountId,
+    accountAddress,
     isPublic,
     authPolicy,
     encryptionPublicKey,
@@ -71,7 +71,7 @@ export async function createSpaceInboxCreationMessage({
   spaceSecretKey,
   previousEventHash,
 }: CreateSpaceInboxParams): Promise<Messages.RequestCreateSpaceInboxEvent> {
-  // Same as createAccountInboxMessage but with spaceId instead of accountId, and generating a keypair for the inbox
+  // Same as createAccountInboxMessage but with spaceId instead of accountAddress, and generating a keypair for the inbox
   const inboxId = bytesToHex(randomBytes(32));
   const { publicKey, privateKey } = cryptoBoxKeyPair();
 

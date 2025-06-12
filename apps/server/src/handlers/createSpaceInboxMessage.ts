@@ -30,7 +30,7 @@ export const createSpaceInboxMessage = async (params: Params): Promise<Messages.
       ciphertext: message.ciphertext,
       signatureHex: message.signature?.hex ?? null,
       signatureRecovery: message.signature?.recovery ?? null,
-      authorAccountId: message.authorAccountId ?? null,
+      authorAccountAddress: message.authorAccountAddress ?? null,
     },
   });
   return {
@@ -43,7 +43,7 @@ export const createSpaceInboxMessage = async (params: Params): Promise<Messages.
             recovery: createdMessage.signatureRecovery,
           }
         : undefined,
-    authorAccountId: createdMessage.authorAccountId ?? undefined,
+    authorAccountAddress: createdMessage.authorAccountAddress ?? undefined,
     createdAt: createdMessage.createdAt,
   };
 };

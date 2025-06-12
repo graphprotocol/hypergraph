@@ -1,9 +1,9 @@
 import type { Inboxes } from '@graphprotocol/hypergraph';
 import { prisma } from '../prisma';
 
-export async function getAccountInbox({ accountId, inboxId }: { accountId: string; inboxId: string }) {
+export async function getAccountInbox({ accountAddress, inboxId }: { accountAddress: string; inboxId: string }) {
   const inbox = await prisma.accountInbox.findUnique({
-    where: { id: inboxId, accountId },
+    where: { id: inboxId, accountAddress },
     select: {
       id: true,
       account: {
@@ -24,7 +24,7 @@ export async function getAccountInbox({ accountId, inboxId }: { accountId: strin
 
   return {
     inboxId: inbox.id,
-    accountId: inbox.account.id,
+    accountAddress: inbox.account.id,
     isPublic: inbox.isPublic,
     authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
     encryptionPublicKey: inbox.encryptionPublicKey,

@@ -5,7 +5,7 @@ import { encryptMessage } from './encrypt-message.js';
 import type { RequestCreateUpdate } from './types.js';
 
 interface SignedMessageParams {
-  accountId: string;
+  accountAddress: string;
   updateId: string;
   spaceId: string;
   message: Uint8Array;
@@ -21,11 +21,11 @@ interface RecoverParams {
     hex: string;
     recovery: number;
   };
-  accountId: string;
+  accountAddress: string;
 }
 
 export const signedUpdateMessage = ({
-  accountId,
+  accountAddress,
   updateId,
   spaceId,
   message,
@@ -39,7 +39,7 @@ export const signedUpdateMessage = ({
 
   const messageToSign = stringToUint8Array(
     canonicalize({
-      accountId,
+      accountAddress,
       updateId,
       update,
       spaceId,
@@ -58,7 +58,7 @@ export const signedUpdateMessage = ({
     updateId,
     update,
     spaceId,
-    accountId,
+    accountAddress,
     signature,
   };
 };
@@ -68,12 +68,12 @@ export const recoverUpdateMessageSigner = ({
   spaceId,
   updateId,
   signature,
-  accountId,
+  accountAddress,
 }: RecoverParams | RequestCreateUpdate) => {
   const recoveredSignature = secp256k1.Signature.fromCompact(signature.hex).addRecoveryBit(signature.recovery);
   const signedMessage = stringToUint8Array(
     canonicalize({
-      accountId,
+      accountAddress,
       updateId,
       update,
       spaceId,

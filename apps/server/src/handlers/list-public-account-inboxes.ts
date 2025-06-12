@@ -1,9 +1,9 @@
 import type { Inboxes } from '@graphprotocol/hypergraph';
 import { prisma } from '../prisma';
 
-export async function listAccountInboxes({ accountId }: { accountId: string }) {
+export async function listPublicAccountInboxes({ accountAddress }: { accountAddress: string }) {
   const inboxes = await prisma.accountInbox.findMany({
-    where: { accountId },
+    where: { accountAddress, isPublic: true },
     select: {
       id: true,
       isPublic: true,
@@ -11,7 +11,7 @@ export async function listAccountInboxes({ accountId }: { accountId: string }) {
       encryptionPublicKey: true,
       account: {
         select: {
-          id: true,
+          address: true,
         },
       },
       signatureHex: true,
@@ -21,7 +21,7 @@ export async function listAccountInboxes({ accountId }: { accountId: string }) {
   return inboxes.map((inbox) => {
     return {
       inboxId: inbox.id,
-      accountId: inbox.account.id,
+      accountAddress: inbox.account.address,
       isPublic: inbox.isPublic,
       authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
       encryptionPublicKey: inbox.encryptionPublicKey,

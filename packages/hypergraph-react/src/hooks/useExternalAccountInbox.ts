@@ -6,7 +6,7 @@ import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js'
  * Hook for interacting with external inboxes
  * Provides limited capabilities for sending messages to other users' inboxes
  */
-export function useExternalAccountInbox(accountId: string, inboxId: string) {
+export function useExternalAccountInbox(accountAddress: string, inboxId: string) {
   const { sendAccountInboxMessage, getAccountInbox } = useHypergraphApp();
   const { identity } = useHypergraphAuth();
 
@@ -23,7 +23,7 @@ export function useExternalAccountInbox(accountId: string, inboxId: string) {
         setError(null);
 
         // Fetch external inbox
-        const fetchedInbox = await getAccountInbox({ accountId, inboxId });
+        const fetchedInbox = await getAccountInbox({ accountAddress, inboxId });
         setInbox(fetchedInbox);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to get inbox'));
@@ -33,7 +33,7 @@ export function useExternalAccountInbox(accountId: string, inboxId: string) {
     };
 
     fetchInbox();
-  }, [accountId, inboxId, getAccountInbox]);
+  }, [accountAddress, inboxId, getAccountInbox]);
 
   const sendMessage = useCallback(
     async (message: string) => {
@@ -43,20 +43,20 @@ export function useExternalAccountInbox(accountId: string, inboxId: string) {
         setLoading(true);
         setError(null);
 
-        let authorAccountId: string | null = null;
+        let authorAccountAddress: string | null = null;
         let signaturePrivateKey: string | null = null;
-        if (identity?.accountId && inbox.authPolicy !== 'anonymous') {
-          authorAccountId = identity.accountId;
+        if (identity?.address && inbox.authPolicy !== 'anonymous') {
+          authorAccountAddress = identity.address;
           signaturePrivateKey = identity.signaturePrivateKey;
         }
 
         await sendAccountInboxMessage({
           message,
-          accountId,
+          accountAddress,
           inboxId,
           encryptionPublicKey: inbox.encryptionPublicKey,
           signaturePrivateKey,
-          authorAccountId,
+          authorAccountAddress,
         });
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to send message'));
@@ -65,7 +65,7 @@ export function useExternalAccountInbox(accountId: string, inboxId: string) {
         setLoading(false);
       }
     },
-    [inbox, accountId, inboxId, identity, sendAccountInboxMessage],
+    [inbox, accountAddress, inboxId, identity, sendAccountInboxMessage],
   );
 
   return {

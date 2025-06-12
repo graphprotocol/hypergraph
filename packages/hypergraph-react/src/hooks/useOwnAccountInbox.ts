@@ -10,7 +10,7 @@ import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js'
 export function useOwnAccountInbox(inboxId: string) {
   const { getLatestAccountInboxMessages, sendAccountInboxMessage, getOwnAccountInboxes } = useHypergraphApp();
   const { identity } = useHypergraphAuth();
-  const accountId = identity?.accountId;
+  const accountAddress = identity?.address;
 
   // Get own inbox from store
   const inbox = useSelectorStore(store, (state) => state.context.accountInboxes.find((i) => i.inboxId === inboxId));
@@ -20,7 +20,7 @@ export function useOwnAccountInbox(inboxId: string) {
   // Initial fetch for own inbox
   useEffect(() => {
     const fetchInbox = async () => {
-      if (!accountId) return;
+      if (!accountAddress) return;
 
       try {
         setLoading(true);
@@ -29,7 +29,7 @@ export function useOwnAccountInbox(inboxId: string) {
         // First ensure inbox is in store
         await getOwnAccountInboxes();
         // Then get latest messages
-        await getLatestAccountInboxMessages({ accountId, inboxId });
+        await getLatestAccountInboxMessages({ accountAddress, inboxId });
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to get inbox'));
       } finally {
@@ -38,45 +38,45 @@ export function useOwnAccountInbox(inboxId: string) {
     };
 
     fetchInbox();
-  }, [accountId, inboxId, getOwnAccountInboxes, getLatestAccountInboxMessages]);
+  }, [accountAddress, inboxId, getOwnAccountInboxes, getLatestAccountInboxMessages]);
 
   const refresh = useCallback(async () => {
-    if (!accountId) throw new Error('User not authenticated');
+    if (!accountAddress) throw new Error('User not authenticated');
 
     try {
       setLoading(true);
       setError(null);
-      await getLatestAccountInboxMessages({ accountId, inboxId });
+      await getLatestAccountInboxMessages({ accountAddress, inboxId });
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to refresh messages'));
     } finally {
       setLoading(false);
     }
-  }, [accountId, inboxId, getLatestAccountInboxMessages]);
+  }, [accountAddress, inboxId, getLatestAccountInboxMessages]);
 
   const sendMessage = useCallback(
     async (message: string) => {
       if (!inbox) throw new Error('Inbox not found');
-      if (!accountId) throw new Error('User not authenticated');
+      if (!accountAddress) throw new Error('User not authenticated');
 
       try {
         setLoading(true);
         setError(null);
 
-        let authorAccountId: string | null = null;
+        let authorAccountAddress: string | null = null;
         let signaturePrivateKey: string | null = null;
         if (inbox.authPolicy !== 'anonymous') {
-          authorAccountId = accountId;
+          authorAccountAddress = accountAddress;
           signaturePrivateKey = identity?.signaturePrivateKey || null;
         }
 
         await sendAccountInboxMessage({
           message,
-          accountId,
+          accountAddress,
           inboxId,
           encryptionPublicKey: inbox.encryptionPublicKey,
           signaturePrivateKey,
-          authorAccountId,
+          authorAccountAddress,
         });
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to send message'));
@@ -85,7 +85,7 @@ export function useOwnAccountInbox(inboxId: string) {
         setLoading(false);
       }
     },
-    [inbox, accountId, inboxId, identity, sendAccountInboxMessage],
+    [inbox, accountAddress, inboxId, identity, sendAccountInboxMessage],
   );
 
   return {

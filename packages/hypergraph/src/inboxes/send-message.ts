@@ -6,7 +6,7 @@ export async function sendSpaceInboxMessage({
   inboxId,
   encryptionPublicKey,
   signaturePrivateKey,
-  authorAccountId,
+  authorAccountAddress,
   syncServerUri,
 }: Readonly<{
   message: string;
@@ -14,7 +14,7 @@ export async function sendSpaceInboxMessage({
   inboxId: string;
   encryptionPublicKey: string;
   signaturePrivateKey: string | null;
-  authorAccountId: string | null;
+  authorAccountAddress: string | null;
   syncServerUri: string;
 }>) {
   const messageToSend = await prepareSpaceInboxMessage({
@@ -23,7 +23,7 @@ export async function sendSpaceInboxMessage({
     inboxId,
     encryptionPublicKey,
     signaturePrivateKey,
-    authorAccountId,
+    authorAccountAddress,
   });
   const res = await fetch(new URL(`/spaces/${spaceId}/inboxes/${inboxId}/messages`, syncServerUri), {
     method: 'POST',
@@ -39,30 +39,30 @@ export async function sendSpaceInboxMessage({
 
 export async function sendAccountInboxMessage({
   message,
-  accountId,
+  accountAddress,
   inboxId,
   encryptionPublicKey,
   signaturePrivateKey,
-  authorAccountId,
+  authorAccountAddress,
   syncServerUri,
 }: Readonly<{
   message: string;
-  accountId: string;
+  accountAddress: string;
   inboxId: string;
   encryptionPublicKey: string;
   signaturePrivateKey: string | null;
-  authorAccountId: string | null;
+  authorAccountAddress: string | null;
   syncServerUri: string;
 }>) {
   const messageToSend = await prepareAccountInboxMessage({
     message,
-    accountId,
+    accountAddress,
     inboxId,
     encryptionPublicKey,
     signaturePrivateKey,
-    authorAccountId,
+    authorAccountAddress,
   });
-  const res = await fetch(new URL(`/accounts/${accountId}/inboxes/${inboxId}/messages`, syncServerUri), {
+  const res = await fetch(new URL(`/accounts/${accountAddress}/inboxes/${inboxId}/messages`, syncServerUri), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

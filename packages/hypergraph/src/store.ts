@@ -1,9 +1,8 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { type Store, createStore } from '@xstate/store';
-import type { Address } from 'viem';
+import type { PrivateAppIdentity } from './connect/types.js';
 import { mergeMessages } from './inboxes/merge-messages.js';
 import type { InboxSenderAuthPolicy } from './inboxes/types.js';
-import type { Identity } from './index.js';
 import type { Invitation, Updates } from './messages/index.js';
 import type { SpaceEvent, SpaceState } from './space-events/index.js';
 import { idToAutomergeId } from './utils/automergeId.js';
@@ -17,7 +16,7 @@ export type InboxMessageStorageEntry = {
     recovery: number;
   } | null;
   createdAt: string;
-  authorAccountId: string | null;
+  authorAccountAddress: string | null;
 };
 
 export type SpaceInboxStorageEntry = {
@@ -56,7 +55,7 @@ interface StoreContext {
   invitations: Invitation[];
   repo: Repo | null;
   identities: {
-    [accountId: string]: {
+    [accountAddress: string]: {
       encryptionPublicKey: string;
       signaturePublicKey: string;
       accountProof: string;
@@ -64,9 +63,7 @@ interface StoreContext {
     };
   };
   authenticated: boolean;
-  accountId: Address | null;
-  sessionToken: string | null;
-  keys: Identity.IdentityKeys | null;
+  identity: PrivateAppIdentity | null;
   lastUpdateClock: { [spaceId: string]: number };
   accountInboxes: AccountInboxStorageEntry[];
 }
@@ -78,9 +75,7 @@ const initialStoreContext: StoreContext = {
   repo: null,
   identities: {},
   authenticated: false,
-  accountId: null,
-  sessionToken: null,
-  keys: null,
+  identity: null,
   lastUpdateClock: {},
   accountInboxes: [],
 };
@@ -96,7 +91,7 @@ type StoreEvent =
   | { type: 'applyUpdate'; spaceId: string; firstUpdateClock: number; lastUpdateClock: number }
   | {
       type: 'addVerifiedIdentity';
-      accountId: string;
+      accountAddress: string;
       encryptionPublicKey: string;
       signaturePublicKey: string;
       accountProof: string;
@@ -138,9 +133,7 @@ type StoreEvent =
     }
   | {
       type: 'setAuth';
-      accountId: Address;
-      sessionToken: string;
-      keys: Identity.IdentityKeys;
+      identity: PrivateAppIdentity;
     }
   | {
       type: 'resetAuth';
@@ -266,7 +259,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     addVerifiedIdentity: (
       context,
       event: {
-        accountId: string;
+        accountAddress: string;
         encryptionPublicKey: string;
         signaturePublicKey: string;
         accountProof: string;
@@ -277,7 +270,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         ...context,
         identities: {
           ...context.identities,
-          [event.accountId]: {
+          [event.accountAddress]: {
             encryptionPublicKey: event.encryptionPublicKey,
             signaturePublicKey: event.signaturePublicKey,
             accountProof: event.accountProof,
@@ -476,22 +469,18 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         },
       };
     },
-    setAuth: (context, event: { accountId: Address; sessionToken: string; keys: Identity.IdentityKeys }) => {
+    setAuth: (context, event: { identity: PrivateAppIdentity }) => {
       return {
         ...context,
         authenticated: true,
-        accountId: event.accountId,
-        sessionToken: event.sessionToken,
-        keys: event.keys,
+        identity: event.identity,
       };
     },
     resetAuth: (context) => {
       return {
         ...context,
+        identity: null,
         authenticated: false,
-        accountId: null,
-        sessionToken: null,
-        keys: null,
       };
     },
     setRepo: (context, event: { repo: Repo }) => {
