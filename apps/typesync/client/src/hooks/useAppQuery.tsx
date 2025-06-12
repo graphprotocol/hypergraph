@@ -12,7 +12,6 @@ import {
   useQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { Array as EffectArray } from 'effect';
 
 import type { InsertAppSchema } from '../../../domain/Domain.js';
 
