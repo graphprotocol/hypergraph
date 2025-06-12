@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "include": ["client"],
+  "references": [{ "path": "./tsconfig.domain.json" }],
   "compilerOptions": {
     "tsBuildInfoFile": ".tsbuildinfo/client.tsbuildinfo",
     "rootDir": "client",

@@ -1,5 +1,6 @@
+import type { SchemaDataType } from '../../../domain/Domain';
+
 import type { DataType } from '../generated/graphql';
-import type { SchemaDataType } from '../schema';
 
 export function mapKGDataTypeToPrimitiveType(dataType: DataType, entity: string): SchemaDataType {
   switch (dataType) {

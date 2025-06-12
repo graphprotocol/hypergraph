@@ -13,6 +13,7 @@ import {
 } from '@effect/platform';
 import { Console, Effect, Layer, Option, Schema } from 'effect';
 
+import * as TypesyncDomain from '../domain/Domain.js';
 import * as Database from './Database.js';
 import * as Domain from './Domain.js';
 import * as SchemaGenerator from './Generator.js';
@@ -109,7 +110,7 @@ const ApiAppsLive = HttpApiBuilder.group(Api, 'Api', (handlers) =>
             Effect.catchAll(() => new HttpApiError.BadRequest()),
           );
 
-          const payload = Schema.decodeUnknownSync(Domain.InsertAppSchema)(body);
+          const payload = Schema.decodeUnknownSync(TypesyncDomain.InsertAppSchema)(body);
 
           return yield* db.Apps.create(payload).pipe(
             Effect.tapError((err) => Console.error('POST /v1/apps - failure creating app schema', { err })),
@@ -126,6 +127,8 @@ const ApiAppsLive = HttpApiBuilder.group(Api, 'Api', (handlers) =>
                       metadata: `App "${app.name}" initial codegen completed and generated "${directory}"`,
                     }),
                   ),
+                  // update app status to `generated`
+                  Effect.tap(() => db.Apps.update({ ...app, status: 'generated' })),
                   Effect.tapError((err) =>
                     Effect.gen(function* () {
                       yield* Console.error('POST /v1/apps - failure generating app files', { err });

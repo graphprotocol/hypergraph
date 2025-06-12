@@ -16,6 +16,7 @@ import * as Order from 'effect/Order';
 import * as Schema from 'effect/Schema';
 import * as Stream from 'effect/Stream';
 
+import * as TypesyncDomain from '../domain/Domain.js';
 import * as Domain from './Domain.js';
 
 const SqlLive = SqliteClient.layer({
@@ -45,7 +46,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()('/typesyn
       },
     });
     const InsertApp = yield* SqlResolver.ordered('CreateApp', {
-      Request: Domain.InsertAppSchema.pipe(Schema.pick('name', 'description', 'directory')),
+      Request: TypesyncDomain.InsertAppSchema.pipe(Schema.pick('name', 'description', 'directory')),
       Result: Domain.App,
       execute(requests) {
         return sql`
@@ -53,6 +54,13 @@ export class DatabaseService extends Effect.Service<DatabaseService>()('/typesyn
           ${sql.insert(requests)}
           RETURNING *
         `;
+      },
+    });
+    const UpdateApp = SqlSchema.single({
+      Request: Domain.UpdateApp,
+      Result: Domain.App,
+      execute(request) {
+        return sql`UPDATE app SET ${sql.update(request, ['id'])} WHERE ${sql('id')} = ${request.id} RETURNING *`;
       },
     });
     const DeleteApp = yield* SqlResolver.void('DeleteApp', {
@@ -200,7 +208,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()('/typesyn
             }),
           );
         },
-        create(insert: Domain.InsertAppSchema) {
+        create(insert: TypesyncDomain.InsertAppSchema) {
           return InsertApp.execute({
             name: insert.name,
             directory: insert.directory,
@@ -237,10 +245,13 @@ export class DatabaseService extends Effect.Service<DatabaseService>()('/typesyn
                           InsertAppSchemaTypeProperty.execute({
                             app_schema_type_id: createdType.id,
                             name: property.name,
-                            description: property.description,
-                            type_name: property.type_name,
-                            nullable: Domain.mapBooleanToSqliteNative(property.nullable),
-                            optional: Domain.mapBooleanToSqliteNative(property.optional),
+                            type_name: property.dataType,
+                            relation_type_name: TypesyncDomain.propertyIsRelation(property)
+                              ? property.relationType
+                              : null,
+                            description: null,
+                            nullable: null,
+                            optional: null,
                           }).pipe(
                             Effect.tapError((err) => Console.log('failure creating app_schema_type_property', { err })),
                             Effect.map((createdProperty) => ({
@@ -276,6 +287,12 @@ export class DatabaseService extends Effect.Service<DatabaseService>()('/typesyn
               }),
             ),
           );
+        },
+        update(data: Omit<Domain.UpdateApp, 'updated_at'>) {
+          return UpdateApp({
+            ...data,
+            updated_at: new Date().toUTCString(),
+          });
         },
         delete(id: Domain.App['id']) {
           // delete app, and all related records.

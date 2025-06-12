@@ -13,7 +13,7 @@ class TypeOption extends Schema.Class<TypeOption>('/hypergraph/typesync/models/T
 }) {}
 class RelationTypeOption extends Schema.Class<RelationTypeOption>('/hypergraph/typesync/models/RelationTypeOption')({
   ...TypeOption.fields,
-  relationToEntity: Schema.NonEmptyTrimmedString,
+  relationType: Schema.NonEmptyTrimmedString,
 }) {}
 
 const typeOptions: Array<TypeOption> = [
@@ -35,8 +35,16 @@ export type TypeSelectProps = Pick<ListboxProps, 'disabled'> & {
    * @default []
    */
   schemaTypes?: Array<{ type: string; schemaTypeIdx: number }> | undefined;
+
+  relationTypeSelected(relationType: string): void;
 };
-export function TypeSelect({ id, name, schemaTypes = [], disabled = false }: Readonly<TypeSelectProps>) {
+export function TypeSelect({
+  id,
+  name,
+  schemaTypes = [],
+  disabled = false,
+  relationTypeSelected,
+}: Readonly<TypeSelectProps>) {
   const field = useFieldContext<string>();
 
   const relationTypeOptions = pipe(
@@ -46,7 +54,7 @@ export function TypeSelect({ id, name, schemaTypes = [], disabled = false }: Rea
       RelationTypeOption.make({
         id: `Relation(${_type})`,
         name: `Relation(${_type.type})`,
-        relationToEntity: _type.type,
+        relationType: _type.type,
       }),
     ),
   );
@@ -59,9 +67,14 @@ export function TypeSelect({ id, name, schemaTypes = [], disabled = false }: Rea
       value={field.state.value}
       onBlur={field.handleBlur}
       disabled={disabled}
-      onChange={(value) => {
+      onChange={(value: string | RelationTypeOption | null) => {
         if (value) {
-          field.handleChange(value);
+          if (typeof value === 'string') {
+            field.handleChange(value);
+            return;
+          }
+          field.handleChange(value.name);
+          relationTypeSelected(value.relationType);
         }
       }}
     >
@@ -99,7 +112,7 @@ export function TypeSelect({ id, name, schemaTypes = [], disabled = false }: Rea
           {relationTypeOptions.map((type, idx) => (
             <ListboxOption
               key={type.id}
-              value={type.name}
+              value={type}
               className={classnames(
                 'group relative cursor-default py-2 pr-9 pl-3 text-gray-800 dark:text-white select-none data-focus:bg-indigo-600 data-focus:text-white data-focus:outline-hidden',
                 idx === 0 ? 'border-t border-gray-400 dark:border-white/10' : '',

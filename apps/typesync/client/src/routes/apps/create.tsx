@@ -14,6 +14,8 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, Schema, pipe } from 'effect';
 import { useState } from 'react';
 
+import { InsertAppSchema, isDataTypeRelation } from '../../../../domain/Domain.js';
+
 import { SchemaBrowser } from '../../Components/App/CreateAppForm/SchemaBuilder/SchemaBrowser.js';
 import { useAppForm } from '../../Components/App/CreateAppForm/useCreateAppForm.js';
 import { appsQueryOptions, useCreateAppMutation } from '../../hooks/useAppQuery.js';
@@ -21,7 +23,7 @@ import { cwdQueryOptions, useCWDSuspenseQuery } from '../../hooks/useCWDQuery.js
 import type { ExtendedProperty, ExtendedSchemaBrowserType } from '../../hooks/useSchemaBrowserQuery.js';
 import reactLogo from '../../images/react_logo.png';
 import viteLogo from '../../images/vitejs_logo.png';
-import { type App, InsertAppSchema, isDataTypeRelation } from '../../schema.js';
+import type { App } from '../../schema.js';
 import { mapKGDataTypeToPrimitiveType } from '../../utils/mapper.js';
 
 const defaultValues: InsertAppSchema = {
@@ -102,6 +104,7 @@ function CreateAppPage() {
       await mutateAsync(value).then(() => formApi.reset(undefined, { keepDefaultValues: true }));
     },
   });
+  const allErrors = useStore(createAppForm.store, (state) => state.errors);
   const formattedAppName = useStore(createAppForm.store, (state) =>
     pipe(state.values.name, EffectString.toLowerCase, EffectString.replaceAll(/\s/g, '-')),
   );
@@ -631,6 +634,13 @@ function CreateAppPage() {
                                                   (thisType) => thisType.type !== _type.name,
                                                 )}
                                                 disabled={_prop.knowledgeGraphId != null}
+                                                relationTypeSelected={(relationType) =>
+                                                  // replace this property in the array to set the selected relationType value
+                                                  propsField.replaceValue(typePropIdx, {
+                                                    ...propsField.state.value[typePropIdx],
+                                                    relationType,
+                                                  } as never)
+                                                }
                                               />
                                             )}
                                           </createAppForm.AppField>
@@ -782,6 +792,8 @@ function CreateAppPage() {
             </div>
           </div>
         </TabsPrimitive.Content>
+
+        <div>{EffectArray.filter(allErrors, (err) => err != null).map((record) => JSON.stringify(record))}</div>
 
         <TabsPrimitive.List className="mt-6 flex items-center justify-end gap-x-6">
           <Link to="/" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
