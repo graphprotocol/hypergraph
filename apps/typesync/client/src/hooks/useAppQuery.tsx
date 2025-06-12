@@ -185,9 +185,12 @@ export async function createApp(create: Schema.InsertAppSchema): Promise<Readonl
       directory: create.directory,
       template: create.template,
       types: EffectArray.map(create.types, (type) => ({
-        ...type,
+        name: type.name,
+        knowledgeGraphId: type.knowledgeGraphId,
         properties: EffectArray.map(type.properties, (prop) => ({
-          ...prop,
+          name: prop.name,
+          type_name: prop.dataType,
+          knowledge_graph_id: prop.knowledgeGraphId,
           description: null,
           optional: null,
           nullable: null,

@@ -10,7 +10,6 @@ import {
 import { TrashIcon } from '@heroicons/react/24/outline';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { useStore } from '@tanstack/react-form';
-import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, Schema, pipe } from 'effect';
 import { useState } from 'react';
@@ -19,10 +18,10 @@ import { SchemaBrowser } from '../../Components/App/CreateAppForm/SchemaBuilder/
 import { useAppForm } from '../../Components/App/CreateAppForm/useCreateAppForm.js';
 import { appsQueryOptions, useCreateAppMutation } from '../../hooks/useAppQuery.js';
 import { cwdQueryOptions, useCWDSuspenseQuery } from '../../hooks/useCWDQuery.js';
-import { type ExtendedSchemaBrowserType, schemaBrowserQueryOptions } from '../../hooks/useSchemaBrowserQuery.js';
+import type { ExtendedSchemaBrowserType } from '../../hooks/useSchemaBrowserQuery.js';
 import reactLogo from '../../images/react_logo.png';
 import viteLogo from '../../images/vitejs_logo.png';
-import { type App, InsertAppSchema } from '../../schema.js';
+import { type App, InsertAppSchema, isDataTypeRelation } from '../../schema.js';
 import { mapKGDataTypeToPrimitiveType } from '../../utils/mapper.js';
 
 const defaultValues: InsertAppSchema = {
@@ -33,8 +32,8 @@ const defaultValues: InsertAppSchema = {
   types: [
     {
       name: '',
-      knowledge_graph_id: null,
-      properties: [{ name: '', knowledge_graph_id: null, type_name: 'Text' }],
+      knowledgeGraphId: null,
+      properties: [{ name: '', knowledgeGraphId: null, dataType: 'Text' }],
     },
   ],
 };
@@ -90,17 +89,6 @@ function CreateAppPage() {
   });
 
   const { data: cwd } = useCWDSuspenseQuery();
-  const { data: types } = useQuery({
-    ...schemaBrowserQueryOptions,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    select(data) {
-      return EffectArray.reduce(data, new Map<string, ExtendedSchemaBrowserType>(), (map, curr) =>
-        map.set(curr.id, curr),
-      );
-    },
-  });
-  const typesMap = types ?? new Map<string, ExtendedSchemaBrowserType>();
 
   const [selectedFormStep, setSelectedFormStep] = useState<'app_details' | 'schema' | 'generate'>('app_details');
 
@@ -123,7 +111,7 @@ function CreateAppPage() {
       EffectArray.filter((_type) => EffectString.isNonEmpty(_type.name)),
       EffectArray.map((_type, _idx) => ({
         type: _type.name,
-        knowledgeGraphId: _type.knowledge_graph_id,
+        knowledgeGraphId: _type.knowledgeGraphId,
         schemaTypeIdx: _idx,
       })),
     ),
@@ -178,7 +166,6 @@ function CreateAppPage() {
    * If no type can be found in the Knowledge Graph, we create a default type with the name and default: name, description properties
    *
    * @param selected the user-selected type already existing on the Knowledge Graph to add to the schema
-   * @param mapped the already mapped types for recursive lookup
    * @returns an array of mapped relation properties -> types to add to the users schema
    */
   const mapSelectedTypeRelationPropertiesToTypes = (
@@ -192,39 +179,71 @@ function CreateAppPage() {
       EffectArray.filter((prop) => !unqSchemaTypes.has(prop.entity.name)),
     );
     // map the relation properties into types to add to the schema
-    const relationSchemaTypes: Array<InsertAppSchema['types'][number]> = mapped;
-    for (const prop of relationProperties) {
-      const alreadyMappedType = EffectArray.findFirst(relationSchemaTypes, ({ name }) => name === prop.entity.name);
-      if (Option.isSome(alreadyMappedType) || unqSchemaTypes.has(prop.entity.name)) {
-        // there already a type in the schema with this name, don't duplicate
-        continue;
-      }
-      // attempt to lookup type from knowledge graph
-      const found = typesMap.get(prop.id);
-      if (found) {
+    const relationSchemaTypes: Array<InsertAppSchema['types'][number]> = [...mapped];
+
+    for (const relationProp of relationProperties) {
+      if (EffectArray.isEmptyReadonlyArray(relationProp.relationValueTypes)) {
+        // inform the user they need to create a type for the relation
         relationSchemaTypes.push({
-          name: prop.entity.name,
-          knowledge_graph_id: prop.id,
-          properties: EffectArray.map(found.properties, (_prop) => ({
-            name: _prop.entity.name,
-            knowledge_graph_id: _prop.id,
-            type_name: mapKGDataTypeToPrimitiveType(_prop.dataType, _prop.entity.name),
-          })),
+          name: relationProp.entity.name,
+          knowledgeGraphId: null,
+          properties: [],
         });
-
-        // need to recursively go through the properties, and if any are dataType === 'RELATION', lookup those types as well
-
         continue;
       }
-      // no type found, add default
+      const relationValueType = relationProp.relationValueTypes[0];
+
+      // check if already exists in schema
+      const alreadyAdded = EffectArray.findFirst(relationSchemaTypes, ({ name }) => name === relationValueType.name);
+      if (Option.isSome(alreadyAdded) || unqSchemaTypes.has(relationValueType.name)) {
+        continue;
+      }
+
       relationSchemaTypes.push({
-        name: prop.entity.name,
-        knowledge_graph_id: prop.id,
-        properties: [
-          { name: 'name', knowledge_graph_id: null, type_name: 'Text' },
-          { name: 'description', knowledge_graph_id: null, type_name: 'Text' },
-        ],
+        name: relationValueType.name,
+        knowledgeGraphId: relationValueType.id,
+        properties: EffectArray.map(relationValueType.properties ?? [], (prop) => {
+          const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity.name);
+          if (isDataTypeRelation(dataType)) {
+            // need to recursively build type for property
+            return {
+              name: prop.entity.name,
+              knowledgeGraphId: prop.id,
+              dataType,
+              relationType: prop.entity.name,
+            };
+          }
+          return {
+            name: prop.entity.name,
+            knowledgeGraphId: prop.id,
+            dataType,
+          };
+        }),
       });
+
+      // recursively lookup for relation value type
+      const nestedTypes = mapSelectedTypeRelationPropertiesToTypes(
+        {
+          ...relationValueType,
+          slug: '',
+          properties: pipe(
+            relationValueType.properties ?? [],
+            EffectArray.filter((prop) => prop != null),
+            EffectArray.map((prop) => ({ ...prop, relationValueTypes: [] })),
+          ),
+        },
+        relationSchemaTypes,
+      );
+      // merge new types into array
+      for (const nestedType of nestedTypes) {
+        const nestedTypeAlreadyExists = EffectArray.findFirst(
+          relationSchemaTypes,
+          ({ name }) => name === nestedType.name,
+        );
+        if (Option.isNone(nestedTypeAlreadyExists)) {
+          relationSchemaTypes.push(nestedType);
+        }
+      }
     }
 
     return relationSchemaTypes;
@@ -299,14 +318,25 @@ function CreateAppPage() {
 
                       const selectedMappedToType = {
                         name: selected.name,
-                        knowledge_graph_id: selected.id,
+                        knowledgeGraphId: selected.id,
                         properties: (selected.properties ?? [])
                           .filter((prop) => prop != null)
-                          .map((prop) => ({
-                            name: prop.entity?.name || prop.id,
-                            knowledge_graph_id: prop.id,
-                            type_name: mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id),
-                          })),
+                          .map((prop) => {
+                            const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id);
+                            if (isDataTypeRelation(dataType)) {
+                              return {
+                                name: prop.entity?.name || prop.id,
+                                knowledgeGraphId: prop.id,
+                                dataType,
+                                relationType: prop.entity.name || prop.id,
+                              };
+                            }
+                            return {
+                              name: prop.entity?.name || prop.id,
+                              knowledgeGraphId: prop.id,
+                              dataType,
+                            };
+                          }),
                       } satisfies InsertAppSchema['types'][number];
                       // if schema is currently empty, set as first type
                       if (field.state.value.length === 1) {
@@ -326,7 +356,7 @@ function CreateAppPage() {
                                 if (idx === 0) {
                                   field.replaceValue(0, {
                                     name: mapped.name,
-                                    knowledge_graph_id: mapped.knowledge_graph_id,
+                                    knowledgeGraphId: mapped.knowledgeGraphId,
                                     properties: mapped.properties,
                                   } as never);
                                   return;
@@ -347,7 +377,11 @@ function CreateAppPage() {
                         },
                         onNonEmpty(mappedRelationTypes) {
                           EffectArray.forEach(mappedRelationTypes, (mapped) => {
-                            field.pushValue(mapped as never);
+                            field.pushValue({
+                              name: mapped.name,
+                              knowledgeGraphId: mapped.knowledgeGraphId,
+                              properties: mapped.properties,
+                            } as never);
                           });
                           // push selected type
                           field.pushValue(selectedMappedToType as never);
@@ -386,17 +420,28 @@ function CreateAppPage() {
 
                                       const selectedMappedToType = {
                                         name: selected.name,
-                                        knowledge_graph_id: selected.id,
+                                        knowledgeGraphId: selected.id,
                                         properties: (selected.properties ?? [])
                                           .filter((prop) => prop != null)
-                                          .map((prop) => ({
-                                            name: prop.entity?.name || prop.id,
-                                            knowledge_graph_id: prop.id,
-                                            type_name: mapKGDataTypeToPrimitiveType(
+                                          .map((prop) => {
+                                            const dataType = mapKGDataTypeToPrimitiveType(
                                               prop.dataType,
                                               prop.entity?.name || prop.id,
-                                            ),
-                                          })),
+                                            );
+                                            if (isDataTypeRelation(dataType)) {
+                                              return {
+                                                name: prop.entity?.name || prop.id,
+                                                knowledgeGraphId: prop.id,
+                                                dataType,
+                                                relationType: prop.entity?.name || prop.id,
+                                              };
+                                            }
+                                            return {
+                                              name: prop.entity?.name || prop.id,
+                                              knowledgeGraphId: prop.id,
+                                              dataType,
+                                            };
+                                          }),
                                       } satisfies InsertAppSchema['types'][number];
                                       // add any relation types to the schema (that don't already exist),
                                       // and the selected type as a new Type on the schema
@@ -406,7 +451,11 @@ function CreateAppPage() {
                                         },
                                         onNonEmpty(mappedRelationTypes) {
                                           EffectArray.forEach(mappedRelationTypes, (mapped) => {
-                                            field.pushValue(mapped as never);
+                                            field.pushValue({
+                                              name: mapped.name,
+                                              knowledgeGraphId: mapped.knowledgeGraphId,
+                                              properties: mapped.properties,
+                                            } as never);
                                           });
                                           field.replaceValue(idx, selectedMappedToType as never);
                                         },
@@ -444,35 +493,23 @@ function CreateAppPage() {
                                                 name={`types[${idx}].properties[${typePropIdx}].name` as const}
                                                 required
                                                 propertySelected={(prop) => {
+                                                  const dataType = mapKGDataTypeToPrimitiveType(
+                                                    prop.dataType,
+                                                    prop.entity.name || prop.id,
+                                                  );
                                                   const selectedProp = {
                                                     name: prop.entity.name || prop.id,
-                                                    knowledge_graph_id: prop.id,
-                                                    type_name: mapKGDataTypeToPrimitiveType(
-                                                      prop.dataType,
-                                                      prop.entity.name || prop.id,
-                                                    ),
+                                                    knowledgeGraphId: prop.id,
+                                                    dataType,
+                                                    ...(isDataTypeRelation(dataType)
+                                                      ? { relationType: prop.entity.name || prop.id }
+                                                      : {}),
                                                   } as never;
                                                   if (prop.dataType === 'RELATION') {
                                                     // if the user selects a property that is a relation,
                                                     // - attempt to find the type from the types query
                                                     // - add as a type (with nested types) to the schema
-                                                    const maybeFoundType = typesMap.get(prop.id);
-                                                    if (maybeFoundType && !unqSchemaTypes.has(prop.id)) {
-                                                      field.pushValue({
-                                                        name: maybeFoundType.name,
-                                                        knowledge_graph_id: maybeFoundType.id,
-                                                        properties: (maybeFoundType.properties ?? [])
-                                                          .filter((prop) => prop != null)
-                                                          .map((prop) => ({
-                                                            name: prop.entity?.name || prop.id,
-                                                            knowledge_graph_id: prop.id,
-                                                            type_name: mapKGDataTypeToPrimitiveType(
-                                                              prop.dataType,
-                                                              prop.entity?.name || prop.id,
-                                                            ),
-                                                          })),
-                                                      } satisfies InsertAppSchema['types'][number] as never);
-                                                    }
+
                                                     propsField.replaceValue(typePropIdx, selectedProp);
                                                     return;
                                                   }
@@ -484,17 +521,17 @@ function CreateAppPage() {
                                         </div>
                                         <div className="col-span-5">
                                           <createAppForm.AppField
-                                            name={`types[${idx}].properties[${typePropIdx}].type_name` as const}
+                                            name={`types[${idx}].properties[${typePropIdx}].dataType` as const}
                                           >
                                             {(subPropField) => (
                                               <subPropField.TypeSelect
-                                                id={`types[${idx}].properties[${typePropIdx}].type_name` as const}
-                                                name={`types[${idx}].properties[${typePropIdx}].type_name` as const}
+                                                id={`types[${idx}].properties[${typePropIdx}].dataType` as const}
+                                                name={`types[${idx}].properties[${typePropIdx}].dataType` as const}
                                                 schemaTypes={EffectArray.filter(
                                                   appTypes,
                                                   (thisType) => thisType.type !== _type.name,
                                                 )}
-                                                disabled={_prop.knowledge_graph_id != null}
+                                                disabled={_prop.knowledgeGraphId != null}
                                               />
                                             )}
                                           </createAppForm.AppField>
@@ -521,8 +558,8 @@ function CreateAppPage() {
                                       onClick={() =>
                                         propsField.pushValue({
                                           name: '',
-                                          knowledge_graph_id: null,
-                                          type_name: 'Text',
+                                          knowledgeGraphId: null,
+                                          dataType: 'Text',
                                         } as never)
                                       }
                                     >
@@ -552,8 +589,8 @@ function CreateAppPage() {
                         onClick={() =>
                           field.pushValue({
                             name: '',
-                            knowledge_graph_id: null,
-                            properties: [{ name: '', knowledge_graph_id: null, type_name: 'Text' }],
+                            knowledgeGraphId: null,
+                            properties: [{ name: '', knowledgeGraphId: null, dataType: 'Text' }],
                           } as never)
                         }
                       >

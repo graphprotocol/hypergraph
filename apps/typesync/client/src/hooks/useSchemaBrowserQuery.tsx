@@ -23,6 +23,15 @@ const SchemaBrowser = graphql(`
         relationValueTypes {
           id
           name
+          description
+          properties {
+            id
+            dataType
+            entity {
+              id
+              name
+            }
+          }
         }
       }
     }
@@ -38,19 +47,24 @@ export async function fetchSchemaTypes(spaceId = ROOT_SPACE_ID, limit = 1000) {
   }
 }
 
-const KnowledgeGraphTypeProperty = Schema.Struct({
+const Property = Schema.Struct({
   id: Schema.UUID,
   dataType: Schema.Literal('TEXT', 'NUMBER', 'CHECKBOX', 'TIME', 'POINT', 'RELATION'),
   entity: Schema.Struct({
     id: Schema.UUID,
     name: Schema.String,
   }),
-  relationValueTypes: Schema.Array(
-    Schema.Struct({
-      id: Schema.UUID,
-      name: Schema.String,
-    }),
-  ),
+});
+export const RelationValueType = Schema.Struct({
+  id: Schema.UUID,
+  name: Schema.String,
+  descrtipion: Schema.NullOr(Schema.String),
+  properties: Schema.NullOr(Schema.Array(Property)),
+});
+export type RelationValueType = typeof RelationValueType.Type;
+const KnowledgeGraphTypeProperty = Schema.Struct({
+  ...Property.fields,
+  relationValueTypes: Schema.Array(RelationValueType),
 });
 export type KnowledgeGraphTypeProperty = typeof KnowledgeGraphTypeProperty.Type;
 export const KnowledgeGraphType = Schema.Struct({
@@ -108,12 +122,35 @@ async function fetchAndTransformSchemaTypes(): Promise<Array<ExtendedSchemaBrows
             relationValueTypes: pipe(
               _prop.relationValueTypes ?? [],
               EffectArray.filter((t) => t != null && t.name != null),
-              EffectArray.map((t) => ({
+              EffectArray.map((t) => {
                 // biome-ignore lint/style/noNonNullAssertion: null filtered out above
-                id: t!.id,
-                // biome-ignore lint/style/noNonNullAssertion: null t.name filtered out above
-                name: t!.name!,
-              })),
+                const _t = t!;
+                return {
+                  id: _t.id,
+                  // biome-ignore lint/style/noNonNullAssertion: null t.name filtered out above
+                  name: _t.name!,
+                  descrtipion: _t.description || null,
+                  properties: pipe(
+                    _t.properties ?? [],
+                    EffectArray.filter(
+                      (relationValueTypeProp) =>
+                        relationValueTypeProp != null && relationValueTypeProp.entity?.name != null,
+                    ),
+                    EffectArray.map((relationValueTypeProp) => ({
+                      // biome-ignore lint/style/noNonNullAssertion: null filtered out
+                      id: relationValueTypeProp!.id,
+                      // biome-ignore lint/style/noNonNullAssertion: null filtered out
+                      dataType: relationValueTypeProp!.dataType,
+                      entity: {
+                        // biome-ignore lint/style/noNonNullAssertion: null filtered out
+                        id: relationValueTypeProp!.entity!.id,
+                        // biome-ignore lint/style/noNonNullAssertion: null filtered out
+                        name: relationValueTypeProp!.entity!.name!,
+                      },
+                    })),
+                  ),
+                };
+              }),
             ),
           } as const satisfies KnowledgeGraphTypeProperty;
         }),
@@ -164,8 +201,22 @@ const PropertyBrowser = graphql(`
       id
       dataType    
       entity {
+        id
         name
         description
+      }
+      relationValueTypes {
+        id
+        name
+        description
+        properties {
+          id
+          dataType
+          entity {
+            id
+            name
+          }
+        }
       }
     }
   }
@@ -180,8 +231,9 @@ export async function fetchProperties() {
 }
 
 type KGProperty = NonNullable<PropertiesQuery['properties'][number]>;
-export type ExtendedProperty = Omit<KGProperty, 'entity'> & {
+export type ExtendedProperty = Omit<KGProperty, 'entity' | 'relationValueTypes'> & {
   entity: NonNullable<KGProperty['entity']>;
+  relationValueTypes: NonNullable<KGProperty['relationValueTypes']>;
   slug: string;
 };
 
@@ -207,6 +259,7 @@ export const propertiesQueryOptions = queryOptions({
           id: _prop.id,
           dataType: _prop.dataType,
           entity: _entity,
+          relationValueTypes: _prop.relationValueTypes ?? [],
           slug,
         } as const satisfies ExtendedProperty;
       }),
