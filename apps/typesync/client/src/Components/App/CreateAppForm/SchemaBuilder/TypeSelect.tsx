@@ -1,6 +1,6 @@
 'use client';
 
-import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
+import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions, type ListboxProps } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/16/solid';
 import { Array as EffectArray, String as EffectString, Schema, pipe } from 'effect';
 
@@ -13,7 +13,7 @@ class TypeOption extends Schema.Class<TypeOption>('/hypergraph/typesync/models/T
 }) {}
 class RelationTypeOption extends Schema.Class<RelationTypeOption>('/hypergraph/typesync/models/RelationTypeOption')({
   ...TypeOption.fields,
-  relationToEntity: Schema.NonEmptyTrimmedString,
+  relationType: Schema.NonEmptyTrimmedString,
 }) {}
 
 const typeOptions: Array<TypeOption> = [
@@ -25,11 +25,7 @@ const typeOptions: Array<TypeOption> = [
   TypeOption.make({ id: 'DefaultEntityPoint', name: 'Point' }),
 ];
 
-export function TypeCombobox({
-  id,
-  name,
-  schemaTypes = [],
-}: Readonly<{
+export type TypeSelectProps = Pick<ListboxProps, 'disabled'> & {
   id: string;
   name: string;
   /**
@@ -38,15 +34,28 @@ export function TypeCombobox({
    *
    * @default []
    */
-  schemaTypes?: Array<string> | undefined;
-}>) {
+  schemaTypes?: Array<{ type: string; schemaTypeIdx: number }> | undefined;
+
+  relationTypeSelected(relationType: string): void;
+};
+export function TypeSelect({
+  id,
+  name,
+  schemaTypes = [],
+  disabled = false,
+  relationTypeSelected,
+}: Readonly<TypeSelectProps>) {
   const field = useFieldContext<string>();
 
   const relationTypeOptions = pipe(
     schemaTypes,
-    EffectArray.filter((_type) => EffectString.isNonEmpty(_type)),
+    EffectArray.filter((_type) => EffectString.isNonEmpty(_type.type)),
     EffectArray.map((_type) =>
-      RelationTypeOption.make({ id: `Relation(${_type})`, name: `Relation(${_type})`, relationToEntity: _type }),
+      RelationTypeOption.make({
+        id: `Relation(${_type})`,
+        name: `Relation(${_type.type})`,
+        relationType: _type.type,
+      }),
     ),
   );
 
@@ -57,22 +66,30 @@ export function TypeCombobox({
       name={name}
       value={field.state.value}
       onBlur={field.handleBlur}
-      onChange={(value) => {
+      disabled={disabled}
+      onChange={(value: string | RelationTypeOption | null) => {
         if (value) {
-          field.handleChange(value);
+          if (typeof value === 'string') {
+            field.handleChange(value);
+            return;
+          }
+          field.handleChange(value.name);
+          relationTypeSelected(value.relationType);
         }
       }}
     >
       <Label className="sr-only">Prop type</Label>
       <div className="relative">
-        <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white dakr:bg-slate-900 py-1.5 pr-2 pl-3 text-left text-white outline-1 -outline-offset-1 outline-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
+        <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white dark:bg-slate-900 disabled:bg-gray-100 dark:disabled:bg-slate-700 py-1.5 pr-2 pl-3 text-left text-white outline-1 -outline-offset-1 outline-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 disabled:cursor-not-allowed">
           <span className="col-start-1 row-start-1 truncate pr-6 text-gray-950 dark:text-white">
             {field.state.value}
           </span>
-          <ChevronUpDownIcon
-            aria-hidden="true"
-            className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-300 dark:text-gray-50 sm:size-4"
-          />
+          {!disabled ? (
+            <ChevronUpDownIcon
+              aria-hidden="true"
+              className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-300 dark:text-gray-50 sm:size-4"
+            />
+          ) : null}
         </ListboxButton>
 
         <ListboxOptions
@@ -95,7 +112,7 @@ export function TypeCombobox({
           {relationTypeOptions.map((type, idx) => (
             <ListboxOption
               key={type.id}
-              value={type.name}
+              value={type}
               className={classnames(
                 'group relative cursor-default py-2 pr-9 pl-3 text-gray-800 dark:text-white select-none data-focus:bg-indigo-600 data-focus:text-white data-focus:outline-hidden',
                 idx === 0 ? 'border-t border-gray-400 dark:border-white/10' : '',

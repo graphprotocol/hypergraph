@@ -23,7 +23,7 @@
     "dev:client": "vite --force",
     "clean": "rimraf dist/*",
     "start": "node ./dist/bin.cjs",
-    "check": "tsc -b tsconfig.json",
+    "check": "tsc --noEmit",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "copy-package-json": "tsx scripts/copy-package-json.ts"

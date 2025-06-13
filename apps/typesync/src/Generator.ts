@@ -4,7 +4,8 @@ import * as Path from '@effect/platform/Path';
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 
-import type * as Domain from './Domain.js';
+import * as Domain from '../domain/Domain.js';
+import * as Utils from './Utils.js';
 
 export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesync/services/Generator', {
   dependencies: [NodeFileSystem.layer],
@@ -192,9 +193,9 @@ function generatePackageJson(app: Domain.InsertAppSchema) {
       '@automerge/automerge': '^2.2.9',
       '@automerge/automerge-repo': '=2.0.0-beta.5',
       '@automerge/automerge-repo-react-hooks': '=2.0.0-beta.5',
-      '@graphprotocol/hypergraph': 'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
+      '@graphprotocol/hypergraph': 'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
       '@graphprotocol/hypergraph-react':
-        'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
+        'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph-react@82b867a',
       '@privy-io/react-auth': '^2.13.7',
       '@tailwindcss/vite': '^4.1.8',
       '@tanstack/react-query': '^5.79.2',
@@ -381,7 +382,7 @@ export default defineConfig({
 // --------------------
 // index.html
 // --------------------
-function indexHtml(appName: Domain.AppSchema['name']) {
+function indexHtml(appName: Domain.InsertAppSchema['name']) {
   return `<!DOCTYPE html>
 <html
   lang="en"
@@ -467,46 +468,33 @@ createRoot(document.getElementById('root')!).render(
 // --------------------
 function fieldToEntityString({
   name,
-  type_name,
-  nullable = false,
-  optional = false,
-  description,
+  dataType,
 }: Domain.InsertAppSchema['types'][number]['properties'][number]): string {
-  // Add JSDoc comment if description exists
-  const jsDoc = description ? `  /** ${description} */\n` : '';
-
   // Convert type to Entity type
   const entityType = (() => {
     switch (true) {
-      case type_name === 'Text':
+      case dataType === 'Text':
         return 'Type.Text';
-      case type_name === 'Number':
+      case dataType === 'Number':
         return 'Type.Number';
-      case type_name === 'Boolean':
+      case dataType === 'Boolean':
         return 'Type.Boolean';
-      case type_name === 'Date':
+      case dataType === 'Date':
         return 'Type.Date';
-      case type_name === 'Url':
+      case dataType === 'Url':
         return 'Type.Url';
-      case type_name === 'Point':
+      case dataType === 'Point':
         return 'Type.Point';
-      case type_name.startsWith('Relation'):
+      case Domain.isDataTypeRelation(dataType):
         // renders the type as `Type.Relation(Entity)`
-        return `Type.${type_name}`;
+        return `Type.${dataType}`;
       default:
         // how to handle complex types
         return 'Type.Text';
     }
   })();
 
-  let derivedEntityType = entityType;
-  if (optional) {
-    derivedEntityType = `Schema.NullishOr(${derivedEntityType})`;
-  } else if (nullable) {
-    derivedEntityType = `Schema.NullOr(${entityType})`;
-  }
-
-  return `${jsDoc}  ${name}: ${derivedEntityType}`;
+  return `${Utils.toCamelCase(name)}: ${entityType}`;
 }
 
 function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): string | null {
@@ -520,8 +508,8 @@ function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): 
 
   const fieldStrings = fields.map(fieldToEntityString);
 
-  const capitalizedName = type.name.charAt(0).toUpperCase() + type.name.slice(1);
-  return `export class ${capitalizedName} extends Entity.Class<${capitalizedName}>('${capitalizedName}')({
+  const name = Utils.toPascalCase(type.name);
+  return `export class ${name} extends Entity.Class<${name}>('${name}')({
 ${fieldStrings.join(',\n')}
 }) {}`;
 }

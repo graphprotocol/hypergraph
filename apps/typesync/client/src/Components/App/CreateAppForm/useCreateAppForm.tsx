@@ -7,14 +7,18 @@ import {
   FormComponentTextField,
   SubmitButton,
 } from '../../FormComponents/index.js';
-import { TypeCombobox } from './SchemaBuilder/TypeCombobox.js';
+import { PropertyCombobox } from './SchemaBuilder/PropertyCombobox.js';
+import { TypeNameCombobox } from './SchemaBuilder/TypeNameCombobox.js';
+import { TypeSelect } from './SchemaBuilder/TypeSelect.js';
 
 export const { useAppForm } = createFormHook({
   fieldComponents: {
     FormComponentTextField,
     FormComponentTextArea,
     FormComponentRadioGroup,
-    TypeCombobox,
+    PropertyCombobox,
+    TypeSelect,
+    TypeNameCombobox,
   },
   formComponents: {
     SubmitButton,
