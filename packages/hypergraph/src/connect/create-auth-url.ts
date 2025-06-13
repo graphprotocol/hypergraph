@@ -18,8 +18,6 @@ export const createAuthUrl = (params: CreateAuthUrlParams) => {
   } = params;
   const { publicKey, secretKey } = generateKeypair();
 
-  console.log('PUBLIC KEY (new)', publicKey);
-
   const expiry = Date.now() + expiryMilliseconds;
   const payload: ConnectAuthPayload = {
     expiry,
@@ -33,8 +31,6 @@ export const createAuthUrl = (params: CreateAuthUrlParams) => {
   url.searchParams.set('data', data);
   url.searchParams.set('redirect', encodeURIComponent(redirectUrl));
   url.searchParams.set('nonce', nonce);
-
-  console.log('secretKey', secretKey);
 
   return {
     url,

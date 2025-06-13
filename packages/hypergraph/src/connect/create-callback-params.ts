@@ -22,7 +22,6 @@ export const createCallbackParams = ({ nonce, ephemeralPublicKey, ...rest }: Cre
     message: utf8ToBytes(JSON.stringify(rest)),
     publicKey: hexToBytes(ephemeralPublicKey.replace(/^0x/, '')),
   });
-  console.log('encrypt publicKey', hexToBytes(ephemeralPublicKey.replace(/^0x/, '')));
 
   return {
     ciphertext: bytesToHex(ciphertext),

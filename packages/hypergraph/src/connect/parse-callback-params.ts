@@ -37,7 +37,9 @@ export const parseCallbackParams = ({
     });
     const decoded = decodeDecryptedResult(JSON.parse(bytesToUtf8(decryptionResult)));
     if (Either.isLeft(decoded)) {
-      return Effect.fail(new FailedToParseAuthCallbackUrl({ message: 'Failed to parse connect auth payload' }));
+      return Effect.fail(
+        new FailedToParseAuthCallbackUrl({ message: 'Failed to parse connect auth callback payload' }),
+      );
     }
     const data = decoded.right;
     if (data.expiry !== storedExpiry) {
@@ -59,6 +61,7 @@ export const parseCallbackParams = ({
       spaces: data.spaces,
     });
   } catch (error) {
-    return Effect.fail(new FailedToParseAuthCallbackUrl({ message: 'Failed to parse connect auth payload' }));
+    console.error(error);
+    return Effect.fail(new FailedToParseAuthCallbackUrl({ message: 'Failed to parse connect auth callback payload' }));
   }
 };

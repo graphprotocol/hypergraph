@@ -1,53 +1,30 @@
-import { useIdentityToken } from '@privy-io/react-auth';
-import { useQuery } from '@tanstack/react-query';
+import { useSpaces } from '@/hooks/use-spaces';
 
 export function Spaces() {
-  const { identityToken } = useIdentityToken();
-
-  const { isPending, error, data } = useQuery<{
-    spaces: {
-      id: string;
-      name: string;
-      appIdentities: { address: string; appId: string }[];
-      keyBoxes: {
-        id: string;
-        ciphertext: string;
-        nonce: string;
-        authorPublicKey: string;
-      }[];
-    }[];
-  }>({
-    queryKey: ['spaces'],
-    queryFn: async () => {
-      if (!identityToken) return;
-      const response = await fetch(`${import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN}/connect/spaces`, {
-        headers: { 'privy-id-token': identityToken },
-      });
-      return await response.json();
-    },
-  });
+  const { isPending, error, data } = useSpaces();
 
   if (isPending) return 'Loading spaces …';
 
   if (error) return `An error has occurred: ${error.message}`;
 
   return (
-    <>
-      {data.spaces.map((space) => (
-        <div key={space.id}>
-          <h2>
-            {space.name} ({space.id})
-            <br />
-            ---------
-            <br />
-            {space.appIdentities.map((appIdentity) => (
-              <div key={appIdentity.address}>
-                {appIdentity.appId} ({appIdentity.address})
-              </div>
-            ))}
-          </h2>
-        </div>
-      ))}
-    </>
+    <div>
+      <h2 className="font-bold mb-2 mt-2">Spaces</h2>
+      <ul className="space-y-4">
+        {data.map((space) => (
+          <li key={space.id}>
+            <p>{space.name}</p>
+            <p className="text-xs text-gray-500 mt-2 mb-1">Apps with access to this space</p>
+            <ul>
+              {space.apps.map((app) => (
+                <li key={app.id} className="text-sm">
+                  {app.name}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

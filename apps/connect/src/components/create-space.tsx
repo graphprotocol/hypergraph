@@ -92,11 +92,14 @@ export function CreateSpace() {
   };
 
   return (
-    <>
-      <Input value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
-      <Button className="home-button" onClick={createSpace} disabled={isLoading}>
-        Create Space {isLoading ? <Spinner /> : null}
-      </Button>
-    </>
+    <div className="flex flex-col gap-2">
+      <span className="text-xs text-gray-500">Create a new space</span>
+      <div className="flex flex-row gap-2 items-center">
+        <Input value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
+        <Button className="home-button" onClick={createSpace} disabled={isLoading}>
+          Create Space {isLoading ? <Spinner /> : null}
+        </Button>
+      </div>
+    </div>
   );
 }
