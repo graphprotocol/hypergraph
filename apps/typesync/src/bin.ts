@@ -9,12 +9,10 @@ import { run } from './Cli.js';
 import { DatabaseServiceLive } from './Database.js';
 import { SchemaGeneratorLayer } from './Generator.js';
 
-run(process.argv).pipe(
+const runnable = Effect.suspend(() => run(process.argv)).pipe(
   Effect.provide(DatabaseServiceLive),
   Effect.provide(SchemaGeneratorLayer),
   Effect.provide(NodeFileSystem.layer),
   Effect.provide(NodeContext.layer),
-  NodeRuntime.runMain({
-    disableErrorReporting: process.env.NODE_ENV === 'prod',
-  }),
 );
+runnable.pipe(NodeRuntime.runMain({ disableErrorReporting: process.env.NODE_ENV === 'prod' }));
