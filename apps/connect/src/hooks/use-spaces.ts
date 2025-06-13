@@ -21,7 +21,7 @@ export const useSpaces = () => {
   return useQuery<SpaceData[]>({
     queryKey: ['spaces'],
     queryFn: async () => {
-      if (!identityToken) return;
+      if (!identityToken) return [];
       const response = await fetch(`${import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN}/connect/spaces`, {
         headers: { 'privy-id-token': identityToken },
       });
