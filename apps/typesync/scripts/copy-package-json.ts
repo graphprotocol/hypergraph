@@ -24,6 +24,7 @@ const program = Effect.gen(function* () {
     homepage: json.homepage,
     tags: json.tags,
     keywords: json.keywords,
+    exports: json.exports,
   };
   yield* fs.writeFileString(path.join('dist', 'package.json'), JSON.stringify(pkg, null, 2));
   yield* Effect.log('[Build] Build completed.');

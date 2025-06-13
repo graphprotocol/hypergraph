@@ -112,6 +112,8 @@ const ApiAppsLive = HttpApiBuilder.group(Api, 'Api', (handlers) =>
 
           const payload = Schema.decodeUnknownSync(TypesyncDomain.InsertAppSchema)(body);
 
+          yield* Console.log(`Creating application ${payload.name} schema...`);
+
           return yield* db.Apps.create(payload).pipe(
             Effect.tapError((err) => Console.error('POST /v1/apps - failure creating app schema', { err })),
             Effect.mapError((_) => new HttpApiError.InternalServerError()),
@@ -139,6 +141,7 @@ const ApiAppsLive = HttpApiBuilder.group(Api, 'Api', (handlers) =>
                   Effect.mapError((_) => new HttpApiError.InternalServerError()),
                 ),
             ),
+            Effect.tap((app) => Console.log(`Application ${app.name} generated at ${app.directory}`)),
           );
         }),
       )

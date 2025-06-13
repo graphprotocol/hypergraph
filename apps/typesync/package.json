@@ -1,5 +1,5 @@
 {
-  "name": "@graphprotocol/typesync-app",
+  "name": "@graphprotocol/typesync-cli",
   "version": "0.0.0-alpha",
   "type": "module",
   "license": "MIT",
@@ -11,22 +11,31 @@
   },
   "publishConfig": {
     "access": "public",
-    "directory": "dist"
+    "directory": "dist",
+    "linkDirectory": false
   },
+  "bin": {
+    "typesync": "./dist/bin.cjs"
+  },
+  "files": ["README.md", "dist"],
   "scripts": {
     "codegen:gql": "graphql-codegen --config ./graphql.codegen.ts",
     "build:client": "vite build",
-    "build": "pnpm run build:client && tsup && pnpm copy-package-json",
+    "build": "rm -rf dist && pnpm run build:client && tsup && pnpm run copy-all",
     "build:ts": "tsup",
     "dev": "vite build && pnpx tsx ./src/bin.ts",
-    "dev:cli": "pnpx tsx ./src/bin.ts",
+    "dev:cli": "pnpx tsx ./src/bin.ts studio",
     "dev:client": "vite --force",
     "clean": "rimraf dist/*",
     "start": "node ./dist/bin.cjs",
     "check": "tsc --noEmit",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
-    "copy-package-json": "tsx scripts/copy-package-json.ts"
+    "copy-package-json": "tsx scripts/copy-package-json.ts",
+    "copy-db-migrations": "cp -rp ./src/migrations ./dist/migrations",
+    "copy-client-dist": "mkdir -p ./dist/client && cp -rp ./client/dist ./dist/client/dist",
+    "copy-all": "pnpm run copy-package-json && pnpm run copy-db-migrations && pnpm run copy-client-dist",
+    "typesync": "pnpx tsx ./src/bin.ts studio"
   },
   "devDependencies": {
     "@effect/cli": "latest",
