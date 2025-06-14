@@ -11,5 +11,5 @@ const typesync = Command.make('typesync').pipe(
 
 export const run = Command.run(typesync, {
   name: 'typesync',
-  version: '0.0.0-alpha',
+  version: '0.0.0-alpha.6',
 });
