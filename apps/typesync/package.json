@@ -1,12 +1,12 @@
 {
   "name": "@graphprotocol/typesync-cli",
-  "version": "0.0.0-alpha",
+  "version": "0.0.0-alpha.6",
   "type": "module",
   "license": "MIT",
   "description": "CLI toolchain to view existing types, select, pick, extend to create schemas and generate a @graphprotocol/hypergraph schema.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/graphprotocol/hypergraph.git",
+    "url": "git+https://github.com/graphprotocol/hypergraph.git",
     "directory": "apps/typesync"
   },
   "publishConfig": {
@@ -15,24 +15,24 @@
     "linkDirectory": false
   },
   "bin": {
-    "typesync": "./dist/bin.cjs"
+    "typesync": "dist/bin.js"
   },
   "files": ["README.md", "dist"],
   "scripts": {
     "codegen:gql": "graphql-codegen --config ./graphql.codegen.ts",
     "build:client": "vite build",
-    "build": "rm -rf dist && pnpm run build:client && tsup && pnpm run copy-all",
+    "build": "rm -rf ./client/dist && pnpm run build:client && tsup && pnpm run copy-all",
     "build:ts": "tsup",
     "dev": "vite build && pnpx tsx ./src/bin.ts",
     "dev:cli": "pnpx tsx ./src/bin.ts studio",
     "dev:client": "vite --force",
     "clean": "rimraf dist/*",
-    "start": "node ./dist/bin.cjs",
+    "start": "node ./dist/bin.js",
     "check": "tsc --noEmit",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "copy-package-json": "tsx scripts/copy-package-json.ts",
-    "copy-db-migrations": "cp -rp ./src/migrations ./dist/migrations",
+    "copy-db-migrations": "cp ./src/migrations/_schema.sql ./dist/migrations/_schema.sql",
     "copy-client-dist": "mkdir -p ./dist/client && cp -rp ./client/dist ./dist/client/dist",
     "copy-all": "pnpm run copy-package-json && pnpm run copy-db-migrations && pnpm run copy-client-dist",
     "typesync": "pnpx tsx ./src/bin.ts studio"
@@ -46,18 +46,19 @@
     "@effect/sql": "latest",
     "@effect/sql-sqlite-node": "latest",
     "@effect/vitest": "latest",
-    "@graphprotocol/grc-20": "^0.17.0",
-    "@graphql-codegen/cli": "^5.0.6",
-    "@graphql-codegen/client-preset": "^4.8.1",
+    "@graphprotocol/grc-20": "^0.18.0",
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/client-preset": "^4.8.2",
     "@graphql-codegen/typescript": "^4.1.6",
     "@graphql-codegen/typescript-operations": "^4.6.1",
-    "@tanstack/router-plugin": "^1.120.13",
-    "@types/node": "^22.15.29",
-    "@types/react": "^19.1.6",
-    "@types/react-dom": "^19.1.5",
-    "@vitejs/plugin-react": "^4.5.0",
+    "@tanstack/router-plugin": "^1.121.10",
+    "@types/node": "^24.0.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "glob": "^11.0.3",
     "tsup": "^8.5.0",
-    "tsx": "^4.19.4",
+    "tsx": "^4.20.3",
     "vite": "^6.3.5"
   },
   "dependencies": {
@@ -66,12 +67,12 @@
     "@heroicons/react": "^2.2.0",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-tabs": "^1.1.12",
-    "@tailwindcss/vite": "^4.1.8",
-    "@tanstack/react-form": "^1.12.1",
-    "@tanstack/react-query": "^5.79.2",
-    "@tanstack/react-query-devtools": "^5.79.2",
-    "@tanstack/react-router": "^1.120.15",
-    "@tanstack/react-router-devtools": "1.120.15",
+    "@tailwindcss/vite": "^4.1.10",
+    "@tanstack/react-form": "^1.12.3",
+    "@tanstack/react-query": "^5.80.7",
+    "@tanstack/react-query-devtools": "^5.80.7",
+    "@tanstack/react-router": "^1.121.2",
+    "@tanstack/react-router-devtools": "1.121.8",
     "better-sqlite3": "^11.10.0",
     "date-fns": "^4.1.0",
     "effect": "latest",
@@ -81,7 +82,7 @@
     "open": "^10.1.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "shiki": "^3.4.2",
-    "tailwindcss": "^4.1.8"
+    "shiki": "^3.6.0",
+    "tailwindcss": "^4.1.10"
   }
 }

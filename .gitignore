@@ -69,3 +69,6 @@ typings/
 next-env.d.ts
 
 .DS_Store
+
+# tanstack router output
+.tanstack
