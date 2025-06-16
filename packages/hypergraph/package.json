@@ -5,7 +5,7 @@
   "publishConfig": {
     "access": "public",
     "directory": "publish",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",

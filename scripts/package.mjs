@@ -35,7 +35,7 @@ const publishPkgJson = {
   peerDependencies: pkgJson.peerDependencies,
   dependencies: pkgJson.dependencies,
   publishConfig: {
-    provenance: true,
+    provenance: false,
   },
 };
 
