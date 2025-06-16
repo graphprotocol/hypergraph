@@ -20,7 +20,7 @@ describe('findMany with filters', () => {
     category: Type.Text,
   }) {}
 
-  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+  const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);
 
   let repo: Repo;
