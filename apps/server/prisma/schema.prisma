@@ -5,7 +5,7 @@ generator client {
   provider      = "prisma-client"
   output        = "generated/client"
   moduleFormat  = "esm"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"] // linux needed for the deployment
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"] // linux needed for the deployment
 }
 
 datasource db {
