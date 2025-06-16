@@ -256,13 +256,13 @@ export function findMany<const S extends AnyNoContext>(
 
   const evaluateFilter = <T>(fieldFilter: EntityFieldFilter<T>, fieldValue: T): boolean => {
     // Handle NOT operator
-    if ('NOT' in fieldFilter && fieldFilter.NOT) {
-      return !evaluateFilter(fieldFilter.NOT, fieldValue);
+    if ('not' in fieldFilter && fieldFilter.not) {
+      return !evaluateFilter(fieldFilter.not, fieldValue);
     }
 
     // Handle OR operator
-    if ('OR' in fieldFilter) {
-      const orFilters = fieldFilter.OR;
+    if ('or' in fieldFilter) {
+      const orFilters = fieldFilter.or;
       if (Array.isArray(orFilters)) {
         return orFilters.some((orFilter) => evaluateFilter(orFilter as EntityFieldFilter<T>, fieldValue));
       }
@@ -337,13 +337,13 @@ export function findMany<const S extends AnyNoContext>(
 
   const evaluateEntityFilter = (entityFilter: EntityFilter<Schema.Schema.Type<S>>, entity: Entity<S>): boolean => {
     // handle top-level NOT operator
-    if ('NOT' in entityFilter && entityFilter.NOT) {
-      return !evaluateCrossFieldFilter(entityFilter.NOT, entity);
+    if ('not' in entityFilter && entityFilter.not) {
+      return !evaluateCrossFieldFilter(entityFilter.not, entity);
     }
 
     // handle top-level OR operator
-    if ('OR' in entityFilter && Array.isArray(entityFilter.OR)) {
-      return entityFilter.OR.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
+    if ('or' in entityFilter && Array.isArray(entityFilter.or)) {
+      return entityFilter.or.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
     }
 
     // evaluate regular field filters

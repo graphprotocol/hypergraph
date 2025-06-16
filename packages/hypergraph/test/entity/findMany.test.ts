@@ -194,7 +194,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { NOT: { is: 'John' } },
+          name: { not: { is: 'John' } },
         },
         undefined,
       );
@@ -213,7 +213,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          age: { NOT: { is: 30 } },
+          age: { not: { is: 30 } },
         },
         undefined,
       );
@@ -234,7 +234,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { OR: [{ is: 'John' }, { is: 'Jane' }] },
+          name: { or: [{ is: 'John' }, { is: 'Jane' }] },
         },
         undefined,
       );
@@ -253,7 +253,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          age: { OR: [{ is: 25 }, { is: 40 }] },
+          age: { or: [{ is: 25 }, { is: 40 }] },
         },
         undefined,
       );
@@ -274,7 +274,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { NOT: { OR: [{ is: 'John' }, { is: 'Jane' }] } },
+          name: { not: { or: [{ is: 'John' }, { is: 'Jane' }] } },
         },
         undefined,
       );
@@ -293,7 +293,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { NOT: { OR: [{ is: 'John' }, { is: 'Jane' }] } },
+          name: { not: { or: [{ is: 'John' }, { is: 'Jane' }] } },
         },
         undefined,
       );
@@ -314,7 +314,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          OR: [{ name: { contains: 'o' } }, { age: { greaterThan: 35 } }],
+          or: [{ name: { contains: 'o' } }, { age: { greaterThan: 35 } }],
         },
         undefined,
       );
@@ -333,7 +333,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          NOT: {
+          not: {
             name: { startsWith: 'J' },
             age: { lessThan: 30 },
           },
@@ -356,7 +356,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          OR: [
+          or: [
             {
               name: { startsWith: 'J' },
               age: { lessThan: 30 },
@@ -385,8 +385,8 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { NOT: { startsWith: 'J' } },
-          age: { NOT: { greaterThan: 35 } },
+          name: { not: { startsWith: 'J' } },
+          age: { not: { greaterThan: 35 } },
         },
         undefined,
       );
@@ -407,7 +407,7 @@ describe('findMany with filters', () => {
         handle,
         Product,
         {
-          OR: [
+          or: [
             {
               category: { is: 'Electronics' },
               price: { greaterThan: 800 },
@@ -436,7 +436,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          OR: [{ name: { startsWith: 'J' } }, { name: { contains: 'i' } }],
+          or: [{ name: { startsWith: 'J' } }, { name: { contains: 'i' } }],
           isActive: { is: true },
         },
         undefined,
@@ -457,7 +457,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          NOT: { name: { startsWith: 'J' } },
+          not: { name: { startsWith: 'J' } },
           age: { greaterThan: 30 },
         },
         undefined,
