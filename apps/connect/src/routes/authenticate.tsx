@@ -135,11 +135,7 @@ function AuthenticateComponent() {
 
   const state = useSelector(componentStore, (state) => state.context);
 
-  const {
-    // isPending,
-    // error,
-    data: spacesData,
-  } = useSpaces();
+  const { isPending, error: spacesError, data: spacesData } = useSpaces();
 
   useEffect(() => {
     const run = async () => {
@@ -452,6 +448,9 @@ function AuthenticateComponent() {
             </div>
             <h2 className="font-bold mb-2 mt-2">Spaces</h2>
             <ul className="space-y-4">
+              {isPending && <p>Loading spaces …</p>}
+              {spacesError && <p>An error has occurred loading spaces: {spacesError.message}</p>}
+              {!isPending && !spacesError && spacesData?.length === 0 && <p>No spaces found</p>}
               {spacesData?.map((space) => (
                 <li key={space.id}>
                   <p>{space.name}</p>
