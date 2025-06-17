@@ -68,7 +68,15 @@ function Login() {
           };
 
           await hypergraphLogin(signer);
-          navigate({ to: '/' });
+
+          const redirect = localStorage.getItem('geo-connect-authenticate-redirect');
+          if (redirect) {
+            localStorage.removeItem('geo-connect-authenticate-redirect');
+            navigate({ to: redirect, replace: true });
+            return;
+          }
+
+          navigate({ to: '/', replace: true });
         } catch (error) {
           alert('Failed to login');
           console.error(error);
