@@ -1,108 +1,73 @@
 ---
 title: Quickstart
-description: Spin up the Hypergraph monorepo locally, including sync server, event workers, and example app.
+description: Create your first Hypergraph-powered application in minutes with TypeSync.
 version: 0.0.1
-tags: [quickstart]
+tags: [quickstart, typesync]
 ---
 
-# 🚀 Quickstart
+# 🚀 Quickstart: Your First Hypergraph App
+
+This guide will walk you through creating a new, fully-functional React application powered by Hypergraph using our scaffolding tool, **TypeSync**. In just a few minutes, you'll have a local development environment up and running.
+
+This approach is perfect for developers who want to quickly build an application on top of Hypergraph without needing to set up the entire monorepo infrastructure.
 
 ## Prerequisites
 
-- Node >= 18 (tested on 20+)
-- pnpm >= 7 (install via `npm install -g pnpm`)
-- Bun (optional, but speeds up the dev server — install via `curl -fsSL https://bun.sh/install | bash`)
+- Node.js >= 18 (we recommend v20+)
+- pnpm >= 7 (install with `npm install -g pnpm`)
 
-Follow these steps to run the **Hypergraph monorepo** on your machine.
+## 1. Get the Hypergraph Toolkit
 
-## 1. Clone the repository
+First, clone the Hypergraph repository, which contains TypeSync.
 
 ```bash
 git clone https://github.com/graphprotocol/hypergraph.git
 cd hypergraph
 ```
 
-## 2. Setup
-
-Install dependencies and initialize the database:
+Next, install dependencies and build the required packages. This step ensures that TypeSync and all its components are ready to use.
 
 ```bash
 pnpm install
-cd apps/server
-cp .env.example .env
-pnpm prisma migrate dev
+pnpm build
 ```
 
-## 3. Build workspace packages
+## 2. Launch TypeSync
 
-Before you run *any* app you must compile the TypeScript workspaces so their `dist/` folders exist:
+TypeSync is a visual tool that helps you define your data schema and then generates a complete starter application based on your design.
 
-```bash
-pnpm build            # one-off build of every package (hypergraph-react, hypergraph, …)
-```
-
-> Pro-tip: while iterating on library code you can use the watch script instead of running a full build each time:
->
-> ```bash
-> pnpm --filter @graphprotocol/hypergraph-react dev   # tsc -w
-> ```
-
-After the initial build you can keep a watcher running or rely on the one we start in the next section.
-
-## 4. Development
-
-Start a watcher to rebuild packages on change:
+Navigate to the `typesync` app and start its development server:
 
 ```bash
-pnpm build --watch
-```
-
-Then, in separate terminal tabs, run the services:
-
-```bash
-# Terminal tab 1: event workers
-cd apps/events
-pnpm dev
-
-# Terminal tab 2: sync server
-cd apps/server
+cd apps/typesync
 pnpm dev
 ```
 
-**Note:** Whenever you modify the Prisma schema, regenerate the client with:
+This will start the TypeSync server. You can now access the **TypeSync Studio** in your browser at `http://localhost:4000`.
+
+## 3. Scaffold Your Application
+
+In the TypeSync Studio:
+1.  Give your new application a name and a short description.
+2.  Use the visual editor to define your data models (we call them "types"). For example, you could create a `Post` type with a `title` (Text) and `content` (Text) properties.
+3.  When you're ready, click "Generate App".
+
+TypeSync will create a new directory for your application (e.g., `./my-awesome-app`) within the `hypergraph` monorepo, containing all the files and dependencies you need.
+
+## 4. Run Your New App
+
+Once your app is generated, open a **new terminal tab**. Navigate into the newly created app directory, install its dependencies, and start the local development server.
 
 ```bash
-cd apps/server
-pnpm prisma migrate dev
-```
-
-## 5. Run the Next.js example
-
-Ensure packages are built, then:
-
-```bash
-cd apps/next-example
+# In a new terminal, from the `hypergraph/apps/typesync` directory
+cd ../../my-awesome-app  # Adjust the path to match your app's name
+pnpm install
 pnpm dev
 ```
 
-Visit `http://localhost:3000` to see the example app in action.
+Your new Hypergraph-powered React application will now be running, typically at `http://localhost:5173`.
 
-> 💡 **Optional:** If you'd rather skip the `pnpm build --watch` process while hacking on `packages/hypergraph-react`, add the package to `transpilePackages` in `apps/next-example/next.config.ts`:
->
-> ```ts title="apps/next-example/next.config.ts"
-> const nextConfig = {
->   transpilePackages: ['@graphprotocol/hypergraph-react'],
-> };
-> export default nextConfig;
-> ```
-
-## 6. Upgrade dependencies
-
-Keep everything up to date with:
-
-```bash
-pnpm up --interactive --latest -r
-```
+You're all set! You can now start building your application by editing the files in the `src` directory. The generated `src/schema.ts` file contains the Hypergraph schema you defined in TypeSync.
 
 ---
 
