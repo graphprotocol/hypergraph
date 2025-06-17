@@ -32,7 +32,7 @@ export async function getLatestAccountInboxMessages({
             recovery: msg.signatureRecovery,
           }
         : undefined,
-    authorAccountId: msg.authorAccountId ?? undefined,
+    authorAccountAddress: msg.authorAccountAddress ?? undefined,
     createdAt: msg.createdAt,
   }));
 }

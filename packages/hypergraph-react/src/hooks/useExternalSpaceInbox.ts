@@ -49,10 +49,10 @@ export function useExternalSpaceInbox({
         setLoading(true);
         setError(null);
 
-        let authorAccountId: string | null = null;
+        let authorAccountAddress: string | null = null;
         let signaturePrivateKey: string | null = null;
-        if (identity?.accountId && inbox.authPolicy !== 'anonymous') {
-          authorAccountId = identity.accountId;
+        if (identity?.address && inbox.authPolicy !== 'anonymous') {
+          authorAccountAddress = identity.address;
           signaturePrivateKey = identity.signaturePrivateKey;
         } else if (inbox.authPolicy === 'requires_auth') {
           throw new Error('Cannot send message to a required auth inbox without an identity');
@@ -64,7 +64,7 @@ export function useExternalSpaceInbox({
           inboxId,
           encryptionPublicKey: inbox.encryptionPublicKey,
           signaturePrivateKey,
-          authorAccountId,
+          authorAccountAddress,
         });
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to send message'));

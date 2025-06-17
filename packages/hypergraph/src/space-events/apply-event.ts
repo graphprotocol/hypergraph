@@ -18,7 +18,7 @@ import {
 type Params = {
   state: SpaceState | undefined;
   event: SpaceEvent;
-  getVerifiedIdentity: (accountId: string) => Effect.Effect<PublicIdentity, InvalidIdentityError>;
+  getVerifiedIdentity: (accountAddress: string) => Effect.Effect<PublicIdentity, InvalidIdentityError>;
 };
 
 const decodeSpaceEvent = Schema.decodeUnknownEither(SpaceEvent);
@@ -50,20 +50,20 @@ export const applyEvent = ({
   const authorPublicKey = `0x${signatureInstance.recoverPublicKey(sha256(encodedTransaction)).toHex()}`;
 
   return Effect.gen(function* () {
-    const identity = yield* getVerifiedIdentity(event.author.accountId);
+    const identity = yield* getVerifiedIdentity(event.author.accountAddress);
     if (authorPublicKey !== identity.signaturePublicKey) {
       yield* Effect.fail(new VerifySignatureError());
     }
 
     let id = '';
-    let members: { [accountId: string]: SpaceMember } = {};
-    let removedMembers: { [accountId: string]: SpaceMember } = {};
+    let members: { [accountAddress: string]: SpaceMember } = {};
+    let removedMembers: { [accountAddress: string]: SpaceMember } = {};
     let invitations: { [id: string]: SpaceInvitation } = {};
     let inboxes: { [inboxId: string]: SpaceInbox } = {};
     if (event.transaction.type === 'create-space') {
       id = event.transaction.id;
-      members[event.transaction.creatorAccountId] = {
-        accountId: event.transaction.creatorAccountId,
+      members[event.transaction.creatorAccountAddress] = {
+        accountAddress: event.transaction.creatorAccountAddress,
         role: 'admin',
       };
     } else if (state !== undefined) {
@@ -74,13 +74,13 @@ export const applyEvent = ({
       inboxes = { ...state.inboxes };
       if (event.transaction.type === 'accept-invitation') {
         // is already a member
-        if (members[event.author.accountId] !== undefined) {
+        if (members[event.author.accountAddress] !== undefined) {
           yield* Effect.fail(new InvalidEventError());
         }
 
         // find the invitation
         const result = Object.entries(invitations).find(
-          ([, invitation]) => invitation.inviteeAccountId === event.author.accountId,
+          ([, invitation]) => invitation.inviteeAccountAddress === event.author.accountAddress,
         );
         if (!result) {
           yield* Effect.fail(new InvalidEventError());
@@ -89,17 +89,17 @@ export const applyEvent = ({
         // @ts-expect-error type issue? we checked that result is not undefined before
         const [id, invitation] = result;
 
-        members[invitation.inviteeAccountId] = {
-          accountId: invitation.inviteeAccountId,
+        members[invitation.inviteeAccountAddress] = {
+          accountAddress: invitation.inviteeAccountAddress,
           role: 'member',
         };
         delete invitations[id];
-        if (removedMembers[event.author.accountId] !== undefined) {
-          delete removedMembers[event.author.accountId];
+        if (removedMembers[event.author.accountAddress] !== undefined) {
+          delete removedMembers[event.author.accountAddress];
         }
       } else {
         // check if the author is an admin
-        if (members[event.author.accountId]?.role !== 'admin') {
+        if (members[event.author.accountAddress]?.role !== 'admin') {
           yield* Effect.fail(new InvalidEventError());
         }
 
@@ -108,17 +108,17 @@ export const applyEvent = ({
           members = {};
           invitations = {};
         } else if (event.transaction.type === 'create-invitation') {
-          if (members[event.transaction.inviteeAccountId] !== undefined) {
+          if (members[event.transaction.inviteeAccountAddress] !== undefined) {
             yield* Effect.fail(new InvalidEventError());
           }
           for (const invitation of Object.values(invitations)) {
-            if (invitation.inviteeAccountId === event.transaction.inviteeAccountId) {
+            if (invitation.inviteeAccountAddress === event.transaction.inviteeAccountAddress) {
               yield* Effect.fail(new InvalidEventError());
             }
           }
 
           invitations[event.transaction.id] = {
-            inviteeAccountId: event.transaction.inviteeAccountId,
+            inviteeAccountAddress: event.transaction.inviteeAccountAddress,
           };
         } else if (event.transaction.type === 'create-space-inbox') {
           if (inboxes[event.transaction.inboxId] !== undefined) {

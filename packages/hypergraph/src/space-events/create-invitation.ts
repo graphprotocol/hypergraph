@@ -8,7 +8,7 @@ type Params = {
   author: Author;
   previousEventHash: string;
   invitee: {
-    accountId: string;
+    accountAddress: string;
   };
 };
 
@@ -20,7 +20,7 @@ export const createInvitation = ({
   const transaction = {
     id: generateId(),
     type: 'create-invitation' as const,
-    inviteeAccountId: invitee.accountId,
+    inviteeAccountAddress: invitee.accountAddress,
     previousEventHash,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
@@ -31,7 +31,7 @@ export const createInvitation = ({
   return Effect.succeed({
     transaction,
     author: {
-      accountId: author.accountId,
+      accountAddress: author.accountAddress,
       signature: {
         hex: signatureResult.toCompactHex(),
         recovery: signatureResult.recovery,

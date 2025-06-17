@@ -44,7 +44,7 @@ export const createInbox = ({
   const spaceEvent = {
     transaction,
     author: {
-      accountId: author.accountId,
+      accountAddress: author.accountAddress,
       signature: {
         hex: signature.toCompactHex(),
         recovery: signature.recovery,

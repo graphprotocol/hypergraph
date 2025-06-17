@@ -5,7 +5,7 @@
   "publishConfig": {
     "access": "public",
     "directory": "publish",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",
@@ -36,9 +36,9 @@
     "@serenity-kit/noble-sodium": "^0.2.1",
     "@xstate/store": "^3.5.1",
     "bs58check": "^4.0.0",
-    "effect": "^3.14.20",
+    "effect": "^3.16.3",
     "siwe": "^3.0.0",
     "uuid": "^11.1.0",
-    "viem": "^2.29.0"
+    "viem": "^2.30.6"
   }
 }

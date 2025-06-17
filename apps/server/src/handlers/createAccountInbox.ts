@@ -1,7 +1,7 @@
 import type { Messages } from '@graphprotocol/hypergraph';
 import { prisma } from '../prisma';
 export const createAccountInbox = async (data: Messages.RequestCreateAccountInbox) => {
-  const { accountId, inboxId, isPublic, authPolicy, encryptionPublicKey, signature } = data;
+  const { accountAddress, inboxId, isPublic, authPolicy, encryptionPublicKey, signature } = data;
   // This will throw an error if the inbox already exists
   const inbox = await prisma.accountInbox.create({
     data: {
@@ -11,7 +11,7 @@ export const createAccountInbox = async (data: Messages.RequestCreateAccountInbo
       encryptionPublicKey,
       signatureHex: signature.hex,
       signatureRecovery: signature.recovery,
-      account: { connect: { id: accountId } },
+      account: { connect: { address: accountAddress } },
     },
   });
   return inbox;

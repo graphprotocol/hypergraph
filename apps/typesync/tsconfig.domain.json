@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["domain"],
+  "compilerOptions": {
+    "types": ["node"],
+    "tsBuildInfoFile": ".tsbuildinfo/domain.tsbuildinfo",
+    "rootDir": "domain",
+    "outDir": "dist"
+  }
+}

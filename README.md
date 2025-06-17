@@ -8,6 +8,7 @@
 pnpm install
 cd apps/server
 cp .env.example .env
+# add the PRIVY_APP_SECRET & PRIVY_APP_ID to the apps/server/.env file
 pnpm prisma migrate dev
 ```
 
@@ -43,4 +44,17 @@ pnpm dev
 
 ```sh
 pnpm up --interactive --latest -r
+```
+
+## Publishing
+
+```sh
+# publish hypergraph
+pnpm build
+cd packages/hypergraph/publish
+pnpm publish
+# publish hypergraph-react
+pnpm build
+cd packages/hypergraph-react/publish
+pnpm publish
 ```

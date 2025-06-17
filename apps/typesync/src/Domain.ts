@@ -94,7 +94,13 @@ export class AppSchemaTypePropery extends Schema.Class<AppSchemaTypePropery>('Ap
       'The name of the property type. Each property will have a name and a type that is used to build the schema.',
     documentation:
       'The name of the property type. Each property will have a name and a type that is used to build the schema.',
-    examples: ['Text', 'Number', 'Boolean'],
+    examples: ['Text', 'Number', 'Boolean', 'Relation(Tag)'],
+  }),
+  relation_type_name: Schema.NullOr(Schema.NonEmptyTrimmedString).annotations({
+    identifier: 'AppSchemaTypePropertyRelationTypeName',
+    title: 'App Schema Type Property relation type name',
+    description: 'If the type_name is Relation(Entity), this is the name of the type the property is a relation to',
+    examples: ['Tag'],
   }),
   nullable: Schema.NullOr(Schema.Boolean).annotations({
     identifier: 'AppSchemaTypePropertyNullable',
@@ -124,7 +130,7 @@ export class AppSchemaTypePropery extends Schema.Class<AppSchemaTypePropery>('Ap
 }) {}
 
 export const InsertAppSchemaTypeProperty = AppSchemaTypePropery.pipe(
-  Schema.pick('name', 'type_name', 'description', 'nullable', 'optional', 'app_schema_type_id'),
+  Schema.pick('name', 'type_name', 'relation_type_name', 'description', 'nullable', 'optional', 'app_schema_type_id'),
 );
 export type InsertAppSchemaTypeProperty = typeof InsertAppSchemaTypeProperty.Type;
 
@@ -184,60 +190,12 @@ export class AppSchema extends Schema.Class<AppSchema>('AppSchema')({
   ),
 }) {}
 
-/**
- * Defines the type to be received by the app schema builder.
- * Used to create the app, app_schema_type and app_schema_type_property records
- */
-export const InsertAppSchema = App.pipe(
-  Schema.pick('name', 'description', 'directory'),
-  Schema.extend(
-    Schema.Struct({
-      types: Schema.Array(
-        InsertAppSchemaType.pipe(
-          Schema.omit('app_id'),
-          Schema.extend(
-            Schema.Struct({
-              properties: Schema.Array(InsertAppSchemaTypeProperty.pipe(Schema.omit('app_schema_type_id'))).pipe(
-                Schema.minItems(1),
-              ),
-            }),
-          ),
-        ),
-      ).pipe(Schema.minItems(1)),
-    }),
-  ),
-).annotations({
-  identifier: 'App Schema',
-  title: 'App with built schema definitions',
-  description: 'The app record with built out schema with types and properties',
-  documentation: 'The app record with built out schema with types and properties',
-  examples: [
-    {
-      name: 'Mesh',
-      description: 'Event builder powered by Hypergraph',
-      directory: '~/dev/mesh',
-      types: [
-        {
-          name: 'Event',
-          properties: [
-            {
-              name: 'id',
-              type_name: 'Number',
-              description: 'unique id of the Event on hypergraph',
-              nullable: false,
-              optional: false,
-            },
-            {
-              name: 'name',
-              type_name: 'Text',
-              description: 'Event name',
-              nullable: false,
-              optional: false,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-});
-export type InsertAppSchema = typeof InsertAppSchema.Type;
+export const UpdateApp = Schema.Struct(App.fields).pick(
+  'id',
+  'description',
+  'directory',
+  'name',
+  'status',
+  'updated_at',
+);
+export type UpdateApp = typeof UpdateApp.Type;

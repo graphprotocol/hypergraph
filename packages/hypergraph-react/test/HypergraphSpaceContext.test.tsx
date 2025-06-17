@@ -1,6 +1,6 @@
 import { type AnyDocumentId, Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Entity, Utils } from '@graphprotocol/hypergraph';
+import { Entity, Type, Utils } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 // biome-ignore lint/style/useImportType: <explanation>
@@ -21,20 +21,20 @@ afterEach(() => {
 
 describe('HypergraphSpaceContext', () => {
   class Person extends Entity.Class<Person>('Person')({
-    name: Entity.Text,
-    age: Entity.Number,
+    name: Type.Text,
+    age: Type.Number,
   }) {}
 
   class User extends Entity.Class<User>('User')({
-    name: Entity.Text,
-    email: Entity.Text,
+    name: Type.Text,
+    email: Type.Text,
   }) {}
 
   class Event extends Entity.Class<Event>('Event')({
-    name: Entity.Text,
+    name: Type.Text,
   }) {}
 
-  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+  const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
 
   let repo = new Repo({});
   let wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (

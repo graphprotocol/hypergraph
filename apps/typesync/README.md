@@ -1,35 +1,38 @@
 # @graphprotocol/typesync
 
-CLI toolchain to view existing types, select, pick, extend to create schemas and generate a @graphprotocol/hypergraph schema.
+CLI toolchain to view existing types, select, pick, extend to create schemas and generate a [@graphprotocol/hypergraph](https://github.com/graphprotocol/hypergraph/tree/main/packages/hypergraph) schema.
 
-The `@graphprotocol/typesync` cli works by spinning up a [hono](https://hono.dev/) nodejs server that exposes a built vitejs react app. This app will let users see their created app schemas as well as search existing types to create new app schemas.
-Once the user has a schema built in the app, they can then run codegen, which will send a message to the server to codegen the built schema using the `@graphprotocol/hypergraph` framework.
+## Installing
 
-## Running Code
+```bash
+# npm
+npm i -g @graphprotocol/typesync-cli
 
-This template leverages [tsx](https://tsx.is) to allow execution of TypeScript files via NodeJS as if they were written in plain JavaScript.
+# yarn
+yarn global add @graphprotocol/typesync-cli
 
-To execute a file with `tsx`:
-
-```sh
-pnpm run dev
+# pnpm
+pnpm install -g @graphprotocol/typesync-cli
 ```
 
-## Operations
+## Running
 
-**Building**
+```bash
+typsync --help
 
-To build the package:
+# opening typesync studio
+typesync studio
 
-```sh
-pnpm build
+# opening typesync studio in firefox automatically
+typesync studio --open --browser firefox
 ```
 
-**Testing**
+## Commands
 
-To test the package:
-
-```sh
-pnpm test
-```
-
+- `studio` -> runs the `Typesync` api and client UI application for viewing created application schemas, browsing the Knowledge Graph, and creating new application schemas.
+  - running: `typesync studio`
+  - args:
+    - `port` [OPTIONAL, default = 3000] port to run the application on
+      - example: `typesync studio --port 3001`
+    - `browser` [OPTION, default 'browser'] browser to open the app in, if the `--open` flag is passed
+      - example: `typesync studio --open --browser firefox`

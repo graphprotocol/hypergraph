@@ -67,7 +67,7 @@ const signatureMessage = (nonce: Uint8Array): string => {
 
 export const encryptIdentity = async (
   signer: Signer,
-  accountId: string,
+  accountAddress: string,
   keys: IdentityKeys,
 ): Promise<{ ciphertext: string; nonce: string }> => {
   const nonce = randomBytes(32);
@@ -76,7 +76,7 @@ export const encryptIdentity = async (
 
   // Check that the signature is valid
   const valid = await verifyMessage({
-    address: accountId as Hex,
+    address: accountAddress as Hex,
     message,
     signature,
   });
@@ -99,7 +99,7 @@ export const encryptIdentity = async (
 
 export const decryptIdentity = async (
   signer: Signer,
-  accountId: string,
+  accountAddress: string,
   ciphertext: string,
   nonce: string,
 ): Promise<IdentityKeys> => {
@@ -108,7 +108,7 @@ export const decryptIdentity = async (
 
   // Check that the signature is valid
   const valid = await verifyMessage({
-    address: accountId as Hex,
+    address: accountAddress as Hex,
     message,
     signature,
   });

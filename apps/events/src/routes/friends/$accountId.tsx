@@ -7,8 +7,8 @@ export const Route = createFileRoute('/friends/$accountId')({
 });
 
 function RouteComponent() {
-  const { accountId } = Route.useParams();
-  const { publicInboxes, loading, error } = usePublicAccountInboxes(accountId);
+  const { accountAddress } = Route.useParams();
+  const { publicInboxes, loading, error } = usePublicAccountInboxes(accountAddress);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -24,11 +24,11 @@ function RouteComponent() {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl mb-4">Friend's Public Inboxes: {accountId}</h1>
+      <h1 className="text-2xl mb-4">Friend's Public Inboxes: {accountAddress}</h1>
 
       <div className="space-y-6">
         {publicInboxes.map((inbox: { inboxId: string }) => (
-          <InboxCard key={inbox.inboxId} accountId={accountId} inboxId={inbox.inboxId} />
+          <InboxCard key={inbox.inboxId} accountAddress={accountAddress} inboxId={inbox.inboxId} />
         ))}
       </div>
     </div>

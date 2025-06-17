@@ -1,17 +1,17 @@
 'use client';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { GithubLogo } from '@phosphor-icons/react';
+import { GithubLogoIcon } from '@phosphor-icons/react';
 import type { QueryClient } from '@tanstack/react-query';
 import { Link, Outlet, createRootRouteWithContext } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import type { GraphQLClient } from 'graphql-request';
 import { useAtom } from 'jotai';
 
-import { AppSpacesNavbar } from '../Components/AppsNavbar.js';
+import { AppSpacesNavbar, navbarExpandedAtom } from '../Components/AppsNavbar.js';
 import { CmdPalette, cmdPaletteOpenAtom } from '../Components/CmdPalette.js';
 import { appsQueryOptions } from '../hooks/useAppQuery.js';
 import { useOSQuery } from '../hooks/useOSQuery.js';
+import { classnames } from '../utils/classnames.js';
 
 export type RouterContext = Readonly<{
   queryClient: QueryClient;
@@ -29,23 +29,26 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function Layout() {
   const { data: os } = useOSQuery();
   const [, setCmdPaletteOpen] = useAtom(cmdPaletteOpenAtom);
+  const [navbarExpanded] = useAtom(navbarExpandedAtom);
 
   return (
     <div>
-      <div className="fixed inset-y-0 z-50 flex w-72 flex-col h-full">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-slate-900 pb-4 h-full">
+      <div className="fixed inset-y-0 z-50 w-72 flex flex-col h-full">
+        <div className="flex grow flex-col overflow-y-auto h-full">
           <Link
             to="/"
             className="flex h-16 shrink-0 items-center justify-center text-xl border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 cursor-pointer"
           >
             Hypergraph TypeSync
           </Link>
-          <AppSpacesNavbar />
+          <div className={classnames('bg-white dark:bg-slate-900 2xl:w-72 h-full', navbarExpanded ? 'w-72' : 'w-16')}>
+            <AppSpacesNavbar />
+          </div>
         </div>
       </div>
 
-      <div className="pl-72">
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-end gap-x-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-transparent shadow-sm px-4">
+      <div className={classnames('2xl:pl-72', navbarExpanded ? 'pl-72' : 'pl-16')}>
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-end gap-x-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm px-4">
           <div className="flex flex-1 items-center justify-end self-end w-fit gap-x-6 h-16">
             <button
               type="button"
@@ -68,7 +71,7 @@ function Layout() {
                 rel="noreferrer"
                 className="p-2 w-fit h-fit inline-flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white"
               >
-                <GithubLogo size={16} />
+                <GithubLogoIcon size={16} />
               </a>
             </div>
           </div>
@@ -81,7 +84,6 @@ function Layout() {
         </main>
       </div>
       <CmdPalette />
-      <TanStackRouterDevtools />
     </div>
   );
 }

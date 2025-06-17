@@ -13,76 +13,32 @@ import { CodeBracketIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { DocumentPlusIcon, FolderIcon } from '@heroicons/react/24/outline';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useRouter } from '@tanstack/react-router';
-import * as Chunk from 'effect/Chunk';
-import * as Effect from 'effect/Effect';
-import * as Schema from 'effect/Schema';
-import * as Stream from 'effect/Stream';
+import { Array as EffectArray, Schema } from 'effect';
 import { atom, useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 
-import type { SchemaBrowserTypesQuery } from '../generated/graphql.js';
 import { fetchApps } from '../hooks/useAppQuery.js';
 import { useOSQuery } from '../hooks/useOSQuery.js';
-import { fetchSchemaTypes } from '../hooks/useSchemaBrowserQuery.js';
-import type { App } from '../schema.js';
 import { Loading } from './Loading.js';
 
 class SearchResult extends Schema.Class<SearchResult>('SearchResult')({
-  id: Schema.NonEmptyTrimmedString,
+  id: Schema.Union(Schema.NonEmptyTrimmedString, Schema.Positive),
   type: Schema.Literal('entity', 'app'),
   name: Schema.NonEmptyTrimmedString,
   slug: Schema.NonEmptyTrimmedString,
 }) {}
 
-async function search(): Promise<Readonly<Array<SearchResult>>> {
-  const fetchSchemaTypesStream = Stream.fromIterableEffect(
-    Effect.tryPromise({
-      async try() {
-        const schemaTypes = await fetchSchemaTypes();
-        return schemaTypes.space?.types ?? [];
-      },
-      catch(err) {
-        console.error('failure fetching type entities from knowledge graph', { err });
-        return [] as NonNullable<SchemaBrowserTypesQuery['space']>['types'];
-      },
-    }),
-  ).pipe(
-    Stream.map(
-      (entity) =>
-        ({
-          id: entity.id,
-          type: 'entity',
-          name: entity.name || entity.id,
-          slug: `${entity.id}${entity.name || ''}`.toLowerCase(),
-        }) as const satisfies SearchResult,
+async function search(): Promise<ReadonlyArray<SearchResult>> {
+  return await fetchApps().then((apps) =>
+    EffectArray.map(apps, (app) =>
+      SearchResult.make({
+        id: app.id,
+        type: 'app',
+        name: app.name,
+        slug: `${app.id}${app.name}${app.description || ''}${app.directory || ''}`,
+      }),
     ),
   );
-  const fetchAppsStream = Stream.fromIterableEffect(
-    Effect.tryPromise({
-      async try() {
-        return await fetchApps();
-      },
-      catch(err) {
-        console.error('failure fetching apps from api', { err });
-        return [] as Readonly<Array<App>>;
-      },
-    }),
-  ).pipe(
-    Stream.map(
-      (app) =>
-        ({
-          id: `${app.id}`,
-          type: 'app',
-          name: app.name,
-          slug: `${app.id}${app.name}${app.description || ''}${app.directory || ''}`,
-        }) as const satisfies SearchResult,
-    ),
-  );
-
-  const program = Stream.merge(fetchSchemaTypesStream, fetchAppsStream);
-  const resultsChunk = await Effect.runPromise(Stream.runCollect(program));
-
-  return Chunk.toReadonlyArray(resultsChunk);
 }
 
 export const cmdPaletteOpenAtom = atom(false);
@@ -183,7 +139,7 @@ export function CmdPalette() {
                 if (typeof item === 'string' && item === 'create_new_app') {
                   void router.navigate({ to: '/apps/create' });
                 } else if (item.type === 'app') {
-                  void router.navigate({ to: '/apps/$appId/details', params: { appId: item.id } });
+                  void router.navigate({ to: '/apps/$appId/details', params: { appId: String(item.id) } });
                 }
                 setCmdPaletteOpen(false);
               }

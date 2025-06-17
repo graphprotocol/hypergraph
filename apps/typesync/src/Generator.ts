@@ -4,7 +4,8 @@ import * as Path from '@effect/platform/Path';
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 
-import type * as Domain from './Domain.js';
+import * as Domain from '../domain/Domain.js';
+import * as Utils from './Utils.js';
 
 export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesync/services/Generator', {
   dependencies: [NodeFileSystem.layer],
@@ -189,31 +190,32 @@ function generatePackageJson(app: Domain.InsertAppSchema) {
       typecheck: 'tsc --noEmit',
     },
     dependencies: {
-      '@automerge/automerge': '^v2.2.9-alpha.3',
-      '@automerge/automerge-repo': '^2.0.0-alpha.14',
-      '@automerge/automerge-repo-react-hooks': '^2.0.0-alpha.14',
-      '@graphprotocol/hypergraph': '^v0.0.0-alpha',
-      '@graphprotocol/hypergraph-react': '^v0.0.0-alpha',
-      '@privy-io/react-auth': '^2.8.3',
-      '@tailwindcss/vite': '^4.1.3',
-      '@tanstack/react-query': '^5.74.0',
-      '@tanstack/react-query-devtools': '^5.74.0',
-      '@tanstack/react-router': '^1.116.0',
-      effect: '^3.14.8',
+      '@automerge/automerge': '^2.2.9',
+      '@automerge/automerge-repo': '=2.0.0-beta.5',
+      '@automerge/automerge-repo-react-hooks': '=2.0.0-beta.5',
+      '@graphprotocol/hypergraph': 'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
+      '@graphprotocol/hypergraph-react':
+        'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph-react@82b867a',
+      '@privy-io/react-auth': '^2.13.7',
+      '@tailwindcss/vite': '^4.1.8',
+      '@tanstack/react-query': '^5.79.2',
+      '@tanstack/react-query-devtools': '^5.79.2',
+      '@tanstack/react-router': '^1.120.15',
+      '@tanstack/react-router-devtools': '^1.120.15',
+      effect: '^3.16.3',
       react: '^19.1.0',
       'react-dom': '^19.1.0',
-      tailwindcss: '^4.1.3',
-      vite: '^6.2.6',
+      tailwindcss: '^4.1.8',
+      vite: '^6.3.5',
     },
     devDependencies: {
-      '@eslint/js': '^9.24.0',
-      '@tanstack/react-router-devtools': '^1.116.0',
+      '@eslint/js': '^9.28.0',
       '@tanstack/router-plugin': '^1.116.1',
       '@types/node': '^22.14.1',
-      '@types/react': '^19.1.1',
-      '@types/react-dom': '^19.1.2',
+      '@types/react': '^19.1.6',
+      '@types/react-dom': '^19.1.5',
       '@vitejs/plugin-react': '^4.3.4',
-      eslint: '^9.24.0',
+      eslint: '^9.28.0',
       'eslint-plugin-react-hooks': '^5.2.0',
       'eslint-plugin-react-refresh': '^0.4.19',
       globals: '^16.0.0',
@@ -380,7 +382,7 @@ export default defineConfig({
 // --------------------
 // index.html
 // --------------------
-function indexHtml(appName: Domain.AppSchema['name']) {
+function indexHtml(appName: Domain.InsertAppSchema['name']) {
   return `<!DOCTYPE html>
 <html
   lang="en"
@@ -466,37 +468,33 @@ createRoot(document.getElementById('root')!).render(
 // --------------------
 function fieldToEntityString({
   name,
-  type_name,
-  nullable = false,
-  optional = false,
-  description,
+  dataType,
 }: Domain.InsertAppSchema['types'][number]['properties'][number]): string {
-  // Add JSDoc comment if description exists
-  const jsDoc = description ? `  /** ${description} */\n` : '';
-
   // Convert type to Entity type
   const entityType = (() => {
-    switch (type_name) {
-      case 'Text':
-        return 'Entity.Text';
-      case 'Number':
-        return 'Entity.Number';
-      case 'Checkbox':
-        return 'Entity.Checkbox';
+    switch (true) {
+      case dataType === 'Text':
+        return 'Type.Text';
+      case dataType === 'Number':
+        return 'Type.Number';
+      case dataType === 'Boolean':
+        return 'Type.Boolean';
+      case dataType === 'Date':
+        return 'Type.Date';
+      case dataType === 'Url':
+        return 'Type.Url';
+      case dataType === 'Point':
+        return 'Type.Point';
+      case Domain.isDataTypeRelation(dataType):
+        // renders the type as `Type.Relation(Entity)`
+        return `Type.${dataType}`;
       default:
         // how to handle complex types
-        return 'Entity.Text';
+        return 'Type.Text';
     }
   })();
 
-  let derivedEntityType = entityType;
-  if (optional) {
-    derivedEntityType = `Schema.NullishOr(${derivedEntityType})`;
-  } else if (nullable) {
-    derivedEntityType = `Schema.NullOr(${entityType})`;
-  }
-
-  return `${jsDoc}  ${name}: ${derivedEntityType}`;
+  return `${Utils.toCamelCase(name)}: ${entityType}`;
 }
 
 function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): string | null {
@@ -510,14 +508,14 @@ function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): 
 
   const fieldStrings = fields.map(fieldToEntityString);
 
-  const capitalizedName = type.name.charAt(0).toUpperCase() + type.name.slice(1);
-  return `class ${capitalizedName} extends Entity.Class<${capitalizedName}>('${capitalizedName}')({
+  const name = Utils.toPascalCase(type.name);
+  return `export class ${name} extends Entity.Class<${name}>('${name}')({
 ${fieldStrings.join(',\n')}
 }) {}`;
 }
 
 function buildSchemaFile(schema: Domain.InsertAppSchema) {
-  const importStatement = `import * as Entity from '@graphprotocol/hypergraph/Entity';\nimport * as Schema from 'effect/Schema';`;
+  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';\nimport * as Schema from 'effect/Schema';`;
   const typeDefinitions = schema.types
     .map(typeDefinitionToString)
     .filter((def) => def != null)

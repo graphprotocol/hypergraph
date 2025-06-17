@@ -26,7 +26,7 @@ export const acceptInvitation = ({
   return Effect.succeed({
     transaction,
     author: {
-      accountId: author.accountId,
+      accountAddress: author.accountAddress,
       signature: {
         hex: signatureResult.toCompactHex(),
         recovery: signatureResult.recovery,

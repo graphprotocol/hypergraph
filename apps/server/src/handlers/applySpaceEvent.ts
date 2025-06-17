@@ -4,16 +4,16 @@ import type { Messages } from '@graphprotocol/hypergraph';
 import { Identity, SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
-import { getIdentity } from './getIdentity.js';
+import { getConnectIdentity } from './getConnectIdentity.js';
 
 type Params = {
-  accountId: string;
+  accountAddress: string;
   spaceId: string;
   event: SpaceEvents.SpaceEvent;
   keyBoxes: Messages.KeyBoxWithKeyId[];
 };
 
-export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: Params) {
+export async function applySpaceEvent({ accountAddress, spaceId, event, keyBoxes }: Params) {
   if (event.transaction.type === 'create-space') {
     throw new Error('applySpaceEvent does not support create-space events.');
   }
@@ -22,13 +22,16 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
     if (event.transaction.type === 'accept-invitation') {
       // verify that the account is the invitee
       await transaction.invitation.findFirstOrThrow({
-        where: { inviteeAccountId: event.author.accountId },
+        where: { inviteeAccountAddress: event.author.accountAddress },
       });
     } else {
       // verify that the account is a member of the space
       // TODO verify that the account is a admin of the space
       await transaction.space.findUniqueOrThrow({
-        where: { id: spaceId, members: { some: { id: accountId } } },
+        where: {
+          id: spaceId,
+          members: { some: { address: accountAddress } },
+        },
       });
     }
 
@@ -37,15 +40,16 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
       orderBy: { counter: 'desc' },
     });
 
-    const getVerifiedIdentity = (accountIdToFetch: string) => {
+    const getVerifiedIdentity = (accountAddressToFetch: string) => {
+      console.log('getVerifiedIdentity', accountAddressToFetch, accountAddress);
       // applySpaceEvent is only allowed to be called by the account that is applying the event
-      if (accountIdToFetch !== accountId) {
+      if (accountAddressToFetch !== accountAddress) {
         return Effect.fail(new Identity.InvalidIdentityError());
       }
 
       return Effect.gen(function* () {
         const identity = yield* Effect.tryPromise({
-          try: () => getIdentity({ accountId: accountIdToFetch }),
+          try: () => getConnectIdentity({ accountAddress: accountAddressToFetch }),
           catch: () => new Identity.InvalidIdentityError(),
         });
         return identity;
@@ -65,21 +69,21 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
     }
 
     if (event.transaction.type === 'create-invitation') {
-      const inviteeAccountId = event.transaction.inviteeAccountId;
+      const inviteeAccountAddress = event.transaction.inviteeAccountAddress;
       await transaction.invitation.create({
         data: {
           id: event.transaction.id,
           spaceId,
-          accountId: event.author.accountId,
-          inviteeAccountId,
+          accountAddress: event.author.accountAddress,
+          inviteeAccountAddress,
         },
       });
       await transaction.spaceKeyBox.createMany({
         data: keyBoxes.map((keyBox) => ({
-          id: `${keyBox.id}-${inviteeAccountId}`,
+          id: `${keyBox.id}-${inviteeAccountAddress}`,
           nonce: keyBox.nonce,
           ciphertext: keyBox.ciphertext,
-          accountId: inviteeAccountId,
+          accountAddress: inviteeAccountAddress,
           authorPublicKey: keyBox.authorPublicKey,
           spaceKeyId: keyBox.id,
         })),
@@ -87,12 +91,12 @@ export async function applySpaceEvent({ accountId, spaceId, event, keyBoxes }: P
     }
     if (event.transaction.type === 'accept-invitation') {
       await transaction.invitation.delete({
-        where: { spaceId_inviteeAccountId: { spaceId, inviteeAccountId: event.author.accountId } },
+        where: { spaceId_inviteeAccountAddress: { spaceId, inviteeAccountAddress: event.author.accountAddress } },
       });
 
       await transaction.space.update({
         where: { id: spaceId },
-        data: { members: { connect: { id: event.author.accountId } } },
+        data: { members: { connect: { address: event.author.accountAddress } } },
       });
     }
 

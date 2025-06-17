@@ -6,18 +6,18 @@ import { bytesToHex, hexToBytes } from '../../src/utils/index.js';
 
 describe('sign updates and recover key', () => {
   it('creates a signed message from which you can recover a signing key', () => {
-    const accountId = bytesToHex(randomBytes(20));
+    const accountAddress = bytesToHex(randomBytes(20));
     const secretKey = bytesToHex(new Uint8Array(32).fill(1));
     const signaturePrivateKeyBytes = secp256k1.utils.randomPrivateKey();
     const signaturePrivateKey = bytesToHex(signaturePrivateKeyBytes);
     const signaturePublicKey = bytesToHex(secp256k1.getPublicKey(signaturePrivateKeyBytes));
-    const spaceId = '0x1234';
+    const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
     const updateId = bytesToHex(randomBytes(32));
 
     const message = hexToBytes('0x01234abcdef01234');
 
     const msg = signedUpdateMessage({
-      accountId,
+      accountAddress,
       updateId,
       spaceId,
       message,

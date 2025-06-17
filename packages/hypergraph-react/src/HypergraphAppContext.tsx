@@ -9,6 +9,7 @@ import * as automerge from '@automerge/automerge/slim';
 import { uuid } from '@automerge/automerge/slim';
 import { type GeoSmartAccount, Graph } from '@graphprotocol/grc-20';
 import {
+  type Connect,
   Identity,
   type InboxMessageStorageEntry,
   Inboxes,
@@ -32,18 +33,17 @@ import {
   useRef,
   useState,
 } from 'react';
-import { type Address, getAddress } from 'viem';
+import type { Address } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
 
 export type HypergraphAppCtx = {
   // auth related
-  login(signer: Identity.Signer): Promise<void>;
   logout(): void;
-  setIdentityAndSessionToken(account: Identity.Identity & { sessionToken: string }): void;
+  setIdentity(identity: Connect.PrivateAppIdentity): void;
   // app related
   invitations: Array<Messages.Invitation>;
-  createSpace(smartAccountWalletClient?: GeoSmartAccount): Promise<string>;
+  createSpace(params: Readonly<{ name: string; smartAccountWalletClient?: GeoSmartAccount }>): Promise<string>;
 
   createSpaceInbox(
     params: Readonly<{ space: SpaceStorageEntry; isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>,
@@ -58,33 +58,35 @@ export type HypergraphAppCtx = {
       inboxId: string;
       encryptionPublicKey: string;
       signaturePrivateKey: string | null;
-      authorAccountId: string | null;
+      authorAccountAddress: string | null;
     }>,
   ): Promise<unknown>;
   createAccountInbox(
     params: Readonly<{ isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>,
   ): Promise<unknown>;
-  getLatestAccountInboxMessages(params: Readonly<{ accountId: string; inboxId: string }>): Promise<unknown>;
+  getLatestAccountInboxMessages(params: Readonly<{ accountAddress: string; inboxId: string }>): Promise<unknown>;
   getOwnAccountInboxes(): Promise<unknown>;
-  listPublicAccountInboxes(params: Readonly<{ accountId: string }>): Promise<readonly Messages.AccountInboxPublic[]>;
-  getAccountInbox(params: Readonly<{ accountId: string; inboxId: string }>): Promise<Messages.AccountInboxPublic>;
+  listPublicAccountInboxes(
+    params: Readonly<{ accountAddress: string }>,
+  ): Promise<readonly Messages.AccountInboxPublic[]>;
+  getAccountInbox(params: Readonly<{ accountAddress: string; inboxId: string }>): Promise<Messages.AccountInboxPublic>;
   sendAccountInboxMessage(
     params: Readonly<{
       message: string;
-      accountId: string;
+      accountAddress: string;
       inboxId: string;
       encryptionPublicKey: string;
       signaturePrivateKey: string | null;
-      authorAccountId: string | null;
+      authorAccountAddress: string | null;
     }>,
   ): Promise<unknown>;
   listSpaces(): void;
   listInvitations(): void;
   acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
   subscribeToSpace(params: Readonly<{ spaceId: string }>): void;
-  inviteToSpace(params: Readonly<{ space: SpaceStorageEntry; invitee: { accountId: Address } }>): Promise<unknown>;
-  getVerifiedIdentity(accountId: string): Promise<{
-    accountId: string;
+  inviteToSpace(params: Readonly<{ space: SpaceStorageEntry; invitee: { accountAddress: Address } }>): Promise<unknown>;
+  getVerifiedIdentity(accountAddress: string): Promise<{
+    accountAddress: string;
     encryptionPublicKey: string;
     signaturePublicKey: string;
   }>;
@@ -99,14 +101,11 @@ export type HypergraphAppCtx = {
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
-  async login() {
-    throw new Error('login is missing');
-  },
   logout() {
     throw new Error('logout is missing');
   },
-  setIdentityAndSessionToken() {
-    throw new Error('setIdentityAndSessionToken is missing');
+  setIdentity() {
+    throw new Error('setIdentity is missing');
   },
   invitations: [],
   async createSpace() {
@@ -176,18 +175,7 @@ export function useHypergraphApp() {
 
 export function useHypergraphAuth() {
   const authenticated = useSelectorStore(store, (state) => state.context.authenticated);
-  const accountId = useSelectorStore(store, (state) => state.context.accountId);
-  const keys = useSelectorStore(store, (state) => state.context.keys);
-  const identity: Identity.Identity | null =
-    accountId && keys
-      ? {
-          accountId,
-          encryptionPublicKey: keys.encryptionPublicKey,
-          encryptionPrivateKey: keys.encryptionPrivateKey,
-          signaturePublicKey: keys.signaturePublicKey,
-          signaturePrivateKey: keys.signaturePrivateKey,
-        }
-      : null;
+  const identity = useSelectorStore(store, (state) => state.context.identity);
   return { authenticated, identity };
 }
 
@@ -204,7 +192,7 @@ export type HypergraphAppProviderProps = Readonly<{
 //      (and store it in the sync server)
 export function HypergraphAppProvider({
   storage,
-  syncServerUri = 'http://localhost:3030',
+  syncServerUri = 'https://syncserver.hypergraph.thegraph.com',
   chainId = 80451,
   children,
 }: HypergraphAppProviderProps) {
@@ -214,57 +202,21 @@ export function HypergraphAppProvider({
   const spaces = useSelectorStore(store, (state) => state.context.spaces);
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelectorStore(store, (state) => state.context.repo);
-  const accountId = useSelectorStore(store, (state) => state.context.accountId);
-  const sessionToken = useSelectorStore(store, (state) => state.context.sessionToken);
-  const keys = useSelectorStore(store, (state) => state.context.keys);
-
-  const login = useCallback(
-    async (signer: Identity.Signer) => {
-      if (!signer) {
-        return;
-      }
-      const address = await signer.getAddress();
-      if (!address) {
-        return;
-      }
-      const accountId = getAddress(address);
-      await Identity.login(signer, accountId, syncServerUri, chainId, storage, {
-        host: window.location.host,
-        origin: window.location.origin,
-      });
-    },
-    [storage, syncServerUri, chainId],
-  );
+  const identity = useSelectorStore(store, (state) => state.context.identity);
 
   const logout = useCallback(() => {
     websocketConnection?.close();
     setWebsocketConnection(undefined);
+    Identity.logout(storage);
+  }, [storage, websocketConnection]);
 
-    const accountIdToLogout = accountId ?? Identity.loadAccountId(storage);
-    Identity.logout(accountIdToLogout, storage);
-  }, [accountId, storage, websocketConnection]);
-
-  const setIdentityAndSessionToken = useCallback(
-    (account: Identity.Identity & { sessionToken: string }) => {
-      Identity.storeAccountId(storage, account.accountId);
-      Identity.storeSyncServerSessionToken(storage, account.accountId, account.sessionToken);
-      Identity.storeKeys(storage, account.accountId, {
-        encryptionPublicKey: account.encryptionPublicKey,
-        encryptionPrivateKey: account.encryptionPrivateKey,
-        signaturePublicKey: account.signaturePublicKey,
-        signaturePrivateKey: account.signaturePrivateKey,
-      });
+  const setIdentity = useCallback(
+    (identity: Connect.PrivateAppIdentity) => {
+      Identity.storeIdentity(storage, identity);
       store.send({ type: 'reset' });
       store.send({
         type: 'setAuth',
-        accountId: getAddress(account.accountId),
-        sessionToken: account.sessionToken,
-        keys: {
-          encryptionPublicKey: account.encryptionPublicKey,
-          encryptionPrivateKey: account.encryptionPrivateKey,
-          signaturePublicKey: account.signaturePublicKey,
-          signaturePrivateKey: account.signaturePrivateKey,
-        },
+        identity,
       });
       console.log('Identity set');
     },
@@ -276,36 +228,26 @@ export function HypergraphAppProvider({
   // using a layout effect to avoid a re-render
   useLayoutEffect(() => {
     if (!initialRenderAuthCheckRef.current) {
-      const accountId = Identity.loadAccountId(storage);
-      if (accountId) {
-        const sessionToken = Identity.loadSyncServerSessionToken(storage, accountId);
-        if (sessionToken) {
-          const keys = Identity.loadKeys(storage, accountId);
-          if (keys) {
-            // user is already authenticated, set state
-            store.send({
-              type: 'setAuth',
-              accountId: getAddress(accountId),
-              sessionToken,
-              keys,
-            });
-          }
-        }
+      const identity = Identity.loadIdentity(storage);
+      if (identity) {
+        store.send({
+          type: 'setAuth',
+          identity,
+        });
       }
       // set render auth check to true so next potential rerender doesn't proc this
       initialRenderAuthCheckRef.current = true;
     }
   }, [storage]);
 
-  // Create a stable WebSocket connection that only depends on accountId
   useEffect(() => {
-    if (!sessionToken) {
+    if (!identity) {
       setIsConnecting(true);
       return;
     }
 
     const syncServerUrl = new URL(syncServerUri);
-    const syncServerWsUrl = new URL(`/?token=${sessionToken}`, syncServerUrl.toString());
+    const syncServerWsUrl = new URL(`/?token=${identity.sessionToken}`, syncServerUrl.toString());
     syncServerWsUrl.protocol = 'ws:';
     const syncServerWsUrlString = syncServerWsUrl.toString();
 
@@ -338,26 +280,26 @@ export function HypergraphAppProvider({
       websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
-  }, [sessionToken, syncServerUri]);
+  }, [identity, syncServerUri]);
 
   // Handle WebSocket messages in a separate effect
   useEffect(() => {
     if (!websocketConnection) return;
-    if (!accountId) {
-      console.error('No accountId found');
+    if (!identity) {
+      console.error('No identity found');
       return;
     }
-    const encryptionPrivateKey = keys?.encryptionPrivateKey;
+    const encryptionPrivateKey = identity.encryptionPrivateKey;
     if (!encryptionPrivateKey) {
       console.error('No encryption private key found');
       return;
     }
-    const encryptionPublicKey = keys?.encryptionPublicKey;
+    const encryptionPublicKey = identity.encryptionPublicKey;
     if (!encryptionPublicKey) {
       console.error('No encryption public key found');
       return;
     }
-    const signaturePrivateKey = keys?.signaturePrivateKey;
+    const signaturePrivateKey = identity.signaturePrivateKey;
     if (!signaturePrivateKey) {
       console.error('No signature private key found.');
       return;
@@ -376,15 +318,16 @@ export function HypergraphAppProvider({
             spaceId,
             updateId: update.updateId,
             signature: update.signature,
-            accountId: update.accountId,
+            accountAddress: update.accountAddress,
           });
-          const authorIdentity = await Identity.getVerifiedIdentity(update.accountId, syncServerUri);
+          const authorIdentity = await Identity.getVerifiedIdentity(update.accountAddress, syncServerUri);
           if (authorIdentity.signaturePublicKey !== signer) {
             console.error(
               `Received invalid signature, recovered signer is ${signer},
             expected ${authorIdentity.signaturePublicKey}`,
             );
-            return { valid: false, update: new Uint8Array([]) };
+            // TODO bring back signature verfication
+            // return { valid: false, update: new Uint8Array([]) };
           }
           return {
             valid: true,
@@ -409,10 +352,10 @@ export function HypergraphAppProvider({
       });
     };
 
-    const getVerifiedIdentity = (accountId: string) => {
+    const getVerifiedIdentity = (accountAddress: string) => {
       return Effect.gen(function* () {
         const identity = yield* Effect.tryPromise({
-          try: () => Identity.getVerifiedIdentity(accountId, syncServerUri),
+          try: () => Identity.getVerifiedIdentity(accountAddress, syncServerUri),
           catch: () => new Identity.InvalidIdentityError(),
         });
         return identity;
@@ -514,7 +457,7 @@ export function HypergraphAppProvider({
                 const updateId = uuid();
 
                 const messageToSend = Messages.signedUpdateMessage({
-                  accountId,
+                  accountAddress: identity.address,
                   updateId,
                   spaceId: space.id,
                   message: lastLocalChange,
@@ -617,12 +560,12 @@ export function HypergraphAppProvider({
           }
           case 'account-inbox': {
             // Validate the signature of the inbox corresponds to the current account's identity
-            if (!keys.signaturePrivateKey) {
+            if (!identity.signaturePrivateKey) {
               console.error('No signature private key found to process account inbox');
               return;
             }
             const inboxCreator = Inboxes.recoverAccountInboxCreatorKey(response.inbox);
-            if (inboxCreator !== keys.signaturePublicKey) {
+            if (inboxCreator !== identity.signaturePublicKey) {
               console.error('Invalid inbox creator', response.inbox);
               return;
             }
@@ -675,7 +618,7 @@ export function HypergraphAppProvider({
                       recovery: response.message.signature.recovery,
                     }
                   : null,
-                authorAccountId: response.message.authorAccountId ?? null,
+                authorAccountAddress: response.message.authorAccountAddress ?? null,
               };
               store.send({
                 type: 'setSpaceInboxMessages',
@@ -698,7 +641,7 @@ export function HypergraphAppProvider({
             const isValid = await Inboxes.validateAccountInboxMessage(
               response.message,
               inbox,
-              accountId,
+              identity.address,
               syncServerUri,
             );
             if (!isValid) {
@@ -721,7 +664,7 @@ export function HypergraphAppProvider({
                       recovery: response.message.signature.recovery,
                     }
                   : null,
-                authorAccountId: response.message.authorAccountId ?? null,
+                authorAccountAddress: response.message.authorAccountAddress ?? null,
               };
               store.send({
                 type: 'setAccountInboxMessages',
@@ -750,7 +693,7 @@ export function HypergraphAppProvider({
           }
           case 'account-inbox-messages': {
             // Validate the signature of the inbox corresponds to the current account's identity
-            if (!keys.signaturePrivateKey) {
+            if (!identity.signaturePrivateKey) {
               console.error('No signature private key found to process account inbox');
               return;
             }
@@ -761,9 +704,9 @@ export function HypergraphAppProvider({
             }
             const validSignatures = await Promise.all(
               response.messages.map(
-                // If the message has a signature, check that the signature is valid for the authorAccountId
+                // If the message has a signature, check that the signature is valid for the authorAccountAddress
                 async (message) => {
-                  return Inboxes.validateAccountInboxMessage(message, inbox, accountId, syncServerUri);
+                  return Inboxes.validateAccountInboxMessage(message, inbox, identity.address, syncServerUri);
                 },
               ),
             );
@@ -790,7 +733,7 @@ export function HypergraphAppProvider({
                           recovery: message.signature.recovery,
                         }
                       : null,
-                    authorAccountId: message.authorAccountId ?? null,
+                    authorAccountAddress: message.authorAccountAddress ?? null,
                   };
                 } catch (error) {
                   console.error('Error decrypting message', error);
@@ -821,7 +764,7 @@ export function HypergraphAppProvider({
             let lastMessageClock = new Date(0);
             const validSignatures = await Promise.all(
               response.messages.map(
-                // If the message has a signature, check that the signature is valid for the authorAccountId
+                // If the message has a signature, check that the signature is valid for the authorAccountAddress
                 async (message) => {
                   return Inboxes.validateSpaceInboxMessage(message, inbox, space.id, syncServerUri);
                 },
@@ -848,7 +791,7 @@ export function HypergraphAppProvider({
                           recovery: message.signature.recovery,
                         }
                       : null,
-                    authorAccountId: message.authorAccountId ?? null,
+                    authorAccountAddress: message.authorAccountAddress ?? null,
                     plaintext: decryptedMessage,
                   };
                 } catch (error) {
@@ -879,26 +822,22 @@ export function HypergraphAppProvider({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [
-    websocketConnection,
-    spaces,
-    accountId,
-    keys?.encryptionPrivateKey,
-    keys?.encryptionPublicKey,
-    keys?.signaturePrivateKey,
-    keys?.signaturePublicKey,
-    syncServerUri,
-  ]);
+  }, [websocketConnection, spaces, identity, syncServerUri]);
 
-  const createSpaceForContext = useCallback<() => Promise<string>>(
-    async (smartAccountWalletClient?: GeoSmartAccount) => {
-      if (!accountId) {
-        throw new Error('No account id found');
+  const createSpaceForContext = useCallback<
+    ({
+      name,
+      smartAccountWalletClient,
+    }: { name: string; smartAccountWalletClient?: GeoSmartAccount }) => Promise<string>
+  >(
+    async ({ name, smartAccountWalletClient }) => {
+      if (!identity) {
+        throw new Error('No identity   found');
       }
-      const encryptionPrivateKey = keys?.encryptionPrivateKey;
-      const encryptionPublicKey = keys?.encryptionPublicKey;
-      const signaturePrivateKey = keys?.signaturePrivateKey;
-      const signaturePublicKey = keys?.signaturePublicKey;
+      const encryptionPrivateKey = identity.encryptionPrivateKey;
+      const encryptionPublicKey = identity.encryptionPublicKey;
+      const signaturePrivateKey = identity.signaturePrivateKey;
+      const signaturePublicKey = identity.signaturePublicKey;
       if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
         throw new Error('Missing keys');
       }
@@ -921,7 +860,7 @@ export function HypergraphAppProvider({
       const spaceEvent = await Effect.runPromise(
         SpaceEvents.createSpace({
           author: {
-            accountId,
+            accountAddress: identity.address,
             encryptionPublicKey,
             signaturePrivateKey,
             signaturePublicKey,
@@ -934,32 +873,26 @@ export function HypergraphAppProvider({
         publicKey: Utils.hexToBytes(encryptionPublicKey),
       });
 
-      const message = {
+      const message: Messages.RequestCreateSpaceEvent = {
         type: 'create-space-event',
         event: spaceEvent,
         spaceId: spaceEvent.transaction.id,
-        keyId: Utils.generateId(),
         keyBox: {
-          accountId,
+          accountAddress: identity.address,
           ciphertext: Utils.bytesToHex(result.keyBoxCiphertext),
           nonce: Utils.bytesToHex(result.keyBoxNonce),
           authorPublicKey: encryptionPublicKey,
+          id: Utils.generateId(),
         },
-      } as const satisfies Messages.RequestCreateSpaceEvent;
+        name,
+      };
       websocketConnection?.send(Messages.serialize(message));
 
       // return the created space id
       // @todo return created Space with name, etc
       return spaceEvent.transaction.id;
     },
-    [
-      accountId,
-      keys?.encryptionPrivateKey,
-      keys?.encryptionPublicKey,
-      keys?.signaturePrivateKey,
-      keys?.signaturePublicKey,
-      websocketConnection,
-    ],
+    [identity, websocketConnection],
   );
 
   const listSpaces = useCallback(() => {
@@ -978,13 +911,13 @@ export function HypergraphAppProvider({
       isPublic,
       authPolicy,
     }: Readonly<{ space: SpaceStorageEntry; isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>) => {
-      if (!accountId) {
-        throw new Error('No account id found');
+      if (!identity) {
+        throw new Error('No identity   found');
       }
-      const encryptionPrivateKey = keys?.encryptionPrivateKey;
-      const encryptionPublicKey = keys?.encryptionPublicKey;
-      const signaturePrivateKey = keys?.signaturePrivateKey;
-      const signaturePublicKey = keys?.signaturePublicKey;
+      const encryptionPrivateKey = identity.encryptionPrivateKey;
+      const encryptionPublicKey = identity.encryptionPublicKey;
+      const signaturePrivateKey = identity.signaturePrivateKey;
+      const signaturePublicKey = identity.signaturePublicKey;
       if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
         throw new Error('Missing keys');
       }
@@ -994,7 +927,7 @@ export function HypergraphAppProvider({
       }
       const message = await Inboxes.createSpaceInboxCreationMessage({
         author: {
-          accountId,
+          accountAddress: identity.address,
           signaturePublicKey,
           encryptionPublicKey,
           signaturePrivateKey,
@@ -1007,14 +940,7 @@ export function HypergraphAppProvider({
       });
       websocketConnection?.send(Messages.serialize(message));
     },
-    [
-      accountId,
-      keys?.encryptionPrivateKey,
-      keys?.encryptionPublicKey,
-      keys?.signaturePrivateKey,
-      keys?.signaturePublicKey,
-      websocketConnection,
-    ],
+    [identity, websocketConnection],
   );
 
   const getLatestSpaceInboxMessagesForContext = useCallback(
@@ -1066,14 +992,14 @@ export function HypergraphAppProvider({
       message,
       encryptionPublicKey,
       signaturePrivateKey,
-      authorAccountId,
+      authorAccountAddress,
     }: Readonly<{
       spaceId: string;
       inboxId: string;
       message: string;
       encryptionPublicKey: string;
       signaturePrivateKey: string | null;
-      authorAccountId: string;
+      authorAccountAddress: string;
     }>) => {
       return await Inboxes.sendSpaceInboxMessage({
         spaceId,
@@ -1082,7 +1008,7 @@ export function HypergraphAppProvider({
         encryptionPublicKey,
         signaturePrivateKey,
         syncServerUri,
-        authorAccountId,
+        authorAccountAddress,
       });
     },
     [syncServerUri],
@@ -1090,17 +1016,17 @@ export function HypergraphAppProvider({
 
   const createAccountInboxForContext = useCallback(
     async ({ isPublic, authPolicy }: Readonly<{ isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>) => {
-      if (!accountId) {
-        throw new Error('No account id found');
+      if (!identity) {
+        throw new Error('No identity   found');
       }
-      const encryptionPrivateKey = keys?.encryptionPrivateKey;
-      const encryptionPublicKey = keys?.encryptionPublicKey;
-      const signaturePrivateKey = keys?.signaturePrivateKey;
+      const encryptionPrivateKey = identity.encryptionPrivateKey;
+      const encryptionPublicKey = identity.encryptionPublicKey;
+      const signaturePrivateKey = identity.signaturePrivateKey;
       if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey) {
         throw new Error('Missing keys');
       }
       const message = await Inboxes.createAccountInboxCreationMessage({
-        accountId,
+        accountAddress: identity.address,
         isPublic,
         authPolicy,
         encryptionPublicKey,
@@ -1108,11 +1034,11 @@ export function HypergraphAppProvider({
       });
       websocketConnection?.send(Messages.serialize(message));
     },
-    [accountId, keys?.encryptionPrivateKey, keys?.encryptionPublicKey, keys?.signaturePrivateKey, websocketConnection],
+    [identity, websocketConnection],
   );
 
   const getLatestAccountInboxMessagesForContext = useCallback(
-    async ({ accountId, inboxId }: Readonly<{ accountId: string; inboxId: string }>) => {
+    async ({ accountAddress, inboxId }: Readonly<{ accountAddress: string; inboxId: string }>) => {
       const storeState = store.getSnapshot();
       const inbox = storeState.context.accountInboxes.find((i) => i.inboxId === inboxId);
       if (!inbox) {
@@ -1122,7 +1048,7 @@ export function HypergraphAppProvider({
       const latestMessageClock = inbox.lastMessageClock;
       const message: Messages.RequestGetLatestAccountInboxMessages = {
         type: 'get-latest-account-inbox-messages',
-        accountId,
+        accountAddress,
         inboxId,
         since: new Date(latestMessageClock),
       };
@@ -1139,18 +1065,20 @@ export function HypergraphAppProvider({
   }, [websocketConnection]);
 
   const listPublicAccountInboxesForContext = useCallback(
-    async ({ accountId }: Readonly<{ accountId: string }>): Promise<readonly Messages.AccountInboxPublic[]> => {
-      return await Inboxes.listPublicAccountInboxes({ accountId, syncServerUri });
+    async ({
+      accountAddress,
+    }: Readonly<{ accountAddress: string }>): Promise<readonly Messages.AccountInboxPublic[]> => {
+      return await Inboxes.listPublicAccountInboxes({ accountAddress, syncServerUri });
     },
     [syncServerUri],
   );
 
   const getAccountInboxForContext = useCallback(
     async ({
-      accountId,
+      accountAddress,
       inboxId,
-    }: Readonly<{ accountId: string; inboxId: string }>): Promise<Messages.AccountInboxPublic> => {
-      return await Inboxes.getAccountInbox({ accountId, inboxId, syncServerUri });
+    }: Readonly<{ accountAddress: string; inboxId: string }>): Promise<Messages.AccountInboxPublic> => {
+      return await Inboxes.getAccountInbox({ accountAddress, inboxId, syncServerUri });
     },
     [syncServerUri],
   );
@@ -1158,27 +1086,27 @@ export function HypergraphAppProvider({
   const sendAccountInboxMessageForContext = useCallback(
     async ({
       message,
-      accountId,
+      accountAddress,
       inboxId,
       encryptionPublicKey,
       signaturePrivateKey,
-      authorAccountId,
+      authorAccountAddress,
     }: Readonly<{
       message: string;
-      accountId: string;
+      accountAddress: string;
       inboxId: string;
       encryptionPublicKey: string;
       signaturePrivateKey: string | null;
-      authorAccountId: string | null;
+      authorAccountAddress: string | null;
     }>) => {
       return await Inboxes.sendAccountInboxMessage({
         message,
-        accountId,
+        accountAddress,
         inboxId,
         encryptionPublicKey,
         signaturePrivateKey,
         syncServerUri,
-        authorAccountId,
+        authorAccountAddress,
       });
     },
     [syncServerUri],
@@ -1190,20 +1118,20 @@ export function HypergraphAppProvider({
     }: Readonly<{
       invitation: Messages.Invitation;
     }>) => {
-      if (!accountId) {
-        throw new Error('No account id found');
+      if (!identity) {
+        throw new Error('No identity   found');
       }
-      const encryptionPrivateKey = keys?.encryptionPrivateKey;
-      const encryptionPublicKey = keys?.encryptionPublicKey;
-      const signaturePrivateKey = keys?.signaturePrivateKey;
-      const signaturePublicKey = keys?.signaturePublicKey;
+      const encryptionPrivateKey = identity.encryptionPrivateKey;
+      const encryptionPublicKey = identity.encryptionPublicKey;
+      const signaturePrivateKey = identity.signaturePrivateKey;
+      const signaturePublicKey = identity.signaturePublicKey;
       if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
         throw new Error('Missing keys');
       }
       const spaceEvent = await Effect.runPromiseExit(
         SpaceEvents.acceptInvitation({
           author: {
-            accountId,
+            accountAddress: identity.address,
             signaturePublicKey,
             encryptionPublicKey,
             signaturePrivateKey,
@@ -1228,14 +1156,7 @@ export function HypergraphAppProvider({
         websocketConnection?.send(Messages.serialize(message2));
       }, 1000);
     },
-    [
-      accountId,
-      keys?.encryptionPrivateKey,
-      keys?.encryptionPublicKey,
-      keys?.signaturePrivateKey,
-      keys?.signaturePublicKey,
-      websocketConnection,
-    ],
+    [identity, websocketConnection],
   );
 
   const subscribeToSpace = useCallback(
@@ -1260,16 +1181,16 @@ export function HypergraphAppProvider({
     }: Readonly<{
       space: SpaceStorageEntry;
       invitee: {
-        accountId: string;
+        accountAddress: string;
       };
     }>) => {
-      if (!accountId) {
-        throw new Error('No account id found');
+      if (!identity) {
+        throw new Error('No identity   found');
       }
-      const encryptionPrivateKey = keys?.encryptionPrivateKey;
-      const encryptionPublicKey = keys?.encryptionPublicKey;
-      const signaturePrivateKey = keys?.signaturePrivateKey;
-      const signaturePublicKey = keys?.signaturePublicKey;
+      const encryptionPrivateKey = identity.encryptionPrivateKey;
+      const encryptionPublicKey = identity.encryptionPublicKey;
+      const signaturePrivateKey = identity.signaturePrivateKey;
+      const signaturePublicKey = identity.signaturePublicKey;
       if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
         throw new Error('Missing keys');
       }
@@ -1277,11 +1198,11 @@ export function HypergraphAppProvider({
         console.error('No state found for space');
         return;
       }
-      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountId, syncServerUri);
+      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountAddress, syncServerUri);
       const spaceEvent = await Effect.runPromiseExit(
         SpaceEvents.createInvitation({
           author: {
-            accountId,
+            accountAddress: identity.address,
             signaturePublicKey,
             encryptionPublicKey,
             signaturePrivateKey,
@@ -1306,7 +1227,7 @@ export function HypergraphAppProvider({
           ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
           nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
           authorPublicKey: encryptionPublicKey,
-          accountId: invitee.accountId,
+          accountAddress: invitee.accountAddress,
         };
       });
 
@@ -1318,20 +1239,12 @@ export function HypergraphAppProvider({
       };
       websocketConnection?.send(Messages.serialize(message));
     },
-    [
-      accountId,
-      keys?.encryptionPrivateKey,
-      keys?.encryptionPublicKey,
-      keys?.signaturePrivateKey,
-      keys?.signaturePublicKey,
-      websocketConnection,
-      syncServerUri,
-    ],
+    [identity, websocketConnection, syncServerUri],
   );
 
   const getVerifiedIdentity = useCallback(
-    (accountId: string) => {
-      return Identity.getVerifiedIdentity(accountId, syncServerUri);
+    (accountAddress: string) => {
+      return Identity.getVerifiedIdentity(accountAddress, syncServerUri);
     },
     [syncServerUri],
   );
@@ -1403,9 +1316,8 @@ export function HypergraphAppProvider({
   return (
     <HypergraphAppContext.Provider
       value={{
-        login,
         logout,
-        setIdentityAndSessionToken,
+        setIdentity,
         invitations,
         createSpace: createSpaceForContext,
         createSpaceInbox: createSpaceInboxForContext,

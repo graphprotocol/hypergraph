@@ -13,6 +13,8 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 
+import type { InsertAppSchema } from '../../../domain/Domain.js';
+
 import { API_ROOT_URL } from '../constants.js';
 import * as Schema from '../schema.js';
 
@@ -175,13 +177,10 @@ export function useAppEventsSuspenseQuery(
   });
 }
 
-export async function createApp(create: Schema.InsertAppSchema): Promise<Readonly<Schema.App>> {
+export async function createApp(create: InsertAppSchema): Promise<Readonly<Schema.App>> {
   const result = await fetch(`${API_ROOT_URL}/apps`, {
     method: 'POST',
     body: JSON.stringify(create),
-    headers: {
-      'Content-Type': 'applicaton/json',
-    },
   });
   if (result.status !== 200) {
     throw new Error('Failure creating app');
@@ -191,14 +190,11 @@ export async function createApp(create: Schema.InsertAppSchema): Promise<Readonl
   return Schema.AppSchemaDecoder(json);
 }
 
-export type UseCreateAppMutationResult = UseMutationResult<Readonly<Schema.App>, Error, Schema.InsertAppSchema>;
+export type UseCreateAppMutationResult = UseMutationResult<Readonly<Schema.App>, Error, InsertAppSchema>;
 export function useCreateAppMutation(
-  options: Omit<
-    UseMutationOptions<Readonly<Schema.App>, Error, Schema.InsertAppSchema>,
-    'mutationKey' | 'mutationFn'
-  > = {},
+  options: Omit<UseMutationOptions<Readonly<Schema.App>, Error, InsertAppSchema>, 'mutationKey' | 'mutationFn'> = {},
 ): UseCreateAppMutationResult {
-  return useMutation<Readonly<Schema.App>, Error, Schema.InsertAppSchema>({
+  return useMutation<Readonly<Schema.App>, Error, InsertAppSchema>({
     mutationKey: ['Space', 'Apps', 'create'] as const,
     async mutationFn(vars) {
       return await createApp(vars);

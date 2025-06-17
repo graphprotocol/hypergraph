@@ -1,19 +1,40 @@
-facebook:
-  label: Facebook
-  permalink: /facebook
-  description: Facebook tag description
-
-hello:
-  label: Hello
-  permalink: /hello
-  description: Hello tag description
-
 docusaurus:
   label: Docusaurus
   permalink: /docusaurus
   description: Docusaurus tag description
 
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
+release:
+  label: Release
+  permalink: /release
+  description: Release announcements and updates
+
+alpha:
+  label: Alpha
+  permalink: /alpha
+  description: Alpha version releases and features
+
+hypergraph:
+  label: Hypergraph
+  permalink: /hypergraph
+  description: Posts about Hypergraph features and updates
+
+knowledge-graphs:
+  label: Knowledge Graphs
+  permalink: /knowledge-graphs
+  description: Articles about knowledge graph concepts, best practices, and implementation
+
+education:
+  label: Education
+  permalink: /education
+  description: Educational content and tutorials
+
+best-practices:
+  label: Best Practices
+  permalink: /best-practices
+  description: Guidelines, conventions, and recommended practices
+
+grc20:
+  label: GRC-20
+  permalink: /grc20
+  description: Content related to the GRC-20 knowledge graph specification
+
