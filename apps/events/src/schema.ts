@@ -20,8 +20,8 @@ export class Todo2 extends Entity.Class<Todo2>('Todo2')({
   website: Type.Url,
 }) {}
 
-export class NewsStory extends Entity.Class<NewsStory>('NewsStory')({
+export class Event extends Entity.Class<Event>('Event')({
   name: Type.Text,
-  description: Type.Text,
-  publishDate: Type.Text,
+  // description: Type.Text,
+  // publishDate: Type.Text,
 }) {}

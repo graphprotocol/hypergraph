@@ -26,6 +26,7 @@ export const publishOps = async ({ name, ops, walletClient, space }: PublishPara
     name,
     ops: ops,
     author: address,
+    network: 'TESTNET',
   });
 
   const cid = publishResult.cid;

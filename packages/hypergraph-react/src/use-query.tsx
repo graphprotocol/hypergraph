@@ -2,10 +2,10 @@ import { type Entity, Type, Utils } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { useMemo } from 'react';
 import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
-import { generateDeleteOps } from './internal/generate-delete-ops-geo.js';
+import { generateDeleteOps } from './internal/generate-delete-ops.js';
 import { useGenerateCreateOps } from './internal/use-generate-create-ops.js';
 import { useGenerateUpdateOps } from './internal/use-generate-update-ops.js';
-import { parseResult, useQueryPublic } from './internal/use-query-public-geo.js';
+import { parseResult, useQueryPublic } from './internal/use-query-public.js';
 import type { DiffEntry, PublishDiffInfo } from './types.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {

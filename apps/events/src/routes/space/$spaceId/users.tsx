@@ -1,5 +1,5 @@
 import { UsersMerged } from '@/components/users/users-merged';
-import { UsersPublicGeo } from '@/components/users/users-public-geo';
+import { UsersPublic } from '@/components/users/users-public';
 import { mapping } from '@/mapping.js';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
@@ -36,7 +36,7 @@ function UsersRouteComponent() {
       <HypergraphSpaceProvider space={spaceId} mapping={mapping}>
         <UsersMerged />
         <UsersLocal />
-        <UsersPublicGeo />
+        <UsersPublic />
       </HypergraphSpaceProvider>
     </div>
   );

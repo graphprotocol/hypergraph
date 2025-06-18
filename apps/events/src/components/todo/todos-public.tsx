@@ -12,7 +12,7 @@ import { Todo2 } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
 
-export const TodosPublicGeo = () => {
+export const TodosPublic = () => {
   const space = useHypergraphSpace();
   const {
     data: dataPublic,
