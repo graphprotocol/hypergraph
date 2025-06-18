@@ -1,4 +1,4 @@
-import { type Op, Relation, Triple } from '@graphprotocol/grc-20';
+import type { Op } from '@graphprotocol/grc-20';
 import { gql, request } from 'graphql-request';
 import { GEO_ENDPOINT } from './constants.js';
 
@@ -52,11 +52,11 @@ export const generateDeleteOps = async ({ id, space }: { id: string; space: stri
     throw new Error('Entity not found');
   }
   const ops: Op[] = [];
-  for (const attribute of result.entity.currentVersion.version.triples.nodes) {
-    ops.push(Triple.remove({ attributeId: attribute.attributeId, entityId: id }));
-  }
-  for (const relation of result.entity.currentVersion.version.relationsByFromVersionId.nodes) {
-    ops.push(Relation.remove(relation.id));
-  }
+  // for (const attribute of result.entity.currentVersion.version.triples.nodes) {
+  //   ops.push(Triple.remove({ attributeId: attribute.attributeId, entityId: id }));
+  // }
+  // for (const relation of result.entity.currentVersion.version.relationsByFromVersionId.nodes) {
+  //   ops.push(Relation.remove(relation.id));
+  // }
   return ops;
 };

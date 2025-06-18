@@ -21,10 +21,9 @@ export {
   useRemoveRelation,
   useUpdateEntity,
 } from './HypergraphSpaceContext.js';
-export { generateDeleteOps as _generateDeleteOps } from './internal/generate-delete-ops-geo.js';
+export { generateDeleteOps as _generateDeleteOps } from './internal/generate-delete-ops.js';
 export { useGenerateCreateOps as _useGenerateCreateOps } from './internal/use-generate-create-ops.js';
-export { useQueryPublic as _useQueryPublicGeo } from './internal/use-query-public-geo.js';
-export { useQueryPublic as _useQueryPublicKg } from './internal/use-query-public-kg.js';
+export { useQueryPublic as _useQueryPublic } from './internal/use-query-public.js';
 export { publishOps } from './publish-ops.js';
 export type * from './types.js';
 export { useQuery } from './use-query.js';

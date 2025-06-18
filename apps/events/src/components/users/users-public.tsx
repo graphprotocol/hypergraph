@@ -4,7 +4,7 @@ import { User } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
 
-export const UsersPublicGeo = () => {
+export const UsersPublic = () => {
   const space = useHypergraphSpace();
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(User, { mode: 'public' });
 

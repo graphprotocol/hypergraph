@@ -16,8 +16,7 @@ import Select from 'react-select';
 import { Todo2, User } from '../schema';
 import { Spinner } from './spinner';
 import { TodosLocal } from './todo/todos-local';
-import { TodosPublicGeo } from './todo/todos-public-geo';
-import { TodosPublicKg } from './todo/todos-public-kg';
+import { TodosPublic } from './todo/todos-public';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Modal } from './ui/modal';
@@ -262,9 +261,7 @@ export const Todos2 = () => {
 
       <TodosLocal />
 
-      <TodosPublicGeo />
-
-      <TodosPublicKg />
+      <TodosPublic />
     </>
   );
 };

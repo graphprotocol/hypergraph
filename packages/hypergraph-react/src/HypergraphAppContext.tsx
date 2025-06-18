@@ -849,6 +849,7 @@ export function HypergraphAppProvider({
           const result = await Graph.createSpace({
             editorAddress: smartAccountWalletClient.account?.address,
             name: 'Test Space',
+            network: 'TESTNET',
           });
           spaceId = result.id;
           console.log('Created public space', spaceId);

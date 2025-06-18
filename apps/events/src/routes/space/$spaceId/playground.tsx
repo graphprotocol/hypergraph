@@ -1,4 +1,4 @@
-import { TodosPublicGeo } from '@/components/todo/todos-public-geo';
+import { TodosPublic } from '@/components/todo/todos-public';
 import { mapping } from '@/mapping.js';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
@@ -33,7 +33,7 @@ function PlaygroundRouteComponent() {
   return (
     <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
       <HypergraphSpaceProvider space={spaceId} mapping={mapping}>
-        <TodosPublicGeo />
+        <TodosPublic />
       </HypergraphSpaceProvider>
     </div>
   );

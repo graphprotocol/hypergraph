@@ -4,7 +4,7 @@ import { parse as parseUuid, stringify as stringifyUuid } from 'uuid';
 /**
  * Converts a UUID into Base58Check
  */
-export function idToAutomergeId(uuid: string, _versionByte = 0x00) {
+export function idToAutomergeId(uuid: string) {
   const payload = parseUuid(uuid);
   return bs58check.encode(payload);
 }
