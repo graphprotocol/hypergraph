@@ -11,245 +11,103 @@ Hypergraph re-imagines traditional client–server apps as **local-first**, **pe
 
 ## Table of Contents
 
-- [Knowledge Graphs and GRC-20](#knowledge-graphs-and-grc-20)
+- [Knowledge Graphs](#knowledge-graphs)
+- [Hypergraph SDK](#hypergraph-sdk-in-action)
 - [Spaces](#spaces)
 - [Identities](#identities)
 - [Inboxes](#inboxes)
 - [Events & CRDTs](#events--crdts)
 - [Security Model](#security-model)
+- [GRC-20: The Protocol Under the Hood](#grc-20-the-protocol-under-the-hood)
 
 ---
-## Knowledge Graphs and GRC-20
+## Knowledge Graphs
 
-Hypergraph adopts **GRC-20** as its canonical data format. Every mutation you perform through the Hypergraph SDK—whether it's adding a note, uploading a photo, or inviting a collaborator—ultimately becomes a set of GRC-20 values bundled into an edit. Once the edit is posted, it becomes part of the global knowledge graph—instantly connecting your data to a world of interoperable apps, spaces, and users. From that moment the edit is immutable and immediately queryable via Hypergraph's hooks and GraphQL APIs.
+Traditional databases store data in rows and columns. Knowledge graphs store data as **networks of connected information**—think of it like a mind map where every piece of information can link to any other piece.
 
-### 1. The GRC-20 Standard
-The GRC-20 standard defines how knowledge is structured, shared, and connected in a decentralized, composable way—enabling interoperability across web3 applications. It specifies the core building blocks: entities, types, properties, relations, and values. Read the [GRC-20 spec on GitHub](https://github.com/graphprotocol/graph-improvement-proposals/blob/main/grcs/0020-knowledge-graph.md).
+### Why Knowledge Graphs?
 
-### 2. Core Data Model Concepts
+Imagine you're building a social app. In a traditional database, you might have separate tables for `users`, `posts`, and `likes`. But what if you want to find "posts by photographers that my friends liked"? That requires complex joins across multiple tables.
 
-To illustrate the core pieces of a knowledge graph, we'll break down a single sentence:
+In a knowledge graph, the relationships *are* the data:
 
-> **"Teresa, a photographer, owns a Fujifilm camera."**
+```mermaid
+graph LR
+  Teresa[👩 Teresa] -->|profession| Photography[📸 Photography]
+  Teresa -->|owns| Camera[📷 Fujifilm X100]
+  Teresa -->|posted| Photo[🖼️ Street Photo]
+  Alex[👨 Alex] -->|friend_of| Teresa
+  Alex -->|liked| Photo
+```
 
-#### The Value Model
-In GRC-20, each **entity** is a node in the graph with a list of **values**. Each value attaches a **property** (by ID) and a literal value (plus options). Properties define the data type and constraints for their values. **Relations** are first-class objects that connect entities and can have their own properties and metadata.
+This makes complex queries natural and fast. Plus, your data model can evolve organically—just add new types of entities and relationships without schema migrations.
 
-**Example property definition:**
-```json
-{
-  "id": "PROFESSION_ATTR_ID",
-  "data_type": "TEXT"
+### The Hypergraph Advantage
+
+Hypergraph takes knowledge graphs further by making them:
+
+- **🔒 Private by default** — Your personal data stays encrypted on your device
+- **🌐 Peer-to-peer** — No central server required; collaborate directly with friends
+- **⚡ Real-time** — Changes sync instantly across all your devices
+- **🔗 Interoperable** — Your data works across different apps that speak the same protocol
+
+> **The magic:** Under the hood, Hypergraph serializes everything using the **GRC-20** standard. As a developer, you just work with simple SDK calls—Hypergraph handles the complex cryptography and networking. If you're curious about the low-level details, check out the [GRC-20 section](#grc-20-advanced) below.
+
+## Hypergraph SDK in Action
+
+Let's build that photographer example step by step:
+
+```ts
+import { useHypergraph } from '@graphprotocol/hypergraph-react';
+
+function CreateProfile() {
+  const { createEntity, createRelation } = useHypergraph();
+
+  const handleCreateProfile = async () => {
+    // 1️⃣ Create Teresa as a person
+    const teresa = await createEntity({
+      name: 'Teresa',
+      type: 'Person',
+      properties: {
+        profession: 'photographer',
+        bio: 'Street photographer based in Tokyo'
+      }
+    });
+
+    // 2️⃣ Create her camera
+    const camera = await createEntity({
+      name: 'Fujifilm X100V',
+      type: 'Camera',
+      properties: {
+        brand: 'Fujifilm',
+        model: 'X100V'
+      }
+    });
+
+    // 3️⃣ Connect them with an "owns" relationship
+    await createRelation({
+      from: teresa.id,
+      to: camera.id,
+      type: 'owns',
+      properties: {
+        purchaseDate: '2023-06-15'
+      }
+    });
+  };
+
+  return <button onClick={handleCreateProfile}>Create Profile</button>;
 }
 ```
 
-**Example entity with values:**
-```json
-{
-  "id": "Teresa_ID",
-  "values": [
-    { "property": "PROFESSION_ATTR_ID", "value": "photographer" }
-  ]
-}
-```
+That's it! Behind the scenes, Hypergraph:
+- Generates unique IDs for each entity
+- Encrypts the data (if in a private Space)
+- Syncs changes to all connected devices
+- Makes everything queryable via GraphQL
 
-**Example in code:**
-```ts
-Graph.createEntity({
-  name: 'Teresa',
-  types: [PERSON_TYPE_ID],
-  values: [
-    { property: PROFESSION_ATTR_ID, value: 'photographer' }
-  ]
-});
-```
+**Next:** Learn about [Spaces](#spaces)—how Hypergraph organizes people and data into collaborative groups.
 
-#### IDs: Where Do They Come From?
-Every entity, attribute, and relation has a unique ID (usually a string, e.g. `PERSON_TYPE_ID`). These are generated per your schema or space, and are required for all operations.
-
-#### Entities & Types
-**Entity:** A unique thing in the graph (e.g., `Teresa`, `Camera`).
-**Type:** A category for entities (e.g., `Person`, `Device`).
-
-```ts
-const PERSON_TYPE_ID = 'PERSON_TYPE_ID';
-const DEVICE_TYPE_ID = 'DEVICE_TYPE_ID';
-const PROFESSION_ATTR_ID = 'PROFESSION_ATTR_ID';
-const BRAND_ATTR_ID = 'BRAND_ATTR_ID';
-
-const { id: cameraId, ops: cameraOps } = Graph.createEntity({
-  name: 'Camera',
-  types: [DEVICE_TYPE_ID],
-  values: [
-    { property: BRAND_ATTR_ID, value: 'Fujifilm' },
-  ],
-});
-
-const { id: teresaId, ops: teresaOps } = Graph.createEntity({
-  name: 'Teresa',
-  types: [PERSON_TYPE_ID],
-  values: [
-    { property: PROFESSION_ATTR_ID, value: 'photographer' },
-  ],
-});
-```
-
-#### Properties vs. Relations
-- **Property:** Attaches data to a single entity (e.g., `Camera` → `brand` → `Fujifilm`).
-- **Relation:** Connects two entities (e.g., `Teresa` → `owns` → `Camera`). Relations are themselves entities and can have their own properties (e.g., `date_acquired`).
-
-```ts
-const OWNS_REL_TYPE_ID = 'OWNS_REL_TYPE_ID';
-const DATE_ACQUIRED_ATTR_ID = 'DATE_ACQUIRED_ATTR_ID';
-
-import { getEntityRelations } from '@graphprotocol/grc-20';
-
-// 1️⃣ Fetch existing owns relations for Teresa
-const existingOwns = getEntityRelations(teresaId, PersonSchema, doc).owns;
-
-// 2️⃣ Only create if none exists pointing to this camera
-if (!existingOwns.find(rel => rel.id === cameraId)) {
-  const { ops: ownsOps } = Graph.createRelation({
-    fromEntity: teresaId,
-    toEntity: cameraId,
-    relationType: OWNS_REL_TYPE_ID,
-    values: [
-      { property: DATE_ACQUIRED_ATTR_ID, value: Graph.serializeDate(new Date('2020-03-15')) },
-    ],
-  });
-  // add ownsOps to your edit batch…
-}
-```
-
-**Relation JSON example:**
-```json
-{
-  "id":          "OwnsRelation_ID",
-  "type":        "OWNS_REL_TYPE_ID",
-  "from_entity": "Teresa_ID",
-  "to_entity":   "Camera_ID",
-  "entity":      "OwnsRelationEntity_ID",  // rich relation entity UUID (optional)
-  "position":    "a",
-  "verified":    false
-}
-```
-
-#### Searching and Idempotency
-The SDK generates a new ID for every entity or relation you create—even if an identical relation already exists. To avoid duplicates:
-
-- **Query existing relations** via your GraphQL endpoint with a filter on `from`, `relationType`, and `to`.
-- **Use** `getEntityRelations` (from `@graphprotocol/grc-20`) on a local handle to list current relations for an entity:
-
-```ts
-import { getEntityRelations } from '@graphprotocol/grc-20';
-
-// Returns all non-deleted owns relations from Teresa
-const relations = getEntityRelations(teresaId, PersonSchema, doc).owns;
-```
-
-- **Check** if a relation linking the same entities already exists before calling `Graph.createRelation`.
-
-If you call `createRelation` without checking, you'll end up with multiple relation entities of the same type between the same entities. Deduplication is the responsibility of your application or schema governance.
-
-#### Minimal Edit Example
-Bundle all operations into an edit:
-```ts
-const ops = [...cameraOps, ...teresaOps, ...ownsOps];
-// Publish ops as an edit (see SDK docs for publishing)
-```
-
-Let's bring together everything we've learned above—including our example sentence—into a complete GRC-20–compliant TypeScript example that is fully composable with Hypergraph.
-
-```ts title="example.ts"
-// Example: "Teresa, a photographer, owns a Fujifilm camera."
-// This script uses the @graphprotocol/grc-20 SDK to:
-// 1. Create a Camera entity with a brand property
-// 2. Create a Teresa entity with a profession property
-// 3. Check for an existing 'owns' relation from Teresa to the Camera
-// 4. If none exists, create the 'owns' relation entity
-// 5. Bundle all operations into a single edit (ops array)
-
-import { Graph, getEntityRelations } from '@graphprotocol/grc-20';
-
-// Replace these with actual IDs from your schema/space
-const PERSON_TYPE_ID = 'PERSON_TYPE_ID';
-const DEVICE_TYPE_ID = 'DEVICE_TYPE_ID';
-const PROFESSION_ATTR_ID = 'PROFESSION_ATTR_ID';
-const BRAND_ATTR_ID = 'BRAND_ATTR_ID';
-const OWNS_REL_TYPE_ID = 'OWNS_REL_TYPE_ID';
-const DATE_ACQUIRED_ATTR_ID = 'DATE_ACQUIRED_ATTR_ID';
-
-// 1️⃣ Create the Camera entity with a brand property
-const { id: cameraId, ops: cameraOps } = Graph.createEntity({
-  name: 'Fujifilm camera',
-  types: [DEVICE_TYPE_ID],
-  values: [
-    { property: BRAND_ATTR_ID, value: 'Fujifilm' },
-  ],
-});
-
-// 2️⃣ Create the Teresa entity with a profession property
-const { id: teresaId, ops: teresaOps } = Graph.createEntity({
-  name: 'Teresa',
-  types: [PERSON_TYPE_ID],
-  values: [
-    { property: PROFESSION_ATTR_ID, value: 'photographer' },
-  ],
-});
-
-// 3️⃣ Fetch existing 'owns' relations for Teresa
-const existingOwns = getEntityRelations(teresaId, PersonSchema, doc).owns;
-
-// 4️⃣ Only create if none exists pointing to this camera
-let ownsOps = [];
-if (!existingOwns.find(rel => rel.id === cameraId)) {
-  const { ops } = Graph.createRelation({
-    fromEntity: teresaId,
-    toEntity: cameraId,
-    relationType: OWNS_REL_TYPE_ID,
-    values: [
-      { property: DATE_ACQUIRED_ATTR_ID, value: Graph.serializeDate(new Date('2020-03-15')) },
-    ],
-  });
-  ownsOps = ops;
-}
-
-// 5️⃣ Combine all ops into a single edit
-const ops = [...cameraOps, ...teresaOps, ...ownsOps];
-console.log('Ops ready for publishing:', ops);
-
-// (Optional) Publish the edit
-// Graph.publishEdit({ ops });
-```
---- 
-
-#### Mental Model Recap
-- **Entities** are things.
-- **Properties** are facts about things, and define the data type.
-- **Relations** connect things (and can have their own properties).
-- **Values** are atomic facts (entity, property, value).
-- **Edits** are batches of changes.
-
-#### Cheat Sheet Table
-| Concept  | Example in Sentence | GRC-20 Term | Code Snippet |
-|----------|---------------------|-------------|--------------|
-| Entity   | Teresa, Camera      | Entity      | `{ id, name }` |
-| Type     | Person, Device      | Type        | `types: [PERSON_TYPE_ID]` |
-| Property | profession, brand   | Property    | `{ id: BRAND_ATTR_ID, data_type: 'TEXT' }` |
-| Relation | owns                | Relation    | `{ from_entity, to_entity, type }` |
-| Value    | `Teresa → profession → photographer` | Value | `{ property: PROFESSION_ATTR_ID, value: 'photographer' }` |
-| Edit     | batch of all values | Edit        | `ops: [...]` |
-
----
-
-_All of the above is not just theory—Hypergraph puts it to work for you._ **When you call the SDK or its React hooks, Hypergraph turns your mutations into values, bundles them into edits, encrypts them (if the Space is private), and syncs them peer-to-peer or anchors them on-chain if the data is public.** As a developer you think in entities and hooks; behind the scenes Hypergraph speaks pure GRC-20.
-
----
-
-All of these building blocks are specified by the GRC-20 standard and created in code with the GRC-20 SDK.
-
-### 3. The GRC-20 SDK
-The [`@graphprotocol/grc-20`](https://www.npmjs.com/package/@graphprotocol/grc-20) SDK is a toolkit for building, reading, and writing GRC-20-compliant knowledge graphs. It provides APIs for creating entities, types, properties, and relations, and handles serialization, publishing to IPFS, and onchain anchoring—making it easy to implement the GRC-20 standard in your apps.
+<!-- GRC-20 deep-dive moved to the bottom of the doc -->
 
 ## Spaces
 
@@ -312,6 +170,90 @@ When the event log grows large, a peer may emit `sendCompactedUpdate`—a snapsh
 | Forged events | **Signature verification** for every event using the author's public key. |
 | Stale clients | Each event carries `lastKnownSpaceEventId`; server rejects out-of-date mutations. |
 | Key leakage on member removal | **Key rotation** through `removeMember` → generates a new `spaceKey`. |
+
+## GRC-20: The Protocol Under the Hood
+
+> **⚠️ Advanced Section:** You don't need to understand GRC-20 to build with Hypergraph! This is for developers who want to understand the underlying protocol or need low-level access to the knowledge graph.
+
+Think of GRC-20 as the "assembly language" of knowledge graphs. While Hypergraph gives you high-level React hooks and intuitive APIs, GRC-20 defines the precise data format that makes everything interoperable.
+
+### Why Does GRC-20 Exist?
+
+Imagine if every social app stored data differently—Instagram used JSON, TikTok used XML, Twitter used CSV. Your photos, posts, and connections would be trapped in silos forever.
+
+GRC-20 solves this by creating a **universal format** for knowledge. Any app that speaks GRC-20 can read, write, and build upon data created by any other GRC-20 app.
+
+### The Five Building Blocks
+
+Let's decode the sentence *"Teresa, a photographer, owns a Fujifilm camera"* into its GRC-20 components:
+
+| **English** | **GRC-20 Term** | **What It Represents** |
+|-------------|-----------------|------------------------|
+| "Teresa" | **Entity** | A unique thing in the graph |
+| "photographer" | **Value** | A piece of data attached to an entity |
+| "profession" | **Property** | The type/schema of a value |
+| "Person" | **Type** | The category an entity belongs to |
+| "owns" | **Relation** | A connection between two entities |
+
+### Raw GRC-20 Code
+
+Here's how that sentence looks when written directly with the [`@graphprotocol/grc-20`](https://www.npmjs.com/package/@graphprotocol/grc-20) library:
+
+```ts title="Low-level GRC-20 example"
+import { Graph } from '@graphprotocol/grc-20';
+
+// 1️⃣ Define your schema IDs (normally auto-generated)
+const PERSON_TYPE = 'schema:type:person';
+const CAMERA_TYPE = 'schema:type:camera';
+const PROFESSION_PROP = 'schema:property:profession';
+const BRAND_PROP = 'schema:property:brand';
+const OWNS_RELATION = 'schema:relation:owns';
+
+// 2️⃣ Create entities with their properties
+const { id: teresaId, ops: teresaOps } = Graph.createEntity({
+  name: 'Teresa',
+  types: [PERSON_TYPE],
+  values: [
+    { property: PROFESSION_PROP, value: 'photographer' }
+  ]
+});
+
+const { id: cameraId, ops: cameraOps } = Graph.createEntity({
+  name: 'Fujifilm X100V',
+  types: [CAMERA_TYPE],
+  values: [
+    { property: BRAND_PROP, value: 'Fujifilm' }
+  ]
+});
+
+// 3️⃣ Create the relationship
+const { ops: relationOps } = Graph.createRelation({
+  fromEntity: teresaId,
+  toEntity: cameraId,
+  relationType: OWNS_RELATION
+});
+
+// 4️⃣ Bundle everything into a single "edit"
+const allOperations = [...teresaOps, ...cameraOps, ...relationOps];
+
+// 5️⃣ Publish to the network (IPFS, blockchain, etc.)
+await Graph.publishEdit({ ops: allOperations });
+```
+
+### When Would You Use GRC-20 Directly?
+
+Most developers should stick with the Hypergraph SDK! But you might drop down to GRC-20 if you're:
+
+- **Building infrastructure tools** (indexers, validators, etc.)
+- **Migrating data** from other formats into the knowledge graph
+- **Creating custom query engines** that need maximum performance
+- **Debugging issues** at the protocol level
+
+For typical app development, Hypergraph's React hooks and high-level APIs are much more convenient and handle all the GRC-20 complexity for you.
+
+---
+
+**Want to learn more?** Read the full [GRC-20 specification](https://github.com/graphprotocol/graph-improvement-proposals/blob/main/grcs/0020-knowledge-graph.md) on GitHub.
 
 ---
 
