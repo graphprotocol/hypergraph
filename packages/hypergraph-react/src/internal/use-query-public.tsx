@@ -6,50 +6,27 @@ import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { useHypergraph } from '../HypergraphSpaceContext.js';
 import type { Mapping, MappingEntry } from '../types.js';
-import { GEO_ENDPOINT } from './constants.js';
+import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocument = gql`
-query entities($spaceId: String!, $typeId: String!, $relationTypeIds: [String!]!) {
-  entities(
-    filter: {
-      currentVersion: {
-        version: {
-          versionTypes: {some: {type: {entityId: {equalTo: $typeId}}}}
-          versionSpaces: {some: {spaceId: {equalTo: $spaceId}}}
-        }
-      }
+query entities($spaceId: String!) {
+  entities(spaceId: $spaceId, filter: {}) {
+    id
+    name
+    values {
+      propertyId
+      value
     }
-  ) {
-    nodes {
-      id
-      name
-      currentVersion {
-        versionId
-        version {
-          triples {
-            nodes {
-              attributeId
-              textValue
-              booleanValue
-              numberValue
-              valueType
-              unitOption
-            }
-          }
-          relationsByFromVersionId(filter: {typeOfId: {in: $relationTypeIds}}) {
-            nodes {
-              toEntity {
-                nodeId
-                id
-                name
-              }
-              typeOf {
-                id
-                name
-              }
-            }
-          }
+    relations {
+      to {
+        id
+        name
+      }
+      type {
+        id
+        entity {
+          name
         }
       }
     }
@@ -59,39 +36,25 @@ query entities($spaceId: String!, $typeId: String!, $relationTypeIds: [String!]!
 
 type EntityQueryResult = {
   entities: {
-    nodes: {
-      id: string;
-      name: string;
-      currentVersion: {
-        versionId: string;
-        version: {
-          triples: {
-            nodes: {
-              attributeId: string;
-              textValue: string;
-              booleanValue: boolean;
-              numberValue: number;
-              valueType: 'TEXT' | 'CHECKBOX' | 'POINT' | 'URL' | 'TIME' | 'NUMBER';
-              unitOption: unknown;
-            }[];
-          };
-          relationsByFromVersionId: {
-            nodes: {
-              typeOf: {
-                name: string;
-                id: string;
-              };
-              toEntity: {
-                nodeId: string;
-                id: string;
-                name: string;
-              };
-            }[];
-          };
+    id: string;
+    name: string;
+    values: {
+      propertyId: string;
+      value: string;
+    }[];
+    relations: {
+      to: {
+        id: string;
+        name: string;
+      };
+      type: {
+        id: string;
+        entity: {
+          name: string;
         };
       };
     }[];
-  };
+  }[];
 };
 
 export const parseResult = <S extends Entity.AnyNoContext>(
@@ -104,33 +67,33 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   const data: Entity.Entity<S>[] = [];
   const invalidEntities: Record<string, unknown>[] = [];
 
-  for (const queryEntity of queryData.entities.nodes) {
-    const queryEntityVersion = queryEntity.currentVersion.version;
+  for (const queryEntity of queryData.entities) {
     const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
       id: queryEntity.id,
     };
+
     // take the mappingEntry and assign the attributes to the rawEntity
     for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
-      const property = queryEntityVersion.triples.nodes.find((a) => a.attributeId === value);
+      const property = queryEntity.values.find((a) => a.propertyId === value);
       if (property) {
         if (type.fields[key] === Type.Checkbox) {
-          rawEntity[key] = property.booleanValue;
+          rawEntity[key] = Boolean(property.value);
         } else if (type.fields[key] === Type.Point) {
-          rawEntity[key] = property.textValue;
+          rawEntity[key] = property.value;
         } else if (type.fields[key] === Type.Url) {
-          rawEntity[key] = property.textValue;
+          rawEntity[key] = property.value;
         } else if (type.fields[key] === Type.Date) {
-          rawEntity[key] = property.textValue;
+          rawEntity[key] = property.value;
         } else if (type.fields[key] === Type.Number) {
-          rawEntity[key] = Number(property.textValue);
+          rawEntity[key] = Number(property.value);
         } else {
-          rawEntity[key] = property.textValue;
+          rawEntity[key] = property.value;
         }
       }
     }
 
     for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
-      const properties = queryEntityVersion.relationsByFromVersionId.nodes.filter((a) => a.typeOf.id === relationId);
+      const properties = queryEntity.relations.filter((a) => a.type.id === relationId);
       if (properties.length === 0) {
         rawEntity[key] = [] as unknown[];
         continue;
@@ -158,9 +121,9 @@ export const parseResult = <S extends Entity.AnyNoContext>(
       }
 
       const newRelationEntities = properties.map((property) => ({
-        id: property.toEntity.id,
-        name: property.toEntity.name,
-        type: relationMappingEntry.typeIds[0],
+        id: property.to.id,
+        name: property.to.name,
+        type: property.type.id,
         // TODO: should be determined by the actual value
         __deleted: false,
         // TODO: should be determined by the actual value
@@ -181,7 +144,8 @@ export const parseResult = <S extends Entity.AnyNoContext>(
     const decodeResult = decode({
       ...rawEntity,
       __deleted: false,
-      __version: queryEntity.currentVersion.versionId,
+      // __version: queryEntity.currentVersion.versionId,
+      __version: '',
     });
 
     if (Either.isRight(decodeResult)) {
@@ -215,7 +179,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
   const result = useQueryTanstack({
     queryKey: [`entities:geo:${typeName}`],
     queryFn: async () => {
-      const result = await request<EntityQueryResult>(GEO_ENDPOINT, entitiesQueryDocument, {
+      const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, entitiesQueryDocument, {
         spaceId: space,
         typeId: mappingEntry?.typeIds[0],
         relationTypeIds,
