@@ -11,7 +11,7 @@ const createPropertiesAndTypes = async ({
 }: { smartAccountWalletClient: GeoSmartAccount; space: string }) => {
   const ops: Array<Op> = [];
   const { id: checkedPropertyId, ops: createCheckedPropertyOps } = Graph.createProperty({
-    type: 'CHECKBOX',
+    dataType: 'CHECKBOX',
     name: 'Checked',
   });
   ops.push(...createCheckedPropertyOps);
@@ -22,32 +22,32 @@ const createPropertiesAndTypes = async ({
   ops.push(...createUserOps);
 
   const { id: assigneesRelationTypeId, ops: createAssigneesRelationTypeOps } = Graph.createProperty({
-    type: 'RELATION',
+    dataType: 'RELATION',
     name: 'Assignees',
     relationValueTypes: [userId],
   });
   ops.push(...createAssigneesRelationTypeOps);
 
   const { id: duePropertyId, ops: createDuePropertyOps } = Graph.createProperty({
-    type: 'TIME',
+    dataType: 'TIME',
     name: 'Due',
   });
   ops.push(...createDuePropertyOps);
 
   const { id: pointPropertyId, ops: createPointPropertyOps } = Graph.createProperty({
-    type: 'POINT',
+    dataType: 'POINT',
     name: 'Point',
   });
   ops.push(...createPointPropertyOps);
 
   const { id: amountPropertyId, ops: createAmountPropertyOps } = Graph.createProperty({
-    type: 'NUMBER',
+    dataType: 'NUMBER',
     name: 'Amount',
   });
   ops.push(...createAmountPropertyOps);
 
   const { id: websitePropertyId, ops: createWebsitePropertyOps } = Graph.createProperty({
-    type: 'URL',
+    dataType: 'TEXT',
     name: 'Website',
   });
   ops.push(...createWebsitePropertyOps);
