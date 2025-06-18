@@ -2,11 +2,20 @@ import { Id } from '@graphprotocol/grc-20';
 import type { Mapping } from '@graphprotocol/hypergraph-react';
 
 export const mapping: Mapping = {
+  RelationEntry: {
+    typeIds: [Id.Id('8f151ba4-de20-4e3c-9cb4-99ddf96f48f1')],
+    properties: {
+      name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    },
+  },
   Event: {
     typeIds: [Id.Id('4d876b81-787e-41fc-ab5d-075d4da66a3f')],
     properties: {
       name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      // description: Id.Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
+      description: Id.Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
+    },
+    relations: {
+      any: Id.Id('8f151ba4-de20-4e3c-9cb4-99ddf96f48f1'),
     },
   },
   // Todo2: {
