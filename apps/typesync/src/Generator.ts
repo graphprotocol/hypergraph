@@ -222,8 +222,6 @@ function generatePackageJson(app: Domain.InsertAppSchema) {
       prettier: '^3.5.3',
       typescript: '~5.8.3',
       'typescript-eslint': '^8.29.1',
-      'vite-plugin-node-polyfills': '^0.23.0',
-      'vite-plugin-top-level-await': '^1.5.0',
     },
   };
 }
@@ -355,21 +353,12 @@ import path from 'node:path';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import topLevelAwait from 'vite-plugin-top-level-await';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    topLevelAwait(),
     TanStackRouterVite(),
     react(),
-    nodePolyfills({
-      globals: {
-        Buffer: true,
-        global: true,
-      },
-    }),
   ],
   resolve: {
     alias: {
