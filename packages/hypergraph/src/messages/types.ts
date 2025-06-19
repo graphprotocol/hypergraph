@@ -277,6 +277,7 @@ export const ResponseListSpaces = Schema.Struct({
   spaces: Schema.Array(
     Schema.Struct({
       id: Schema.String,
+      name: Schema.String,
     }),
   ),
 });
@@ -347,6 +348,7 @@ export type ResponseAccountInbox = Schema.Schema.Type<typeof ResponseAccountInbo
 export const ResponseSpace = Schema.Struct({
   type: Schema.Literal('space'),
   id: Schema.String,
+  name: Schema.String,
   events: Schema.Array(SpaceEvent),
   keyBoxes: Schema.Array(KeyBoxWithKeyId),
   updates: Schema.optional(Updates),

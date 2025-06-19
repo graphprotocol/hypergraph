@@ -43,6 +43,7 @@ export type AccountInboxStorageEntry = {
 
 export type SpaceStorageEntry = {
   id: string;
+  name: string;
   events: SpaceEvent[];
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
@@ -89,7 +90,7 @@ type StoreEvent =
   | { type: 'reset' }
   | { type: 'addUpdateInFlight'; updateId: string }
   | { type: 'removeUpdateInFlight'; updateId: string }
-  | { type: 'setSpaceFromList'; spaceId: string }
+  | { type: 'setSpaceFromList'; spaceId: string; name: string }
   | { type: 'applyEvent'; spaceId: string; event: SpaceEvent; state: SpaceState }
   | { type: 'updateConfirmed'; spaceId: string; clock: number }
   | { type: 'applyUpdate'; spaceId: string; firstUpdateClock: number; lastUpdateClock: number }
@@ -126,6 +127,7 @@ type StoreEvent =
   | {
       type: 'setSpace';
       spaceId: string;
+      name: string;
       updates?: Updates;
       events: SpaceEvent[];
       inboxes?: SpaceInboxStorageEntry[];
@@ -180,7 +182,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         updatesInFlight: context.updatesInFlight.filter((id) => id !== event.updateId),
       };
     },
-    setSpaceFromList: (context, event: { spaceId: string }) => {
+    setSpaceFromList: (context, event: { spaceId: string; name: string }) => {
       if (!context.repo) {
         return context;
       }
@@ -198,6 +200,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
             if (existingSpace.id === event.spaceId) {
               const newSpace: SpaceStorageEntry = {
                 id: existingSpace.id,
+                name: existingSpace.name,
                 events: existingSpace.events ?? [],
                 state: existingSpace.state,
                 keys: existingSpace.keys ?? [],
@@ -220,6 +223,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
           ...context.spaces,
           {
             id: event.spaceId,
+            name: event.name,
             events: [],
             state: undefined,
             keys: [],
@@ -408,6 +412,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
       context,
       event: {
         spaceId: string;
+        name: string;
         updates?: Updates;
         inboxes?: SpaceInboxStorageEntry[];
         events: SpaceEvent[];
@@ -425,6 +430,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         result.handle.doneLoading();
 
         const newSpace: SpaceStorageEntry = {
+          name: event.name,
           id: event.spaceId,
           events: event.events,
           state: event.spaceState,

@@ -75,6 +75,7 @@ function Index() {
       <div className="flex flex-row gap-2 justify-between items-center">
         <Input value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
         <Button
+          disabled={true} // disabled until we have delegation for creating a space
           onClick={async (event) => {
             event.preventDefault();
             // const smartAccountWalletClient = await getSmartAccountWalletClient();
@@ -96,7 +97,7 @@ function Index() {
               <Link to="/space/$spaceId" params={{ spaceId: space.id }}>
                 <Card>
                   <CardHeader>
-                    <CardTitle>{space.id}</CardTitle>
+                    <CardTitle>{space.name}</CardTitle>
                   </CardHeader>
                 </Card>
               </Link>

@@ -65,6 +65,7 @@ export const getSpace = async ({ spaceId, accountAddress }: Params) => {
 
   return {
     id: space.id,
+    name: space.name,
     events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
     keyBoxes,
     inboxes: space.inboxes.map((inbox) => ({
