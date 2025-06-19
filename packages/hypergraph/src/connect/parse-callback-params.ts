@@ -52,6 +52,7 @@ export const parseCallbackParams = ({
     return Effect.succeed({
       appIdentityAddress: data.appIdentityAddress,
       appIdentityAddressPrivateKey: data.appIdentityAddressPrivateKey,
+      accountAddress: data.accountAddress,
       signaturePublicKey: data.signaturePublicKey,
       signaturePrivateKey: data.signaturePrivateKey,
       encryptionPublicKey: data.encryptionPublicKey,

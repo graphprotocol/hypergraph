@@ -1,4 +1,6 @@
+import { store } from '@graphprotocol/hypergraph/store';
 import { useQuery } from '@tanstack/react-query';
+import { useSelector } from '@xstate/store/react';
 import { gql, request } from 'graphql-request';
 import { GEO_API_TESTNET_ENDPOINT } from '../internal/constants.js';
 
@@ -27,11 +29,12 @@ type PublicSpacesQueryResult = {
 };
 
 export const useSpaces = (params: { mode: 'public' }) => {
+  const accountAddress = useSelector(store, (state) => state.context.identity?.accountAddress);
   return useQuery({
     queryKey: ['hypergraph-spaces', params.mode],
     queryFn: async () => {
       const result = await request<PublicSpacesQueryResult>(GEO_API_TESTNET_ENDPOINT, publicSpacesQueryDocument, {
-        accountAddress: '0xBE0298aF8D440bEFA78E7e8A538D8ecBFF06bfC7',
+        accountAddress,
       });
       return result?.spaces
         ? result.spaces.map((space) => ({

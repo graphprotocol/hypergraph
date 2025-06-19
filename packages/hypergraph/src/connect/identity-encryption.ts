@@ -228,5 +228,6 @@ export const decryptAppIdentity = async (
     signaturePrivateKey,
     address: appIdentityAddress,
     addressPrivateKey: appIdentityAddressPrivateKey,
+    accountAddress,
   };
 };
