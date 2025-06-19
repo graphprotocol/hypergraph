@@ -127,6 +127,7 @@ type StoreEvent =
   | {
       type: 'setSpace';
       spaceId: string;
+      name: string;
       updates?: Updates;
       events: SpaceEvent[];
       inboxes?: SpaceInboxStorageEntry[];

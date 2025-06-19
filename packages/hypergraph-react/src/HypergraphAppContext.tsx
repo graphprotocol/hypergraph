@@ -373,6 +373,7 @@ export function HypergraphAppProvider({
               store.send({
                 type: 'setSpaceFromList',
                 spaceId: space.id,
+                name: space.name,
               });
             });
             break;
@@ -425,6 +426,7 @@ export function HypergraphAppProvider({
 
             store.send({
               type: 'setSpace',
+              name: response.name,
               spaceId: response.id,
               updates: response.updates as Messages.Updates,
               events: response.events as Array<SpaceEvents.SpaceEvent>,
