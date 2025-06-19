@@ -282,10 +282,11 @@ function AuthenticateComponent() {
         nonce: appInfo.appNonce,
         ephemeralPublicKey: appInfo.ephemeralEncryptionPublicKey,
         appIdentityAddress: appIdentity.address,
+        appIdentityAddressPrivateKey: appIdentity.addressPrivateKey,
+        accountAddress: accountAddress,
         encryptionPrivateKey: appIdentity.encryptionPrivateKey,
         signaturePrivateKey: appIdentity.signaturePrivateKey,
         signaturePublicKey: appIdentity.signaturePublicKey,
-        appIdentityAddressPrivateKey: appIdentity.addressPrivateKey,
         encryptionPublicKey: appIdentity.encryptionPublicKey,
         spaces: spacesData?.map((space) => ({ id: space.id })) ?? [],
         expiry: appInfo.expiry,
@@ -364,6 +365,7 @@ function AuthenticateComponent() {
         appIdentity: {
           address: newAppIdentity.address,
           addressPrivateKey: newAppIdentity.addressPrivateKey,
+          accountAddress,
           encryptionPrivateKey: keys.encryptionPrivateKey,
           signaturePrivateKey: keys.signaturePrivateKey,
           encryptionPublicKey: newAppIdentity.encryptionPublicKey,
@@ -420,6 +422,7 @@ function AuthenticateComponent() {
       appIdentity: {
         address: decryptedIdentity.address,
         addressPrivateKey: decryptedIdentity.addressPrivateKey,
+        accountAddress: decryptedIdentity.accountAddress,
         encryptionPrivateKey: decryptedIdentity.encryptionPrivateKey,
         signaturePrivateKey: decryptedIdentity.signaturePrivateKey,
         encryptionPublicKey: decryptedIdentity.encryptionPublicKey,

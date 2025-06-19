@@ -26,7 +26,7 @@ export class RelationEntry extends Entity.Class<RelationEntry>('RelationEntry')(
 
 export class Event extends Entity.Class<Event>('Event')({
   name: Type.Text,
-  description: Type.Text,
+  // description: Type.Text,
   // publishDate: Type.Text,
-  any: Type.Relation(RelationEntry),
+  // any: Type.Relation(RelationEntry),
 }) {}

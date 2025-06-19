@@ -8,6 +8,7 @@ type CreateAuthUrlParams = {
   appId: string;
   appIdentityAddress: string;
   appIdentityAddressPrivateKey: string;
+  accountAddress: string;
   signaturePublicKey: string;
   signaturePrivateKey: string;
   encryptionPublicKey: string;

@@ -26,7 +26,7 @@ const storageMock = {
 describe('HypergraphAppContext', () => {
   it('should render the HypergraphAppProvider and be initially unauthenticated', async () => {
     const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-      <HypergraphAppProvider storage={storageMock} syncServerUri="http://localhost:3030">
+      <HypergraphAppProvider storage={storageMock} syncServerUri="http://localhost:3030" mapping={{}}>
         {children}
       </HypergraphAppProvider>
     );

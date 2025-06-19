@@ -14,12 +14,14 @@ import {
   type InboxMessageStorageEntry,
   Inboxes,
   Key,
+  type Mapping,
   Messages,
   SpaceEvents,
   type SpaceStorageEntry,
   Utils,
   store,
 } from '@graphprotocol/hypergraph';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -36,6 +38,8 @@ import {
 import type { Address } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
+
+const queryClient = new QueryClient();
 
 export type HypergraphAppCtx = {
   // auth related
@@ -184,6 +188,7 @@ export type HypergraphAppProviderProps = Readonly<{
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
+  mapping: Mapping;
 }>;
 // 1) a) Get session token from local storage, or
 //    b) Auth with the sync server
@@ -193,8 +198,8 @@ export type HypergraphAppProviderProps = Readonly<{
 export function HypergraphAppProvider({
   storage,
   syncServerUri = 'https://syncserver.hypergraph.thegraph.com',
-  chainId = 80451,
   children,
+  mapping,
 }: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [isConnecting, setIsConnecting] = useState(true);
@@ -227,6 +232,11 @@ export function HypergraphAppProvider({
   const initialRenderAuthCheckRef = useRef(false);
   // using a layout effect to avoid a re-render
   useLayoutEffect(() => {
+    store.send({
+      type: 'setMapping',
+      mapping,
+    });
+
     if (!initialRenderAuthCheckRef.current) {
       const identity = Identity.loadIdentity(storage);
       if (identity) {
@@ -238,7 +248,7 @@ export function HypergraphAppProvider({
       // set render auth check to true so next potential rerender doesn't proc this
       initialRenderAuthCheckRef.current = true;
     }
-  }, [storage]);
+  }, [storage, mapping]);
 
   useEffect(() => {
     if (!identity) {
@@ -373,6 +383,7 @@ export function HypergraphAppProvider({
               store.send({
                 type: 'setSpaceFromList',
                 spaceId: space.id,
+                name: space.name,
               });
             });
             break;
@@ -425,6 +436,7 @@ export function HypergraphAppProvider({
 
             store.send({
               type: 'setSpace',
+              name: response.name,
               spaceId: response.id,
               updates: response.updates as Messages.Updates,
               events: response.events as Array<SpaceEvents.SpaceEvent>,
@@ -1343,7 +1355,9 @@ export function HypergraphAppProvider({
         ensureSpaceInbox: ensureSpaceInboxForContext,
       }}
     >
-      <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>
+      </QueryClientProvider>
     </HypergraphAppContext.Provider>
   );
 }

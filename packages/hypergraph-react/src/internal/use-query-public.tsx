@@ -1,17 +1,19 @@
-import { type Entity, Type } from '@graphprotocol/hypergraph';
+import { type Entity, type Mapping, type MappingEntry, Type, store } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
+import { useSelector } from '@xstate/store/react';
 import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
-import { useHypergraph } from '../HypergraphSpaceContext.js';
-import type { Mapping, MappingEntry } from '../types.js';
+import { useHypergraphSpace } from '../HypergraphSpaceContext.js';
 import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocument = gql`
-query entities($spaceId: String!) {
-  entities(spaceId: $spaceId, filter: {}) {
+query entities($spaceId: String!, $typeIds: [String!]!) {
+  entities(spaceId: $spaceId, filter: {
+    types: { in: $typeIds }
+  }) {
     id
     name
     values {
@@ -159,7 +161,9 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 
 export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
   const { enabled = true, include } = params ?? {};
-  const { space, mapping } = useHypergraph();
+  const space = useHypergraphSpace();
+  const mapping = useSelector(store, (state) => state.context.mapping);
+  console.log('mapping', mapping);
 
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
   const typeName = type.name;
@@ -177,11 +181,11 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
   }
 
   const result = useQueryTanstack({
-    queryKey: [`entities:geo:${typeName}`],
+    queryKey: ['hypergraph-public-entities', typeName, space, mappingEntry?.typeIds],
     queryFn: async () => {
       const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, entitiesQueryDocument, {
         spaceId: space,
-        typeId: mappingEntry?.typeIds[0],
+        typeIds: mappingEntry?.typeIds || [],
         relationTypeIds,
       });
       return result;
