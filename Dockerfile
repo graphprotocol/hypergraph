@@ -39,7 +39,6 @@ RUN \
   # Move the runtime build artifacts into a separate directory.
   mkdir -p deployment/out && mv deployment/dist deployment/node_modules deployment/package.json deployment/out && \
   # Add prisma client in dist
-  mv deployment/prisma/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node deployment/out/dist/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node && \
   mv deployment/prisma/generated/client/libquery_engine-linux-musl-openssl-3.0.x.so.node deployment/out/dist/libquery_engine-linux-musl-openssl-3.0.x.so.node
 
 # Slim runtime image.
