@@ -237,8 +237,9 @@ export const Todos2 = () => {
                   setIsPublishDiffModalOpen(false);
                   setPublishData(null);
                   setTimeout(() => {
-                    queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
-                    queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
+                    queryClient.invalidateQueries({
+                      queryKey: ['hypergraph-public-entities', Todo2.name],
+                    });
                   }, 1000);
                 }
               } catch (error) {

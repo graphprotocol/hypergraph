@@ -10,8 +10,10 @@ import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocument = gql`
-query entities($spaceId: String!) {
-  entities(spaceId: $spaceId, filter: {}) {
+query entities($spaceId: String!, $typeIds: [String!]!) {
+  entities(spaceId: $spaceId, filter: {
+    types: { in: $typeIds }
+  }) {
     id
     name
     values {
@@ -177,11 +179,11 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
   }
 
   const result = useQueryTanstack({
-    queryKey: [`entities:geo:${typeName}`],
+    queryKey: ['hypergraph-public-entities', typeName, space, mappingEntry?.typeIds],
     queryFn: async () => {
       const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, entitiesQueryDocument, {
         spaceId: space,
-        typeId: mappingEntry?.typeIds[0],
+        typeIds: mappingEntry?.typeIds || [],
         relationTypeIds,
       });
       return result;
