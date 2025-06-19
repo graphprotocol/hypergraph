@@ -6,19 +6,17 @@ import { Entity, Utils } from '@graphprotocol/hypergraph';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Schema from 'effect/Schema';
 import { type ReactNode, createContext, useContext, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import type { Mapping } from './types.js';
 
 export type HypergraphContext = {
   space: string;
   repo: Repo;
   id: AnyDocumentId;
   handle: DocHandle<Entity.DocumentContent>;
-  mapping?: Mapping | undefined;
 };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
 
-export function useHypergraph() {
+function useHypergraphSpaceInternal() {
   const context = useContext(HypergraphReactContext);
   if (!context) {
     throw new Error('useHypergraphSpace must be used within a HypergraphSpaceProvider');
@@ -29,11 +27,7 @@ export function useHypergraph() {
 
 const queryClient = new QueryClient();
 
-export function HypergraphSpaceProvider({
-  space,
-  children,
-  mapping,
-}: { space: string; children: ReactNode; mapping?: Mapping }) {
+export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {
   const repo = useRepo();
   const ref = useRef<HypergraphContext | undefined>(undefined);
 
@@ -47,7 +41,6 @@ export function HypergraphSpaceProvider({
       repo,
       id,
       handle: result.handle,
-      mapping,
     };
   }
 
@@ -59,27 +52,27 @@ export function HypergraphSpaceProvider({
 }
 
 export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S) {
-  const hypergraph = useHypergraph();
+  const hypergraph = useHypergraphSpaceInternal();
   return Entity.create(hypergraph.handle, type);
 }
 
 export function useUpdateEntity<const S extends Entity.AnyNoContext>(type: S) {
-  const hypergraph = useHypergraph();
+  const hypergraph = useHypergraphSpaceInternal();
   return Entity.update(hypergraph.handle, type);
 }
 
 export function useDeleteEntity() {
-  const hypergraph = useHypergraph();
+  const hypergraph = useHypergraphSpaceInternal();
   return Entity.markAsDeleted(hypergraph.handle);
 }
 
 export function useRemoveRelation() {
-  const hypergraph = useHypergraph();
+  const hypergraph = useHypergraphSpaceInternal();
   return Entity.removeRelation(hypergraph.handle);
 }
 
 export function useHardDeleteEntity() {
-  const hypergraph = useHypergraph();
+  const hypergraph = useHypergraphSpaceInternal();
   return Entity.delete(hypergraph.handle);
 }
 
@@ -93,7 +86,7 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
   const { enabled = true, filter, include } = params ?? {};
   const entitiesRef = useRef<Entity.Entity<S>[]>([]);
 
-  const hypergraph = useHypergraph();
+  const hypergraph = useHypergraphSpaceInternal();
   const [subscription] = useState(() => {
     if (!enabled) {
       return {
@@ -130,7 +123,7 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
   id: string,
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> },
 ) {
-  const hypergraph = useHypergraph();
+  const hypergraph = useHypergraphSpaceInternal();
   const prevEntityRef = useRef<Entity.Entity<S> | undefined>(undefined);
   const equals = Schema.equivalence(type);
 
@@ -174,6 +167,6 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
 }
 
 export const useHypergraphSpace = () => {
-  const { space } = useHypergraph();
+  const { space } = useHypergraphSpaceInternal();
   return space;
 };

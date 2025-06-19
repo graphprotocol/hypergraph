@@ -1,10 +1,10 @@
 import type { Op } from '@graphprotocol/grc-20';
-import type { Entity } from '@graphprotocol/hypergraph';
-import { useHypergraph } from '../HypergraphSpaceContext.js';
+import { type Entity, store } from '@graphprotocol/hypergraph';
+import { useSelector } from '@xstate/store/react';
 import type { DiffEntry } from '../types.js';
 
 export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
-  const { mapping } = useHypergraph();
+  const mapping = useSelector(store, (state) => state.context.mapping);
 
   return ({ id, diff }: { id: string; diff: DiffEntry }) => {
     // @ts-expect-error TODO should use the actual type instead of the name in the mapping

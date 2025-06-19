@@ -1,7 +1,8 @@
-import { type Entity, Type, Utils } from '@graphprotocol/hypergraph';
+import { type Entity, Type, Utils, store } from '@graphprotocol/hypergraph';
+import { useSelector } from '@xstate/store/react';
 import type * as Schema from 'effect/Schema';
 import { useMemo } from 'react';
-import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
+import { useQueryLocal } from './HypergraphSpaceContext.js';
 import { generateDeleteOps } from './internal/generate-delete-ops.js';
 import { useGenerateCreateOps } from './internal/use-generate-create-ops.js';
 import { useGenerateUpdateOps } from './internal/use-generate-update-ops.js';
@@ -147,7 +148,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
   const { mode = 'merged', filter, include } = params ?? {};
   const publicResult = useQueryPublic(type, { enabled: mode === 'public' || mode === 'merged', include });
   const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged', filter, include });
-  const { mapping } = useHypergraph();
+  const mapping = useSelector(store, (state) => state.context.mapping);
   const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
   const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
 
