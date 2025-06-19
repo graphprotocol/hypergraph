@@ -6,5 +6,11 @@ export const Playground = () => {
 
   console.log({ isLoading, isError, entityData });
 
-  return <pre className="text-xs">{JSON.stringify(entityData, null, 2)}</pre>;
+  return (
+    <div>
+      {isLoading && <div>Loading...</div>}
+      {isError && <div>Error</div>}
+      <pre className="text-xs">{JSON.stringify(entityData, null, 2)}</pre>
+    </div>
+  );
 };
