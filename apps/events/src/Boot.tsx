@@ -1,5 +1,6 @@
 import { HypergraphAppProvider } from '@graphprotocol/hypergraph-react';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { mapping } from './mapping.js';
 import { routeTree } from './routeTree.gen';
 
 // Create a new router instance
@@ -14,7 +15,7 @@ declare module '@tanstack/react-router' {
 
 export function Boot() {
   return (
-    <HypergraphAppProvider storage={localStorage} syncServerUri="http://localhost:3030">
+    <HypergraphAppProvider storage={localStorage} syncServerUri="http://localhost:3030" mapping={mapping}>
       <RouterProvider router={router} />
     </HypergraphAppProvider>
   );

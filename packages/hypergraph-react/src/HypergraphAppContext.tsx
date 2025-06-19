@@ -14,6 +14,7 @@ import {
   type InboxMessageStorageEntry,
   Inboxes,
   Key,
+  type Mapping,
   Messages,
   SpaceEvents,
   type SpaceStorageEntry,
@@ -184,6 +185,7 @@ export type HypergraphAppProviderProps = Readonly<{
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
+  mapping: Mapping;
 }>;
 // 1) a) Get session token from local storage, or
 //    b) Auth with the sync server
@@ -193,8 +195,8 @@ export type HypergraphAppProviderProps = Readonly<{
 export function HypergraphAppProvider({
   storage,
   syncServerUri = 'https://syncserver.hypergraph.thegraph.com',
-  chainId = 80451,
   children,
+  mapping,
 }: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [isConnecting, setIsConnecting] = useState(true);
@@ -227,6 +229,11 @@ export function HypergraphAppProvider({
   const initialRenderAuthCheckRef = useRef(false);
   // using a layout effect to avoid a re-render
   useLayoutEffect(() => {
+    store.send({
+      type: 'setMapping',
+      mapping,
+    });
+
     if (!initialRenderAuthCheckRef.current) {
       const identity = Identity.loadIdentity(storage);
       if (identity) {
@@ -238,7 +245,7 @@ export function HypergraphAppProvider({
       // set render auth check to true so next potential rerender doesn't proc this
       initialRenderAuthCheckRef.current = true;
     }
-  }, [storage]);
+  }, [storage, mapping]);
 
   useEffect(() => {
     if (!identity) {

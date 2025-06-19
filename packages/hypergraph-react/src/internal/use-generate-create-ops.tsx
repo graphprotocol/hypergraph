@@ -1,8 +1,9 @@
 import type { Entity } from '@graphprotocol/hypergraph';
-import { useHypergraph } from '../HypergraphSpaceContext.js';
+import { store } from '@graphprotocol/hypergraph';
+import { useSelector } from '@xstate/store/react';
 
 export function useGenerateCreateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
-  const { mapping } = useHypergraph();
+  const mapping = useSelector(store, (state) => state.context.mapping);
 
   return (properties: Entity.Entity<S>) => {
     // @ts-expect-error TODO should use the actual type instead of the name in the mapping
