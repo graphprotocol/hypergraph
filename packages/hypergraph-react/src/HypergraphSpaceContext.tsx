@@ -3,7 +3,6 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { useRepo } from '@automerge/automerge-repo-react-hooks';
 import { Entity, Utils } from '@graphprotocol/hypergraph';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Schema from 'effect/Schema';
 import { type ReactNode, createContext, useContext, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
@@ -25,8 +24,6 @@ function useHypergraphSpaceInternal() {
   return context as HypergraphContext;
 }
 
-const queryClient = new QueryClient();
-
 export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {
   const repo = useRepo();
   const ref = useRef<HypergraphContext | undefined>(undefined);
@@ -44,11 +41,7 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
     };
   }
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>
-    </QueryClientProvider>
-  );
+  return <HypergraphReactContext.Provider value={current}>{children}</HypergraphReactContext.Provider>;
 }
 
 export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S) {

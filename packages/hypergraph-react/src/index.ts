@@ -1,5 +1,6 @@
 export { PublishDiff } from './components/publish-diff/publish-diff.js';
 export { createWalletClient } from './create-wallet-client.js';
+export { useSpaces } from './hooks/use-spaces.js';
 export { useExternalAccountInbox } from './hooks/useExternalAccountInbox.js';
 export { useExternalSpaceInbox } from './hooks/useExternalSpaceInbox.js';
 export { useOwnAccountInbox } from './hooks/useOwnAccountInbox.js';

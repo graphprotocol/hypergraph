@@ -20,6 +20,7 @@ export type ConnectAuthPayload = Schema.Schema.Type<typeof ConnectAuthPayload>;
 export const ConnectCallbackResult = Schema.Struct({
   appIdentityAddress: Schema.String,
   appIdentityAddressPrivateKey: Schema.String,
+  accountAddress: Schema.String,
   signaturePublicKey: Schema.String,
   signaturePrivateKey: Schema.String,
   encryptionPublicKey: Schema.String,

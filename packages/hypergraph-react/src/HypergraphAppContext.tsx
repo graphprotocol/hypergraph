@@ -21,6 +21,7 @@ import {
   Utils,
   store,
 } from '@graphprotocol/hypergraph';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
@@ -37,6 +38,8 @@ import {
 import type { Address } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
+
+const queryClient = new QueryClient();
 
 export type HypergraphAppCtx = {
   // auth related
@@ -1352,7 +1355,9 @@ export function HypergraphAppProvider({
         ensureSpaceInbox: ensureSpaceInboxForContext,
       }}
     >
-      <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <RepoContext.Provider value={repo}>{children}</RepoContext.Provider>
+      </QueryClientProvider>
     </HypergraphAppContext.Provider>
   );
 }

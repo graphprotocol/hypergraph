@@ -60,6 +60,7 @@ export type PrivateAppIdentity = IdentityKeys & {
   addressPrivateKey: string;
   sessionToken: string;
   sessionTokenExpires: Date;
+  accountAddress: string;
 };
 
 export class InvalidIdentityError {
