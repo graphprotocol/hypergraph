@@ -24,6 +24,38 @@ query entities($spaceId: String!, $typeIds: [String!]!) {
       to {
         id
         name
+        values {
+          propertyId
+          value
+        }
+        relations {
+          to {
+            id
+            name
+            values {
+              propertyId
+              value
+            }
+            relations {
+              to {
+                id
+                name
+              }
+              type {
+                id
+                entity {
+                  name
+                }
+              }
+            }
+          }
+          type {
+            id
+            entity {
+              name
+            }
+          }
+        }
       }
       type {
         id
@@ -48,6 +80,38 @@ type EntityQueryResult = {
       to: {
         id: string;
         name: string;
+        values: {
+          propertyId: string;
+          value: string;
+        }[];
+        relations: {
+          to: {
+            id: string;
+            name: string;
+            values: {
+              propertyId: string;
+              value: string;
+            }[];
+            relations: {
+              to: {
+                id: string;
+                name: string;
+              };
+              type: {
+                id: string;
+                entity: {
+                  name: string;
+                };
+              };
+            }[];
+          };
+          type: {
+            id: string;
+            entity: {
+              name: string;
+            };
+          };
+        }[];
       };
       type: {
         id: string;
@@ -122,15 +186,42 @@ export const parseResult = <S extends Entity.AnyNoContext>(
         continue;
       }
 
-      const newRelationEntities = properties.map((property) => ({
-        id: property.to.id,
-        name: property.to.name,
-        type: property.type.id,
-        // TODO: should be determined by the actual value
-        __deleted: false,
-        // TODO: should be determined by the actual value
-        __version: '',
-      }));
+      const newRelationEntities = properties.map((propertyEntry) => {
+        const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
+          id: propertyEntry.to.id,
+          name: propertyEntry.to.name,
+          type: propertyEntry.type.id,
+          // TODO: should be determined by the actual value
+          __deleted: false,
+          // TODO: should be determined by the actual value
+          __version: '',
+        };
+
+        // @ts-expect-error TODO: properly access the type.name
+        const type = field.value;
+
+        // take the mappingEntry and assign the attributes to the rawEntity
+        for (const [key, value] of Object.entries(relationMappingEntry?.properties ?? {})) {
+          const property = propertyEntry.to.values.find((a) => a.propertyId === value);
+          if (property) {
+            if (type.fields[key] === Type.Checkbox) {
+              rawEntity[key] = Boolean(property.value);
+            } else if (type.fields[key] === Type.Point) {
+              rawEntity[key] = property.value;
+            } else if (type.fields[key] === Type.Url) {
+              rawEntity[key] = property.value;
+            } else if (type.fields[key] === Type.Date) {
+              rawEntity[key] = property.value;
+            } else if (type.fields[key] === Type.Number) {
+              rawEntity[key] = Number(property.value);
+            } else {
+              rawEntity[key] = property.value;
+            }
+          }
+        }
+
+        return rawEntity;
+      });
 
       if (rawEntity[key]) {
         rawEntity[key] = [
@@ -143,12 +234,16 @@ export const parseResult = <S extends Entity.AnyNoContext>(
       }
     }
 
+    console.log('rawEntity', rawEntity);
+
     const decodeResult = decode({
       ...rawEntity,
       __deleted: false,
       // __version: queryEntity.currentVersion.versionId,
       __version: '',
     });
+
+    console.log('decodeResult', decodeResult);
 
     if (Either.isRight(decodeResult)) {
       data.push(decodeResult.right);
@@ -163,7 +258,6 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
   const { enabled = true, include } = params ?? {};
   const space = useHypergraphSpace();
   const mapping = useSelector(store, (state) => state.context.mapping);
-  console.log('mapping', mapping);
 
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
   const typeName = type.name;

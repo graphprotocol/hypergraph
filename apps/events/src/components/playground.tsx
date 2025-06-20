@@ -1,8 +1,8 @@
 import { useQuery } from '@graphprotocol/hypergraph-react';
-import { Event } from '../schema';
+import { Company } from '../schema';
 
 export const Playground = () => {
-  const { data: entityData, isLoading, isError } = useQuery(Event, { mode: 'public' });
+  const { data: entityData, isLoading, isError } = useQuery(Company, { mode: 'public' });
 
   console.log({ isLoading, isError, entityData });
 

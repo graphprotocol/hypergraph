@@ -17,9 +17,13 @@ export const Point = Schema.transform(Schema.String, Schema.Array(Number), {
   encode: (points: readonly number[]) => points.join(','),
 });
 
-export const Relation = <S extends AnyNoContext>(schema: S) =>
-  Field({
+export const Relation = <S extends AnyNoContext>(schema: S) => {
+  const relationSchema = Field({
     select: Schema.Array(schema) as unknown as Schema.Schema<ReadonlyArray<EntityWithRelation<S>>>,
     insert: Schema.optional(Schema.Array(Schema.String)),
     update: Schema.Undefined,
   });
+  // @ts-expect-error TODO: trying to inject info
+  relationSchema.hidden = { lala: 'lala', class: schema };
+  return relationSchema;
+};

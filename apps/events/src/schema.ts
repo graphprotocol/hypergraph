@@ -22,13 +22,12 @@ export class Todo2 extends Entity.Class<Todo2>('Todo2')({
 
 export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
   name: Type.Text,
-  description: Type.Text,
   salary: Type.Number,
 }) {}
 
 export class Company extends Entity.Class<Company>('Company')({
   name: Type.Text,
-  address: Type.Text,
+  // address: Type.Text,
   jobOffers: Type.Relation(JobOffer),
 }) {}
 
