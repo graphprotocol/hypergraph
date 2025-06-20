@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { store } from '@graphprotocol/hypergraph';
 import { useHypergraphApp, useSpaces } from '@graphprotocol/hypergraph-react';
@@ -117,6 +117,7 @@ function Index() {
               <Card>
                 <CardHeader>
                   <CardTitle>{space.name}</CardTitle>
+                  <CardDescription className="text-xs">{space.id}</CardDescription>
                 </CardHeader>
               </Card>
             </li>

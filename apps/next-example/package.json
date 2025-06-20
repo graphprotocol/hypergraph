@@ -10,7 +10,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@graphprotocol/grc-20": "^0.20.0",
+    "@graphprotocol/grc-20": "^0.21.2",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "next": "15.3.2",

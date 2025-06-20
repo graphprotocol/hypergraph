@@ -127,8 +127,8 @@ importers:
   apps/events:
     dependencies:
       '@graphprotocol/grc-20':
-        specifier: ^0.20.0
-        version: 0.20.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.2
+        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph':
         specifier: workspace:*
         version: link:../../packages/hypergraph/publish
@@ -173,7 +173,7 @@ importers:
         version: 7.1.2(graphql@16.11.0)
       isomorphic-ws:
         specifier: ^5.0.0
-        version: 5.0.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        version: 5.0.0(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       lucide-react:
         specifier: ^0.508.0
         version: 0.508.0(react@19.1.0)
@@ -242,8 +242,8 @@ importers:
   apps/next-example:
     dependencies:
       '@graphprotocol/grc-20':
-        specifier: ^0.20.0
-        version: 0.20.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.2
+        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph':
         specifier: workspace:*
         version: link:../../packages/hypergraph/publish
@@ -437,8 +437,8 @@ importers:
         specifier: latest
         version: 0.23.8(effect@3.16.8)(vitest@3.1.3(@types/debug@4.1.12)(@types/node@22.15.29)(jiti@2.4.2)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.19.4)(yaml@2.7.0))
       '@graphprotocol/grc-20':
-        specifier: ^0.20.0
-        version: 0.20.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.2
+        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphql-codegen/cli':
         specifier: ^5.0.6
         version: 5.0.6(@babel/core@7.27.1)(@parcel/watcher@2.5.1)(@types/node@22.15.29)(bufferutil@4.0.9)(encoding@0.1.13)(enquirer@2.4.1)(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -520,8 +520,8 @@ importers:
         specifier: ^0.44.20
         version: 0.44.20(@effect/platform@0.85.2(effect@3.16.3))(effect@3.16.3)
       '@graphprotocol/grc-20':
-        specifier: ^0.20.0
-        version: 0.20.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.2
+        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/ciphers':
         specifier: ^1.3.0
         version: 1.3.0
@@ -573,8 +573,8 @@ importers:
         specifier: '=2.0.0-beta.5'
         version: 2.0.0-beta.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@graphprotocol/grc-20':
-        specifier: ^0.20.0
-        version: 0.20.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.2
+        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/hashes':
         specifier: ^1.8.0
         version: 1.8.0
@@ -2634,8 +2634,8 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@graphprotocol/grc-20@0.20.0':
-    resolution: {integrity: sha512-nlCMiDIKHKHlcGjNzcXI/pZExEFpx35P8DtAVqkd+TuD2qqfiSZuVObeSgZVdHL4XQqbZSBio1oKdFKBoBaV9A==}
+  '@graphprotocol/grc-20@0.21.2':
+    resolution: {integrity: sha512-o5MDRZTKn9txLJowVS7lW5rhc+hLtMbBuAyPnLVw40q7WMQjiMn84WoGNTx17+qGfHk2v2ITbvNX/C8qoV2HQg==}
 
   '@graphql-codegen/add@5.0.3':
     resolution: {integrity: sha512-SxXPmramkth8XtBlAHu4H4jYcYXM/o3p01+psU+0NADQowA8jtYkK6MW5rV6T+CxkEaNZItfSmZRPgIuypcqnA==}
@@ -4899,9 +4899,6 @@ packages:
   '@types/sax@1.2.7':
     resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
 
-  '@types/seedrandom@2.4.34':
-    resolution: {integrity: sha512-ytDiArvrn/3Xk6/vtylys5tlY6eo7Ane0hvcx++TKo6RxQXuVfW0AF/oeWqAj9dN29SyhtawuXstgmPlwNcv/A==}
-
   '@types/send@0.17.4':
     resolution: {integrity: sha512-x2EM6TJOybec7c52BX0ZspPodMsQUd5L6PRwOunVyVUhXiBSKf3AezDL8Dgvgt5o0UfKNfuA0eMLr2wLT4AiBA==}
 
@@ -6862,6 +6859,9 @@ packages:
 
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
+
+  fractional-indexing-jittered@1.0.0:
+    resolution: {integrity: sha512-0tLU0FOedVY7lrvN4LK0DVj6FTuYM0pWDpN97/8UTZE2lx1+OwX8+2uL7IOWc2PmktYTHQjMT6FvZZ3SGCdZdg==}
 
   framer-motion@12.10.1:
     resolution: {integrity: sha512-g+fANUVC17SzQc6eA0CtomBW4n67ckhS2hq5fjkKZneKzv7sbdXK3zzjnnAKB22Ck+Qhh+IlO5RjHNKULsq99Q==}
@@ -8920,9 +8920,6 @@ packages:
   pngjs@5.0.0:
     resolution: {integrity: sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==}
     engines: {node: '>=10.13.0'}
-
-  position-strings@2.0.1:
-    resolution: {integrity: sha512-kPVJHLd4q1HnWROKmrbEpKZ0s1FrKt5G6W96wc1PYBGJ2Gw/ZcxhMoRbDw6g02fUiaPTM5/L/fAaUOzE7I/GUg==}
 
   postcss-attribute-case-insensitive@7.0.1:
     resolution: {integrity: sha512-Uai+SupNSqzlschRyNx3kbCTWgY/2hcwtHEI/ej2LJWc9JJ77qKgGptd8DHwY1mXtZ7Aoh4z4yxfwMBue9eNgw==}
@@ -14500,17 +14497,17 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@graphprotocol/grc-20@0.20.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
+  '@graphprotocol/grc-20@0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
       '@changesets/cli': 2.29.3
       effect: 3.16.8
       ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       fflate: 0.8.2
+      fractional-indexing-jittered: 1.0.0
       graphql-request: 7.2.0(graphql@16.11.0)
       image-size: 2.0.2
       permissionless: 0.2.44(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(viem@2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))
-      position-strings: 2.0.1
       uuid: 11.1.0
       viem: 2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
     transitivePeerDependencies:
@@ -17385,8 +17382,6 @@ snapshots:
     dependencies:
       '@types/node': 22.15.29
 
-  '@types/seedrandom@2.4.34': {}
-
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
@@ -20068,6 +20063,8 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
+  fractional-indexing-jittered@1.0.0: {}
+
   framer-motion@12.10.1(@emotion/is-prop-valid@1.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       motion-dom: 12.10.1
@@ -20855,6 +20852,10 @@ snapshots:
   isomorphic-ws@4.0.1(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
     dependencies:
       ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+
+  isomorphic-ws@5.0.0(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
+    dependencies:
+      ws: 8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
 
   isomorphic-ws@5.0.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
     dependencies:
@@ -22497,10 +22498,6 @@ snapshots:
       find-up: 3.0.0
 
   pngjs@5.0.0: {}
-
-  position-strings@2.0.1:
-    dependencies:
-      '@types/seedrandom': 2.4.34
 
   postcss-attribute-case-insensitive@7.0.1(postcss@8.5.3):
     dependencies:

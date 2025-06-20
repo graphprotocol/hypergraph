@@ -1,4 +1,4 @@
-import { CreatePropertiesAndTypes } from '@/components/create-properties-and-types';
+import { CreatePropertiesAndTypesTodos } from '@/components/create-properties-and-types-todos';
 import { Todos2 } from '@/components/todos2';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
@@ -33,7 +33,7 @@ function PublicIntegration() {
   return (
     <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
       <HypergraphSpaceProvider space={spaceId}>
-        <CreatePropertiesAndTypes />
+        <CreatePropertiesAndTypesTodos />
         <Todos2 />
       </HypergraphSpaceProvider>
     </div>

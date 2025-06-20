@@ -2,26 +2,35 @@ import { Id } from '@graphprotocol/grc-20';
 import type { Mapping } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
-  RelationEntry: {
-    typeIds: [Id.Id('8f151ba4-de20-4e3c-9cb4-99ddf96f48f1')],
+  Event: {
+    typeIds: [Id.Id('6b8dbe76-389f-4bde-acdd-db9d5e387882')],
     properties: {
       name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    },
+    relations: {
+      sponsors: Id.Id('d8e4ea54-cb8c-4dca-9c2b-64dbbbe78397'),
     },
   },
-  Event: {
-    typeIds: [Id.Id('4d876b81-787e-41fc-ab5d-075d4da66a3f')],
+  Company: {
+    typeIds: [Id.Id('e8932986-67a9-4fff-89a6-07f03973014c')],
     properties: {
       name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      // description: Id.Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
     },
-    // relations: {
-    //   any: Id.Id('8f151ba4-de20-4e3c-9cb4-99ddf96f48f1'),
-    // },
+    relations: {
+      jobOffers: Id.Id('96beadca-0846-4e56-9628-c196f7f3c4cd'),
+    },
+  },
+  JobOffer: {
+    typeIds: [Id.Id('a107c081-3089-4a94-8208-6a10775557d2')],
+    properties: {
+      name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      salary: Id.Id('20d18713-5352-4e1f-987c-d853bf9f8831'),
+    },
   },
   // Todo2: {
   //   typeIds: [Id.Id('LJuM8ju67mCv78FhAiK9k9')],
   //   properties: {
-  //     name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+  //     name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   //     checked: Id.Id('Ud9kn9gAUsCr1pxvxcgDj8'),
   //     due: Id.Id('CFisPgjjWVdnaMtSWJDBqA'),
   //     point: Id.Id('BkcVo7JZHF5LsWw7XZJwwe'),
@@ -35,7 +44,7 @@ export const mapping: Mapping = {
   // User: {
   //   typeIds: [Id.Id('Fk5qzwdpKsD35gm5ts4SZA')],
   //   properties: {
-  //     name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+  //     name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   //   },
   // },
 };

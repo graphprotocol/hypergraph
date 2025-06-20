@@ -46,7 +46,7 @@
     "@effect/sql": "latest",
     "@effect/sql-sqlite-node": "latest",
     "@effect/vitest": "latest",
-    "@graphprotocol/grc-20": "^0.20.0",
+    "@graphprotocol/grc-20": "^0.21.2",
     "@graphql-codegen/cli": "^5.0.6",
     "@graphql-codegen/client-preset": "^4.8.1",
     "@graphql-codegen/typescript": "^4.1.6",
