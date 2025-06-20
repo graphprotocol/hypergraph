@@ -28,7 +28,8 @@ export const ConnectCallbackResult = Schema.Struct({
   encryptionPrivateKey: Schema.String,
   sessionToken: Schema.String,
   sessionTokenExpires: Schema.Date,
-  spaces: Schema.Array(Schema.Struct({ id: Schema.String })),
+  privateSpaces: Schema.Array(Schema.Struct({ id: Schema.String })),
+  publicSpaces: Schema.Array(Schema.Struct({ id: Schema.String })),
 });
 
 export type ConnectCallbackResult = Schema.Schema.Type<typeof ConnectCallbackResult>;
