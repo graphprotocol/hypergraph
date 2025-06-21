@@ -292,16 +292,12 @@ export const parseResult = <S extends Entity.AnyNoContext>(
       ...convertRelations(queryEntity, type, mappingEntry, mapping),
     };
 
-    console.log('rawEntity', rawEntity);
-
     const decodeResult = decode({
       ...rawEntity,
       __deleted: false,
       // __version: queryEntity.currentVersion.versionId,
       __version: '',
     });
-
-    console.log('decodeResult', decodeResult);
 
     if (Either.isRight(decodeResult)) {
       data.push(decodeResult.right);
