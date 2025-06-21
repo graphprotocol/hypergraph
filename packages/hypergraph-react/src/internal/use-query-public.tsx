@@ -96,6 +96,22 @@ type EntityQueryResult = {
               to: {
                 id: string;
                 name: string;
+                values: {
+                  propertyId: string;
+                  value: string;
+                }[];
+                relations: {
+                  to: {
+                    id: string;
+                    name: string;
+                  };
+                  type: {
+                    id: string;
+                    entity: {
+                      name: string;
+                    };
+                  };
+                }[];
               };
               type: {
                 id: string;
