@@ -10,7 +10,7 @@ import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocument = gql`
-query entities($spaceId: String!, $typeIds: [String!]!) {
+query entities($spaceId: String!, $typeIds: [String!]!, $relationTypeIdsLevel1: [String!]!) {
   entities(spaceId: $spaceId, filter: {
     types: { in: $typeIds }
   }) {
@@ -20,7 +20,9 @@ query entities($spaceId: String!, $typeIds: [String!]!) {
       propertyId
       value
     }
-    relations {
+    relations(filter: {
+      type: { in: $relationTypeIdsLevel1 }
+    }) {
       to {
         id
         name
@@ -320,10 +322,10 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
     throw new Error(`Mapping entry for ${typeName} not found`);
   }
 
-  const relationTypeIds: string[] = [];
+  const relationTypeIdsLevel1: string[] = [];
   for (const key in mappingEntry?.relations ?? {}) {
     if (include?.[key] && mappingEntry?.relations?.[key]) {
-      relationTypeIds.push(mappingEntry?.relations?.[key]);
+      relationTypeIdsLevel1.push(mappingEntry?.relations?.[key]);
     }
   }
 
@@ -333,7 +335,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
       const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, entitiesQueryDocument, {
         spaceId: space,
         typeIds: mappingEntry?.typeIds || [],
-        relationTypeIds,
+        relationTypeIdsLevel1,
       });
       return result;
     },
