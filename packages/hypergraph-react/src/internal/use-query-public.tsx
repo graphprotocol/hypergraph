@@ -139,6 +139,28 @@ type EntityQueryResult = {
   }[];
 };
 
+// A recursive representation of the entity structure returned by the public GraphQL
+// endpoint. `values` and `relations` are optional because the nested `to` selections
+// get slimmer the deeper we traverse in the query. This type intentionally mirrors
+// only the fields we actually consume inside `convertRelations`.
+type RecursiveQueryEntity = {
+  id: string;
+  name: string;
+  values?: {
+    propertyId: string;
+    value: string;
+  }[];
+  relations?: {
+    to: RecursiveQueryEntity;
+    type: {
+      id: string;
+      entity: {
+        name: string;
+      };
+    };
+  }[];
+};
+
 const convertPropertyValue = (
   property: { propertyId: string; value: string },
   key: string,
@@ -163,7 +185,7 @@ const convertPropertyValue = (
 };
 
 const convertRelations = <S extends Entity.AnyNoContext>(
-  queryEntity: EntityQueryResult['entities'][number],
+  queryEntity: RecursiveQueryEntity,
   type: S,
   mappingEntry: MappingEntry,
   mapping: Mapping,
@@ -171,7 +193,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
   const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {};
 
   for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
-    const properties = queryEntity.relations.filter((a) => a.type.id === relationId);
+    const properties = (queryEntity.relations ?? []).filter((a) => a.type.id === relationId);
     if (properties.length === 0) {
       rawEntity[key] = [] as unknown[];
       continue;
@@ -214,7 +236,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
 
       // take the mappingEntry and assign the attributes to the rawEntity
       for (const [key, value] of Object.entries(relationMappingEntry?.properties ?? {})) {
-        const property = propertyEntry.to.values.find((a) => a.propertyId === value);
+        const property = propertyEntry.to.values?.find((a) => a.propertyId === value);
         if (property) {
           rawEntity[key] = convertPropertyValue(property, key, type);
         }
