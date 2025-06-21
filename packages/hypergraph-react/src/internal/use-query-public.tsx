@@ -123,6 +123,29 @@ type EntityQueryResult = {
   }[];
 };
 
+const convertPropertyValue = (
+  property: { propertyId: string; value: string },
+  key: string,
+  type: Entity.AnyNoContext,
+) => {
+  if (type.fields[key] === Type.Checkbox) {
+    return Boolean(property.value);
+  }
+  if (type.fields[key] === Type.Point) {
+    return property.value;
+  }
+  if (type.fields[key] === Type.Url) {
+    return property.value;
+  }
+  if (type.fields[key] === Type.Date) {
+    return property.value;
+  }
+  if (type.fields[key] === Type.Number) {
+    return Number(property.value);
+  }
+  return property.value;
+};
+
 const convertRelations = <S extends Entity.AnyNoContext>(
   queryEntity: EntityQueryResult['entities'][number],
   type: S,
@@ -177,19 +200,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
       for (const [key, value] of Object.entries(relationMappingEntry?.properties ?? {})) {
         const property = propertyEntry.to.values.find((a) => a.propertyId === value);
         if (property) {
-          if (type.fields[key] === Type.Checkbox) {
-            rawEntity[key] = Boolean(property.value);
-          } else if (type.fields[key] === Type.Point) {
-            rawEntity[key] = property.value;
-          } else if (type.fields[key] === Type.Url) {
-            rawEntity[key] = property.value;
-          } else if (type.fields[key] === Type.Date) {
-            rawEntity[key] = property.value;
-          } else if (type.fields[key] === Type.Number) {
-            rawEntity[key] = Number(property.value);
-          } else {
-            rawEntity[key] = property.value;
-          }
+          rawEntity[key] = convertPropertyValue(property, key, type);
         }
       }
 
@@ -234,19 +245,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
     for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
       const property = queryEntity.values.find((a) => a.propertyId === value);
       if (property) {
-        if (type.fields[key] === Type.Checkbox) {
-          rawEntity[key] = Boolean(property.value);
-        } else if (type.fields[key] === Type.Point) {
-          rawEntity[key] = property.value;
-        } else if (type.fields[key] === Type.Url) {
-          rawEntity[key] = property.value;
-        } else if (type.fields[key] === Type.Date) {
-          rawEntity[key] = property.value;
-        } else if (type.fields[key] === Type.Number) {
-          rawEntity[key] = Number(property.value);
-        } else {
-          rawEntity[key] = property.value;
-        }
+        rawEntity[key] = convertPropertyValue(property, key, type);
       }
     }
 
