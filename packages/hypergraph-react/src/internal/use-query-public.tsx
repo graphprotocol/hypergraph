@@ -123,6 +123,98 @@ type EntityQueryResult = {
   }[];
 };
 
+const convertRelations = <S extends Entity.AnyNoContext>(
+  queryEntity: EntityQueryResult['entities'][number],
+  type: S,
+  mappingEntry: MappingEntry,
+  mapping: Mapping,
+) => {
+  const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {};
+
+  for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
+    const properties = queryEntity.relations.filter((a) => a.type.id === relationId);
+    if (properties.length === 0) {
+      rawEntity[key] = [] as unknown[];
+      continue;
+    }
+
+    const field = type.fields[key];
+    if (!field) {
+      // @ts-expect-error TODO: properly access the type.name
+      console.error(`Field ${key} not found in ${type.name}`);
+      continue;
+    }
+    // @ts-expect-error TODO: properly access the type.name
+    const annotations = field.ast.rest[0].type.to.annotations;
+
+    // TODO: fix this access using proper effect types
+    const relationTypeName =
+      annotations[
+        Object.getOwnPropertySymbols(annotations).find((sym) => sym.description === 'effect/annotation/Identifier')
+      ];
+
+    const relationMappingEntry = mapping[relationTypeName];
+    if (!relationMappingEntry) {
+      console.error(`Relation mapping entry for ${relationTypeName} not found`);
+      continue;
+    }
+
+    const newRelationEntities = properties.map((propertyEntry) => {
+      let rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
+        id: propertyEntry.to.id,
+        name: propertyEntry.to.name,
+        type: propertyEntry.type.id,
+        // TODO: should be determined by the actual value
+        __deleted: false,
+        // TODO: should be determined by the actual value
+        __version: '',
+      };
+
+      // @ts-expect-error TODO: properly access the type.name
+      const type = field.value;
+
+      // take the mappingEntry and assign the attributes to the rawEntity
+      for (const [key, value] of Object.entries(relationMappingEntry?.properties ?? {})) {
+        const property = propertyEntry.to.values.find((a) => a.propertyId === value);
+        if (property) {
+          if (type.fields[key] === Type.Checkbox) {
+            rawEntity[key] = Boolean(property.value);
+          } else if (type.fields[key] === Type.Point) {
+            rawEntity[key] = property.value;
+          } else if (type.fields[key] === Type.Url) {
+            rawEntity[key] = property.value;
+          } else if (type.fields[key] === Type.Date) {
+            rawEntity[key] = property.value;
+          } else if (type.fields[key] === Type.Number) {
+            rawEntity[key] = Number(property.value);
+          } else {
+            rawEntity[key] = property.value;
+          }
+        }
+      }
+
+      rawEntity = {
+        ...rawEntity,
+        ...convertRelations(propertyEntry.to, type, relationMappingEntry, mapping),
+      };
+
+      return rawEntity;
+    });
+
+    if (rawEntity[key]) {
+      rawEntity[key] = [
+        // @ts-expect-error TODO: properly access the type.name
+        ...rawEntity[key],
+        ...newRelationEntities,
+      ];
+    } else {
+      rawEntity[key] = newRelationEntities;
+    }
+  }
+
+  return rawEntity;
+};
+
 export const parseResult = <S extends Entity.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
@@ -134,7 +226,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   const invalidEntities: Record<string, unknown>[] = [];
 
   for (const queryEntity of queryData.entities) {
-    const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
+    let rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
       id: queryEntity.id,
     };
 
@@ -158,81 +250,10 @@ export const parseResult = <S extends Entity.AnyNoContext>(
       }
     }
 
-    for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
-      const properties = queryEntity.relations.filter((a) => a.type.id === relationId);
-      if (properties.length === 0) {
-        rawEntity[key] = [] as unknown[];
-        continue;
-      }
-
-      const field = type.fields[key];
-      if (!field) {
-        // @ts-expect-error TODO: properly access the type.name
-        console.error(`Field ${key} not found in ${type.name}`);
-        continue;
-      }
-      // @ts-expect-error TODO: properly access the type.name
-      const annotations = field.ast.rest[0].type.to.annotations;
-
-      // TODO: fix this access using proper effect types
-      const relationTypeName =
-        annotations[
-          Object.getOwnPropertySymbols(annotations).find((sym) => sym.description === 'effect/annotation/Identifier')
-        ];
-
-      const relationMappingEntry = mapping[relationTypeName];
-      if (!relationMappingEntry) {
-        console.error(`Relation mapping entry for ${relationTypeName} not found`);
-        continue;
-      }
-
-      const newRelationEntities = properties.map((propertyEntry) => {
-        const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
-          id: propertyEntry.to.id,
-          name: propertyEntry.to.name,
-          type: propertyEntry.type.id,
-          // TODO: should be determined by the actual value
-          __deleted: false,
-          // TODO: should be determined by the actual value
-          __version: '',
-        };
-
-        // @ts-expect-error TODO: properly access the type.name
-        const type = field.value;
-
-        // take the mappingEntry and assign the attributes to the rawEntity
-        for (const [key, value] of Object.entries(relationMappingEntry?.properties ?? {})) {
-          const property = propertyEntry.to.values.find((a) => a.propertyId === value);
-          if (property) {
-            if (type.fields[key] === Type.Checkbox) {
-              rawEntity[key] = Boolean(property.value);
-            } else if (type.fields[key] === Type.Point) {
-              rawEntity[key] = property.value;
-            } else if (type.fields[key] === Type.Url) {
-              rawEntity[key] = property.value;
-            } else if (type.fields[key] === Type.Date) {
-              rawEntity[key] = property.value;
-            } else if (type.fields[key] === Type.Number) {
-              rawEntity[key] = Number(property.value);
-            } else {
-              rawEntity[key] = property.value;
-            }
-          }
-        }
-
-        return rawEntity;
-      });
-
-      if (rawEntity[key]) {
-        rawEntity[key] = [
-          // @ts-expect-error TODO: properly access the type.name
-          ...rawEntity[key],
-          ...newRelationEntities,
-        ];
-      } else {
-        rawEntity[key] = newRelationEntities;
-      }
-    }
+    rawEntity = {
+      ...rawEntity,
+      ...convertRelations(queryEntity, type, mappingEntry, mapping),
+    };
 
     console.log('rawEntity', rawEntity);
 
@@ -261,7 +282,6 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
 
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
   const typeName = type.name;
-
   const mappingEntry = mapping?.[typeName];
   if (enabled && !mappingEntry) {
     throw new Error(`Mapping entry for ${typeName} not found`);

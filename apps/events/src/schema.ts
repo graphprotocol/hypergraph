@@ -33,6 +33,6 @@ export class Company extends Entity.Class<Company>('Company')({
 
 export class Event extends Entity.Class<Event>('Event')({
   name: Type.Text,
-  description: Type.Text,
+  // description: Type.Text,
   sponsors: Type.Relation(Company),
 }) {}

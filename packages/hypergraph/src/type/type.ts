@@ -23,7 +23,5 @@ export const Relation = <S extends AnyNoContext>(schema: S) => {
     insert: Schema.optional(Schema.Array(Schema.String)),
     update: Schema.Undefined,
   });
-  // @ts-expect-error TODO: trying to inject info
-  relationSchema.hidden = { lala: 'lala', class: schema };
   return relationSchema;
 };
