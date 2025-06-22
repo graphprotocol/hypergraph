@@ -8,7 +8,11 @@ export const Playground = () => {
     isError,
   } = useQuery(Event, {
     mode: 'public',
-    include: { sponsors: {} },
+    include: {
+      sponsors: {
+        jobOffers: {},
+      },
+    },
   });
 
   console.log({ isLoading, isError, entityData });

@@ -9,7 +9,22 @@ import { useHypergraphSpace } from '../HypergraphSpaceContext.js';
 import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
-const entitiesQueryDocument = gql`
+const entitiesQueryDocumentLevel0 = gql`
+query entities($spaceId: String!, $typeIds: [String!]!) {
+  entities(spaceId: $spaceId, filter: {
+    types: { in: $typeIds }
+  }) {
+    id
+    name
+    values {
+      propertyId
+      value
+    }
+  }
+}
+`;
+
+const entitiesQueryDocumentLevel1 = gql`
 query entities($spaceId: String!, $typeIds: [String!]!, $relationTypeIdsLevel1: [String!]!) {
   entities(spaceId: $spaceId, filter: {
     types: { in: $typeIds }
@@ -30,25 +45,48 @@ query entities($spaceId: String!, $typeIds: [String!]!, $relationTypeIdsLevel1: 
           propertyId
           value
         }
-        relations {
+      }
+      type {
+        id
+        entity {
+          name
+        }
+      }
+    }
+  }
+}
+`;
+
+const entitiesQueryDocumentLevel2 = gql`
+query entities($spaceId: String!, $typeIds: [String!]!, $relationTypeIdsLevel1: [String!]!, $relationTypeIdsLevel2: [String!]!) {
+  entities(spaceId: $spaceId, filter: {
+    types: { in: $typeIds }
+  }) {
+    id
+    name
+    values {
+      propertyId
+      value
+    }
+    relations(filter: {
+      type: { in: $relationTypeIdsLevel1 }
+    }) {
+      to {
+        id
+        name
+        values {
+          propertyId
+          value
+        }
+        relations(filter: {
+          type: { in: $relationTypeIdsLevel2 }
+        }) {
           to {
             id
             name
             values {
               propertyId
               value
-            }
-            relations {
-              to {
-                id
-                name
-              }
-              type {
-                id
-                entity {
-                  name
-                }
-              }
             }
           }
           type {
@@ -93,34 +131,6 @@ type EntityQueryResult = {
             values: {
               propertyId: string;
               value: string;
-            }[];
-            relations: {
-              to: {
-                id: string;
-                name: string;
-                values: {
-                  propertyId: string;
-                  value: string;
-                }[];
-                relations: {
-                  to: {
-                    id: string;
-                    name: string;
-                  };
-                  type: {
-                    id: string;
-                    entity: {
-                      name: string;
-                    };
-                  };
-                }[];
-              };
-              type: {
-                id: string;
-                entity: {
-                  name: string;
-                };
-              };
             }[];
           };
           type: {
@@ -322,20 +332,47 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
     throw new Error(`Mapping entry for ${typeName} not found`);
   }
 
+  // constructing the relation type ids for the query
   const relationTypeIdsLevel1: string[] = [];
+  const relationTypeIdsLevel2: string[] = [];
   for (const key in mappingEntry?.relations ?? {}) {
     if (include?.[key] && mappingEntry?.relations?.[key]) {
       relationTypeIdsLevel1.push(mappingEntry?.relations?.[key]);
+      const field = type.fields[key];
+      // @ts-expect-error TODO find a better way to access the relation type name
+      const typeName2 = field.value.name;
+      const mappingEntry2 = mapping[typeName2];
+      for (const key2 in mappingEntry2?.relations ?? {}) {
+        if (include?.[key][key2] && mappingEntry2?.relations?.[key2]) {
+          relationTypeIdsLevel2.push(mappingEntry2?.relations?.[key2]);
+        }
+      }
     }
   }
 
   const result = useQueryTanstack({
-    queryKey: ['hypergraph-public-entities', typeName, space, mappingEntry?.typeIds],
+    queryKey: [
+      'hypergraph-public-entities',
+      typeName,
+      space,
+      mappingEntry?.typeIds,
+      relationTypeIdsLevel1,
+      relationTypeIdsLevel2,
+    ],
     queryFn: async () => {
-      const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, entitiesQueryDocument, {
+      let queryDocument = entitiesQueryDocumentLevel0;
+      if (relationTypeIdsLevel1.length > 0) {
+        queryDocument = entitiesQueryDocumentLevel1;
+      }
+      if (relationTypeIdsLevel2.length > 0) {
+        queryDocument = entitiesQueryDocumentLevel2;
+      }
+
+      const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, queryDocument, {
         spaceId: space,
         typeIds: mappingEntry?.typeIds || [],
         relationTypeIdsLevel1,
+        relationTypeIdsLevel2,
       });
       return result;
     },
