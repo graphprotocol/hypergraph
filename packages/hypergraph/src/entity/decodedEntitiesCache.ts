@@ -5,7 +5,7 @@ export type QueryEntry = {
   data: Array<Entity<AnyNoContext>>; // holds the decoded entities of this query and must be a stable reference and use the same reference for the `entities` array
   listeners: Array<() => void>; // listeners to this query
   isInvalidated: boolean;
-  include: { [K in keyof Schema.Schema.Type<AnyNoContext>]?: Record<string, never> };
+  include: { [K in keyof Schema.Schema.Type<AnyNoContext>]?: Record<string, Record<string, never>> };
 };
 
 export type DecodedEntitiesCacheEntry = {

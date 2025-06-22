@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
-const createPropertiesAndTypes = async ({
+const createPropertiesAndTypesTodos = async ({
   smartAccountWalletClient,
   space,
 }: { smartAccountWalletClient: GeoSmartAccount; space: string }) => {
@@ -84,7 +84,7 @@ const createPropertiesAndTypes = async ({
   };
 };
 
-export const CreatePropertiesAndTypes = () => {
+export const CreatePropertiesAndTypesTodos = () => {
   const [mapping, setMapping] = useState<string>('');
   const space = useHypergraphSpace();
 
@@ -112,7 +112,7 @@ export const CreatePropertiesAndTypes = () => {
             pointPropertyId,
             websitePropertyId,
             amountPropertyId,
-          } = await createPropertiesAndTypes({
+          } = await createPropertiesAndTypesTodos({
             smartAccountWalletClient,
             space,
           });
@@ -120,7 +120,7 @@ export const CreatePropertiesAndTypes = () => {
           const newMapping = `Todo2: {
   typeIds: [Id.Id('${todoTypeId}')],
   properties: {
-    name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
     checked: Id.Id('${checkedPropertyId}'),
     due: Id.Id('${duePropertyId}'),
     point: Id.Id('${pointPropertyId}'),
@@ -134,7 +134,7 @@ export const CreatePropertiesAndTypes = () => {
 User: {
   typeIds: [Id.Id('${userId}')],
   properties: {
-    name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   },
 }
 `;

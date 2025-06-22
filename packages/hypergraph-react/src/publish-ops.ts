@@ -7,6 +7,7 @@ type PublishParams = {
   ops: Op[];
   walletClient: GeoSmartAccount;
   space: string;
+  network: 'TESTNET' | 'MAINNET';
 };
 
 type PublishResult = {
@@ -16,7 +17,13 @@ type PublishResult = {
   cid: string;
 };
 
-export const publishOps = async ({ name, ops, walletClient, space }: PublishParams): Promise<PublishResult> => {
+export const publishOps = async ({
+  name,
+  ops,
+  walletClient,
+  space,
+  network,
+}: PublishParams): Promise<PublishResult> => {
   const address = walletClient.account?.address;
   if (!address) {
     throw new Error('No address found');
@@ -26,18 +33,15 @@ export const publishOps = async ({ name, ops, walletClient, space }: PublishPara
     name,
     ops: ops,
     author: address,
-    network: 'TESTNET',
+    network,
   });
 
   const cid = publishResult.cid;
 
   // This returns the correct contract address and calldata depending on the space id
-  const result = await fetch(`https://api-testnet.grc-20.thegraph.com/space/${space}/edit/calldata`, {
+  const result = await fetch(`https://hypergraph-v2-testnet.up.railway.app/space/${space}/edit/calldata`, {
     method: 'POST',
-    body: JSON.stringify({
-      cid: cid,
-      network: 'MAINNET',
-    }),
+    body: JSON.stringify({ cid }),
   });
 
   const { to, data } = await result.json();
