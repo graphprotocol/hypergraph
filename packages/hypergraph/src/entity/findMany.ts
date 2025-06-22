@@ -239,7 +239,7 @@ export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
@@ -378,7 +378,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): {
   subscribe: (callback: () => void) => () => void;
   getEntities: () => Readonly<Array<Entity<S>>>;
