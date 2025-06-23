@@ -67,7 +67,6 @@ const signatureMessage = (nonce: Uint8Array): string => {
 
 export const encryptIdentity = async (
   signer: Signer,
-  accountAddress: string,
   keys: IdentityKeys,
 ): Promise<{ ciphertext: string; nonce: string }> => {
   const nonce = randomBytes(32);
@@ -76,7 +75,7 @@ export const encryptIdentity = async (
 
   // Check that the signature is valid
   const valid = await verifyMessage({
-    address: accountAddress as Hex,
+    address: (await signer.getAddress()) as Hex,
     message,
     signature,
   });
@@ -97,18 +96,13 @@ export const encryptIdentity = async (
   return { ciphertext, nonce: bytesToHex(nonce) };
 };
 
-export const decryptIdentity = async (
-  signer: Signer,
-  accountAddress: string,
-  ciphertext: string,
-  nonce: string,
-): Promise<IdentityKeys> => {
+export const decryptIdentity = async (signer: Signer, ciphertext: string, nonce: string): Promise<IdentityKeys> => {
   const message = signatureMessage(hexToBytes(nonce));
   const signature = (await signer.signMessage(message)) as Hex;
 
   // Check that the signature is valid
   const valid = await verifyMessage({
-    address: accountAddress as Hex,
+    address: (await signer.getAddress()) as Hex,
     message,
     signature,
   });
@@ -141,9 +135,9 @@ export const decryptIdentity = async (
 
 export const encryptAppIdentity = async (
   signer: Signer,
-  accountAddress: string,
   appIdentityAddress: string,
   appIdentityAddressPrivateKey: string,
+  permissionId: string,
   keys: IdentityKeys,
 ): Promise<{ ciphertext: string; nonce: string }> => {
   const nonce = randomBytes(32);
@@ -152,7 +146,7 @@ export const encryptAppIdentity = async (
 
   // Check that the signature is valid
   const valid = await verifyMessage({
-    address: accountAddress as Hex,
+    address: (await signer.getAddress()) as Hex,
     message,
     signature,
   });
@@ -169,6 +163,7 @@ export const encryptAppIdentity = async (
     keys.signaturePrivateKey,
     appIdentityAddress,
     appIdentityAddressPrivateKey,
+    permissionId,
   ].join('\n');
   const keysMsg = new TextEncoder().encode(keysTxt);
   const ciphertext = encrypt(keysMsg, secretKey);
@@ -177,16 +172,15 @@ export const encryptAppIdentity = async (
 
 export const decryptAppIdentity = async (
   signer: Signer,
-  accountAddress: string,
   ciphertext: string,
   nonce: string,
-): Promise<Omit<PrivateAppIdentity, 'sessionToken' | 'sessionTokenExpires'>> => {
+): Promise<Omit<PrivateAppIdentity, 'sessionToken' | 'sessionTokenExpires' | 'accountAddress'>> => {
   const message = signatureMessage(hexToBytes(nonce));
   const signature = (await signer.signMessage(message)) as Hex;
 
   // Check that the signature is valid
   const valid = await verifyMessage({
-    address: accountAddress as Hex,
+    address: (await signer.getAddress()) as Hex,
     message,
     signature,
   });
@@ -220,6 +214,7 @@ export const decryptAppIdentity = async (
     signaturePrivateKey,
     appIdentityAddress,
     appIdentityAddressPrivateKey,
+    permissionId,
   ] = keysTxt.split('\n');
   return {
     encryptionPublicKey,
@@ -228,6 +223,6 @@ export const decryptAppIdentity = async (
     signaturePrivateKey,
     address: appIdentityAddress,
     addressPrivateKey: appIdentityAddressPrivateKey,
-    accountAddress,
+    permissionId,
   };
 };

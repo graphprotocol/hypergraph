@@ -21,13 +21,15 @@ export const ConnectCallbackResult = Schema.Struct({
   appIdentityAddress: Schema.String,
   appIdentityAddressPrivateKey: Schema.String,
   accountAddress: Schema.String,
+  permissionId: Schema.String,
   signaturePublicKey: Schema.String,
   signaturePrivateKey: Schema.String,
   encryptionPublicKey: Schema.String,
   encryptionPrivateKey: Schema.String,
   sessionToken: Schema.String,
   sessionTokenExpires: Schema.Date,
-  spaces: Schema.Array(Schema.Struct({ id: Schema.String })),
+  privateSpaces: Schema.Array(Schema.Struct({ id: Schema.String })),
+  publicSpaces: Schema.Array(Schema.Struct({ id: Schema.String })),
 });
 
 export type ConnectCallbackResult = Schema.Schema.Type<typeof ConnectCallbackResult>;

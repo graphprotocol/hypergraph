@@ -1,16 +1,18 @@
 import { PrivyClient, type Wallet } from '@privy-io/server-auth';
 
-export async function getAddressByPrivyToken(idToken: string | undefined): Promise<string> {
+export async function getAddressByPrivyToken(idToken: string[] | string | undefined): Promise<string> {
   if (!idToken) {
     throw new Error('No Privy ID token provided');
   }
+
+  const idTokenString = Array.isArray(idToken) ? idToken[0] : idToken;
 
   if (!process.env.PRIVY_APP_SECRET || !process.env.PRIVY_APP_ID) {
     throw new Error('Missing Privy configuration');
   }
 
   const privy = new PrivyClient(process.env.PRIVY_APP_ID, process.env.PRIVY_APP_SECRET);
-  const user = await privy.getUser({ idToken });
+  const user = await privy.getUser({ idToken: idTokenString });
 
   if (!user) {
     throw new Error('Invalid Privy user');

@@ -1,7 +1,9 @@
 import { CreateSpace } from '@/components/create-space';
 import { Button } from '@/components/ui/button';
-import { useSpaces } from '@/hooks/use-spaces';
-import { Connect, type Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
+import { usePrivateSpaces } from '@/hooks/use-private-spaces';
+import { type PublicSpaceData, usePublicSpaces } from '@/hooks/use-public-spaces';
+import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
+import { GEOGENESIS, GEO_TESTNET, getSmartAccountWalletClient } from '@graphprotocol/hypergraph/connect/smart-account';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
@@ -9,7 +11,8 @@ import { useSelector } from '@xstate/store/react';
 import { Effect, Schema } from 'effect';
 import { useEffect } from 'react';
 import { createWalletClient, custom } from 'viem';
-import { mainnet } from 'viem/chains';
+
+const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
 
 type AuthenticateSearch = {
   data: unknown;
@@ -135,7 +138,31 @@ function AuthenticateComponent() {
 
   const state = useSelector(componentStore, (state) => state.context);
 
-  const { isPending, error: spacesError, data: spacesData } = useSpaces();
+  const { isPending: privateSpacesPending, error: privateSpacesError, data: privateSpacesData } = usePrivateSpaces();
+  const {
+    isPending: publicSpacesPending,
+    error: publicSpacesError,
+    data: publicSpacesData,
+  } = usePublicSpaces(import.meta.env.VITE_HYPERGRAPH_API_URL);
+
+  const selectedPrivateSpaces = new Set<string>();
+  const selectedPublicSpaces = new Set<string>();
+
+  const handlePrivateSpaceToggle = (spaceId: string, checked: boolean) => {
+    if (checked) {
+      selectedPrivateSpaces.add(spaceId);
+    } else {
+      selectedPrivateSpaces.delete(spaceId);
+    }
+  };
+
+  const handlePublicSpaceToggle = (spaceId: string, checked: boolean) => {
+    if (checked) {
+      selectedPublicSpaces.add(spaceId);
+    } else {
+      selectedPublicSpaces.delete(spaceId);
+    }
+  };
 
   useEffect(() => {
     const run = async () => {
@@ -150,6 +177,7 @@ function AuthenticateComponent() {
           {
             headers: {
               'privy-id-token': identityToken,
+              'account-address': accountAddress,
               'Content-Type': 'application/json',
             },
           },
@@ -214,54 +242,57 @@ function AuthenticateComponent() {
       return;
     }
 
-    const spacesInput = spacesData
-      ? spacesData.map((space) => {
-          // TODO: currently without checking we assume all keyboxes exists and we don't create any - we should check if the keyboxes exist and create them if they don't
-          if (space.appIdentities.some((spaceAppIdentity) => spaceAppIdentity.address === appIdentity.address))
+    const privateSpacesInput = privateSpacesData
+      ? privateSpacesData
+          .filter((space) => selectedPrivateSpaces.has(space.id))
+          .map((space) => {
+            // TODO: currently without checking we assume all keyboxes exists and we don't create any - we should check if the keyboxes exist and create them if they don't
+            if (space.appIdentities.some((spaceAppIdentity) => spaceAppIdentity.address === appIdentity.address))
+              return {
+                id: space.id,
+                keyBoxes: [],
+              };
+
+            const spaceKeys = space.keyBoxes.map((keyboxData) => {
+              const key = Key.decryptKey({
+                privateKey: Utils.hexToBytes(keys.encryptionPrivateKey),
+                publicKey: Utils.hexToBytes(keyboxData.authorPublicKey),
+                keyBoxCiphertext: Utils.hexToBytes(keyboxData.ciphertext),
+                keyBoxNonce: Utils.hexToBytes(keyboxData.nonce),
+              });
+              return {
+                id: keyboxData.id,
+                key: key,
+              };
+            });
+
+            const keyBoxes = spaceKeys.map((keyData) => {
+              const keyBox = Key.encryptKey({
+                privateKey: Utils.hexToBytes(keys.encryptionPrivateKey),
+                publicKey: Utils.hexToBytes(appIdentity.encryptionPublicKey),
+                key: keyData.key,
+              });
+              return {
+                id: keyData.id,
+                ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
+                nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
+                authorPublicKey: appIdentity.encryptionPublicKey,
+                accountAddress: accountAddress,
+              };
+            });
+
             return {
               id: space.id,
-              keyBoxes: [],
+              keyBoxes,
             };
-
-          const spaceKeys = space.keyBoxes.map((keyboxData) => {
-            const key = Key.decryptKey({
-              privateKey: Utils.hexToBytes(keys.encryptionPrivateKey),
-              publicKey: Utils.hexToBytes(keyboxData.authorPublicKey),
-              keyBoxCiphertext: Utils.hexToBytes(keyboxData.ciphertext),
-              keyBoxNonce: Utils.hexToBytes(keyboxData.nonce),
-            });
-            return {
-              id: keyboxData.id,
-              key: key,
-            };
-          });
-
-          const keyBoxes = spaceKeys.map((keyData) => {
-            const keyBox = Key.encryptKey({
-              privateKey: Utils.hexToBytes(keys.encryptionPrivateKey),
-              publicKey: Utils.hexToBytes(appIdentity.encryptionPublicKey),
-              key: keyData.key,
-            });
-            return {
-              id: keyData.id,
-              ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
-              nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
-              authorPublicKey: appIdentity.encryptionPublicKey,
-              accountAddress: accountAddress,
-            };
-          });
-
-          return {
-            id: space.id,
-            keyBoxes,
-          };
-        })
+          })
       : [];
 
     const message: Messages.RequestConnectAddAppIdentityToSpaces = {
       type: 'connect-add-app-identity-to-spaces',
       appIdentityAddress: appIdentity.address,
-      spacesInput,
+      accountAddress,
+      spacesInput: privateSpacesInput,
     };
 
     // TODO add loading indicator by updating the state
@@ -284,11 +315,13 @@ function AuthenticateComponent() {
         appIdentityAddress: appIdentity.address,
         appIdentityAddressPrivateKey: appIdentity.addressPrivateKey,
         accountAddress: accountAddress,
+        permissionId: appIdentity.permissionId,
         encryptionPrivateKey: appIdentity.encryptionPrivateKey,
         signaturePrivateKey: appIdentity.signaturePrivateKey,
         signaturePublicKey: appIdentity.signaturePublicKey,
         encryptionPublicKey: appIdentity.encryptionPublicKey,
-        spaces: spacesData?.map((space) => ({ id: space.id })) ?? [],
+        privateSpaces: privateSpacesInput?.map((space) => ({ id: space.id })) ?? [],
+        publicSpaces: publicSpacesData?.map((space) => ({ id: space.id })) ?? [],
         expiry: appInfo.expiry,
         sessionToken: appIdentity.sessionToken,
         sessionTokenExpires: appIdentity.sessionTokenExpires.getTime(),
@@ -311,7 +344,8 @@ function AuthenticateComponent() {
     try {
       const privyProvider = await embeddedWallet.getEthereumProvider();
       const walletClient = createWalletClient({
-        chain: mainnet,
+        account: embeddedWallet.address as `0x${string}`,
+        chain: CHAIN,
         transport: custom(privyProvider),
       });
 
@@ -331,18 +365,59 @@ function AuthenticateComponent() {
       };
 
       const newAppIdentity = Connect.createAppIdentity();
+
+      console.log('creating smart session');
+      console.log('public spaces data', publicSpacesData);
+      const spaces =
+        publicSpacesData
+          ?.filter((space) => selectedPublicSpaces.has(space.id))
+          .map((space) => ({
+            address:
+              space.type === 'personal'
+                ? (space.personalAddress as `0x${string}`)
+                : (space.mainVotingAddress as `0x${string}`),
+            type: space.type as 'personal' | 'public',
+          })) ?? [];
+      console.log('spaces', spaces);
+
+      // TODO: add additional actions (must be passed from the app)
+      const permissionId = await Connect.createSmartSession(
+        walletClient,
+        accountAddress,
+        newAppIdentity.addressPrivateKey,
+        CHAIN,
+        import.meta.env.VITE_HYPERGRAPH_RPC_URL,
+        {
+          allowCreateSpace: true,
+          spaces,
+          additionalActions: [],
+        },
+      );
+      console.log('smart session created');
+      const smartAccountClient = await getSmartAccountWalletClient({
+        owner: walletClient,
+        chain: CHAIN,
+        rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
+      });
+
       const { ciphertext, nonce } = await Connect.encryptAppIdentity(
         signer,
-        accountAddress,
         newAppIdentity.address,
         newAppIdentity.addressPrivateKey,
+        permissionId,
         keys,
       );
-      const { accountProof, keyProof } = await Connect.proveIdentityOwnership(signer, accountAddress, keys);
+      const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
+        walletClient,
+        smartAccountClient,
+        accountAddress,
+        keys,
+      );
 
       const message: Messages.RequestConnectCreateAppIdentity = {
         appId: state.appInfo.appId,
         address: newAppIdentity.address,
+        accountAddress,
         signaturePublicKey: newAppIdentity.signaturePublicKey,
         encryptionPublicKey: newAppIdentity.encryptionPublicKey,
         ciphertext,
@@ -372,6 +447,7 @@ function AuthenticateComponent() {
           signaturePublicKey: newAppIdentity.signaturePublicKey,
           sessionToken: appIdentityResponse.appIdentity.sessionToken,
           sessionTokenExpires: new Date(appIdentityResponse.appIdentity.sessionTokenExpires),
+          permissionId,
         },
         appInfo: state.appInfo,
       });
@@ -392,7 +468,8 @@ function AuthenticateComponent() {
 
     const privyProvider = await embeddedWallet.getEthereumProvider();
     const walletClient = createWalletClient({
-      chain: mainnet,
+      account: embeddedWallet.address as `0x${string}`,
+      chain: CHAIN,
       transport: custom(privyProvider),
     });
 
@@ -413,7 +490,6 @@ function AuthenticateComponent() {
 
     const decryptedIdentity = await Connect.decryptAppIdentity(
       signer,
-      state.appIdentityResponse.accountAddress,
       state.appIdentityResponse.ciphertext,
       state.appIdentityResponse.nonce,
     );
@@ -422,7 +498,8 @@ function AuthenticateComponent() {
       appIdentity: {
         address: decryptedIdentity.address,
         addressPrivateKey: decryptedIdentity.addressPrivateKey,
-        accountAddress: decryptedIdentity.accountAddress,
+        accountAddress: state.appIdentityResponse.accountAddress,
+        permissionId: decryptedIdentity.permissionId,
         encryptionPrivateKey: decryptedIdentity.encryptionPrivateKey,
         signaturePrivateKey: decryptedIdentity.signaturePrivateKey,
         encryptionPublicKey: decryptedIdentity.encryptionPublicKey,
@@ -451,20 +528,53 @@ function AuthenticateComponent() {
             </div>
             <h2 className="font-bold mb-2 mt-2">Spaces</h2>
             <ul className="space-y-4">
-              {isPending && <p>Loading spaces …</p>}
-              {spacesError && <p>An error has occurred loading spaces: {spacesError.message}</p>}
-              {!isPending && !spacesError && spacesData?.length === 0 && <p>No spaces found</p>}
-              {spacesData?.map((space) => (
-                <li key={space.id}>
-                  <p>{space.name}</p>
-                  <p className="text-xs text-gray-500 mt-2 mb-1">Apps with access to this space</p>
-                  <ul>
-                    {space.apps.map((app) => (
-                      <li key={app.id} className="text-sm">
-                        {app.name}
-                      </li>
-                    ))}
-                  </ul>
+              {privateSpacesPending && <p>Loading private spaces …</p>}
+              {privateSpacesError && <p>An error has occurred loading private spaces: {privateSpacesError.message}</p>}
+              {!privateSpacesPending && !privateSpacesError && privateSpacesData?.length === 0 && (
+                <p>No private spaces found</p>
+              )}
+              {privateSpacesData?.map((space) => (
+                <li key={space.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <input
+                    type="checkbox"
+                    id={`private-${space.id}`}
+                    checked={selectedPrivateSpaces.has(space.id)}
+                    onChange={(e) => handlePrivateSpaceToggle(space.id, e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <label htmlFor={`private-${space.id}`} className="flex-1 cursor-pointer">
+                    <p className="font-medium">{space.name}</p>
+                    <p className="text-xs text-gray-500 mt-2 mb-1">Apps with access to this space</p>
+                    <ul>
+                      {space.apps.map((app) => (
+                        <li key={app.id} className="text-sm">
+                          {app.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <h2 className="font-bold mb-2 mt-2">Public Spaces</h2>
+            <ul className="space-y-4">
+              {publicSpacesPending && <p>Loading public spaces …</p>}
+              {publicSpacesError && <p>An error has occurred loading public spaces: {publicSpacesError.message}</p>}
+              {!publicSpacesPending && !publicSpacesError && publicSpacesData?.length === 0 && (
+                <p>No public spaces found</p>
+              )}
+              {publicSpacesData?.map((space: PublicSpaceData) => (
+                <li key={space.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <input
+                    type="checkbox"
+                    id={`public-${space.id}`}
+                    checked={selectedPublicSpaces.has(space.id)}
+                    onChange={(e) => handlePublicSpaceToggle(space.id, e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <label htmlFor={`public-${space.id}`} className="flex-1 cursor-pointer">
+                    <p className="font-medium">{space.name}</p>
+                  </label>
                 </li>
               ))}
             </ul>

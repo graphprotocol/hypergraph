@@ -1,7 +1,7 @@
-import { useSpaces } from '@/hooks/use-spaces';
+import { usePrivateSpaces } from '@/hooks/use-private-spaces';
 
 export function Spaces() {
-  const { isPending, error, data } = useSpaces();
+  const { isPending, error, data } = usePrivateSpaces();
 
   return (
     <div>
