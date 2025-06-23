@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 
 export const UsersLocal = () => {
   const hardDeleteEntity = useHardDeleteEntity();
-  const { data: usersLocalData, deleted: deletedUsersLocalData } = useQuery(User, { mode: 'local' });
+  const { data: usersLocalData, deleted: deletedUsersLocalData } = useQuery(User, { mode: 'private' });
 
   return (
     <>
