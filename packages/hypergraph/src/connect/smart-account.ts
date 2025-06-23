@@ -3,7 +3,6 @@ import { randomBytes } from '@noble/hashes/utils';
 import {
   OWNABLE_VALIDATOR_ADDRESS,
   RHINESTONE_ATTESTER_ADDRESS,
-  SMART_SESSIONS_ADDRESS,
   type Session,
   SmartSessionMode,
   encodeSmartSessionSignature,
@@ -163,7 +162,8 @@ export {
 };
 
 export type SmartSessionClient = {
-  sendTransaction: <const calls extends readonly unknown[]>({ calls }: { calls: calls }) => Promise<string>;
+  sendUserOperation: <const calls extends readonly unknown[]>({ calls }: { calls: calls }) => Promise<string>;
+  waitForUserOperationReceipt: ({ hash }: { hash: Hex }) => Promise<WaitForUserOperationReceiptReturnType>;
   signMessage: ({ message }: { message: SignableMessage }) => Promise<Hex>;
 };
 
@@ -775,13 +775,6 @@ export const getSmartSessionClient = async ({
     apiKey,
   });
 
-  const sessionDetails = {
-    mode: SmartSessionMode.USE,
-    permissionId,
-    signature: getOwnableValidatorMockSignature({
-      threshold: 1,
-    }),
-  };
   const smartSessions = getSmartSessionsValidator({});
   const publicClient = createPublicClient({
     transport: http(rpcUrl),
@@ -789,7 +782,7 @@ export const getSmartSessionClient = async ({
   });
 
   return {
-    sendTransaction: async <const calls extends readonly unknown[]>({ calls }: { calls: calls }) => {
+    sendUserOperation: async <const calls extends readonly unknown[]>({ calls }: { calls: calls }) => {
       if (!smartAccountClient.account) {
         throw new Error('Invalid smart account');
       }
@@ -797,6 +790,13 @@ export const getSmartSessionClient = async ({
         address: smartAccountClient.account.address,
         type: 'safe',
       });
+      const sessionDetails = {
+        mode: SmartSessionMode.USE,
+        permissionId,
+        signature: getOwnableValidatorMockSignature({
+          threshold: 1,
+        }),
+      };
       const nonce = await getAccountNonce(publicClient, {
         address: smartAccountClient.account.address,
         entryPointAddress: entryPoint07Address,
@@ -829,6 +829,9 @@ export const getSmartSessionClient = async ({
     },
     signMessage: async ({ message }: { message: SignableMessage }) => {
       return sessionKeyAccount.signMessage({ message });
+    },
+    waitForUserOperationReceipt: async ({ hash }: { hash: Hex }) => {
+      return smartAccountClient.waitForUserOperationReceipt({ hash });
     },
   };
 };
