@@ -1,6 +1,8 @@
+import { MAINNET, TESTNET } from '@graphprotocol/grc-20/contracts';
 import { randomBytes } from '@noble/hashes/utils';
 import {
   OWNABLE_VALIDATOR_ADDRESS,
+  RHINESTONE_ATTESTER_ADDRESS,
   SMART_SESSIONS_ADDRESS,
   type Session,
   SmartSessionMode,
@@ -20,9 +22,6 @@ import {
   getUsageLimitPolicy,
   getValueLimitPolicy,
 } from '@rhinestone/module-sdk';
-import { privateKeyToAccount } from 'viem/accounts';
-
-import { MAINNET, TESTNET } from '@graphprotocol/grc-20/contracts';
 import { type SmartAccountClient, createSmartAccountClient, encodeInstallModule } from 'permissionless';
 import { type ToSafeSmartAccountParameters, toSafeSmartAccount } from 'permissionless/accounts';
 import { getAccountNonce } from 'permissionless/actions';
@@ -51,6 +50,7 @@ import {
   entryPoint07Address,
   getUserOperationHash,
 } from 'viem/account-abstraction';
+import { privateKeyToAccount } from 'viem/accounts';
 import { bytesToHex } from '../utils/hexBytesAddressUtils.js';
 import {
   daoFactoryAbi,
@@ -186,6 +186,11 @@ const getLegacySmartAccountWalletClient = async ({
     chain,
   });
 
+  console.log('owner', owner);
+  console.log('publicClient', publicClient);
+  console.log('chain', chain);
+  console.log('rpcUrl', rpcUrl);
+  console.log('apiKey', apiKey);
   const safeAccount = await toSafeSmartAccount({
     client: publicClient,
     owners: [owner],
@@ -241,6 +246,11 @@ const get7579SmartAccountWalletClient = async ({
     transport,
     chain,
   });
+  console.log('owner', owner);
+  console.log('chain', chain);
+  console.log('rpcUrl', rpcUrl);
+  console.log('apiKey', apiKey);
+  console.log('address', address);
   const ownerAddress = 'account' in owner ? owner.account?.address : owner.address;
   if (!ownerAddress) {
     throw new Error('Owner address not found');
@@ -262,8 +272,10 @@ const get7579SmartAccountWalletClient = async ({
     },
     safe4337ModuleAddress: SAFE_7579_MODULE_ADDRESS as Hex,
     erc7579LaunchpadAddress: ERC7579_LAUNCHPAD_ADDRESS as Hex,
-    attesters: [],
-    attestersThreshold: 0,
+    attesters: [
+      RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
+    ],
+    attestersThreshold: 1,
     validators: [
       {
         address: ownableValidator.address,
@@ -313,6 +325,13 @@ export const isSmartAccountDeployed = async (smartAccountClient: SmartAccountCli
   return smartAccountClient.account.isDeployed();
 };
 
+export type SmartAccountParams = {
+  owner: WalletClient | Account;
+  address?: Hex;
+  chain?: Chain;
+  rpcUrl?: string;
+  apiKey?: string;
+};
 // Gets the smart account wallet client. This is the main function to use to get a smart account wallet client.
 // It will return the 7579 smart account wallet client if the smart account is deployed, otherwise it will return the legacy smart account wallet client, that might need to be updated.
 // You can use smartAccountNeedsUpdate to check if the smart account needs to be updated, and then call updateLegacySmartAccount to update it,
@@ -323,13 +342,7 @@ export const getSmartAccountWalletClient = async ({
   chain = GEOGENESIS,
   rpcUrl = DEFAULT_RPC_URL,
   apiKey = DEFAULT_API_KEY,
-}: {
-  owner: WalletClient | Account;
-  address?: Hex;
-  chain?: Chain;
-  rpcUrl?: string;
-  apiKey?: string;
-}): Promise<SmartAccountClient> => {
+}: SmartAccountParams): Promise<SmartAccountClient> => {
   if (address) {
     return get7579SmartAccountWalletClient({ owner, address, chain, rpcUrl, apiKey });
   }
@@ -399,6 +412,10 @@ export const smartAccountNeedsUpdate = async (
   chain: Chain,
   rpcUrl: string,
 ): Promise<boolean> => {
+  // If we haven't deployed the smart account, we would always deploy an updated version
+  if (!(await isSmartAccountDeployed(smartAccountClient))) {
+    return false;
+  }
   const updateStatus = await legacySmartAccountUpdateStatus(smartAccountClient, chain, rpcUrl);
   return !updateStatus.has7579Module || !updateStatus.hasSmartSessionsValidator || !updateStatus.hasOwnableValidator;
 };
@@ -533,7 +550,7 @@ const getSpaceActions = (space: { address: Hex; type: 'personal' | 'public' }) =
 // execute the transaction to enable the session.
 // It will return the permissionId that can be used to create a smart session client.
 export const createSmartSession = async (
-  walletClient: WalletClient,
+  owner: WalletClient,
   accountAddress: Hex,
   sessionPrivateKey: Hex,
   chain: Chain,
@@ -552,7 +569,7 @@ export const createSmartSession = async (
   } = {},
 ): Promise<Hex> => {
   const smartAccountClient = await getSmartAccountWalletClient({
-    owner: walletClient,
+    owner,
     address: accountAddress,
     chain,
     rpcUrl,
@@ -569,7 +586,7 @@ export const createSmartSession = async (
   if (!smartAccountClient.chain) {
     throw new Error('Invalid smart account chain');
   }
-  if (!walletClient.account) {
+  if (!owner.account) {
     throw new Error('Invalid wallet client');
   }
 
@@ -581,28 +598,27 @@ export const createSmartSession = async (
   });
   // We create a dummy action so that we can execute a userOp immediately and create the session onchain,
   // rather than having to pass along all the enable data to the end user app.
-  // This action will increase a nonce for permissionId 0 on the smart account, which is essentially a noop.
   // In the future, if we enable attestations with the Rhinestone registry, we can remove this and instead
   // call enableSessions on the smart sessions module from the smart account.
+  console.log('creating noOpActionPolicy');
   const noOpActionPolicy = getUniversalActionPolicy({
     paramRules: {
       length: BigInt(1),
       // @ts-expect-error - The Rhinestone SDK doesn't export the types we need here
-      rules: new Array(16).fill([
-        {
-          condition: BigInt(0), // ParamCondition.EQUAL
-          isLimited: false,
-          offset: BigInt(0),
-          ref: toHex(toBytes('0x', { size: 32 })),
-          usage: { limit: BigInt(0), used: BigInt(0) },
-        },
-      ]),
+      rules: new Array(16).fill({
+        condition: BigInt(0), // ParamCondition.EQUAL
+        isLimited: false,
+        offset: BigInt(0),
+        ref: toHex(toBytes('0x', { size: 32 })),
+        usage: { limit: BigInt(0), used: BigInt(0) },
+      }),
     },
     valueLimitPerUse: BigInt(0),
   });
+  console.log('noOpActionPolicy created');
   const actions: Action[] = [
     {
-      actionTarget: SMART_SESSIONS_ADDRESS,
+      actionTarget: sessionKeyAccount.address,
       actionTargetSelector: toFunctionSelector(
         getAbiItem({
           abi: smartSessionsAbi,
@@ -613,9 +629,11 @@ export const createSmartSession = async (
     },
   ];
 
+  console.log('getting space actions');
   for (const space of spaces) {
     actions.push(...getSpaceActions(space));
   }
+  console.log('space actions created');
   if (allowCreateSpace) {
     const spaceFactoryAddress = SPACE_FACTORY_ADDRESS[chain.id.toString()];
     actions.push({
@@ -632,7 +650,7 @@ export const createSmartSession = async (
   if (additionalActions) {
     actions.push(...additionalActions);
   }
-
+  console.log('actions created');
   const session: Session = {
     sessionValidator: OWNABLE_VALIDATOR_ADDRESS,
     sessionValidatorInitData: encodeValidationData({
@@ -654,23 +672,25 @@ export const createSmartSession = async (
     type: 'safe',
   });
 
+  console.log('session object');
   // We use UNSAFE_ENABLE because we're not using Rhinestone's Registry
   // contract to attest to the sessions we're creating.
   // That's also why we set ignoreSecurityAttestations to true.
   const sessionDetails = await getEnableSessionDetails({
-    enableMode: SmartSessionMode.UNSAFE_ENABLE,
+    // enableMode: SmartSessionMode.ENABLE,
     sessions: [session],
     account,
     clients: [publicClient],
-    ignoreSecurityAttestations: true,
+    // ignoreSecurityAttestations: true,
   });
 
+  console.log('signing session details');
   // This will prompt the user to sign the message to enable the session
-  sessionDetails.enableSessionData.enableSession.permissionEnableSig = await walletClient.signMessage({
+  sessionDetails.enableSessionData.enableSession.permissionEnableSig = await owner.signMessage({
     message: { raw: sessionDetails.permissionEnableHash },
-    account: walletClient.account.address,
+    account: owner.account.address,
   });
-
+  console.log('session details signed');
   const smartSessions = getSmartSessionsValidator({});
   const nonce = await getAccountNonce(publicClient, {
     address: smartAccountClient.account.address,
@@ -680,44 +700,45 @@ export const createSmartSession = async (
       validator: smartSessions,
     }),
   });
-
+  console.log('nonce');
   // This will be replaced with the actual signature below
   sessionDetails.signature = getOwnableValidatorMockSignature({
     threshold: 1,
   });
-
+  console.log('prep user op');
   const userOperation = await smartAccountClient.prepareUserOperation({
     account: smartAccountClient.account,
     calls: [
       {
         // We use the revokeEnableSignature with permissionId 0 function to create a noop action
-        to: SMART_SESSIONS_ADDRESS,
+        to: sessionKeyAccount.address,
         value: BigInt(0),
         data: encodeFunctionData({
           abi: smartSessionsAbi,
           functionName: 'revokeEnableSignature',
-          args: [BigInt(0)],
+          args: [toHex(toBytes('0x', { size: 32 }))],
         }),
       },
     ],
     nonce,
     signature: encodeSmartSessionSignature(sessionDetails),
   });
+  console.log('user operation prepared');
   const userOpHashToSign = getUserOperationHash({
     chainId: chain.id,
     entryPointAddress: entryPoint07Address,
     entryPointVersion: '0.7',
     userOperation,
   });
-
+  console.log('user op hash to sign');
   sessionDetails.signature = await sessionKeyAccount.signMessage({
     message: { raw: userOpHashToSign },
   });
-
+  console.log('user op hash to sign signed');
   userOperation.signature = encodeSmartSessionSignature(sessionDetails);
-
+  console.log('user op hash to sign encoded');
   const userOpHash = await smartAccountClient.sendUserOperation(userOperation as UserOperation); // No idea why the type doesn't match
-
+  console.log('user op hash');
   const receipt = await smartAccountClient.waitForUserOperationReceipt({
     hash: userOpHash,
   });

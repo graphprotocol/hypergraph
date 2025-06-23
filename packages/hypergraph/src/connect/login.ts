@@ -1,12 +1,19 @@
 import * as Schema from 'effect/Schema';
+import type { SmartAccountClient } from 'permissionless';
 import type { Address, Chain, Hex, WalletClient } from 'viem';
+import { proveIdentityOwnership } from '../identity/prove-ownership.js';
 import * as Messages from '../messages/index.js';
 import { store } from '../store-connect.js';
 import { loadAccountAddress, storeAccountAddress, storeKeys } from './auth-storage.js';
 import { createIdentityKeys } from './create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from './identity-encryption.js';
-import { proveIdentityOwnership } from './prove-ownership.js';
-import { getSmartAccountWalletClient, smartAccountNeedsUpdate, updateLegacySmartAccount } from './smart-account.js';
+import {
+  type SmartAccountParams,
+  getSmartAccountWalletClient,
+  isSmartAccountDeployed,
+  smartAccountNeedsUpdate,
+  updateLegacySmartAccount,
+} from './smart-account.js';
 import type { IdentityKeys, Signer, Storage } from './types.js';
 
 export async function identityExists(accountAddress: string, syncServerUri: string) {
@@ -18,6 +25,8 @@ export async function identityExists(accountAddress: string, syncServerUri: stri
 
 export async function signup(
   signer: Signer,
+  walletClient: WalletClient,
+  smartAccountClient: SmartAccountClient,
   accountAddress: Address,
   syncServerUri: string,
   storage: Storage,
@@ -25,7 +34,12 @@ export async function signup(
 ) {
   const keys = createIdentityKeys();
   const { ciphertext, nonce } = await encryptIdentity(signer, keys);
-  const { accountProof, keyProof } = await proveIdentityOwnership(signer, accountAddress, keys);
+  const { accountProof, keyProof } = await proveIdentityOwnership(
+    walletClient,
+    smartAccountClient,
+    accountAddress,
+    keys,
+  );
 
   const req: Messages.RequestConnectCreateIdentity = {
     keyBox: { signer: await signer.getAddress(), accountAddress, ciphertext, nonce },
@@ -105,19 +119,41 @@ export async function login({
   rpcUrl: string;
   chain: Chain;
 }) {
-  const accountAddressFromStorage = (loadAccountAddress(storage) as Hex) ?? undefined;
-  const smartAccountWalletClient = await getSmartAccountWalletClient({
+  const accountAddressFromStorage = loadAccountAddress(storage) as Hex;
+  const smartAccountParams: SmartAccountParams = {
     owner: walletClient,
-    address: accountAddressFromStorage,
     rpcUrl,
     chain,
-  });
+  };
+  if (accountAddressFromStorage) {
+    smartAccountParams.address = accountAddressFromStorage;
+  }
+  const smartAccountWalletClient = await getSmartAccountWalletClient(smartAccountParams);
   if (!smartAccountWalletClient.account) {
     throw new Error('Smart account wallet client not found');
   }
+  console.log('smartAccountWalletClient', smartAccountWalletClient);
+  console.log('address', smartAccountWalletClient.account.address);
+  console.log('is deployed', await isSmartAccountDeployed(smartAccountWalletClient));
   // This will prompt the user to sign a user operation to update the smart account
   if (await smartAccountNeedsUpdate(smartAccountWalletClient, chain, rpcUrl)) {
     await updateLegacySmartAccount(smartAccountWalletClient, chain, rpcUrl);
+  }
+
+  // TODO: remove this once we manage to get counterfactual signatures working
+  if (!(await isSmartAccountDeployed(smartAccountWalletClient))) {
+    console.log('sending dummy userOp to deploy smart account');
+    if (!walletClient.account) {
+      throw new Error('Wallet client account not found');
+    }
+    const tx = await smartAccountWalletClient.sendUserOperation({
+      calls: [{ to: walletClient.account.address, data: '0x' }],
+      account: smartAccountWalletClient.account,
+    });
+
+    console.log('tx', tx);
+    const receipt = await smartAccountWalletClient.waitForUserOperationReceipt({ hash: tx });
+    console.log('receipt', receipt);
   }
   const accountAddress = smartAccountWalletClient.account.address;
   if (accountAddressFromStorage === undefined) {
@@ -130,7 +166,15 @@ export async function login({
   };
   const exists = await identityExists(accountAddress, syncServerUri);
   if (!exists) {
-    authData = await signup(signer, accountAddress, syncServerUri, storage, identityToken);
+    authData = await signup(
+      signer,
+      walletClient,
+      smartAccountWalletClient,
+      accountAddress,
+      syncServerUri,
+      storage,
+      identityToken,
+    );
   } else {
     authData = await restoreKeys(signer, accountAddress, syncServerUri, storage, identityToken);
   }

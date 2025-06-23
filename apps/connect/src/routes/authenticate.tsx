@@ -2,8 +2,8 @@ import { CreateSpace } from '@/components/create-space';
 import { Button } from '@/components/ui/button';
 import { usePrivateSpaces } from '@/hooks/use-private-spaces';
 import { type PublicSpaceData, usePublicSpaces } from '@/hooks/use-public-spaces';
-import { Connect, type Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
-import { GEOGENESIS, GEO_TESTNET } from '@graphprotocol/hypergraph/connect/smart-account';
+import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
+import { GEOGENESIS, GEO_TESTNET, getSmartAccountWalletClient } from '@graphprotocol/hypergraph/connect/smart-account';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
@@ -344,6 +344,7 @@ function AuthenticateComponent() {
     try {
       const privyProvider = await embeddedWallet.getEthereumProvider();
       const walletClient = createWalletClient({
+        account: embeddedWallet.address as `0x${string}`,
         chain: CHAIN,
         transport: custom(privyProvider),
       });
@@ -365,6 +366,20 @@ function AuthenticateComponent() {
 
       const newAppIdentity = Connect.createAppIdentity();
 
+      console.log('creating smart session');
+      console.log('public spaces data', publicSpacesData);
+      const spaces =
+        publicSpacesData
+          ?.filter((space) => selectedPublicSpaces.has(space.id))
+          .map((space) => ({
+            address:
+              space.type === 'personal'
+                ? (space.personalAddress as `0x${string}`)
+                : (space.mainVotingAddress as `0x${string}`),
+            type: space.type as 'personal' | 'public',
+          })) ?? [];
+      console.log('spaces', spaces);
+
       // TODO: add additional actions (must be passed from the app)
       const permissionId = await Connect.createSmartSession(
         walletClient,
@@ -374,19 +389,16 @@ function AuthenticateComponent() {
         import.meta.env.VITE_HYPERGRAPH_RPC_URL,
         {
           allowCreateSpace: true,
-          spaces:
-            publicSpacesData
-              ?.filter((space) => selectedPublicSpaces.has(space.id))
-              .map((space) => ({
-                address:
-                  space.type === 'personal'
-                    ? (space.personalAddress as `0x${string}`)
-                    : (space.mainVotingAddress as `0x${string}`),
-                type: space.type as 'personal' | 'public',
-              })) ?? [],
+          spaces,
           additionalActions: [],
         },
       );
+      console.log('smart session created');
+      const smartAccountClient = await getSmartAccountWalletClient({
+        owner: walletClient,
+        chain: CHAIN,
+        rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
+      });
 
       const { ciphertext, nonce } = await Connect.encryptAppIdentity(
         signer,
@@ -395,7 +407,12 @@ function AuthenticateComponent() {
         permissionId,
         keys,
       );
-      const { accountProof, keyProof } = await Connect.proveIdentityOwnership(signer, accountAddress, keys);
+      const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
+        walletClient,
+        smartAccountClient,
+        accountAddress,
+        keys,
+      );
 
       const message: Messages.RequestConnectCreateAppIdentity = {
         appId: state.appInfo.appId,
@@ -451,6 +468,7 @@ function AuthenticateComponent() {
 
     const privyProvider = await embeddedWallet.getEthereumProvider();
     const walletClient = createWalletClient({
+      account: embeddedWallet.address as `0x${string}`,
       chain: CHAIN,
       transport: custom(privyProvider),
     });

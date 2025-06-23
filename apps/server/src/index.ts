@@ -194,19 +194,20 @@ app.post('/connect/identity', async (req, res) => {
       return;
     }
     if (
-      !Identity.verifyIdentityOwnership(
+      !(await Identity.verifyIdentityOwnership(
         accountAddress,
         message.signaturePublicKey,
         message.accountProof,
         message.keyProof,
         CHAIN,
         RPC_URL,
-      )
+      ))
     ) {
       console.log('Ownership proof is invalid');
       res.status(401).send('Unauthorized');
       return;
     }
+    console.log('Ownership proof is valid');
 
     try {
       await createIdentity({
@@ -288,12 +289,14 @@ app.get('/connect/app-identity/:appId', async (req, res) => {
     const appId = req.params.appId;
     const appIdentity = await findAppIdentity({ accountAddress, appId });
     if (!appIdentity) {
+      console.log('App identity not found');
       res.status(404).json({ message: 'App identity not found' });
       return;
     }
+    console.log('App identity found');
     res.status(200).json({ appIdentity });
   } catch (error) {
-    console.error('Error creating space:', error);
+    console.error('Error getting app identity:', error);
     if (error instanceof Error && error.message === 'No Privy ID token provided') {
       res.status(401).json({ message: 'Unauthorized' });
     } else if (error instanceof Error && error.message === 'Missing Privy configuration') {
@@ -312,6 +315,7 @@ app.post('/connect/app-identity', async (req, res) => {
     const message = Schema.decodeUnknownSync(Messages.RequestConnectCreateAppIdentity)(req.body);
     const accountAddress = message.accountAddress;
     if (!(await isSignerForAccount(signerAddress, accountAddress))) {
+      console.log('Signer address is not the signer for the account');
       res.status(401).send('Unauthorized');
       return;
     }

@@ -1,4 +1,4 @@
-import { http, type Account, type Chain, type Hex, createPublicClient, verifyMessage } from 'viem';
+import { http, type Chain, type Hex, type WalletClient, createPublicClient, verifyMessage } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
 import type { SmartAccountClient } from 'permissionless';
@@ -14,18 +14,37 @@ export const getKeyProofMessage = (accountAddress: string, publicKey: string): s
   return `The public key ${publicKey} is owned by the account ${accountAddress}`;
 };
 
+export const accountProofDomain = {
+  name: 'Hypergraph',
+  version: '1',
+};
+
 export const proveIdentityOwnership = async (
+  walletClient: WalletClient,
   smartAccountClient: SmartAccountClient,
   accountAddress: string,
   keys: IdentityKeys,
 ): Promise<{ accountProof: string; keyProof: string }> => {
+  if (!smartAccountClient.account) {
+    throw new Error('Smart account client does not have an account');
+  }
+  if (!smartAccountClient.chain) {
+    throw new Error('Smart account client does not have a chain');
+  }
   const publicKey = keys.signaturePublicKey;
-  const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
   const keyProofMessage = getKeyProofMessage(accountAddress, publicKey);
-  const accountProof = await smartAccountClient.signMessage({
-    account: smartAccountClient.account as Account,
-    message: accountProofMessage,
+
+  const accountProof = await smartAccountClient.account.signTypedData({
+    message: {
+      message: getAccountProofMessage(accountAddress, publicKey),
+    },
+    types: {
+      Message: [{ name: 'message', type: 'string' }],
+    },
+    domain: accountProofDomain,
+    primaryType: 'Message',
   });
+  console.log('accountProof', accountProof);
   const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
   const keyProof = await account.signMessage({ message: keyProofMessage });
   return { accountProof, keyProof };
@@ -39,15 +58,27 @@ export const verifyIdentityOwnership = async (
   chain: Chain = GEOGENESIS,
   rpcUrl: string = DEFAULT_RPC_URL,
 ): Promise<boolean> => {
-  const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
   const keyProofMessage = getKeyProofMessage(accountAddress, publicKey);
   const publicClient = createPublicClient({
     chain,
     transport: http(rpcUrl),
   });
-  const validAccountProof = await publicClient.verifyMessage({
+
+  console.log('accountProof', accountProof);
+  console.log('accountAddress', accountAddress);
+  console.log('publicKey', publicKey);
+
+  const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
+  const validAccountProof = await publicClient.verifyTypedData({
     address: accountAddress as Hex,
-    message: accountProofMessage,
+    message: {
+      message: accountProofMessage,
+    },
+    types: {
+      Message: [{ name: 'message', type: 'string' }],
+    },
+    domain: accountProofDomain,
+    primaryType: 'Message',
     signature: accountProof as Hex,
   });
   if (!validAccountProof) {

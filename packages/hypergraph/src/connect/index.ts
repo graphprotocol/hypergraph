@@ -6,6 +6,5 @@ export * from './identity-encryption.js';
 export * from './login.js';
 export * from './parse-auth-params.js';
 export * from './parse-callback-params.js';
-export * from './prove-ownership.js';
 export * from './smart-account.js';
 export * from './types.js';

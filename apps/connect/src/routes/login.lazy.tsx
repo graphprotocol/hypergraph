@@ -48,6 +48,9 @@ function Login() {
 
       const rpcUrl = import.meta.env.VITE_HYPERGRAPH_RPC_URL;
 
+      console.log(walletClient);
+      console.log(rpcUrl);
+      console.log(CHAIN);
       await Connect.login({ walletClient, signer, syncServerUri, storage, identityToken, rpcUrl, chain: CHAIN });
     },
     [identityToken, signMessage],
@@ -66,6 +69,7 @@ function Login() {
           const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
           const privyProvider = await embeddedWallet.getEthereumProvider();
           const walletClient = createWalletClient({
+            account: embeddedWallet.address as `0x${string}`,
             chain: CHAIN,
             transport: custom(privyProvider),
           });
@@ -81,7 +85,7 @@ function Login() {
 
           navigate({ to: '/', replace: true });
         } catch (error) {
-          alert('Failed to login');
+          console.log('Failed to login');
           console.error(error);
         }
       })();
