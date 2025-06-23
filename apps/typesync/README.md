@@ -1,38 +1,40 @@
-# @graphprotocol/typesync
+# @graphprotocol/hypergraph-cli
 
-CLI toolchain to view existing types, select, pick, extend to create schemas and generate a [@graphprotocol/hypergraph](https://github.com/graphprotocol/hypergraph/tree/main/packages/hypergraph) schema.
+# Hypergraph command-line toolchain for scaffolding and working with Hypergraph applications.
 
 ## Installing
 
 ```bash
 # npm
-npm i -g @graphprotocol/typesync-cli
+npm i -g @graphprotocol/hypergraph-cli
 
 # yarn
-yarn global add @graphprotocol/typesync-cli
+yarn global add @graphprotocol/hypergraph-cli
 
 # pnpm
-pnpm install -g @graphprotocol/typesync-cli
+pnpm install -g @graphprotocol/hypergraph-cli
 ```
 
 ## Running
 
 ```bash
-typsync --help
+hypergraph --help
+hg --help   # short alias
 
-# opening typesync studio
-typesync studio
+# opening Hypergraph studio
+hypergraph studio
+hg studio
 
-# opening typesync studio in firefox automatically
-typesync studio --open --browser firefox
+# opening Hypergraph studio in firefox automatically
+hypergraph studio --open --browser firefox
 ```
 
 ## Commands
 
-- `studio` -> runs the `Typesync` api and client UI application for viewing created application schemas, browsing the Knowledge Graph, and creating new application schemas.
-  - running: `typesync studio`
+- `studio` -> runs the Hypergraph API and client UI application for viewing created application schemas, browsing the Knowledge Graph, and creating new application schemas.
+  - running: `hypergraph studio`
   - args:
     - `port` [OPTIONAL, default = 3000] port to run the application on
-      - example: `typesync studio --port 3001`
+      - example: `hypergraph studio --port 3001`
     - `browser` [OPTION, default 'browser'] browser to open the app in, if the `--open` flag is passed
-      - example: `typesync studio --open --browser firefox`
+      - example: `hypergraph studio --open --browser firefox`
