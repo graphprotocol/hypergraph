@@ -85,7 +85,7 @@ function Login() {
 
           navigate({ to: '/', replace: true });
         } catch (error) {
-          console.log('Failed to login');
+          alert('Failed to login');
           console.error(error);
         }
       })();
