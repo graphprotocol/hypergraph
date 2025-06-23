@@ -53,6 +53,7 @@ export type SpaceStorageEntry = {
 
 interface StoreContext {
   spaces: SpaceStorageEntry[];
+  spacesLoadingIsPending: boolean;
   updatesInFlight: string[];
   invitations: Invitation[];
   repo: Repo | null;
@@ -73,6 +74,7 @@ interface StoreContext {
 
 const initialStoreContext: StoreContext = {
   spaces: [],
+  spacesLoadingIsPending: true,
   updatesInFlight: [],
   invitations: [],
   repo: null,
@@ -90,7 +92,7 @@ type StoreEvent =
   | { type: 'reset' }
   | { type: 'addUpdateInFlight'; updateId: string }
   | { type: 'removeUpdateInFlight'; updateId: string }
-  | { type: 'setSpaceFromList'; spaceId: string; name: string }
+  | { type: 'setSpacesList'; spaces: { id: string; name: string }[] }
   | { type: 'applyEvent'; spaceId: string; event: SpaceEvent; state: SpaceState }
   | { type: 'updateConfirmed'; spaceId: string; clock: number }
   | { type: 'applyUpdate'; spaceId: string; firstUpdateClock: number; lastUpdateClock: number }
@@ -182,58 +184,67 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         updatesInFlight: context.updatesInFlight.filter((id) => id !== event.updateId),
       };
     },
-    setSpaceFromList: (context, event: { spaceId: string; name: string }) => {
+    setSpacesList: (context, event: { spaces: { id: string; name: string }[] }) => {
       if (!context.repo) {
         return context;
       }
-      const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
-      const lastUpdateClock = context.lastUpdateClock[event.spaceId] ?? -1;
-      const result = context.repo.findWithProgress(idToAutomergeId(event.spaceId) as AnyDocumentId);
 
-      // set it to ready to interact with the document
-      result.handle.doneLoading();
+      let storeContext: StoreContext = { ...context, spacesLoadingIsPending: false };
 
-      if (existingSpace) {
-        return {
-          ...context,
-          spaces: context.spaces.map((existingSpace) => {
-            if (existingSpace.id === event.spaceId) {
-              const newSpace: SpaceStorageEntry = {
-                id: existingSpace.id,
-                name: existingSpace.name,
-                events: existingSpace.events ?? [],
-                state: existingSpace.state,
-                keys: existingSpace.keys ?? [],
-                automergeDocHandle: result.handle,
-                inboxes: existingSpace.inboxes ?? [],
-              };
-              return newSpace;
-            }
-            return existingSpace;
-          }),
+      for (const space of event.spaces) {
+        const existingSpace = context.spaces.find((s) => s.id === space.id);
+        const lastUpdateClock = context.lastUpdateClock[space.id] ?? -1;
+        const result = context.repo.findWithProgress(idToAutomergeId(space.id) as AnyDocumentId);
+
+        // set it to ready to interact with the document
+        result.handle.doneLoading();
+
+        if (existingSpace) {
+          storeContext = {
+            ...storeContext,
+            spaces: storeContext.spaces.map((existingSpace) => {
+              if (existingSpace.id === space.id) {
+                const newSpace: SpaceStorageEntry = {
+                  id: existingSpace.id,
+                  name: existingSpace.name,
+                  events: existingSpace.events ?? [],
+                  state: existingSpace.state,
+                  keys: existingSpace.keys ?? [],
+                  automergeDocHandle: result.handle,
+                  inboxes: existingSpace.inboxes ?? [],
+                };
+                return newSpace;
+              }
+              return existingSpace;
+            }),
+            lastUpdateClock: {
+              ...storeContext.lastUpdateClock,
+              [space.id]: lastUpdateClock,
+            },
+          };
+        }
+        storeContext = {
+          ...storeContext,
+          spaces: [
+            ...storeContext.spaces,
+            {
+              id: space.id,
+              name: space.name,
+              events: [],
+              state: undefined,
+              keys: [],
+              inboxes: [],
+              automergeDocHandle: result.handle,
+            },
+          ],
           lastUpdateClock: {
-            ...context.lastUpdateClock,
-            [event.spaceId]: lastUpdateClock,
+            ...storeContext.lastUpdateClock,
+            [space.id]: -1,
           },
         };
       }
-      return {
-        ...context,
-        spaces: [
-          ...context.spaces,
-          {
-            id: event.spaceId,
-            name: event.name,
-            events: [],
-            state: undefined,
-            keys: [],
-            inboxes: [],
-            updates: [],
-            lastUpdateClock: -1,
-            automergeDocHandle: result.handle,
-          },
-        ],
-      };
+
+      return storeContext;
     },
     applyEvent: (context, event: { spaceId: string; event: SpaceEvent; state: SpaceState }) => {
       return {

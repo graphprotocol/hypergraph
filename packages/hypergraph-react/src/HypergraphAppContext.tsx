@@ -379,12 +379,12 @@ export function HypergraphAppProvider({
         const response = message.right;
         switch (response.type) {
           case 'list-spaces': {
-            response.spaces.map((space) => {
-              store.send({
-                type: 'setSpaceFromList',
-                spaceId: space.id,
+            store.send({
+              type: 'setSpacesList',
+              spaces: response.spaces.map((space) => ({
+                id: space.id,
                 name: space.name,
-              });
+              })),
             });
             break;
           }
