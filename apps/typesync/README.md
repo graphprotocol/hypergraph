@@ -36,5 +36,5 @@ hypergraph studio --open --browser firefox
   - args:
     - `port` [OPTIONAL, default = 3000] port to run the application on
       - example: `hypergraph studio --port 3001`
-    - `browser` [OPTION, default 'browser'] browser to open the app in, if the `--open` flag is passed
-      - example: `hypergraph studio --open --browser firefox`
+    - `browser` [OPTION, default 'browser'] browser to open the app in (`chrome | firefox | edge | safari | arc | browser | browserPrivate`)
+      - example: `hypergraph studio --open --browser chrome`
