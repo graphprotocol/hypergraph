@@ -8,7 +8,6 @@ export const getSmartAccountWalletClient = async () => {
     // return await grc20getSmartAccountWalletClient({
     //   privateKey,
     // });
-    console.log('privateKey', privateKey);
     return await getWalletClient({
       privateKey,
     });
