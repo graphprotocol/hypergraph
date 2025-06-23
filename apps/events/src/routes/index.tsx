@@ -13,7 +13,7 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
-  const spaces = useSelector(store, (state) => state.context.spaces);
+  const { data: privateSpaces } = useSpaces({ mode: 'private' });
   const [spaceName, setSpaceName] = useState('');
 
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
@@ -93,8 +93,8 @@ function Index() {
 
       <h2 className="text-lg font-bold">Private Spaces</h2>
       <ul className="flex flex-col gap-2">
-        {spaces.length === 0 && <div>No spaces</div>}
-        {spaces.map((space) => {
+        {privateSpaces && privateSpaces.length === 0 && <div>No spaces</div>}
+        {privateSpaces?.map((space) => {
           return (
             <li key={space.id}>
               <Link to="/space/$spaceId" params={{ spaceId: space.id }}>

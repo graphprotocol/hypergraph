@@ -28,9 +28,9 @@ type PublicSpacesQueryResult = {
   }[];
 };
 
-export const useSpaces = (params: { mode: 'public' }) => {
+export const useSpaces = (params: { mode: 'public' | 'private' }) => {
   const accountAddress = useSelector(store, (state) => state.context.identity?.accountAddress);
-  return useQuery({
+  const publicResult = useQuery({
     queryKey: ['hypergraph-spaces', params.mode],
     queryFn: async () => {
       const result = await request<PublicSpacesQueryResult>(GEO_API_TESTNET_ENDPOINT, publicSpacesQueryDocument, {
@@ -44,5 +44,18 @@ export const useSpaces = (params: { mode: 'public' }) => {
           }))
         : [];
     },
+    enabled: params.mode === 'public' && !!accountAddress,
   });
+
+  const spaces = useSelector(store, (state) => state.context.spaces);
+  const spacesLoadingIsPending = useSelector(store, (state) => state.context.spacesLoadingIsPending);
+
+  if (params.mode === 'private') {
+    return {
+      data: spaces,
+      isPending: spacesLoadingIsPending,
+    };
+  }
+
+  return publicResult;
 };
