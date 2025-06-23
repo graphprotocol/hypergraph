@@ -20,7 +20,7 @@ import * as TypesyncDomain from '../domain/Domain.js';
 import * as Domain from './Domain.js';
 
 const SqlLive = SqliteClient.layer({
-  filename: 'typesync.db',
+  filename: '.typesync.db',
 });
 const MigratorLive = Migrator.layer({
   loader: Migrator.fromFileSystem(fileURLToPath(new URL('migrations', import.meta.url))),

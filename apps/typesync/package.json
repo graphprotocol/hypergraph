@@ -33,7 +33,7 @@
     "coverage": "vitest run --coverage",
     "copy-package-json": "tsx scripts/copy-package-json.ts",
     "copy-db-migrations": "cp ./src/migrations/_schema.sql ./dist/migrations/_schema.sql",
-    "copy-client-dist": "mkdir -p ./dist/client && cp -rp ./client/dist ./dist/client/dist",
+    "copy-client-dist": "tsx scripts/copy-client-dist.ts",
     "copy-all": "pnpm run copy-package-json && pnpm run copy-db-migrations && pnpm run copy-client-dist",
     "typesync": "pnpx tsx ./src/bin.ts studio"
   },
