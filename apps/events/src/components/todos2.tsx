@@ -26,14 +26,14 @@ export const Todos2 = () => {
     data: dataTodos,
     isLoading: isLoadingTodos,
     isError: isErrorTodos,
-    preparePublish: preparePublishTodos,
-  } = useQuery(Todo2, { include: { assignees: {} } });
+    // preparePublish: preparePublishTodos,
+  } = useQuery(Todo2, { mode: 'private', include: { assignees: {} } });
   const {
     data: dataUsers,
     isLoading: isLoadingUsers,
     isError: isErrorUsers,
-    preparePublish: preparePublishUsers,
-  } = useQuery(User);
+    // preparePublish: preparePublishUsers,
+  } = useQuery(User, { mode: 'private' });
   const space = useHypergraphSpace();
   const createTodo = useCreateEntity(Todo2);
   const updateTodo = useUpdateEntity(Todo2);
@@ -178,22 +178,22 @@ export const Todos2 = () => {
         onClick={async () => {
           try {
             setIsPreparingPublish(true);
-            const usersResult = await preparePublishUsers();
-            console.log('users ops & diff', usersResult);
-            const todosResult = await preparePublishTodos();
-            console.log('todos ops & diff', todosResult);
+            // const usersResult = await preparePublishUsers();
+            // console.log('users ops & diff', usersResult);
+            // const todosResult = await preparePublishTodos();
+            // console.log('todos ops & diff', todosResult);
 
-            if (todosResult && usersResult) {
-              setPublishData({
-                newEntities: [...todosResult.newEntities, ...usersResult.newEntities],
-                deletedEntities: [...todosResult.deletedEntities, ...usersResult.deletedEntities],
-                updatedEntities: [...todosResult.updatedEntities, ...usersResult.updatedEntities],
-              });
-              setIsPublishDiffModalOpen(true);
-            } else {
-              console.error('preparing publishing error', todosResult, usersResult);
-              throw new Error('Failed to prepare the publishing operations');
-            }
+            // if (todosResult && usersResult) {
+            //   setPublishData({
+            //     newEntities: [...todosResult.newEntities, ...usersResult.newEntities],
+            //     deletedEntities: [...todosResult.deletedEntities, ...usersResult.deletedEntities],
+            //     updatedEntities: [...todosResult.updatedEntities, ...usersResult.updatedEntities],
+            //   });
+            //   setIsPublishDiffModalOpen(true);
+            // } else {
+            //   console.error('preparing publishing error', todosResult, usersResult);
+            //   throw new Error('Failed to prepare the publishing operations');
+            // }
           } catch (error) {
             console.error('preparing publishing error', error);
             alert('Failed to prepare the publishing operations');
@@ -229,6 +229,7 @@ export const Todos2 = () => {
                   ].flat();
                   const publishOpsResult = await publishOps({
                     ops,
+                    // @ts-expect-error - TODO: fix the types error
                     walletClient: smartAccountWalletClient,
                     space,
                     name: 'Update users and todos',
