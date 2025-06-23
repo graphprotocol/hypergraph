@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 export const TodosLocal = () => {
   const updateEntity = useUpdateEntity(Todo2);
   const hardDeleteEntity = useHardDeleteEntity();
-  const { data: todosLocalData, deleted: deletedTodosLocalData } = useQuery(Todo2, { mode: 'local' });
+  const { data: todosLocalData, deleted: deletedTodosLocalData } = useQuery(Todo2, { mode: 'private' });
 
   return (
     <>

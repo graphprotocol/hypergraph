@@ -10,7 +10,7 @@ import { parseResult, useQueryPublic } from './internal/use-query-public.js';
 import type { DiffEntry, PublishDiffInfo } from './types.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {
-  mode?: 'merged' | 'public' | 'local';
+  mode?: 'merged' | 'public' | 'private';
   filter?: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined;
   // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
@@ -148,7 +148,7 @@ const preparePublishDummy = () => undefined;
 export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
   const { mode = 'merged', filter, include } = params ?? {};
   const publicResult = useQueryPublic(type, { enabled: mode === 'public' || mode === 'merged', include });
-  const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged', filter, include });
+  const localResult = useQueryLocal(type, { enabled: mode === 'private' || mode === 'merged', filter, include });
   const mapping = useSelector(store, (state) => state.context.mapping);
   const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
   const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
@@ -168,7 +168,7 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
     };
   }
 
-  if (mode === 'local') {
+  if (mode === 'private') {
     return {
       ...publicResult,
       data: localResult.entities,

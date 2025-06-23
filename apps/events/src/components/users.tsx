@@ -6,7 +6,7 @@ import { Input } from './ui/input.js';
 import { UserEntry } from './user-entry.js';
 
 export const Users = () => {
-  const { data: users } = useQuery(User, { mode: 'local' });
+  const { data: users } = useQuery(User, { mode: 'private' });
   const createEntity = useCreateEntity(User);
   const [newUserName, setNewUserName] = useState('');
 
