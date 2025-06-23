@@ -31,9 +31,11 @@ import {
   type AbiFunction,
   type Account,
   type Address,
+  type Calls,
   type Chain,
   ContractFunctionExecutionError,
   type Hex,
+  type Narrow,
   type SignableMessage,
   type WalletClient,
   createPublicClient,
@@ -57,6 +59,7 @@ import {
   personalSpaceAdminAbi,
   safe7579Abi,
   safeModuleManagerAbi,
+  safeOwnerManagerAbi,
   smartSessionsAbi,
 } from './abis.js';
 
@@ -171,11 +174,13 @@ export type SmartSessionClient = {
 // by this function is deployed, it means it might need to be updated to have the 7579 module installed
 const getLegacySmartAccountWalletClient = async ({
   owner,
+  address,
   chain = GEOGENESIS,
   rpcUrl = DEFAULT_RPC_URL,
   apiKey = DEFAULT_API_KEY,
 }: {
   owner: WalletClient | Account;
+  address?: Hex;
   chain?: Chain;
   rpcUrl?: string;
   apiKey?: string;
@@ -186,21 +191,19 @@ const getLegacySmartAccountWalletClient = async ({
     chain,
   });
 
-  console.log('owner', owner);
-  console.log('publicClient', publicClient);
-  console.log('chain', chain);
-  console.log('rpcUrl', rpcUrl);
-  console.log('apiKey', apiKey);
-  const safeAccount = await toSafeSmartAccount({
+  const safeAccountParams: ToSafeSmartAccountParameters<'0.7', Hex> = {
     client: publicClient,
     owners: [owner],
     entryPoint: {
-      // optional, defaults to 0.7
       address: entryPoint07Address,
       version: '0.7',
     },
     version: '1.4.1',
-  });
+  };
+  if (address) {
+    safeAccountParams.address = address;
+  }
+  const safeAccount = await toSafeSmartAccount(safeAccountParams);
 
   const bundlerTransport = http(`${BUNDLER_TRANSPORT_URL_BASE}${chain.id}/rpc?apikey=${apiKey}`);
   const paymasterClient = createPimlicoClient({
@@ -343,6 +346,16 @@ export const getSmartAccountWalletClient = async ({
   rpcUrl = DEFAULT_RPC_URL,
   apiKey = DEFAULT_API_KEY,
 }: SmartAccountParams): Promise<SmartAccountClient> => {
+  if (chain.id === GEO_TESTNET.id) {
+    // We don't have the smart sessions module deployed on testnet yet, so we need to use the legacy smart account wallet client
+    // TODO: remove this once we have the smart sessions module deployed on testnet
+    const params: SmartAccountParams = { owner, chain, rpcUrl, apiKey };
+    if (address) {
+      params.address = address;
+    }
+    console.log('on testnet, getting legacy smart account wallet client');
+    return getLegacySmartAccountWalletClient(params);
+  }
   if (address) {
     return get7579SmartAccountWalletClient({ owner, address, chain, rpcUrl, apiKey });
   }
@@ -412,6 +425,11 @@ export const smartAccountNeedsUpdate = async (
   chain: Chain,
   rpcUrl: string,
 ): Promise<boolean> => {
+  if (chain.id === GEO_TESTNET.id) {
+    // We don't have the smart sessions module deployed on testnet yet, so we need to use the legacy smart account wallet client
+    // TODO: remove this once we have the smart sessions module deployed on testnet
+    return false;
+  }
   // If we haven't deployed the smart account, we would always deploy an updated version
   if (!(await isSmartAccountDeployed(smartAccountClient))) {
     return false;
@@ -429,6 +447,12 @@ export const updateLegacySmartAccount = async (
 ): Promise<WaitForUserOperationReceiptReturnType | undefined> => {
   if (!smartAccountClient.account?.address) {
     throw new Error('Invalid smart account');
+  }
+  if (chain.id === GEO_TESTNET.id) {
+    // We don't have the smart sessions module deployed on testnet yet, so we need to use the legacy smart account wallet client
+    // TODO: remove this once we have the smart sessions module deployed on testnet
+    console.log('on testnet, skipping updateLegacySmartAccount');
+    return;
   }
   const ownableValidator = getOwnableValidator({
     owners: [smartAccountClient.account.address],
@@ -596,6 +620,33 @@ export const createSmartSession = async (
     transport,
     chain,
   });
+  if (chain.id === GEO_TESTNET.id) {
+    // We don't have the smart sessions module deployed on testnet yet, so we need to fake it by adding an account owner
+    // TODO: remove this once we have the smart sessions module deployed on testnet
+    console.log('on testnet, faking a smart session by adding an account owner');
+    const tx = await smartAccountClient.sendUserOperation({
+      calls: [
+        {
+          to: smartAccountClient.account.address,
+          data: encodeFunctionData({
+            abi: safeOwnerManagerAbi,
+            functionName: 'addOwnerWithThreshold',
+            args: [sessionKeyAccount.address, BigInt(1)],
+          }),
+          value: BigInt(0),
+        },
+      ],
+      account: smartAccountClient.account,
+    });
+    const receipt = await smartAccountClient.waitForUserOperationReceipt({
+      hash: tx,
+    });
+    if (!receipt.success) {
+      throw new Error('Transaction to add account owner failed');
+    }
+    console.log('account owner added');
+    return bytesToHex(randomBytes(32)) as Hex;
+  }
   // We create a dummy action so that we can execute a userOp immediately and create the session onchain,
   // rather than having to pass along all the enable data to the end user app.
   // In the future, if we enable attestations with the Rhinestone registry, we can remove this and instead
@@ -768,7 +819,7 @@ export const getSmartSessionClient = async ({
 }): Promise<SmartSessionClient> => {
   const sessionKeyAccount = privateKeyToAccount(sessionPrivateKey);
   const smartAccountClient = await getSmartAccountWalletClient({
-    owner: sessionKeyAccount, // Won't really be used, but we need to pass in an account
+    owner: sessionKeyAccount, // Won't really be used (except in testnet), but we need to pass in an account
     address: accountAddress,
     chain,
     rpcUrl,
@@ -785,6 +836,14 @@ export const getSmartSessionClient = async ({
     sendUserOperation: async <const calls extends readonly unknown[]>({ calls }: { calls: calls }) => {
       if (!smartAccountClient.account) {
         throw new Error('Invalid smart account');
+      }
+      if (chain.id === GEO_TESTNET.id) {
+        // We don't have the smart sessions module deployed on testnet yet, so we need to use the legacy smart account wallet client
+        // TODO: remove this once we have the smart sessions module deployed on testnet
+        return smartAccountClient.sendUserOperation({
+          calls: calls as Calls<Narrow<calls>>,
+          account: smartAccountClient.account,
+        });
       }
       const account = getAccount({
         address: smartAccountClient.account.address,

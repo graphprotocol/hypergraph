@@ -33,6 +33,27 @@ export const safeModuleManagerAbi = [
   },
 ];
 
+export const safeOwnerManagerAbi = [
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'threshold',
+        type: 'uint256',
+      },
+    ],
+    name: 'addOwnerWithThreshold',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+];
+
 // We only use this for revokeEnableSignature to use as a noop when creating a smart session
 export const smartSessionsAbi = [
   {
