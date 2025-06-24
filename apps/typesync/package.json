@@ -15,7 +15,8 @@
     "linkDirectory": false
   },
   "bin": {
-    "typesync": "./dist/bin.cjs"
+    "hypergraph": "./dist/bin.cjs",
+    "hg": "./dist/bin.cjs"
   },
   "files": ["README.md", "dist"],
   "scripts": {
@@ -24,7 +25,7 @@
     "build": "rm -rf dist && pnpm run build:client && tsup && pnpm run copy-all",
     "build:ts": "tsup",
     "dev": "vite build && pnpx tsx ./src/bin.ts",
-    "dev:cli": "pnpx tsx ./src/bin.ts studio",
+    "dev:cli": "pnpx tsx ./src/bin.ts typesync",
     "dev:client": "vite --force",
     "clean": "rimraf dist/*",
     "start": "node ./dist/bin.cjs",
@@ -35,7 +36,7 @@
     "copy-db-migrations": "cp -rp ./src/migrations ./dist/migrations",
     "copy-client-dist": "mkdir -p ./dist/client && cp -rp ./client/dist ./dist/client/dist",
     "copy-all": "pnpm run copy-package-json && pnpm run copy-db-migrations && pnpm run copy-client-dist",
-    "typesync": "pnpx tsx ./src/bin.ts studio"
+    "hypergraph": "pnpx tsx ./src/bin.ts typesync"
   },
   "devDependencies": {
     "@effect/cli": "latest",
