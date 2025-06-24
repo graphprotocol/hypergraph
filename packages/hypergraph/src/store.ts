@@ -222,27 +222,30 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
               [space.id]: lastUpdateClock,
             },
           };
-        }
-        storeContext = {
-          ...storeContext,
-          spaces: [
-            ...storeContext.spaces,
-            {
-              id: space.id,
-              name: space.name,
-              events: [],
-              state: undefined,
-              keys: [],
-              inboxes: [],
-              automergeDocHandle: result.handle,
+        } else {
+          storeContext = {
+            ...storeContext,
+            spaces: [
+              ...storeContext.spaces,
+              {
+                id: space.id,
+                name: space.name,
+                events: [],
+                state: undefined,
+                keys: [],
+                inboxes: [],
+                automergeDocHandle: result.handle,
+              },
+            ],
+            lastUpdateClock: {
+              ...storeContext.lastUpdateClock,
+              [space.id]: -1,
             },
-          ],
-          lastUpdateClock: {
-            ...storeContext.lastUpdateClock,
-            [space.id]: -1,
-          },
-        };
+          };
+        }
       }
+
+      console.log('storecontext', storeContext);
 
       return storeContext;
     },
