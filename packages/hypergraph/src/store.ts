@@ -501,7 +501,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         ...context,
         authenticated: true,
         // TODO: remove hard-coded account address and use the one from the identity
-        identity: { ...event.identity, accountAddress: '0xBE0298aF8D440bEFA78E7e8A538D8ecBFF06bfC7' },
+        identity: { ...event.identity },
       };
     },
     resetAuth: (context) => {

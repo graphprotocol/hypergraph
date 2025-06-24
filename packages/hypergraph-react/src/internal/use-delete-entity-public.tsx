@@ -1,5 +1,5 @@
-import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
-import type { Entity } from '@graphprotocol/hypergraph';
+import { Graph, type Op } from '@graphprotocol/grc-20';
+import type { Connect, Entity } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
 import request, { gql } from 'graphql-request';
 import { publishOps } from '../publish-ops.js';
@@ -36,7 +36,7 @@ type EntityToDeleteQueryResult = {
 export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { space }: DeleteEntityPublicParams) => {
   const queryClient = useQueryClient();
 
-  return async ({ id, walletClient }: { id: string; walletClient: GeoSmartAccount }) => {
+  return async ({ id, walletClient }: { id: string; walletClient: Connect.SmartSessionClient }) => {
     try {
       const result = await request<EntityToDeleteQueryResult>(GEO_API_TESTNET_ENDPOINT, deleteEntityQueryDocument, {
         spaceId: space,
@@ -62,7 +62,6 @@ export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { 
         space,
         name: `Delete entity ${id}`,
         walletClient,
-        network: 'TESTNET',
       });
       // TODO: temporary fix until we get the information from the API when a transaction is confirmed
       await new Promise((resolve) => setTimeout(resolve, 2000));

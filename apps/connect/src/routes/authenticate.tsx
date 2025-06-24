@@ -396,6 +396,7 @@ function AuthenticateComponent() {
       console.log('smart session created');
       const smartAccountClient = await getSmartAccountWalletClient({
         owner: walletClient,
+        address: accountAddress,
         chain: CHAIN,
         rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
       });

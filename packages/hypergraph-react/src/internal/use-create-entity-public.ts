@@ -1,4 +1,5 @@
-import { type GeoSmartAccount, Graph, Id, type PropertiesParam, type RelationsParam } from '@graphprotocol/grc-20';
+import { Graph, Id, type PropertiesParam, type RelationsParam } from '@graphprotocol/grc-20';
+import type { Connect } from '@graphprotocol/hypergraph';
 import type { Entity } from '@graphprotocol/hypergraph';
 import { Type, store } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,7 +20,7 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
 
   return async (
     data: Readonly<Schema.Schema.Type<Entity.Insert<S>>>,
-    { walletClient }: { walletClient: GeoSmartAccount },
+    { walletClient }: { walletClient: Connect.SmartSessionClient },
     // TODO: return the entity with this type: Promise<Entity.Entity<S>>
   ) => {
     try {
@@ -79,7 +80,6 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
         space,
         name: `Create entity ${data.id}`,
         walletClient,
-        network: 'TESTNET',
       });
       // TODO: temporary fix until we get the information from the API when a transaction is confirmed
       await new Promise((resolve) => setTimeout(resolve, 2000));

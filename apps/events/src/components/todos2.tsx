@@ -1,4 +1,3 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
 import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
@@ -6,6 +5,7 @@ import {
   publishOps,
   useCreateEntity,
   useDeleteEntity,
+  useHypergraphApp,
   useQuery,
   useSpace,
   useUpdateEntity,
@@ -35,6 +35,7 @@ export const Todos2 = () => {
     // preparePublish: preparePublishUsers,
   } = useQuery(User, { mode: 'private' });
   const { ready: spaceReady, id: spaceId } = useSpace({ mode: 'private' });
+  const { getSmartSessionClient } = useHypergraphApp();
   const createTodo = useCreateEntity(Todo2);
   const updateTodo = useUpdateEntity(Todo2);
   const createUser = useCreateEntity(User);
@@ -220,9 +221,9 @@ export const Todos2 = () => {
           <Button
             onClick={async () => {
               try {
-                const smartAccountWalletClient = await getSmartAccountWalletClient();
-                if (!smartAccountWalletClient) {
-                  throw new Error('Missing smartAccountWalletClient');
+                const smartSessionClient = await getSmartSessionClient();
+                if (!smartSessionClient) {
+                  throw new Error('Missing smartSessionClient');
                 }
                 if (publishData) {
                   setIsPublishing(true);
@@ -233,8 +234,7 @@ export const Todos2 = () => {
                   ].flat();
                   const publishOpsResult = await publishOps({
                     ops,
-                    // @ts-expect-error - TODO: fix the types error
-                    walletClient: smartAccountWalletClient,
+                    walletClient: smartSessionClient,
                     space: spaceId,
                     name: 'Update users and todos',
                   });

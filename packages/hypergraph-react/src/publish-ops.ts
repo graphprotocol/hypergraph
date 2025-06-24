@@ -1,13 +1,13 @@
-import type { GeoSmartAccount, Op } from '@graphprotocol/grc-20';
+import type { Op } from '@graphprotocol/grc-20';
 import { Ipfs } from '@graphprotocol/grc-20';
+import { Connect } from '@graphprotocol/hypergraph';
 import type { Hash } from 'viem';
 
 type PublishParams = {
   name: string;
   ops: Op[];
-  walletClient: GeoSmartAccount;
+  walletClient: Connect.SmartSessionClient;
   space: string;
-  network: 'TESTNET' | 'MAINNET';
 };
 
 type PublishResult = {
@@ -17,18 +17,13 @@ type PublishResult = {
   cid: string;
 };
 
-export const publishOps = async ({
-  name,
-  ops,
-  walletClient,
-  space,
-  network,
-}: PublishParams): Promise<PublishResult> => {
+export const publishOps = async ({ name, ops, walletClient, space }: PublishParams): Promise<PublishResult> => {
   const address = walletClient.account?.address;
   if (!address) {
     throw new Error('No address found');
   }
 
+  const network = walletClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'MAINNET';
   const publishResult = await Ipfs.publishEdit({
     name,
     ops: ops,
@@ -46,11 +41,15 @@ export const publishOps = async ({
 
   const { to, data } = await result.json();
 
-  const txResult = await walletClient.sendTransaction({
-    to: to,
-    value: 0n,
-    data: data,
+  const txResult = await walletClient.sendUserOperation({
+    calls: [
+      {
+        to: to,
+        value: 0n,
+        data: data,
+      },
+    ],
   });
 
-  return { txResult, to, data, cid };
+  return { txResult: txResult as `0x${string}`, to, data, cid };
 };
