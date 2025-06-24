@@ -1,10 +1,9 @@
+import { Loading } from '@/components/ui/Loading';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from '@tanstack/react-router';
-import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from './ui/button';
 
-export function Logout() {
+export function LogoutButton() {
   const { logout: privyLogout, ready, authenticated } = usePrivy();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -18,14 +17,14 @@ export function Logout() {
   };
 
   return (
-    <Button className="home-button" onClick={() => disconnectWallet()} disabled={!ready || !authenticated}>
-      {isLoading ? (
-        <>
-          <Loader2 className="w-4 h-4 animate-spin" /> Logout
-        </>
-      ) : (
-        'Logout'
-      )}
-    </Button>
+    <button
+      type="button"
+      disabled={!ready || !authenticated}
+      onClick={() => disconnectWallet()}
+      className="c-button c-button--small"
+    >
+      {isLoading ? <Loading hideLabel /> : null}
+      Log out
+    </button>
   );
 }

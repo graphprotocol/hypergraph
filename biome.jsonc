@@ -15,7 +15,8 @@
       "tsconfig.json",
       "tsconfig.*.json",
       "**/variant-schema.ts",
-      "apps/typesync/client/src/generated"
+      "apps/typesync/client/src/generated",
+      "*.css"
     ]
   },
   "formatter": {
@@ -35,11 +36,7 @@
   },
   "javascript": {
     "formatter": {
-      "enabled": true,
       "quoteStyle": "single",
-      "indentStyle": "space",
-      "indentWidth": 2,
-      "lineWidth": 120,
       "trailingCommas": "all"
     }
   }
