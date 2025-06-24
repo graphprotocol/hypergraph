@@ -14,6 +14,9 @@ export const Route = createRootRoute({
       }
 
       if (ready && !authenticated) {
+        if (router.state.location.href.startsWith('/authenticate')) {
+          localStorage.setItem('geo-connect-authenticate-redirect', router.state.location.href);
+        }
         router.navigate({
           to: '/login',
         });

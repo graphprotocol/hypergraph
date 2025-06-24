@@ -4,7 +4,6 @@ import { TodosReadOnly } from '@/components/todos-read-only';
 import { TodosReadOnlyFilter } from '@/components/todos-read-only-filter';
 import { Button } from '@/components/ui/button';
 import { Users } from '@/components/users';
-import { mapping } from '@/mapping.js';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
@@ -38,7 +37,7 @@ function Space() {
 
   return (
     <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
-      <HypergraphSpaceProvider space={spaceId} mapping={mapping}>
+      <HypergraphSpaceProvider space={spaceId}>
         <Users />
         <Todos />
         <TodosReadOnlyFilter />

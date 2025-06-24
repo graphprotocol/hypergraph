@@ -54,6 +54,7 @@ export function CreateSpace() {
 
       const message: Messages.RequestConnectCreateSpaceEvent = {
         type: 'connect-create-space-event',
+        accountAddress,
         event: spaceEvent,
         spaceId: spaceEvent.transaction.id,
         keyBox: {

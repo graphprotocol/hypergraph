@@ -1,6 +1,5 @@
 import { UsersMerged } from '@/components/users/users-merged';
-import { UsersPublicGeo } from '@/components/users/users-public-geo';
-import { mapping } from '@/mapping.js';
+import { UsersPublic } from '@/components/users/users-public';
 import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
@@ -33,10 +32,10 @@ function UsersRouteComponent() {
 
   return (
     <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
-      <HypergraphSpaceProvider space={spaceId} mapping={mapping}>
+      <HypergraphSpaceProvider space={spaceId}>
         <UsersMerged />
         <UsersLocal />
-        <UsersPublicGeo />
+        <UsersPublic />
       </HypergraphSpaceProvider>
     </div>
   );

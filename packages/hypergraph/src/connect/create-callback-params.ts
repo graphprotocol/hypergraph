@@ -6,15 +6,18 @@ type CreateAuthUrlParams = {
   expiry: number;
   nonce: string;
   appId: string;
+  permissionId: string;
   appIdentityAddress: string;
   appIdentityAddressPrivateKey: string;
+  accountAddress: string;
   signaturePublicKey: string;
   signaturePrivateKey: string;
   encryptionPublicKey: string;
   encryptionPrivateKey: string;
   sessionToken: string;
   sessionTokenExpires: number;
-  spaces: { id: string }[];
+  privateSpaces: { id: string }[];
+  publicSpaces: { id: string }[];
 };
 
 export const createCallbackParams = ({ nonce, ephemeralPublicKey, ...rest }: CreateAuthUrlParams) => {

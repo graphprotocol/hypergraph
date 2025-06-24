@@ -44,6 +44,8 @@ function RouteComponent() {
       setIdentity({
         address: parsedAuthParams.appIdentityAddress,
         addressPrivateKey: parsedAuthParams.appIdentityAddressPrivateKey,
+        accountAddress: parsedAuthParams.accountAddress,
+        permissionId: parsedAuthParams.permissionId,
         signaturePublicKey: parsedAuthParams.signaturePublicKey,
         signaturePrivateKey: parsedAuthParams.signaturePrivateKey,
         encryptionPublicKey: parsedAuthParams.encryptionPublicKey,

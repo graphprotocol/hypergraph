@@ -5,13 +5,13 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
-const createPropertiesAndTypes = async ({
+const createPropertiesAndTypesTodos = async ({
   smartAccountWalletClient,
   space,
 }: { smartAccountWalletClient: GeoSmartAccount; space: string }) => {
   const ops: Array<Op> = [];
   const { id: checkedPropertyId, ops: createCheckedPropertyOps } = Graph.createProperty({
-    type: 'CHECKBOX',
+    dataType: 'CHECKBOX',
     name: 'Checked',
   });
   ops.push(...createCheckedPropertyOps);
@@ -22,32 +22,32 @@ const createPropertiesAndTypes = async ({
   ops.push(...createUserOps);
 
   const { id: assigneesRelationTypeId, ops: createAssigneesRelationTypeOps } = Graph.createProperty({
-    type: 'RELATION',
+    dataType: 'RELATION',
     name: 'Assignees',
     relationValueTypes: [userId],
   });
   ops.push(...createAssigneesRelationTypeOps);
 
   const { id: duePropertyId, ops: createDuePropertyOps } = Graph.createProperty({
-    type: 'TIME',
+    dataType: 'TIME',
     name: 'Due',
   });
   ops.push(...createDuePropertyOps);
 
   const { id: pointPropertyId, ops: createPointPropertyOps } = Graph.createProperty({
-    type: 'POINT',
+    dataType: 'POINT',
     name: 'Point',
   });
   ops.push(...createPointPropertyOps);
 
   const { id: amountPropertyId, ops: createAmountPropertyOps } = Graph.createProperty({
-    type: 'NUMBER',
+    dataType: 'NUMBER',
     name: 'Amount',
   });
   ops.push(...createAmountPropertyOps);
 
   const { id: websitePropertyId, ops: createWebsitePropertyOps } = Graph.createProperty({
-    type: 'URL',
+    dataType: 'TEXT',
     name: 'Website',
   });
   ops.push(...createWebsitePropertyOps);
@@ -84,7 +84,7 @@ const createPropertiesAndTypes = async ({
   };
 };
 
-export const CreatePropertiesAndTypes = () => {
+export const CreatePropertiesAndTypesTodos = () => {
   const [mapping, setMapping] = useState<string>('');
   const space = useHypergraphSpace();
 
@@ -112,7 +112,7 @@ export const CreatePropertiesAndTypes = () => {
             pointPropertyId,
             websitePropertyId,
             amountPropertyId,
-          } = await createPropertiesAndTypes({
+          } = await createPropertiesAndTypesTodos({
             smartAccountWalletClient,
             space,
           });
@@ -120,7 +120,7 @@ export const CreatePropertiesAndTypes = () => {
           const newMapping = `Todo2: {
   typeIds: [Id.Id('${todoTypeId}')],
   properties: {
-    name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
     checked: Id.Id('${checkedPropertyId}'),
     due: Id.Id('${duePropertyId}'),
     point: Id.Id('${pointPropertyId}'),
@@ -134,7 +134,7 @@ export const CreatePropertiesAndTypes = () => {
 User: {
   typeIds: [Id.Id('${userId}')],
   properties: {
-    name: Id.Id('LuBWqZAu6pz54eiJS5mLv8'),
+    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   },
 }
 `;

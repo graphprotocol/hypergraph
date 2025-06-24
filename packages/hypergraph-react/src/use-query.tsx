@@ -1,19 +1,17 @@
 import { type Entity, Type, Utils } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
-import { useMemo } from 'react';
-import { useHypergraph, useQueryLocal } from './HypergraphSpaceContext.js';
-import { generateDeleteOps } from './internal/generate-delete-ops-geo.js';
-import { useGenerateCreateOps } from './internal/use-generate-create-ops.js';
-import { useGenerateUpdateOps } from './internal/use-generate-update-ops.js';
-import { parseResult, useQueryPublic } from './internal/use-query-public-geo.js';
-import type { DiffEntry, PublishDiffInfo } from './types.js';
+import { useQueryLocal } from './HypergraphSpaceContext.js';
+import { useQueryPublic } from './internal/use-query-public.js';
+import type { DiffEntry } from './types.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {
-  mode?: 'merged' | 'public' | 'local';
+  mode: 'public' | 'private';
   filter?: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined;
-  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined;
+  // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
+  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
 };
 
+// @ts-expect-error TODO: remove this function
 const mergeEntities = <S extends Entity.AnyNoContext>(
   publicEntities: Entity.Entity<S>[],
   localEntities: Entity.Entity<S>[],
@@ -45,6 +43,7 @@ const mergeEntities = <S extends Entity.AnyNoContext>(
   return mergedData;
 };
 
+// @ts-expect-error TODO: remove this function
 const getDiff = <S extends Entity.AnyNoContext>(
   type: S,
   publicEntities: Entity.Entity<S>[],
@@ -143,20 +142,20 @@ const getDiff = <S extends Entity.AnyNoContext>(
 
 const preparePublishDummy = () => undefined;
 
-export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
-  const { mode = 'merged', filter, include } = params ?? {};
-  const publicResult = useQueryPublic(type, { enabled: mode === 'public' || mode === 'merged', include });
-  const localResult = useQueryLocal(type, { enabled: mode === 'local' || mode === 'merged', filter, include });
-  const { mapping } = useHypergraph();
-  const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
-  const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
+export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: QueryParams<S>) {
+  const { mode, filter, include } = params;
+  const publicResult = useQueryPublic(type, { enabled: mode === 'public', include });
+  const localResult = useQueryLocal(type, { enabled: mode === 'private', filter, include });
+  // const mapping = useSelector(store, (state) => state.context.mapping);
+  // const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
+  // const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
 
-  const mergedData = useMemo(() => {
-    if (mode !== 'merged' || publicResult.isLoading) {
-      return localResult.entities;
-    }
-    return mergeEntities(publicResult.data, localResult.entities, localResult.deletedEntities);
-  }, [mode, publicResult.isLoading, publicResult.data, localResult.entities, localResult.deletedEntities]);
+  // const mergedData = useMemo(() => {
+  //   if (mode !== 'merged' || publicResult.isLoading) {
+  //     return localResult.entities;
+  //   }
+  //   return mergeEntities(publicResult.data, localResult.entities, localResult.deletedEntities);
+  // }, [mode, publicResult.isLoading, publicResult.data, localResult.entities, localResult.deletedEntities]);
 
   if (mode === 'public') {
     return {
@@ -166,58 +165,56 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params?: 
     };
   }
 
-  if (mode === 'local') {
-    return {
-      ...publicResult,
-      data: localResult.entities,
-      deleted: localResult.deletedEntities,
-      preparePublish: preparePublishDummy,
-    };
-  }
-
-  const preparePublish = async (): Promise<PublishDiffInfo> => {
-    // @ts-expect-error TODO should use the actual type instead of the name in the mapping
-    const typeName = type.name;
-    const mappingEntry = mapping?.[typeName];
-    if (!mappingEntry) {
-      throw new Error(`Mapping entry for ${typeName} not found`);
-    }
-
-    const result = await publicResult.refetch();
-    if (!result.data) {
-      throw new Error('No data found');
-    }
-    const diff = getDiff(
-      type,
-      parseResult(result.data, type, mappingEntry, mapping).data,
-      localResult.entities,
-      localResult.deletedEntities,
-    );
-
-    const newEntities = diff.newEntities.map((entity) => {
-      const { ops: createOps } = generateCreateOps(entity);
-      return { id: entity.id, entity, ops: createOps };
-    });
-
-    const updatedEntities = diff.updatedEntities.map((updatedEntityInfo) => {
-      const { ops: updateOps } = generateUpdateOps({ id: updatedEntityInfo.id, diff: updatedEntityInfo.diff });
-      return { ...updatedEntityInfo, ops: updateOps };
-    });
-
-    const deletedEntities = await Promise.all(
-      diff.deletedEntities.map(async (entity) => {
-        const deleteOps = await generateDeleteOps(entity);
-        return { id: entity.id, entity, ops: deleteOps };
-      }),
-    );
-
-    return { newEntities, updatedEntities, deletedEntities };
-  };
-
   return {
     ...publicResult,
-    data: mergedData,
+    data: localResult.entities,
     deleted: localResult.deletedEntities,
-    preparePublish: !publicResult.isLoading ? preparePublish : preparePublishDummy,
+    preparePublish: preparePublishDummy,
   };
+
+  // const preparePublish = async (): Promise<PublishDiffInfo> => {
+  //   // @ts-expect-error TODO should use the actual type instead of the name in the mapping
+  //   const typeName = type.name;
+  //   const mappingEntry = mapping?.[typeName];
+  //   if (!mappingEntry) {
+  //     throw new Error(`Mapping entry for ${typeName} not found`);
+  //   }
+
+  //   const result = await publicResult.refetch();
+  //   if (!result.data) {
+  //     throw new Error('No data found');
+  //   }
+  //   const diff = getDiff(
+  //     type,
+  //     parseResult(result.data, type, mappingEntry, mapping).data,
+  //     localResult.entities,
+  //     localResult.deletedEntities,
+  //   );
+
+  //   const newEntities = diff.newEntities.map((entity) => {
+  //     const { ops: createOps } = generateCreateOps(entity);
+  //     return { id: entity.id, entity, ops: createOps };
+  //   });
+
+  //   const updatedEntities = diff.updatedEntities.map((updatedEntityInfo) => {
+  //     const { ops: updateOps } = generateUpdateOps({ id: updatedEntityInfo.id, diff: updatedEntityInfo.diff });
+  //     return { ...updatedEntityInfo, ops: updateOps };
+  //   });
+
+  //   const deletedEntities = await Promise.all(
+  //     diff.deletedEntities.map(async (entity) => {
+  //       const deleteOps = await generateDeleteOps(entity);
+  //       return { id: entity.id, entity, ops: deleteOps };
+  //     }),
+  //   );
+
+  //   return { newEntities, updatedEntities, deletedEntities };
+  // };
+
+  // return {
+  //   ...publicResult,
+  //   data: mergedData,
+  //   deleted: localResult.deletedEntities,
+  //   preparePublish: !publicResult.isLoading ? preparePublish : preparePublishDummy,
+  // };
 }

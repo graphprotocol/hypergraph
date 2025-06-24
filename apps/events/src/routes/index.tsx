@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp, useSpaces } from '@graphprotocol/hypergraph-react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect, useState } from 'react';
@@ -12,7 +12,8 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
-  const spaces = useSelector(store, (state) => state.context.spaces);
+  const { data: publicSpaces } = useSpaces({ mode: 'public' });
+  const { data: privateSpaces } = useSpaces({ mode: 'private' });
   const [spaceName, setSpaceName] = useState('');
 
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
@@ -75,6 +76,7 @@ function Index() {
       <div className="flex flex-row gap-2 justify-between items-center">
         <Input value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
         <Button
+          disabled={true} // disabled until we have delegation for creating a space
           onClick={async (event) => {
             event.preventDefault();
             // const smartAccountWalletClient = await getSmartAccountWalletClient();
@@ -88,18 +90,36 @@ function Index() {
           Create space
         </Button>
       </div>
+
+      <h2 className="text-lg font-bold">Private Spaces</h2>
       <ul className="flex flex-col gap-2">
-        {spaces.length === 0 && <div>No spaces</div>}
-        {spaces.map((space) => {
+        {privateSpaces && privateSpaces.length === 0 && <div>No spaces</div>}
+        {privateSpaces?.map((space) => {
           return (
             <li key={space.id}>
               <Link to="/space/$spaceId" params={{ spaceId: space.id }}>
                 <Card>
                   <CardHeader>
-                    <CardTitle>{space.id}</CardTitle>
+                    <CardTitle>{space.name}</CardTitle>
                   </CardHeader>
                 </Card>
               </Link>
+            </li>
+          );
+        })}
+      </ul>
+
+      <h2 className="text-lg font-bold">Public Spaces</h2>
+      <ul className="flex flex-col gap-2">
+        {publicSpaces?.map((space) => {
+          return (
+            <li key={space.id}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{space.name}</CardTitle>
+                  <CardDescription className="text-xs">{space.id}</CardDescription>
+                </CardHeader>
+              </Card>
             </li>
           );
         })}

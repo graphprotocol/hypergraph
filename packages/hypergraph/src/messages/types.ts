@@ -41,6 +41,7 @@ export const KeyBoxWithKeyId = Schema.Struct({
 export type KeyBoxWithKeyId = Schema.Schema.Type<typeof KeyBoxWithKeyId>;
 
 export const IdentityKeyBox = Schema.Struct({
+  signer: Schema.String,
   accountAddress: Schema.String,
   ciphertext: Schema.String,
   nonce: Schema.String,
@@ -60,6 +61,7 @@ export type RequestCreateSpaceEvent = Schema.Schema.Type<typeof RequestCreateSpa
 
 export const RequestConnectCreateSpaceEvent = Schema.Struct({
   type: Schema.Literal('connect-create-space-event'),
+  accountAddress: Schema.String,
   spaceId: Schema.String,
   event: CreateSpaceEvent,
   keyBox: KeyBoxWithKeyId,
@@ -80,6 +82,7 @@ export const RequestCreateInvitationEvent = Schema.Struct({
 export const RequestConnectAddAppIdentityToSpaces = Schema.Struct({
   type: Schema.Literal('connect-add-app-identity-to-spaces'),
   appIdentityAddress: Schema.String,
+  accountAddress: Schema.String,
   spacesInput: Schema.Array(
     Schema.Struct({
       id: Schema.String,
@@ -240,6 +243,7 @@ export type RequestConnectCreateIdentity = Schema.Schema.Type<typeof RequestConn
 export const RequestConnectCreateAppIdentity = Schema.Struct({
   appId: Schema.String,
   address: Schema.String,
+  accountAddress: Schema.String,
   ciphertext: Schema.String,
   nonce: Schema.String,
   signaturePublicKey: Schema.String,
@@ -277,6 +281,7 @@ export const ResponseListSpaces = Schema.Struct({
   spaces: Schema.Array(
     Schema.Struct({
       id: Schema.String,
+      name: Schema.String,
     }),
   ),
 });
@@ -347,6 +352,7 @@ export type ResponseAccountInbox = Schema.Schema.Type<typeof ResponseAccountInbo
 export const ResponseSpace = Schema.Struct({
   type: Schema.Literal('space'),
   id: Schema.String,
+  name: Schema.String,
   events: Schema.Array(SpaceEvent),
   keyBoxes: Schema.Array(KeyBoxWithKeyId),
   updates: Schema.optional(Updates),

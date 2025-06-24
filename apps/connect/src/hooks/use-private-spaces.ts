@@ -1,6 +1,7 @@
 import { getAppInfoByIds } from '@/lib/get-app-info-by-ids';
+import { Connect } from '@graphprotocol/hypergraph';
 import { useIdentityToken } from '@privy-io/react-auth';
-import { useQuery } from '@tanstack/react-query';
+import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 
 type SpaceData = {
   id: string;
@@ -15,15 +16,17 @@ type SpaceData = {
   }[];
 };
 
-export const useSpaces = () => {
+export const usePrivateSpaces = (): UseQueryResult<SpaceData[], Error> => {
   const { identityToken } = useIdentityToken();
 
   return useQuery<SpaceData[]>({
-    queryKey: ['spaces'],
+    queryKey: ['private-spaces'],
     queryFn: async () => {
       if (!identityToken) return [];
+      const accountAddress = Connect.loadAccountAddress(localStorage);
+      if (!accountAddress) return [];
       const response = await fetch(`${import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN}/connect/spaces`, {
-        headers: { 'privy-id-token': identityToken },
+        headers: { 'privy-id-token': identityToken, 'account-address': accountAddress },
       });
       const data = await response.json();
       const appIds = new Set<string>();

@@ -1,6 +1,7 @@
 import { prisma } from '../prisma.js';
 
 type Params = {
+  signerAddress: string;
   accountAddress: string;
   ciphertext: string;
   nonce: string;
@@ -11,6 +12,7 @@ type Params = {
 };
 
 export const createIdentity = async ({
+  signerAddress,
   accountAddress,
   ciphertext,
   nonce,
@@ -32,6 +34,7 @@ export const createIdentity = async ({
   }
   return await prisma.account.create({
     data: {
+      connectSignerAddress: signerAddress,
       address: accountAddress,
       connectAccountProof: accountProof,
       connectKeyProof: keyProof,

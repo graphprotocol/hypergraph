@@ -34,7 +34,7 @@ export const getVerifiedIdentity = async (
       resDecoded.keyProof,
     ))
   ) {
-    throw new Error('Invalid identity');
+    throw new Error('Invalid identity in getVerifiedIdentity');
   }
 
   store.send({

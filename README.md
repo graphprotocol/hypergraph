@@ -45,3 +45,16 @@ pnpm dev
 ```sh
 pnpm up --interactive --latest -r
 ```
+
+## Publishing
+
+```sh
+# publish hypergraph
+pnpm build
+cd packages/hypergraph/publish
+pnpm publish
+# publish hypergraph-react
+pnpm build
+cd packages/hypergraph-react/publish
+pnpm publish
+```

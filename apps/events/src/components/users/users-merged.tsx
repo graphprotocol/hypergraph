@@ -4,7 +4,7 @@ import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
 
 export const UsersMerged = () => {
-  const { data, isLoading, isError } = useQuery(User);
+  const { data, isLoading, isError } = useQuery(User, { mode: 'private' });
   const deleteEntity = useDeleteEntity();
 
   return (
