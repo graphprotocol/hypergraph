@@ -1,4 +1,4 @@
-import { useCreateEntity, useQuery } from '@graphprotocol/hypergraph-react';
+import { useCreateEntity, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { User } from '../schema.js';
 import { Button } from './ui/button.js';
@@ -7,8 +7,13 @@ import { UserEntry } from './user-entry.js';
 
 export const Users = () => {
   const { data: users } = useQuery(User, { mode: 'private' });
-  const createEntity = useCreateEntity(User);
+  const { ready: spaceReady } = useSpace({ mode: 'private' });
+  const createEntity = useCreateEntity(User, { space: '1c954768-7e14-4f0f-9396-0fe9dcd55fe8' });
   const [newUserName, setNewUserName] = useState('');
+
+  if (!spaceReady) {
+    return <div>Loading space...</div>;
+  }
 
   return (
     <>

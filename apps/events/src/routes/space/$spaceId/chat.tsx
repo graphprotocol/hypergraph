@@ -1,7 +1,6 @@
 import { SpaceChat } from '@/components/SpaceChat';
 import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect } from 'react';
 
 export const Route = createFileRoute('/space/$spaceId/chat')({
   component: RouteComponent,
@@ -9,12 +8,7 @@ export const Route = createFileRoute('/space/$spaceId/chat')({
 
 function RouteComponent() {
   const { spaceId } = Route.useParams();
-  const { subscribeToSpace, isConnecting } = useHypergraphApp();
-  useEffect(() => {
-    if (!isConnecting) {
-      subscribeToSpace({ spaceId });
-    }
-  }, [isConnecting, subscribeToSpace, spaceId]);
+  const { isConnecting } = useHypergraphApp();
 
   if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;

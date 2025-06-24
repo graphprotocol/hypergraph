@@ -1,6 +1,6 @@
 import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
-import { publishOps, useHypergraphSpace } from '@graphprotocol/hypergraph-react';
+import { publishOps } from '@graphprotocol/hypergraph-react';
 import { Button } from './ui/button';
 
 const createEvents = async ({
@@ -69,9 +69,7 @@ const createEvents = async ({
   }
 };
 
-export const CreateEvents = () => {
-  const space = useHypergraphSpace();
-
+export const CreateEvents = ({ space }: { space: string }) => {
   return (
     <div>
       <Button

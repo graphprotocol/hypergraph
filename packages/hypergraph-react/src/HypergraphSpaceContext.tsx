@@ -2,15 +2,26 @@
 
 import type { AnyDocumentId } from '@automerge/automerge-repo';
 import { useRepo } from '@automerge/automerge-repo-react-hooks';
-import { Entity, Utils } from '@graphprotocol/hypergraph';
+import { Entity, Utils, store } from '@graphprotocol/hypergraph';
+import { useSelector } from '@xstate/store/react';
 import * as Schema from 'effect/Schema';
-import { type ReactNode, createContext, useContext, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
+import { useHypergraphApp } from './HypergraphAppContext.js';
 
 export type HypergraphContext = { space: string };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
 
-function useHypergraphSpaceInternal() {
+export function useHypergraphSpaceInternal() {
   const context = useContext(HypergraphReactContext);
   if (!context) {
     throw new Error('useHypergraphSpace must be used within a HypergraphSpaceProvider');
@@ -23,7 +34,7 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
   return <HypergraphReactContext.Provider value={{ space }}>{children}</HypergraphReactContext.Provider>;
 }
 
-function useAutomergeHandle({ spaceId }: { spaceId: string }) {
+function useSubscribeToSpaceAndGetHandle({ spaceId, enabled }: { spaceId: string; enabled: boolean }) {
   const repo = useRepo();
   const handle = useMemo(() => {
     const id = Utils.idToAutomergeId(spaceId) as AnyDocumentId;
@@ -31,65 +42,98 @@ function useAutomergeHandle({ spaceId }: { spaceId: string }) {
     return result.handle;
   }, [spaceId, repo]);
 
+  const { subscribeToSpace, isConnecting } = useHypergraphApp();
+  useEffect(() => {
+    if (!isConnecting && enabled) {
+      // TODO: only subscribe to space if it is not already subscribed
+      subscribeToSpace({ spaceId });
+    }
+    return () => {
+      // TODO: unsubscribe from space in case the space ID changes
+    };
+  }, [isConnecting, subscribeToSpace, spaceId, enabled]);
+
   return handle;
 }
 
-export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S) {
-  const { space } = useHypergraphSpaceInternal();
-  const handle = useAutomergeHandle({ spaceId: space });
+export function useSpace(options: { space?: string; mode: 'private' | 'public' }) {
+  const { space: spaceIdFromContext } = useHypergraphSpaceInternal();
+  const { space: spaceIdFromParams } = options ?? {};
+  const spaceId = spaceIdFromParams ?? spaceIdFromContext;
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId, enabled: options.mode === 'private' });
+  const ready = options.mode === 'public' ? true : handle.isReady();
+  const space = useSelector(store, (state) => state.context.spaces.find((space) => space.id === spaceId));
+  return { ready, name: space?.name, id: spaceId };
+}
+
+export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S, options?: { space?: string }) {
+  const { space } = options ?? {};
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
   return Entity.create(handle, type);
 }
 
-export function useUpdateEntity<const S extends Entity.AnyNoContext>(type: S) {
-  const { space } = useHypergraphSpaceInternal();
-  const handle = useAutomergeHandle({ spaceId: space });
+export function useUpdateEntity<const S extends Entity.AnyNoContext>(type: S, options?: { space?: string }) {
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const { space } = options ?? {};
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
   return Entity.update(handle, type);
 }
 
-export function useDeleteEntity() {
-  const { space } = useHypergraphSpaceInternal();
-  const handle = useAutomergeHandle({ spaceId: space });
+export function useDeleteEntity(options?: { space?: string }) {
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const { space } = options ?? {};
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
   return Entity.markAsDeleted(handle);
 }
 
-export function useRemoveRelation() {
-  const { space } = useHypergraphSpaceInternal();
-  const handle = useAutomergeHandle({ spaceId: space });
+export function useRemoveRelation(options?: { space?: string }) {
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const { space } = options ?? {};
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
   return Entity.removeRelation(handle);
 }
 
-export function useHardDeleteEntity() {
-  const { space } = useHypergraphSpaceInternal();
-  const handle = useAutomergeHandle({ spaceId: space });
+export function useHardDeleteEntity(options?: { space?: string }) {
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const { space } = options ?? {};
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
   return Entity.delete(handle);
 }
 
 type QueryParams<S extends Entity.AnyNoContext> = {
+  space?: string | undefined;
   enabled: boolean;
   filter?: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined;
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
 };
 
 export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
-  const { enabled = true, filter, include } = params ?? {};
+  const { enabled = true, filter, include, space: spaceFromParams } = params ?? {};
   const entitiesRef = useRef<Entity.Entity<S>[]>([]);
-  const { space } = useHypergraphSpaceInternal();
-  const handle = useAutomergeHandle({ spaceId: space });
-
-  const [subscription] = useState(() => {
-    if (!enabled) {
-      return {
-        subscribe: () => () => undefined,
-        getEntities: () => entitiesRef.current,
-      };
-    }
-
-    return Entity.subscribeToFindMany(handle, type, filter, include);
+  const subscriptionRef = useRef<Entity.FindManySubscription<S>>({
+    subscribe: () => () => undefined,
+    getEntities: () => entitiesRef.current,
   });
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled: true });
+  const handleIsReady = handle.isReady();
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: allow to change filter and include
+  useLayoutEffect(() => {
+    if (enabled && handleIsReady) {
+      const subscription = Entity.subscribeToFindMany(handle, type, filter, include);
+      subscriptionRef.current.subscribe = subscription.subscribe;
+      subscriptionRef.current.getEntities = subscription.getEntities;
+    }
+  }, [enabled, handleIsReady, handle, type]);
 
   // TODO: allow to change the enabled state
-
-  const allEntities = useSyncExternalStore(subscription.subscribe, subscription.getEntities, () => entitiesRef.current);
+  const allEntities = useSyncExternalStore(
+    subscriptionRef.current.subscribe,
+    subscriptionRef.current.getEntities,
+    () => entitiesRef.current,
+  );
 
   const { entities, deletedEntities } = useMemo(() => {
     const entities: Entity.Entity<S>[] = [];
@@ -110,10 +154,11 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
 export function useQueryEntity<const S extends Entity.AnyNoContext>(
   type: S,
   id: string,
-  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> },
+  params?: { space?: string; include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } },
 ) {
-  const { space } = useHypergraphSpaceInternal();
-  const handle = useAutomergeHandle({ spaceId: space });
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const { space: spaceFromParams, include } = params ?? {};
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled: true });
   const prevEntityRef = useRef<Entity.Entity<S> | undefined>(undefined);
   const equals = Schema.equivalence(type);
 
@@ -155,8 +200,3 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
     return prevEntityRef.current;
   });
 }
-
-export const useHypergraphSpace = () => {
-  const { space } = useHypergraphSpaceInternal();
-  return space;
-};

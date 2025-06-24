@@ -60,6 +60,7 @@ describe('HypergraphSpaceContext', () => {
   describe('useCreateEntity', () => {
     it('should be able to create an entity through the useCreateEntity Hook', async () => {
       const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Event), { wrapper });
 
       let createdEntity: Entity.Entity<typeof Event> | null = null;
 
@@ -78,7 +79,8 @@ describe('HypergraphSpaceContext', () => {
         expect(queryEntityResult.current).toEqual(createdEntity);
       }
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Event), { wrapper });
+      rerender();
+
       expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
     });
   });
@@ -117,11 +119,16 @@ describe('HypergraphSpaceContext', () => {
       expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
 
       const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
+      // @ts-expect-error - TODO: fix the types error
       expect(queryEntityResult.current).toEqual({ ...createdEntity, __version: '', __deleted: false });
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Person), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Person), { wrapper });
+
+      rerender();
+
       expect(queryEntitiesResult.current).toEqual({
         deletedEntities: [],
+        // @ts-expect-error - TODO: fix the types error
         entities: [{ ...createdEntity, __version: '', __deleted: false }],
       });
     });
@@ -147,6 +154,7 @@ describe('HypergraphSpaceContext', () => {
       const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryLocal(User), {
         wrapper,
       });
+      rerenderQueryEntities();
       expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
 
       const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(), { wrapper });

@@ -1,11 +1,11 @@
 import { getSmartAccountWalletClient } from '@/lib/smart-account';
-import { _generateDeleteOps, publishOps, useHypergraphSpace, useQuery } from '@graphprotocol/hypergraph-react';
+import { _generateDeleteOps, publishOps, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
 import { User } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
 
 export const UsersPublic = () => {
-  const space = useHypergraphSpace();
+  const { id: spaceId } = useSpace({ mode: 'public' });
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(User, { mode: 'public' });
 
   return (
@@ -26,11 +26,12 @@ export const UsersPublic = () => {
               if (!smartAccountWalletClient) {
                 throw new Error('Missing smartAccountWalletClient');
               }
-              const ops = await _generateDeleteOps({ id: user.id, space });
+              const ops = await _generateDeleteOps({ id: user.id, space: spaceId });
               const result = await publishOps({
                 ops,
+                // @ts-expect-error - TODO: fix the types error
                 walletClient: smartAccountWalletClient,
-                space,
+                space: spaceId,
                 name: 'Delete User',
               });
               console.log('result', result);

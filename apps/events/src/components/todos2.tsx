@@ -6,8 +6,8 @@ import {
   publishOps,
   useCreateEntity,
   useDeleteEntity,
-  useHypergraphSpace,
   useQuery,
+  useSpace,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -34,7 +34,7 @@ export const Todos2 = () => {
     isError: isErrorUsers,
     // preparePublish: preparePublishUsers,
   } = useQuery(User, { mode: 'private' });
-  const space = useHypergraphSpace();
+  const { ready: spaceReady, id: spaceId } = useSpace({ mode: 'private' });
   const createTodo = useCreateEntity(Todo2);
   const updateTodo = useUpdateEntity(Todo2);
   const createUser = useCreateEntity(User);
@@ -56,6 +56,10 @@ export const Todos2 = () => {
   }, [dataUsers]);
 
   const userOptions = dataUsers.map((user) => ({ value: user.id, label: user.name }));
+
+  if (!spaceReady) {
+    return <div>Loading space...</div>;
+  }
 
   return (
     <>
@@ -231,7 +235,7 @@ export const Todos2 = () => {
                     ops,
                     // @ts-expect-error - TODO: fix the types error
                     walletClient: smartAccountWalletClient,
-                    space,
+                    space: spaceId,
                     name: 'Update users and todos',
                   });
                   console.log('publishOpsResult', publishOpsResult);
