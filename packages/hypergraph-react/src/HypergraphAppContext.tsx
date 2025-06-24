@@ -7,9 +7,9 @@ import { Repo } from '@automerge/automerge-repo/slim';
 import { automergeWasmBase64 } from '@automerge/automerge/automerge.wasm.base64.js';
 import * as automerge from '@automerge/automerge/slim';
 import { uuid } from '@automerge/automerge/slim';
-import { type GeoSmartAccount, Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@graphprotocol/grc-20';
 import {
-  type Connect,
+  Connect,
   Identity,
   type InboxMessageStorageEntry,
   Inboxes,
@@ -36,6 +36,7 @@ import {
   useState,
 } from 'react';
 import type { Address } from 'viem';
+import type { Hex } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
 
@@ -47,8 +48,8 @@ export type HypergraphAppCtx = {
   setIdentity(identity: Connect.PrivateAppIdentity): void;
   // app related
   invitations: Array<Messages.Invitation>;
-  createSpace(params: Readonly<{ name: string; smartAccountWalletClient?: GeoSmartAccount }>): Promise<string>;
-
+  createSpace(params: Readonly<{ name: string; smartSessionClient?: Connect.SmartSessionClient }>): Promise<string>;
+  getSmartSessionClient(): Promise<Connect.SmartSessionClient>;
   createSpaceInbox(
     params: Readonly<{ space: SpaceStorageEntry; isPublic: boolean; authPolicy: Inboxes.InboxSenderAuthPolicy }>,
   ): Promise<unknown>;
@@ -102,6 +103,18 @@ export type HypergraphAppCtx = {
     authPolicy?: Inboxes.InboxSenderAuthPolicy;
     index?: number;
   }): Promise<string>;
+  redirectToConnect(params: {
+    storage: Identity.Storage;
+    successUrl: string;
+    appId: string;
+    connectUrl: string;
+    redirectFn: (url: URL) => void;
+  }): void;
+  processConnectAuthSuccess(params: {
+    storage: Identity.Storage;
+    ciphertext: string;
+    nonce: string;
+  }): void;
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
@@ -112,6 +125,9 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
     throw new Error('setIdentity is missing');
   },
   invitations: [],
+  getSmartSessionClient() {
+    throw new Error('getSmartSessionClient is missing');
+  },
   async createSpace() {
     throw new Error('createSpace is missing');
   },
@@ -171,6 +187,18 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
   async ensureSpaceInbox() {
     throw new Error('ensureSpaceInbox is missing');
   },
+  redirectToConnect(params: {
+    storage: Identity.Storage;
+    successUrl: string;
+    appId: string;
+    connectUrl: string;
+    redirectFn: (url: URL) => void;
+  }) {
+    throw new Error('redirectToConnect is missing');
+  },
+  processConnectAuthSuccess() {
+    throw new Error('processConnectAuthSuccess is missing');
+  },
 });
 
 export function useHypergraphApp() {
@@ -180,6 +208,7 @@ export function useHypergraphApp() {
 export function useHypergraphAuth() {
   const authenticated = useSelectorStore(store, (state) => state.context.authenticated);
   const identity = useSelectorStore(store, (state) => state.context.identity);
+
   return { authenticated, identity };
 }
 
@@ -198,6 +227,7 @@ export type HypergraphAppProviderProps = Readonly<{
 export function HypergraphAppProvider({
   storage,
   syncServerUri = 'https://syncserver.hypergraph.thegraph.com',
+  chainId = Connect.GEO_TESTNET.id,
   children,
   mapping,
 }: HypergraphAppProviderProps) {
@@ -837,12 +867,9 @@ export function HypergraphAppProvider({
   }, [websocketConnection, spaces, identity, syncServerUri]);
 
   const createSpaceForContext = useCallback<
-    ({
-      name,
-      smartAccountWalletClient,
-    }: { name: string; smartAccountWalletClient?: GeoSmartAccount }) => Promise<string>
+    ({ name, smartSessionClient }: { name: string; smartSessionClient?: Connect.SmartSessionClient }) => Promise<string>
   >(
-    async ({ name, smartAccountWalletClient }) => {
+    async ({ name, smartSessionClient }) => {
       if (!identity) {
         throw new Error('No identity   found');
       }
@@ -857,11 +884,11 @@ export function HypergraphAppProvider({
       let spaceId = Utils.generateId();
 
       try {
-        if (smartAccountWalletClient?.account) {
+        if (smartSessionClient?.account) {
           const result = await Graph.createSpace({
-            editorAddress: smartAccountWalletClient.account?.address,
-            name: 'Test Space',
-            network: 'TESTNET',
+            editorAddress: smartSessionClient.account.address,
+            name,
+            network: smartSessionClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'MAINNET',
           });
           spaceId = result.id;
           console.log('Created public space', spaceId);
@@ -917,6 +944,28 @@ export function HypergraphAppProvider({
     const message: Messages.RequestListInvitations = { type: 'list-invitations' };
     websocketConnection?.send(Messages.serialize(message));
   }, [websocketConnection]);
+
+  const getSmartSessionClientForContext = useCallback(async () => {
+    if (!identity?.accountAddress) {
+      throw new Error('Missing account address');
+    }
+    if (!identity.permissionId) {
+      throw new Error('Missing permission id');
+    }
+    if (!identity.addressPrivateKey) {
+      throw new Error('Missing session private key');
+    }
+    return Connect.getSmartSessionClient({
+      accountAddress: identity.accountAddress as Hex,
+      permissionId: identity.permissionId as Hex,
+      sessionPrivateKey: identity.addressPrivateKey as Hex,
+      chain: chainId === Connect.GEOGENESIS.id ? Connect.GEOGENESIS : Connect.GEO_TESTNET,
+      rpcUrl:
+        chainId === Connect.GEOGENESIS.id
+          ? Connect.GEOGENESIS.rpcUrls.default.http[0]
+          : Connect.GEO_TESTNET.rpcUrls.default.http[0],
+    });
+  }, [identity, chainId]);
 
   const createSpaceInboxForContext = useCallback(
     async ({
@@ -1312,6 +1361,77 @@ export function HypergraphAppProvider({
     [createSpaceInboxForContext],
   );
 
+  const redirectToConnectForContext = useCallback(
+    (params: {
+      storage: Identity.Storage;
+      successUrl: string;
+      appId: string;
+      connectUrl: string;
+      redirectFn: (url: URL) => void;
+    }) => {
+      const { storage, successUrl, redirectFn, appId, connectUrl } = params;
+      const { url, nonce, expiry, secretKey, publicKey } = Connect.createAuthUrl({
+        connectUrl: `${connectUrl}/authenticate`,
+        redirectUrl: successUrl,
+        appId,
+      });
+      storage.setItem('geo-connect-auth-nonce', nonce);
+      storage.setItem('geo-connect-auth-expiry', expiry.toString());
+      storage.setItem('geo-connect-auth-secret-key', secretKey);
+      storage.setItem('geo-connect-auth-public-key', publicKey);
+      redirectFn(url);
+    },
+    [],
+  );
+
+  const processConnectAuthSuccessForContext = useCallback(
+    (params: { storage: Identity.Storage; ciphertext: string; nonce: string }) => {
+      const { storage, ciphertext, nonce } = params;
+      const storedNonce = storage.getItem('geo-connect-auth-nonce');
+      const storedExpiry = Number.parseInt(storage.getItem('geo-connect-auth-expiry') ?? '0', 10);
+      const storedSecretKey = storage.getItem('geo-connect-auth-secret-key');
+      const storedPublicKey = storage.getItem('geo-connect-auth-public-key');
+      if (!storedNonce || !storedExpiry || !storedSecretKey || !storedPublicKey) {
+        alert('Failed to authenticate due missing data in the local storage');
+        return;
+      }
+
+      try {
+        const parsedAuthParams = Effect.runSync(
+          Connect.parseCallbackParams({
+            ciphertext,
+            nonce,
+            storedNonce,
+            storedExpiry,
+            storedSecretKey,
+            storedPublicKey,
+          }),
+        );
+
+        setIdentity({
+          address: parsedAuthParams.appIdentityAddress,
+          addressPrivateKey: parsedAuthParams.appIdentityAddressPrivateKey,
+          accountAddress: parsedAuthParams.accountAddress,
+          permissionId: parsedAuthParams.permissionId,
+          signaturePublicKey: parsedAuthParams.signaturePublicKey,
+          signaturePrivateKey: parsedAuthParams.signaturePrivateKey,
+          encryptionPublicKey: parsedAuthParams.encryptionPublicKey,
+          encryptionPrivateKey: parsedAuthParams.encryptionPrivateKey,
+          sessionToken: parsedAuthParams.sessionToken,
+          sessionTokenExpires: parsedAuthParams.sessionTokenExpires,
+        });
+        storage.removeItem('geo-connect-auth-nonce');
+        storage.removeItem('geo-connect-auth-expiry');
+        storage.removeItem('geo-connect-auth-secret-key');
+        storage.removeItem('geo-connect-auth-public-key');
+      } catch (error) {
+        console.error(error);
+        alert('Failed to authenticate due to invalid callback');
+      }
+    },
+    [setIdentity],
+  );
+
   useEffect(() => {
     const setupRepo = async () => {
       await automerge.next.initializeBase64Wasm(automergeWasmBase64);
@@ -1333,6 +1453,7 @@ export function HypergraphAppProvider({
         setIdentity,
         invitations,
         createSpace: createSpaceForContext,
+        getSmartSessionClient: getSmartSessionClientForContext,
         createSpaceInbox: createSpaceInboxForContext,
         getLatestSpaceInboxMessages: getLatestSpaceInboxMessagesForContext,
         listPublicSpaceInboxes: listPublicSpaceInboxesForContext,
@@ -1353,6 +1474,8 @@ export function HypergraphAppProvider({
         isConnecting,
         isLoadingSpaces,
         ensureSpaceInbox: ensureSpaceInboxForContext,
+        redirectToConnect: redirectToConnectForContext,
+        processConnectAuthSuccess: processConnectAuthSuccessForContext,
       }}
     >
       <QueryClientProvider client={queryClient}>

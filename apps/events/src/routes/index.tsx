@@ -79,9 +79,9 @@ function Index() {
           disabled={true} // disabled until we have delegation for creating a space
           onClick={async (event) => {
             event.preventDefault();
-            // const smartAccountWalletClient = await getSmartAccountWalletClient();
-            // if (!smartAccountWalletClient) {
-            //   throw new Error('Missing smartAccountWalletClient');
+            // const smartSessionClient = await getSmartSessionClient();
+            // if (!smartSessionClient) {
+            //   throw new Error('Missing smartSessionClient');
             // }
             createSpace({ name: spaceName });
             setSpaceName('');

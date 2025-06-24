@@ -1,5 +1,4 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
-import { _generateDeleteOps, publishOps, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
+import { _generateDeleteOps, publishOps, useHypergraphApp, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
 import { User } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
@@ -7,7 +6,7 @@ import { Button } from '../ui/button';
 export const UsersPublic = () => {
   const { id: spaceId } = useSpace({ mode: 'public' });
   const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(User, { mode: 'public' });
-
+  const { getSmartSessionClient } = useHypergraphApp();
   return (
     <>
       <div className="flex flex-row gap-4 items-center">
@@ -22,15 +21,14 @@ export const UsersPublic = () => {
 
           <Button
             onClick={async () => {
-              const smartAccountWalletClient = await getSmartAccountWalletClient();
-              if (!smartAccountWalletClient) {
-                throw new Error('Missing smartAccountWalletClient');
+              const smartSessionClient = await getSmartSessionClient();
+              if (!smartSessionClient) {
+                throw new Error('Missing smartSessionClient');
               }
               const ops = await _generateDeleteOps({ id: user.id, space: spaceId });
               const result = await publishOps({
                 ops,
-                // @ts-expect-error - TODO: fix the types error
-                walletClient: smartAccountWalletClient,
+                walletClient: smartSessionClient,
                 space: spaceId,
                 name: 'Delete User',
               });

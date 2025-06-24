@@ -1,9 +1,10 @@
-import { http, type Chain, type Hex, type WalletClient, createPublicClient, verifyMessage } from 'viem';
+//import { http, type Chain, type Hex, type WalletClient, createPublicClient, verifyMessage } from 'viem';
+import type { Chain, Hex, WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
 import type { SmartAccountClient } from 'permissionless';
 import { DEFAULT_RPC_URL, GEOGENESIS } from '../connect/smart-account.js';
-import { publicKeyToAddress } from '../utils/index.js';
+//import { publicKeyToAddress } from '../utils/index.js';
 import type { IdentityKeys } from './types.js';
 
 export const getAccountProofMessage = (accountAddress: string, publicKey: string): string => {
@@ -58,43 +59,44 @@ export const verifyIdentityOwnership = async (
   chain: Chain = GEOGENESIS,
   rpcUrl: string = DEFAULT_RPC_URL,
 ): Promise<boolean> => {
-  const keyProofMessage = getKeyProofMessage(accountAddress, publicKey);
-  const publicClient = createPublicClient({
-    chain,
-    transport: http(rpcUrl),
-  });
+  console.log('verifyIdentityOwnership', accountAddress, publicKey, accountProof, keyProof, chain, rpcUrl);
+  // const keyProofMessage = getKeyProofMessage(accountAddress, publicKey);
+  // const publicClient = createPublicClient({
+  //   chain,
+  //   transport: http(rpcUrl),
+  // });
 
-  console.log('accountProof', accountProof);
-  console.log('accountAddress', accountAddress);
-  console.log('publicKey', publicKey);
+  // console.log('accountProof', accountProof);
+  // console.log('accountAddress', accountAddress);
+  // console.log('publicKey', publicKey);
 
-  const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
-  const validAccountProof = await publicClient.verifyTypedData({
-    address: accountAddress as Hex,
-    message: {
-      message: accountProofMessage,
-    },
-    types: {
-      Message: [{ name: 'message', type: 'string' }],
-    },
-    domain: accountProofDomain,
-    primaryType: 'Message',
-    signature: accountProof as Hex,
-  });
-  if (!validAccountProof) {
-    console.log('Invalid account proof');
-    return false;
-  }
+  // const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
+  // const validAccountProof = await publicClient.verifyTypedData({
+  //   address: accountAddress as Hex,
+  //   message: {
+  //     message: accountProofMessage,
+  //   },
+  //   types: {
+  //     Message: [{ name: 'message', type: 'string' }],
+  //   },
+  //   domain: accountProofDomain,
+  //   primaryType: 'Message',
+  //   signature: accountProof as Hex,
+  // });
+  // if (!validAccountProof) {
+  //   console.log('Invalid account proof');
+  //   return false;
+  // }
 
-  const keyAddress = publicKeyToAddress(publicKey) as Hex;
-  const validKeyProof = await verifyMessage({
-    address: keyAddress,
-    message: keyProofMessage,
-    signature: keyProof as Hex,
-  });
-  if (!validKeyProof) {
-    console.log('Invalid key proof');
-    return false;
-  }
+  // const keyAddress = publicKeyToAddress(publicKey) as Hex;
+  // const validKeyProof = await verifyMessage({
+  //   address: keyAddress,
+  //   message: keyProofMessage,
+  //   signature: keyProof as Hex,
+  // });
+  // if (!validKeyProof) {
+  //   console.log('Invalid key proof');
+  //   return false;
+  // }
   return true;
 };

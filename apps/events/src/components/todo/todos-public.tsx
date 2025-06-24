@@ -1,6 +1,6 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { Id } from '@graphprotocol/grc-20';
 import { _generateDeleteOps, publishOps, useCreateEntity, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { useGenerateCreateOps } from '@graphprotocol/hypergraph-react/internal/use-generate-create-ops';
 import { Todo2 } from '../../schema';
 import { Spinner } from '../spinner';
@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 
 export const TodosPublic = () => {
   const { id: spaceId } = useSpace({ mode: 'public' });
+  const { getSmartSessionClient } = useHypergraphApp();
   const {
     data: dataPublic,
     isLoading: isLoadingPublic,
@@ -44,15 +45,14 @@ export const TodosPublic = () => {
 
           <Button
             onClick={async () => {
-              const smartAccountWalletClient = await getSmartAccountWalletClient();
-              if (!smartAccountWalletClient) {
-                throw new Error('Missing smartAccountWalletClient');
+              const smartSessionClient = await getSmartSessionClient();
+              if (!smartSessionClient) {
+                throw new Error('Missing smartSessionClient');
               }
               const ops = await _generateDeleteOps({ id: todo.id, space: spaceId });
               const result = await publishOps({
                 ops,
-                // @ts-expect-error - TODO: fix the types error
-                walletClient: smartAccountWalletClient,
+                walletClient: smartSessionClient,
                 space: spaceId,
                 name: 'Delete Todo',
               });
@@ -65,9 +65,9 @@ export const TodosPublic = () => {
       ))}
       <Button
         onClick={async () => {
-          const smartAccountWalletClient = await getSmartAccountWalletClient();
-          if (!smartAccountWalletClient) {
-            throw new Error('Missing smartAccountWalletClient');
+          const smartSessionClient = await getSmartSessionClient();
+          if (!smartSessionClient) {
+            throw new Error('Missing smartSessionClient');
           }
           const userId = Id.Id('8zPJjTGLBDPtUcj6q2tghg');
           const todo = createTodo({
@@ -84,8 +84,7 @@ export const TodosPublic = () => {
           console.log('ops', ops);
           const result = await publishOps({
             ops,
-            // @ts-expect-error - TODO: fix the types error
-            walletClient: smartAccountWalletClient,
+            walletClient: smartSessionClient,
             space: spaceId,
             name: 'Create Todo',
           });

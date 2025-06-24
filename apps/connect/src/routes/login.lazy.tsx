@@ -23,6 +23,7 @@ function Login() {
 
   const hypergraphLogin = useCallback(
     async (walletClient: WalletClient, embeddedWallet: ConnectedWallet) => {
+      console.log('hypergraphLogin');
       if (!identityToken) {
         return;
       }
@@ -57,12 +58,14 @@ function Login() {
   );
 
   useEffect(() => {
+    console.log('useEffect in login.lazy.tsx');
     if (
       !hypergraphLoginStarted && // avoid re-running the effect to often
       privyAuthenticated && // privy must be authenticated to run it
       walletsReady && // wallets must be ready to run it
       wallets.length > 0 // wallets must have at least one wallet to run it
     ) {
+      console.log('running login effect');
       setHypergraphLoginStarted(true);
       (async () => {
         try {

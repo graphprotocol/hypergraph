@@ -1,10 +1,13 @@
 import { Logout } from '@/components/logout';
+import { StoreConnect } from '@graphprotocol/hypergraph';
 import { usePrivy } from '@privy-io/react-auth';
 import { Link, Outlet, createRootRoute, useLayoutEffect, useRouter } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { useSelector } from '@xstate/store/react';
 
 export const Route = createRootRoute({
   component: () => {
+    const accountAddress = useSelector(StoreConnect.store, (state) => state.context.accountAddress);
     const { authenticated, ready } = usePrivy();
     const router = useRouter();
 
@@ -13,7 +16,7 @@ export const Route = createRootRoute({
         return;
       }
 
-      if (ready && !authenticated) {
+      if (ready && (!authenticated || !accountAddress)) {
         if (router.state.location.href.startsWith('/authenticate')) {
           localStorage.setItem('geo-connect-authenticate-redirect', router.state.location.href);
         }
@@ -21,7 +24,7 @@ export const Route = createRootRoute({
           to: '/login',
         });
       }
-    }, [authenticated, ready]);
+    }, [authenticated, ready, accountAddress]);
 
     return (
       <>

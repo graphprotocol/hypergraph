@@ -1,12 +1,12 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
-import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
-import { publishOps } from '@graphprotocol/hypergraph-react';
+import { Graph, type Op } from '@graphprotocol/grc-20';
+import type { Connect } from '@graphprotocol/hypergraph';
+import { publishOps, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { Button } from './ui/button';
 
 const createEvents = async ({
-  smartAccountWalletClient,
+  smartSessionClient,
   space,
-}: { smartAccountWalletClient: GeoSmartAccount; space: string }) => {
+}: { smartSessionClient: Connect.SmartSessionClient; space: string }) => {
   try {
     const ops: Array<Op> = [];
 
@@ -46,7 +46,7 @@ const createEvents = async ({
     });
     ops.push(...createCompanyTypeOps);
 
-    const { id: eventTypeId, ops: createEventTypeOps } = Graph.createEntity({
+    const { ops: createEventTypeOps } = Graph.createEntity({
       name: 'My Test Event',
       types: ['6b8dbe76-389f-4bde-acdd-db9d5e387882'],
       relations: {
@@ -57,10 +57,9 @@ const createEvents = async ({
 
     const result = await publishOps({
       ops,
-      walletClient: smartAccountWalletClient,
+      walletClient: smartSessionClient,
       space,
       name: 'Create Job Offers, Companies and Events',
-      network: 'TESTNET',
     });
     console.log('result', result);
     alert('Events created');
@@ -70,17 +69,17 @@ const createEvents = async ({
 };
 
 export const CreateEvents = ({ space }: { space: string }) => {
+  const { getSmartSessionClient } = useHypergraphApp();
   return (
     <div>
       <Button
         onClick={async () => {
-          const smartAccountWalletClient = await getSmartAccountWalletClient();
-          if (!smartAccountWalletClient) {
-            throw new Error('Missing smartAccountWalletClient');
+          const smartSessionClient = await getSmartSessionClient();
+          if (!smartSessionClient) {
+            throw new Error('Missing smartSessionClient');
           }
           await createEvents({
-            // @ts-expect-error TODO: in the future we probably only only use one smart account wallet client
-            smartAccountWalletClient,
+            smartSessionClient,
             space,
           });
         }}
