@@ -1,12 +1,12 @@
 import * as Command from '@effect/cli/Command';
 
-import { studio } from './subcommands/studio.js';
+import { typesync } from './subcommands/studio.js';
 
 const hypergraph = Command.make('hypergraph').pipe(
   Command.withDescription(
     'Hypergraph command line interface for building and interacting with @graphprotocol/hypergraph schemas',
   ),
-  Command.withSubcommands([studio]),
+  Command.withSubcommands([typesync]),
 );
 
 export const run = Command.run(hypergraph, {

@@ -11,7 +11,7 @@ import open, { type AppName } from 'open';
 
 import * as Server from '../Server.js';
 
-export const studio = Command.make('studio', {
+export const typesync = Command.make('typesync', {
   args: {
     port: Options.integer('port').pipe(
       Options.withAlias('p'),
