@@ -26,8 +26,8 @@ FROM base AS build
 # TODO: Remove this when we switch to an actual database.
 ENV DATABASE_URL="file:./dev.db"
 RUN \
-  # TODO: This initalizes the database. But we should probably remove this later.
-  pnpm --filter server prisma migrate reset --force && \
+  # TODO: This initalizes and resets the database. But we should probably remove this later.
+  # pnpm --filter server prisma migrate reset --force && \
   # Build the monorepo packages
   pnpm build && \
   # Generate the prisma client
