@@ -106,6 +106,7 @@ export function CreateSpaceCard({ className, ...props }: CreateSpaceCardProps) {
           placeholder="My cool space"
           value={spaceName}
           onChange={(e) => setSpaceName(e.target.value)}
+          required
           className="c-input grow"
         />
         <button type="submit" disabled={isLoading} onClick={createSpace} className="c-button shrink-0">
