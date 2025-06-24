@@ -1,6 +1,6 @@
 import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
-import { publishOps, useHypergraphSpace } from '@graphprotocol/hypergraph-react';
+import { publishOps } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -66,9 +66,8 @@ const createPropertiesAndTypesEvent = async ({
   };
 };
 
-export const CreatePropertiesAndTypesEvent = () => {
+export const CreatePropertiesAndTypesEvent = ({ space }: { space: string }) => {
   const [mapping, setMapping] = useState<string>('');
-  const space = useHypergraphSpace();
 
   return (
     <div>

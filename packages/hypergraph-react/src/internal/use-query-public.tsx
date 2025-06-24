@@ -5,7 +5,7 @@ import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
-import { useHypergraphSpace } from '../HypergraphSpaceContext.js';
+import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
 import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
@@ -322,7 +322,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 
 export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
   const { enabled = true, include } = params ?? {};
-  const space = useHypergraphSpace();
+  const { space } = useHypergraphSpaceInternal();
   const mapping = useSelector(store, (state) => state.context.mapping);
 
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping

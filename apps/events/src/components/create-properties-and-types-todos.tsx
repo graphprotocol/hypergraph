@@ -1,6 +1,6 @@
 import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
-import { publishOps, useHypergraphSpace } from '@graphprotocol/hypergraph-react';
+import { publishOps } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -70,6 +70,7 @@ const createPropertiesAndTypesTodos = async ({
     walletClient: smartAccountWalletClient,
     space,
     name: 'Create properties and types',
+    network: 'TESTNET',
   });
   return {
     result,
@@ -84,9 +85,8 @@ const createPropertiesAndTypesTodos = async ({
   };
 };
 
-export const CreatePropertiesAndTypesTodos = () => {
+export const CreatePropertiesAndTypesTodos = ({ space }: { space: string }) => {
   const [mapping, setMapping] = useState<string>('');
-  const space = useHypergraphSpace();
 
   return (
     <div>
@@ -113,6 +113,7 @@ export const CreatePropertiesAndTypesTodos = () => {
             websitePropertyId,
             amountPropertyId,
           } = await createPropertiesAndTypesTodos({
+            // @ts-expect-error - TODO: fix the types error
             smartAccountWalletClient,
             space,
           });
