@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun run --watch ./src/index.ts",
     "prisma": "prisma",
+    "prebuild": "prisma generate",
     "build": "tsup"
   },
   "dependencies": {
