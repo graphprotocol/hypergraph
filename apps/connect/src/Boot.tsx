@@ -53,7 +53,7 @@ export function Boot() {
           loginMethods: ['email', 'google'],
           appearance: {
             theme: 'light',
-            accentColor: '#676FFF',
+            accentColor: '#6833ff',
           },
           embeddedWallets: {
             createOnLogin: 'users-without-wallets',

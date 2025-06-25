@@ -1,0 +1,49 @@
+@utility c-link {
+  @apply text-primary hover:text-primary-hover font-semibold transition;
+}
+
+@utility c-button {
+  @apply c-button--medium c-button--secondary flex max-w-full items-center justify-center gap-2 font-semibold transition disabled:opacity-25;
+}
+@utility c-button--small {
+  @apply min-h-10 rounded-md px-3 py-1.5 text-base;
+}
+@utility c-button--medium {
+  @apply min-h-12 rounded-lg px-4 py-2 text-lg;
+}
+@utility c-button--large {
+  @apply min-h-14 rounded-xl px-6 py-3 text-xl;
+}
+@utility c-button--primary {
+  @apply bg-primary text-primary-foreground not-disabled:hover:bg-primary-hover;
+}
+@utility c-button--secondary {
+  @apply bg-secondary text-secondary-foreground not-disabled:hover:bg-secondary-hover;
+}
+
+@utility c-input {
+  @apply text-foreground font-regular placeholder:text-foreground/25 bg-background min-h-12 rounded-lg indent-3 text-lg inset-shadow-xs/15 -outline-offset-2 transition disabled:opacity-25;
+}
+
+@utility c-card {
+  @apply c-card--medium bg-card max-w-full rounded-(--card-radius) p-(--card-padding);
+}
+@utility c-card--small {
+  @apply [--card-padding:theme(spacing.4)] [--card-radius:var(--radius-2xl)];
+}
+@utility c-card--medium {
+  @apply [--card-padding:theme(spacing.8)] [--card-radius:var(--radius-3xl)];
+}
+@utility c-card--large {
+  @apply [--card-padding:theme(spacing.12)] [--card-radius:var(--radius-4xl)];
+}
+@utility c-card-title {
+  @apply text-foreground-muted mx-(--offset) mt-(--offset) mb-4 w-max max-w-[calc(100%-2*var(--offset))] rounded-[calc(var(--card-radius)-(1-var(--offset-ratio))*var(--card-padding))] px-4 py-2 text-lg leading-tight font-semibold [--offset-ratio:0.5] [--offset:calc(-1*var(--offset-ratio)*var(--card-padding))];
+}
+
+@utility c-popover {
+  @apply bg-popover text-popover-foreground origin-(--transform-origin) rounded-lg px-6 py-4 text-base shadow-xl transition outline-none data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0;
+}
+@utility c-popover-arrow {
+  @apply text-popover data-[side=bottom]:top-[calc(-1*theme(spacing.2))] data-[side=bottom]:rotate-180 data-[side=top]:bottom-[calc(-1*theme(spacing.2))];
+}

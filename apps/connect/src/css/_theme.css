@@ -1,0 +1,62 @@
+@theme {
+  --breakpoint-xs: 32rem;
+  --breakpoint-2xs: 24rem;
+  --spacing-container: 1rem;
+
+  --font-sans: 'Calibre', sans-serif;
+
+  --font-weight-*: initial;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-white: #fff;
+  --color-black: #000;
+  --color-gray-100: #fbfbfb;
+  --color-gray-200: #f6f6f6;
+  --color-gray-300: #dbdbdb;
+  --color-gray-400: #bdbdbd;
+  --color-gray-500: #999;
+  --color-gray-600: #606060;
+  --color-gray-700: #424242;
+  --color-gray-800: #2a2b2e;
+  --color-gray-900: #1a1b1e;
+  --color-blue: #002fd9;
+  --color-purple: #6833ff;
+  --color-magenta: #fe31c5;
+  --color-violet-1: #c067ff;
+  --color-violet-2: #a931ff;
+  --color-peach-1: #ffe7c4;
+  --color-peach-2: #ffc2c2;
+  --color-lavender-1: #fe533d;
+  --color-lavender-2: #f320b8;
+  --color-lavender-3: #5b24f6;
+  --color-aqua-1: #bdefff;
+  --color-aqua-2: #b0d4ff;
+  --color-clearmint-1: #c4f1ff;
+  --color-clearmint-2: #b5ffb3;
+  --color-success-dark: #2ace9d;
+  --color-success-light: #d4f5eb;
+  --color-error-dark: #ff523a;
+  --color-error-light: #ffdad4;
+}
+
+@theme inline {
+  --color-background: light-dark(var(--color-white), var(--color-gray-900));
+  --color-foreground-light: var(--color-white);
+  --color-foreground-dark: var(--color-gray-800);
+  --color-foreground: light-dark(var(--color-foreground-dark), var(--color-foreground-light));
+  --color-foreground-muted: light-dark(var(--color-gray-600), var(--color-gray-500));
+  --color-primary: var(--color-purple);
+  --color-primary-hover: color-mix(in oklab, var(--color-primary) 90%, var(--color-white));
+  --color-primary-foreground: var(--color-white);
+  --color-secondary: light-dark(var(--color-gray-300), var(--color-gray-700));
+  --color-secondary-hover: color-mix(in oklab, var(--color-secondary) 80%, var(--color-white));
+  --color-secondary-foreground: var(--color-foreground);
+  --color-card: light-dark(var(--color-gray-200), var(--color-gray-800));
+  --color-ring: light-dark(var(--color-violet-1), var(--color-aqua-1));
+  --color-popover: var(--color-gray-600);
+  --color-popover-foreground: var(--color-white);
+}
