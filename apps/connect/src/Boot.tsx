@@ -18,7 +18,8 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient();
 
-const storage = localStorage;
+const addressStorage = localStorage;
+const keysStorage = sessionStorage;
 
 export function Boot() {
   // check if the user is already authenticated on initial render
@@ -26,9 +27,9 @@ export function Boot() {
   // using a layout effect to avoid a re-render
   useLayoutEffect(() => {
     if (!initialRenderAuthCheckRef.current) {
-      const accountAddress = Connect.loadAccountAddress(storage);
+      const accountAddress = Connect.loadAccountAddress(addressStorage);
       if (accountAddress) {
-        const keys = Connect.loadKeys(storage, accountAddress);
+        const keys = Connect.loadKeys(keysStorage, accountAddress);
         if (keys) {
           // user is already authenticated, set state
           StoreConnect.store.send({

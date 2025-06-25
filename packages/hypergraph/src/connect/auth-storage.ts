@@ -66,11 +66,11 @@ export const wipeAccountAddress = (storage: Storage) => {
   storage.removeItem(buildAccountAddressStorageKey());
 };
 
-export const wipeAllAuthData = (storage: Storage) => {
-  const accountAddress = loadAccountAddress(storage);
-  wipeAccountAddress(storage);
+export const wipeAllAuthData = (addressStorage: Storage, keysAndTokenStorage: Storage) => {
+  const accountAddress = loadAccountAddress(addressStorage);
+  wipeAccountAddress(addressStorage);
   if (accountAddress) {
-    wipeKeys(storage, accountAddress);
-    wipeSyncServerSessionToken(storage, accountAddress);
+    wipeKeys(keysAndTokenStorage, accountAddress);
+    wipeSyncServerSessionToken(keysAndTokenStorage, accountAddress);
   }
 };

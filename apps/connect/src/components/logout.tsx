@@ -11,7 +11,7 @@ export function Logout() {
   const [isLoading, setIsLoading] = useState(false);
   const disconnectWallet = async () => {
     setIsLoading(true);
-    Connect.wipeAllAuthData(localStorage);
+    Connect.wipeAllAuthData(localStorage, sessionStorage);
     await privyLogout();
     router.navigate({
       to: '/login',

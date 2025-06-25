@@ -31,7 +31,8 @@ export async function signup(
   smartAccountClient: SmartAccountClient,
   accountAddress: Address,
   syncServerUri: string,
-  storage: Storage,
+  addressStorage: Storage,
+  keysStorage: Storage,
   identityToken: string,
   chain: Chain,
   rpcUrl: string,
@@ -74,8 +75,8 @@ export async function signup(
   if (!decoded.success) {
     throw new Error('Error creating identity');
   }
-  storeKeys(storage, accountAddress, keys);
-  storeAccountAddress(storage, accountAddress);
+  storeKeys(keysStorage, accountAddress, keys);
+  storeAccountAddress(addressStorage, accountAddress);
   return {
     accountAddress,
     keys,
@@ -86,7 +87,8 @@ export async function restoreKeys(
   signer: Signer,
   accountAddress: Address,
   syncServerUri: string,
-  storage: Storage,
+  addressStorage: Storage,
+  keysStorage: Storage,
   identityToken: string,
 ) {
   const res = await fetch(new URL('/connect/identity/encrypted', syncServerUri), {
@@ -103,8 +105,8 @@ export async function restoreKeys(
     const { keyBox } = decoded;
     const { ciphertext, nonce } = keyBox;
     const keys = await decryptIdentity(signer, ciphertext, nonce);
-    storeKeys(storage, accountAddress, keys);
-    storeAccountAddress(storage, accountAddress);
+    storeKeys(keysStorage, accountAddress, keys);
+    storeAccountAddress(addressStorage, accountAddress);
     return {
       accountAddress,
       keys,
@@ -113,8 +115,13 @@ export async function restoreKeys(
   throw new Error(`Error fetching identity ${res.status}`);
 }
 
-const getAndUpdateSmartAccount = async (walletClient: WalletClient, rpcUrl: string, chain: Chain, storage: Storage) => {
-  const accountAddressFromStorage = loadAccountAddress(storage) as Hex;
+const getAndUpdateSmartAccount = async (
+  walletClient: WalletClient,
+  rpcUrl: string,
+  chain: Chain,
+  addressStorage: Storage,
+) => {
+  const accountAddressFromStorage = loadAccountAddress(addressStorage) as Hex;
   const smartAccountParams: SmartAccountParams = {
     owner: walletClient,
     rpcUrl,
@@ -145,7 +152,8 @@ export async function login({
   walletClient,
   signer,
   syncServerUri,
-  storage,
+  addressStorage,
+  keysStorage,
   identityToken,
   rpcUrl,
   chain,
@@ -153,17 +161,18 @@ export async function login({
   walletClient: WalletClient;
   signer: Signer;
   syncServerUri: string;
-  storage: Storage;
+  addressStorage: Storage;
+  keysStorage: Storage;
   identityToken: string;
   rpcUrl: string;
   chain: Chain;
 }) {
-  const smartAccountWalletClient = await getAndUpdateSmartAccount(walletClient, rpcUrl, chain, storage);
+  const smartAccountWalletClient = await getAndUpdateSmartAccount(walletClient, rpcUrl, chain, addressStorage);
   if (!smartAccountWalletClient.account) {
     throw new Error('Smart account wallet client account not found');
   }
   const accountAddress = smartAccountWalletClient.account.address;
-  // const keys = loadKeys(storage, accountAddress);
+
   let authData: {
     accountAddress: Address;
     keys: IdentityKeys;
@@ -176,13 +185,14 @@ export async function login({
       smartAccountWalletClient,
       accountAddress,
       syncServerUri,
-      storage,
+      addressStorage,
+      keysStorage,
       identityToken,
       chain,
       rpcUrl,
     );
   } else {
-    authData = await restoreKeys(signer, accountAddress, syncServerUri, storage, identityToken);
+    authData = await restoreKeys(signer, accountAddress, syncServerUri, addressStorage, keysStorage, identityToken);
   }
   store.send({ type: 'reset' });
   store.send({
