@@ -1,14 +1,15 @@
+import { Loading } from '@/components/ui/Loading';
+import { cn } from '@/lib/utils';
 import { Key, type Messages, SpaceEvents, SpaceInfo, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { useIdentityToken } from '@privy-io/react-auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import { Effect } from 'effect';
 import { useState } from 'react';
-import { Spinner } from './spinner';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
 
-export function CreateSpace() {
+interface CreateSpaceCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {}
+
+export function CreateSpaceCard({ className, ...props }: CreateSpaceCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [spaceName, setSpaceName] = useState('');
   const { identityToken } = useIdentityToken();
@@ -19,7 +20,11 @@ export function CreateSpace() {
   const createSpace = async () => {
     setIsLoading(true);
     if (!accountAddress || !keys || !identityToken) {
-      console.error('Missing required fields', { accountAddress, keys, identityToken });
+      console.error('Missing required fields', {
+        accountAddress,
+        keys,
+        identityToken,
+      });
       setIsLoading(false);
       return;
     }
@@ -93,14 +98,22 @@ export function CreateSpace() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-xs text-gray-500">Create a new space</span>
-      <div className="flex flex-row gap-2 items-center">
-        <Input value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
-        <Button className="home-button" onClick={createSpace} disabled={isLoading}>
-          Create Space {isLoading ? <Spinner /> : null}
-        </Button>
-      </div>
+    <div className={cn('c-card', className)} {...props}>
+      <h2 className="c-card-title">Create a new space</h2>
+      <form className="flex gap-2">
+        <input
+          type="text"
+          placeholder="My cool space"
+          value={spaceName}
+          onChange={(e) => setSpaceName(e.target.value)}
+          required
+          className="c-input grow"
+        />
+        <button type="submit" disabled={isLoading} onClick={createSpace} className="c-button shrink-0">
+          Create Space
+          {isLoading ? <Loading hideLabel /> : null}
+        </button>
+      </form>
     </div>
   );
 }

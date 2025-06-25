@@ -1,0 +1,7 @@
+@layer theme, base, components, utilities.xx-unimportant, utilities.x-unimportant, utilities.unimportant, utilities;
+@import 'tailwindcss';
+@import './_theme.css';
+@import './_base.css';
+@import './_variants.css';
+@import './_utilities.css';
+@import './_components.css';

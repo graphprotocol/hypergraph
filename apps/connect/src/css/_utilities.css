@@ -1,0 +1,79 @@
+@utility bg-gradient-violet {
+  @apply from-violet-1 to-violet-2 text-foreground-light bg-linear-to-b;
+}
+@utility bg-gradient-peach {
+  @apply from-peach-1 to-peach-2 text-foreground-dark bg-linear-45;
+}
+@utility bg-gradient-lavender {
+  @apply from-lavender-1 to-lavender-3 via-lavender-2 text-foreground-light bg-linear-45;
+}
+@utility bg-gradient-aqua {
+  @apply from-aqua-1 to-aqua-2 text-foreground-dark bg-linear-to-l;
+}
+@utility bg-gradient-clearmint {
+  @apply from-clearmint-1 to-clearmint-2 text-foreground-dark bg-linear-45;
+}
+
+@utility grid-cols-auto-fill-* {
+  grid-template-columns: repeat(auto-fill, minmax(min(--spacing(--value(integer)), 100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(--value([percentage], [length]), 100%), 1fr));
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    display: initial;
+  }
+}
+@utility scrollbar-auto {
+  scrollbar-width: auto;
+  &::-webkit-scrollbar {
+    display: initial;
+  }
+}
+@utility scroll-x {
+  overflow-x: auto;
+  animation-name: scroll-x;
+  animation-timing-function: linear;
+  animation-timeline: scroll(x self);
+  animation-range: 0 9999px;
+}
+@utility scroll-y {
+  overflow-y: auto;
+  animation-name: scroll-y;
+  animation-timing-function: linear;
+  animation-timeline: scroll(y self);
+  animation-range: 0 9999px;
+}
+@property --scroll-x {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@property --scroll-y {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@keyframes scroll-x {
+  from {
+    --scroll-x: 0;
+  }
+  to {
+    --scroll-x: 9999;
+  }
+}
+@keyframes scroll-y {
+  from {
+    --scroll-y: 0;
+  }
+  to {
+    --scroll-y: 9999;
+  }
+}
