@@ -4,6 +4,8 @@ import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
+import * as fsSync from 'node:fs';
+import * as nodePath from 'node:path';
 
 import * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';
@@ -25,11 +27,27 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
       codegen(app: Domain.InsertAppSchema) {
         return Effect.gen(function* () {
           // check directory
-          /** @todo solve directory pathing */
-          let directory = app.directory;
-          if (!directory) {
-            directory = `./${app.name}`;
-          }
+          /**
+           * Decide where to place the new application.
+           * If the caller explicitly provides `app.directory` we respect it.
+           * Otherwise, we always create the application inside the repository-root
+           * `apps` folder so it shows up next to `connect`, `events`, etc.
+           */
+
+          // 1. Locate the repo root by walking up until we find `pnpm-workspace.yaml`
+          const findRepoRoot = (start: string): string => {
+            let dir = start;
+            while (true) {
+              if (fsSync.existsSync(nodePath.join(dir, 'pnpm-workspace.yaml'))) return dir;
+              const parent = nodePath.dirname(dir);
+              if (parent === dir) return start; // Fallback if we can't find it
+              dir = parent;
+            }
+          };
+
+          const repoRoot = findRepoRoot(process.cwd());
+
+          let directory = app.directory?.length ? app.directory : nodePath.join(repoRoot, 'apps', app.name);
           const directoryExists = yield* fs.exists(directory);
           if (directoryExists) {
             // directory already exists, fail
@@ -72,13 +90,14 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
           // 3. Run `pnpm install` at repo root to update lockfile/hoist
           // -----------------------------
 
-          const workspaceFile = 'pnpm-workspace.yaml';
+          const workspaceFile = nodePath.join(repoRoot, 'pnpm-workspace.yaml');
           const workspaceExists = yield* fs.exists(workspaceFile);
           if (workspaceExists) {
             const current = yield* fs.readFileString(workspaceFile);
             const lines = current.split('\n');
 
-            const newPackageLine = `  - ${directory}`;
+            const relPackagePath = nodePath.relative(repoRoot, directory);
+            const newPackageLine = `  - ${relPackagePath}`;
             const alreadyExists = lines.some((line) => line.trim() === newPackageLine.trim());
 
             if (!alreadyExists) {
