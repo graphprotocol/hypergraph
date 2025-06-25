@@ -20,7 +20,6 @@ export const accountProofDomain = {
 };
 
 export const proveIdentityOwnership = async (
-  walletClient: WalletClient,
   smartAccountClient: SmartAccountClient,
   accountAddress: string,
   keys: IdentityKeys,

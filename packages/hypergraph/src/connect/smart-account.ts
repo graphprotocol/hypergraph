@@ -36,6 +36,7 @@ import {
   ContractFunctionExecutionError,
   type Hex,
   type Narrow,
+  type PrivateKeyAccount,
   type SignableMessage,
   type WalletClient,
   createPublicClient,
@@ -582,13 +583,61 @@ const getSpaceActions = (space: { address: Hex; type: 'personal' | 'public' }) =
   return actions;
 };
 
+export const addSmartAccountOwner = async (
+  smartAccountClient: SmartAccountClient,
+  newOwner: Address,
+  chain: Chain,
+  rpcUrl: string,
+) => {
+  if (!smartAccountClient.account) {
+    throw new Error('Invalid smart account');
+  }
+  const publicClient = createPublicClient({
+    transport: http(rpcUrl),
+    chain,
+  });
+  if (await isSmartAccountDeployed(smartAccountClient)) {
+    const isOwner = await publicClient.readContract({
+      abi: safeOwnerManagerAbi,
+      address: smartAccountClient.account.address,
+      functionName: 'isOwner',
+      args: [newOwner],
+    });
+    if (isOwner) {
+      return;
+    }
+  }
+
+  const tx = await smartAccountClient.sendUserOperation({
+    calls: [
+      {
+        to: smartAccountClient.account.address,
+        data: encodeFunctionData({
+          abi: safeOwnerManagerAbi,
+          functionName: 'addOwnerWithThreshold',
+          args: [newOwner, BigInt(1)],
+        }),
+        value: BigInt(0),
+      },
+    ],
+    account: smartAccountClient.account,
+  });
+  const receipt = await smartAccountClient.waitForUserOperationReceipt({
+    hash: tx,
+  });
+  if (!receipt.success) {
+    throw new Error('Transaction to add smart account owner failed');
+  }
+  return receipt;
+};
+
 // This is the function that the Connect app uses to create a smart session and
 // enable it on the smart account.
 // It will prompt the user to sign the message to enable the session, and then
 // execute the transaction to enable the session.
 // It will return the permissionId that can be used to create a smart session client.
 export const createSmartSession = async (
-  owner: WalletClient,
+  owner: WalletClient | PrivateKeyAccount,
   accountAddress: Hex,
   sessionPrivateKey: Hex,
   chain: Chain,
@@ -623,9 +672,6 @@ export const createSmartSession = async (
   }
   if (!smartAccountClient.chain) {
     throw new Error('Invalid smart account chain');
-  }
-  if (!owner.account) {
-    throw new Error('Invalid wallet client');
   }
 
   const sessionKeyAccount = privateKeyToAccount(sessionPrivateKey);
@@ -751,9 +797,9 @@ export const createSmartSession = async (
 
   console.log('signing session details');
   // This will prompt the user to sign the message to enable the session
-  sessionDetails.enableSessionData.enableSession.permissionEnableSig = await owner.signMessage({
+  sessionDetails.enableSessionData.enableSession.permissionEnableSig = await (owner as WalletClient).signMessage({
     message: { raw: sessionDetails.permissionEnableHash },
-    account: owner.account.address,
+    account: (owner as WalletClient).account?.address ?? (owner as PrivateKeyAccount).address,
   });
   console.log('session details signed');
   const smartSessions = getSmartSessionsValidator({});

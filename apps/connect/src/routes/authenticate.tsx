@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { usePrivateSpaces } from '@/hooks/use-private-spaces';
 import { type PublicSpaceData, usePublicSpaces } from '@/hooks/use-public-spaces';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
-import { GEOGENESIS, GEO_TESTNET, getSmartAccountWalletClient } from '@graphprotocol/hypergraph/connect/smart-account';
+
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
@@ -11,8 +11,9 @@ import { useSelector } from '@xstate/store/react';
 import { Effect, Schema } from 'effect';
 import { useEffect } from 'react';
 import { createWalletClient, custom } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
-const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
+const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 
 type AuthenticateSearch = {
   data: unknown;
@@ -380,9 +381,11 @@ function AuthenticateComponent() {
           })) ?? [];
       console.log('spaces', spaces);
 
+      const localAccount = privateKeyToAccount(keys.signaturePrivateKey as `0x${string}`);
+      console.log('local account', localAccount.address);
       // TODO: add additional actions (must be passed from the app)
       const permissionId = await Connect.createSmartSession(
-        walletClient,
+        localAccount,
         accountAddress,
         newAppIdentity.addressPrivateKey,
         CHAIN,
@@ -394,13 +397,14 @@ function AuthenticateComponent() {
         },
       );
       console.log('smart session created');
-      const smartAccountClient = await getSmartAccountWalletClient({
-        owner: walletClient,
+      const smartAccountClient = await Connect.getSmartAccountWalletClient({
+        owner: localAccount,
         address: accountAddress,
         chain: CHAIN,
         rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
       });
 
+      console.log('encrypting app identity');
       const { ciphertext, nonce } = await Connect.encryptAppIdentity(
         signer,
         newAppIdentity.address,
@@ -408,8 +412,8 @@ function AuthenticateComponent() {
         permissionId,
         keys,
       );
+      console.log('proving ownership');
       const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
-        walletClient,
         smartAccountClient,
         accountAddress,
         keys,

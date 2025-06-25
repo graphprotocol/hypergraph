@@ -1,3 +1,4 @@
+import { Connect } from '@graphprotocol/hypergraph';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from '@tanstack/react-router';
 import { Loader2 } from 'lucide-react';
@@ -10,6 +11,7 @@ export function Logout() {
   const [isLoading, setIsLoading] = useState(false);
   const disconnectWallet = async () => {
     setIsLoading(true);
+    Connect.wipeAllAuthData(localStorage);
     await privyLogout();
     router.navigate({
       to: '/login',
