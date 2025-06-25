@@ -84,7 +84,7 @@ export function CreateSpaceCard({ className, ...props }: CreateSpaceCardProps) {
       });
       const data = await response.json();
       if (data.space) {
-        queryClient.invalidateQueries({ queryKey: ['spaces'] });
+        queryClient.invalidateQueries({ queryKey: ['private-spaces'] });
         setSpaceName('');
       } else {
         throw new Error('Failed to create space');
