@@ -19,7 +19,7 @@ export function Boot() {
       storage={localStorage}
       syncServerUri="http://localhost:3030"
       mapping={mapping}
-      chainId={80451}
+      chainId={19411}
     >
       <RouterProvider router={router} />
     </HypergraphAppProvider>
