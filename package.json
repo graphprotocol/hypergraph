@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rm -rf .turbo && rm -rf node_modules && pnpm --recursive --filter \"./packages/*\" exec rm -rf dist && pnpm --recursive --filter \"./packages/*\" exec rm -rf .turbo && pnpm --recursive --filter \"./packages/*\" exec rm -rf tsconfig.tsbuildinfo && pnpm --recursive --filter \"./apps/*\" exec rm -rf dist && pnpm --recursive --filter \"./apps/*\" exec rm -rf .turbo && pnpm --recursive --filter \"./apps/*\" exec rm -rf tsconfig.tsbuildinfo",
     "dev": "pnpm --recursive --parallel --filter \"./apps/*\" run dev",
-    "build": "pnpm --recursive --parallel --filter \"./{packages,apps}/*\" run build",
+    "build": "pnpm --recursive --filter \"./packages/*\" run build && pnpm --recursive --parallel --filter \"./apps/*\" run build",
     "test": "vitest",
     "lint": "biome check",
     "lint:fix": "biome check --write --unsafe",
