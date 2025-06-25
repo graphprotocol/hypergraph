@@ -1,4 +1,5 @@
-import { Button } from '@/components/ui/button';
+import GeoLogo from '@/assets/images/geo-logo-branded.svg?react';
+import { AppTitle } from '@/components/ui/AppTitle';
 import { Connect, type Identity } from '@graphprotocol/hypergraph';
 import { GEOGENESIS, GEO_TESTNET } from '@graphprotocol/hypergraph/connect/smart-account';
 import { type ConnectedWallet, useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
@@ -60,7 +61,7 @@ function Login() {
   useEffect(() => {
     console.log('useEffect in login.lazy.tsx');
     if (
-      !hypergraphLoginStarted && // avoid re-running the effect to often
+      !hypergraphLoginStarted && // avoid re-running the effect too often
       privyAuthenticated && // privy must be authenticated to run it
       walletsReady && // wallets must be ready to run it
       wallets.length > 0 // wallets must have at least one wallet to run it
@@ -96,17 +97,22 @@ function Login() {
   }, [privyAuthenticated, walletsReady, wallets, hypergraphLogin, navigate, hypergraphLoginStarted]);
 
   return (
-    <div className="flex flex-1 justify-center items-center flex-col gap-4">
-      <div>
-        <Button
+    <div className="flex grow flex-col items-center justify-center">
+      <div className="c-card sm:c-card--large">
+        <div className="flex items-center justify-center gap-3 text-4xl sm:gap-4 sm:text-5xl">
+          <GeoLogo className="w-[1em] shrink-0" />
+          <AppTitle />
+        </div>
+        <button
+          type="button"
           disabled={!privyReady || privyAuthenticated}
-          onClick={(event) => {
-            event.preventDefault();
-            privyLogin({});
+          onClick={() => {
+            privyLogin();
           }}
+          className="c-button c-button--primary sm:c-button--large mt-8 w-full sm:mt-10"
         >
           Log in
-        </Button>
+        </button>
       </div>
     </div>
   );

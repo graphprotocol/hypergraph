@@ -3,30 +3,31 @@ import type { Mapping } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Event: {
-    typeIds: [Id.Id('6b8dbe76-389f-4bde-acdd-db9d5e387882')],
+    typeIds: [Id.Id('407d9e8a-c703-4fb4-830d-98c758c8564e')],
     properties: {
       name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
     },
     relations: {
-      sponsors: Id.Id('d8e4ea54-cb8c-4dca-9c2b-64dbbbe78397'),
+      sponsors: Id.Id('a7ac80a6-d3d9-4b04-9b9f-ead1723af09f'),
     },
   },
   Company: {
-    typeIds: [Id.Id('e8932986-67a9-4fff-89a6-07f03973014c')],
+    typeIds: [Id.Id('b0220a78-9205-4e5e-9bf1-c03ee0791e23')],
     properties: {
       name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
     },
     relations: {
-      jobOffers: Id.Id('96beadca-0846-4e56-9628-c196f7f3c4cd'),
+      jobOffers: Id.Id('7ca8063c-3664-479b-912d-1b3b86af2bf4'),
     },
   },
   JobOffer: {
-    typeIds: [Id.Id('a107c081-3089-4a94-8208-6a10775557d2')],
+    typeIds: [Id.Id('99e1733b-661d-4edb-a253-98ff4b7747d0')],
     properties: {
       name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      salary: Id.Id('20d18713-5352-4e1f-987c-d853bf9f8831'),
+      salary: Id.Id('5ecfb4e5-09eb-437d-9c3c-e9e7395d52aa'),
     },
   },
+
   // Todo2: {
   //   typeIds: [Id.Id('LJuM8ju67mCv78FhAiK9k9')],
   //   properties: {

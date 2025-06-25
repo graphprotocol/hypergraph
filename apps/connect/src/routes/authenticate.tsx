@@ -1,7 +1,8 @@
-import { CreateSpace } from '@/components/create-space';
-import { Button } from '@/components/ui/button';
+import { CreateSpaceCard } from '@/components/CreateSpaceCard';
+import { SpacesCard } from '@/components/SpacesCard';
+import { Loading } from '@/components/ui/Loading';
 import { usePrivateSpaces } from '@/hooks/use-private-spaces';
-import { type PublicSpaceData, usePublicSpaces } from '@/hooks/use-public-spaces';
+import { usePublicSpaces } from '@/hooks/use-public-spaces';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { GEOGENESIS, GEO_TESTNET, getSmartAccountWalletClient } from '@graphprotocol/hypergraph/connect/smart-account';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
@@ -9,6 +10,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
 import { useSelector } from '@xstate/store/react';
 import { Effect, Schema } from 'effect';
+import { TriangleAlert } from 'lucide-react';
 import { useEffect } from 'react';
 import { createWalletClient, custom } from 'viem';
 
@@ -513,83 +515,81 @@ function AuthenticateComponent() {
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
-      <div>
-        <h1 className="text-lg font-bold mb-4">Authenticating with Geo Connect</h1>
-        {state.step === 'fetching-app-identity' && <p>Loading…</p>}
-        {state.step === 'error' && <p>Error: {state.error}</p>}
-        {(state.step === 'selecting-spaces-existing-app-identity' ||
-          state.step === 'selecting-spaces-new-app-identity') && (
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <span className="text-xs text-gray-500">App Id</span>
-              <div className="text-sm">{state.appInfo.appId ?? 'unknown'}</div>
-              <span className="text-xs text-gray-500">Redirect:</span>
-              <div className="text-sm">{state.appInfo.redirect ?? 'unknown'}</div>
-            </div>
-            <h2 className="font-bold mb-2 mt-2">Spaces</h2>
-            <ul className="space-y-4">
-              {privateSpacesPending && <p>Loading private spaces …</p>}
-              {privateSpacesError && <p>An error has occurred loading private spaces: {privateSpacesError.message}</p>}
-              {!privateSpacesPending && !privateSpacesError && privateSpacesData?.length === 0 && (
-                <p>No private spaces found</p>
-              )}
-              {privateSpacesData?.map((space) => (
-                <li key={space.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                  <input
-                    type="checkbox"
-                    id={`private-${space.id}`}
-                    checked={selectedPrivateSpaces.has(space.id)}
-                    onChange={(e) => handlePrivateSpaceToggle(space.id, e.target.checked)}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+    <div className="flex grow flex-col items-center justify-center">
+      {(() => {
+        switch (state.step) {
+          case 'fetching-app-identity':
+            return (
+              <div className="c-card c-card--small">
+                <Loading className="text-xl" />
+              </div>
+            );
+          case 'error':
+            return <div className="c-card bg-error-dark text-error-light font-semibold">Error: {state.error}</div>;
+          case 'selecting-spaces-existing-app-identity':
+          case 'selecting-spaces-new-app-identity':
+            return (
+              <div className="grid w-xl max-w-full flex-col gap-6 lg:w-4xl lg:grid-cols-2 lg:gap-8 2xl:w-6xl">
+                <div className="c-card relative isolate col-1 row-span-2 flex flex-col gap-6 overflow-clip">
+                  <div className="bg-gradient-aqua dark:bg-gradient-lavender absolute inset-0 -z-10 opacity-30" />
+                  <p>A third-party application is requesting access to your personal Geo spaces.</p>
+                  <dl className="mb-auto flex flex-col gap-4 text-lg">
+                    <div>
+                      <dt className="text-foreground-muted font-semibold">App ID</dt>
+                      <dd>{state.appInfo?.appId ?? 'unknown'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-foreground-muted font-semibold">Redirect URL</dt>
+                      <dd>{state.appInfo?.redirect ?? 'unknown'}</dd>
+                    </div>
+                  </dl>
+                  {state.step !== 'selecting-spaces-existing-app-identity' ? (
+                    <div className="border-error-dark text-error-dark dark:text-error-light flex gap-2 rounded-lg border-2 border-dashed p-3 pr-4 leading-tight">
+                      <span className="text-error-dark flex h-lh shrink-0 items-center">
+                        <TriangleAlert className="size-4" />
+                      </span>{' '}
+                      This is the first time you are authenticating with this app. Please verify the above information
+                      before proceeding.
+                    </div>
+                  ) : null}
+                  <div>
+                    {state.step === 'selecting-spaces-new-app-identity' ? (
+                      <button
+                        type="button"
+                        onClick={createNewAppIdentityAndRedirect}
+                        className="c-button c-button--primary w-full"
+                      >
+                        Authenticate and redirect back to app
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={decryptAppIdentityAndRedirect}
+                        className="c-button c-button--primary w-full"
+                      >
+                        Authenticate and redirect back to app
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <CreateSpaceCard className="lg:col-2" />
+                <div className="relative min-h-80 lg:col-2">
+                  <SpacesCard
+                    spaces={[...(privateSpacesData ?? []), ...(publicSpacesData ?? [])]}
+                    status={
+                      privateSpacesPending
+                        ? 'loading'
+                        : privateSpacesError
+                          ? { error: privateSpacesError.message }
+                          : undefined
+                    }
+                    className="lg:absolute lg:inset-0"
                   />
-                  <label htmlFor={`private-${space.id}`} className="flex-1 cursor-pointer">
-                    <p className="font-medium">{space.name}</p>
-                    <p className="text-xs text-gray-500 mt-2 mb-1">Apps with access to this space</p>
-                    <ul>
-                      {space.apps.map((app) => (
-                        <li key={app.id} className="text-sm">
-                          {app.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </label>
-                </li>
-              ))}
-            </ul>
-            <h2 className="font-bold mb-2 mt-2">Public Spaces</h2>
-            <ul className="space-y-4">
-              {publicSpacesPending && <p>Loading public spaces …</p>}
-              {publicSpacesError && <p>An error has occurred loading public spaces: {publicSpacesError.message}</p>}
-              {!publicSpacesPending && !publicSpacesError && publicSpacesData?.length === 0 && (
-                <p>No public spaces found</p>
-              )}
-              {publicSpacesData?.map((space: PublicSpaceData) => (
-                <li key={space.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                  <input
-                    type="checkbox"
-                    id={`public-${space.id}`}
-                    checked={selectedPublicSpaces.has(space.id)}
-                    onChange={(e) => handlePublicSpaceToggle(space.id, e.target.checked)}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
-                  <label htmlFor={`public-${space.id}`} className="flex-1 cursor-pointer">
-                    <p className="font-medium">{space.name}</p>
-                  </label>
-                </li>
-              ))}
-            </ul>
-            <CreateSpace />
-            <div className="mt-8">
-              {state.step === 'selecting-spaces-new-app-identity' ? (
-                <Button onClick={createNewAppIdentityAndRedirect}>Authenticate and redirect back to app</Button>
-              ) : (
-                <Button onClick={decryptAppIdentityAndRedirect}>Authenticate and redirect back to app</Button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+                </div>
+              </div>
+            );
+        }
+      })()}
     </div>
   );
 }

@@ -50,7 +50,6 @@ export const Playground = () => {
               name: 'Test Event 42 by Nik',
               sponsors: ['347676a1-7cef-47dc-b6a7-c94fc6237dcd'],
             },
-            // @ts-expect-error - TODO: fix the types error
             { walletClient },
           );
           console.log('created', { success, cid, txResult });

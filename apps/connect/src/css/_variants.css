@@ -1,0 +1,4 @@
+/* Important variants */
+@custom-variant i (&:is(:is(:root, #i) *));
+@custom-variant ii (&:is(:is(:root, #i#i) *));
+@custom-variant iii (&:is(:is(:root, #i#i#i) *));

@@ -3,7 +3,7 @@ import { Connect } from '@graphprotocol/hypergraph';
 import { useIdentityToken } from '@privy-io/react-auth';
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 
-type SpaceData = {
+export type PrivateSpaceData = {
   id: string;
   name: string;
   appIdentities: { address: string; appId: string }[];
@@ -16,10 +16,10 @@ type SpaceData = {
   }[];
 };
 
-export const usePrivateSpaces = (): UseQueryResult<SpaceData[], Error> => {
+export const usePrivateSpaces = (): UseQueryResult<PrivateSpaceData[], Error> => {
   const { identityToken } = useIdentityToken();
 
-  return useQuery<SpaceData[]>({
+  return useQuery<PrivateSpaceData[]>({
     queryKey: ['private-spaces'],
     queryFn: async () => {
       if (!identityToken) return [];
@@ -36,7 +36,7 @@ export const usePrivateSpaces = (): UseQueryResult<SpaceData[], Error> => {
         }
       }
       const appInfo = await getAppInfoByIds(Array.from(appIds));
-      const spaces = data.spaces.map((space: SpaceData) => {
+      const spaces = data.spaces.map((space: PrivateSpaceData) => {
         const spaceAppIds = new Set<string>();
         for (const appIdentity of space.appIdentities) {
           spaceAppIds.add(appIdentity.appId);
