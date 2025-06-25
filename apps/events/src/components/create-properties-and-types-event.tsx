@@ -102,13 +102,15 @@ export const CreatePropertiesAndTypesEvent = ({ space }: { space: string }) => {
     name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   },
   relations: {
-      sponsors: Id.Id('${sponsorsRelationTypeId}'),
+    sponsors: Id.Id('${sponsorsRelationTypeId}'),
   },
 },
 Company: {
   typeIds: [Id.Id('${companyTypeId}')],
   properties: {
     name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+  },
+  relations: {
     jobOffers: Id.Id('${jobOffersRelationTypeId}'),
   },
 },
