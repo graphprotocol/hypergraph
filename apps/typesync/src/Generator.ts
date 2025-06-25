@@ -1,11 +1,11 @@
 import { execSync } from 'node:child_process';
+import * as fsSync from 'node:fs';
+import * as nodePath from 'node:path';
 import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
-import * as fsSync from 'node:fs';
-import * as nodePath from 'node:path';
 
 import * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';
@@ -47,7 +47,7 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
 
           const repoRoot = findRepoRoot(process.cwd());
 
-          let directory = app.directory?.length ? app.directory : nodePath.join(repoRoot, 'apps', app.name);
+          const directory = app.directory?.length ? app.directory : nodePath.join(repoRoot, 'apps', app.name);
           const directoryExists = yield* fs.exists(directory);
           if (directoryExists) {
             // directory already exists, fail
