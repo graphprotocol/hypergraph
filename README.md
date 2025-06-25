@@ -1,4 +1,4 @@
-# Graph Framework
+# Hypergraph Framework
 
 ## Development
 
