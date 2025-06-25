@@ -575,7 +575,7 @@ function AuthenticateComponent() {
                 <CreateSpaceCard className="lg:col-2" />
                 <div className="relative min-h-80 lg:col-2">
                   <SpacesCard
-                    spaces={privateSpacesData ?? []}
+                    spaces={[...(privateSpacesData ?? []), ...(publicSpacesData ?? [])]}
                     status={
                       privateSpacesPending
                         ? 'loading'
