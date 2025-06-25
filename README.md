@@ -22,6 +22,18 @@ pnpm dev
 # in another tab
 cd apps/server
 pnpm dev
+# in another tab
+cd apps/typesync
+pnpm run dev:client
+```
+
+You can also run Typesync after building:
+
+```sh
+# Build all packages and apps first
+pnpm build
+# Then start Typesync
+hypergraph typesync
 ```
 
 Any time you make changes to the schema, you will need to run the following commands:
