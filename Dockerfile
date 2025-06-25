@@ -40,7 +40,8 @@ RUN \
   mkdir -p deployment/out && mv deployment/dist deployment/node_modules deployment/package.json deployment/out && \
   # Add prisma client in dist
   mv deployment/prisma/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node deployment/out/dist/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node && \
-  mv deployment/prisma/generated/client/libquery_engine-linux-musl-openssl-3.0.x.so.node deployment/out/dist/libquery_engine-linux-musl-openssl-3.0.x.so.node
+  mv deployment/prisma/generated/client/libquery_engine-linux-musl-openssl-3.0.x.so.node deployment/out/dist/libquery_engine-linux-musl-openssl-3.0.x.so.node && \
+  mv deployment/prisma deployment/out
 
 # Slim runtime image.
 FROM node:22-alpine AS server
