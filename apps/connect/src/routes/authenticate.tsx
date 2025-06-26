@@ -4,7 +4,6 @@ import { Loading } from '@/components/ui/Loading';
 import { usePrivateSpaces } from '@/hooks/use-private-spaces';
 import { usePublicSpaces } from '@/hooks/use-public-spaces';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
-import { GEOGENESIS, GEO_TESTNET, getSmartAccountWalletClient } from '@graphprotocol/hypergraph/connect/smart-account';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
@@ -14,7 +13,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useEffect } from 'react';
 import { createWalletClient, custom } from 'viem';
 
-const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
+const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 
 type AuthenticateSearch = {
   data: unknown;
@@ -396,7 +395,7 @@ function AuthenticateComponent() {
         },
       );
       console.log('smart session created');
-      const smartAccountClient = await getSmartAccountWalletClient({
+      const smartAccountClient = await Connect.getSmartAccountWalletClient({
         owner: walletClient,
         address: accountAddress,
         chain: CHAIN,
