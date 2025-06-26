@@ -84,7 +84,7 @@ ${fieldStrings.join(',\n')}
  * const { code } = buildAppSchemaFormCode(schema)
  *
  * expect(code).toEqual(`
- *  import * as Entity from '@graphprotocol/hypergraph/Entity';
+ *  import { Entity } from '@graphprotocol/hypergraph';
  *
  *  export class Event extends Entity.Class<Event>('Event')({
  *    // Name of the event
