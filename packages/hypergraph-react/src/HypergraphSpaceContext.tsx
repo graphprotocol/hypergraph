@@ -1,8 +1,6 @@
 'use client';
 
-import type { AnyDocumentId } from '@automerge/automerge-repo';
-import { useRepo } from '@automerge/automerge-repo-react-hooks';
-import { Entity, Utils, store } from '@graphprotocol/hypergraph';
+import { Entity, store } from '@graphprotocol/hypergraph';
 import { useSelector } from '@xstate/store/react';
 import * as Schema from 'effect/Schema';
 import {
@@ -35,12 +33,13 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
 }
 
 function useSubscribeToSpaceAndGetHandle({ spaceId, enabled }: { spaceId: string; enabled: boolean }) {
-  const repo = useRepo();
-  const handle = useMemo(() => {
-    const id = Utils.idToAutomergeId(spaceId) as AnyDocumentId;
-    const result = repo.findWithProgress<Entity.DocumentContent>(id);
-    return result.handle;
-  }, [spaceId, repo]);
+  const handle = useSelector(store, (state) => {
+    const space = state.context.spaces.find((space) => space.id === spaceId);
+    if (!space) {
+      return undefined;
+    }
+    return space.automergeDocHandle;
+  });
 
   const { subscribeToSpace, isConnecting } = useHypergraphApp();
   useEffect(() => {
@@ -61,15 +60,21 @@ export function useSpace(options: { space?: string; mode: 'private' | 'public' }
   const { space: spaceIdFromParams } = options ?? {};
   const spaceId = spaceIdFromParams ?? spaceIdFromContext;
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId, enabled: options.mode === 'private' });
-  const ready = options.mode === 'public' ? true : handle.isReady();
+  const ready = options.mode === 'public' ? true : handle ? handle.isReady() : false;
   const space = useSelector(store, (state) => state.context.spaces.find((space) => space.id === spaceId));
   return { ready, name: space?.name, id: spaceId };
 }
 
 export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S, options?: { space?: string }) {
-  const { space } = options ?? {};
+  const { space: spaceIdFromParams } = options ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
-  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
+  const spaceId = spaceIdFromParams ?? spaceFromContext;
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId, enabled: true });
+  if (!handle) {
+    return () => {
+      throw new Error('Space not found or not ready');
+    };
+  }
   return Entity.create(handle, type);
 }
 
@@ -77,6 +82,11 @@ export function useUpdateEntity<const S extends Entity.AnyNoContext>(type: S, op
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const { space } = options ?? {};
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
+  if (!handle) {
+    return () => {
+      throw new Error('Space not found or not ready');
+    };
+  }
   return Entity.update(handle, type);
 }
 
@@ -84,6 +94,11 @@ export function useDeleteEntity(options?: { space?: string }) {
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const { space } = options ?? {};
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
+  if (!handle) {
+    return () => {
+      throw new Error('Space not found or not ready');
+    };
+  }
   return Entity.markAsDeleted(handle);
 }
 
@@ -91,6 +106,11 @@ export function useRemoveRelation(options?: { space?: string }) {
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const { space } = options ?? {};
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
+  if (!handle) {
+    return () => {
+      throw new Error('Space not found or not ready');
+    };
+  }
   return Entity.removeRelation(handle);
 }
 
@@ -98,6 +118,11 @@ export function useHardDeleteEntity(options?: { space?: string }) {
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const { space } = options ?? {};
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId: space ?? spaceFromContext, enabled: true });
+  if (!handle) {
+    return () => {
+      throw new Error('Space not found or not ready');
+    };
+  }
   return Entity.delete(handle);
 }
 
@@ -117,11 +142,11 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
   });
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled: true });
-  const handleIsReady = handle.isReady();
+  const handleIsReady = handle ? handle.isReady() : false;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: allow to change filter and include
   useLayoutEffect(() => {
-    if (enabled && handleIsReady) {
+    if (enabled && handle && handleIsReady) {
       const subscription = Entity.subscribeToFindMany(handle, type, filter, include);
       subscriptionRef.current.subscribe = subscription.subscribe;
       subscriptionRef.current.getEntities = subscription.getEntities;
@@ -163,6 +188,9 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
   const equals = Schema.equivalence(type);
 
   const subscribe = (callback: () => void) => {
+    if (!handle) {
+      return () => {};
+    }
     const handleChange = () => {
       callback();
     };
@@ -181,6 +209,9 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
   };
 
   return useSyncExternalStore(subscribe, () => {
+    if (!handle) {
+      return prevEntityRef.current;
+    }
     const doc = handle.doc();
     if (doc === undefined) {
       return prevEntityRef.current;

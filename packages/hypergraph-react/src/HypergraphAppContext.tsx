@@ -35,8 +35,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Address } from 'viem';
-import type { Hex } from 'viem';
+import type { Address, Hex } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
 
@@ -362,10 +361,10 @@ export function HypergraphAppProvider({
           });
           const authorIdentity = await Identity.getVerifiedIdentity(update.accountAddress, syncServerUri);
           if (authorIdentity.signaturePublicKey !== signer) {
-            console.error(
-              `Received invalid signature, recovered signer is ${signer},
-            expected ${authorIdentity.signaturePublicKey}`,
-            );
+            // console.error(
+            //   `Received invalid signature, recovered signer is ${signer},
+            // expected ${authorIdentity.signaturePublicKey}`,
+            // );
             // TODO bring back signature verfication
             // return { valid: false, update: new Uint8Array([]) };
           }
