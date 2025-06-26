@@ -7,7 +7,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const storage = typeof window !== 'undefined' ? window.localStorage : (undefined as unknown as Storage);
 
   return (
-    <HypergraphAppProvider storage={storage} syncServerUri="http://localhost:3030" mapping={{}}>
+    <HypergraphAppProvider syncServerUri="http://localhost:3030" mapping={{}}>
       {children}
     </HypergraphAppProvider>
   );

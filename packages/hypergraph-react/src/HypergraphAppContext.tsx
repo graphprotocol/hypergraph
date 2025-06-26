@@ -215,7 +215,7 @@ export function useHypergraphAuth() {
 }
 
 export type HypergraphAppProviderProps = Readonly<{
-  storage: Identity.Storage;
+  storage?: Identity.Storage;
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
@@ -227,7 +227,7 @@ export type HypergraphAppProviderProps = Readonly<{
 //    b) If identity is not found, create a new identity
 //      (and store it in the sync server)
 export function HypergraphAppProvider({
-  storage,
+  storage = localStorage,
   syncServerUri = 'https://syncserver.hypergraph.thegraph.com',
   chainId = Connect.GEO_TESTNET.id,
   children,
