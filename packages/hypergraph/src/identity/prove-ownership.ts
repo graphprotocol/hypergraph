@@ -64,13 +64,13 @@ export const verifyIdentityOwnership = async (
     chain,
     transport: http(rpcUrl),
   });
-  console.log('publicClient', publicClient);
-  console.log('rpcUrl', rpcUrl);
-  console.log('chain', chain);
+  // console.log('publicClient', publicClient);
+  // console.log('rpcUrl', rpcUrl);
+  // console.log('chain', chain);
 
-  console.log('accountProof', accountProof);
-  console.log('accountAddress', accountAddress);
-  console.log('publicKey', publicKey);
+  // console.log('accountProof', accountProof);
+  // console.log('accountAddress', accountAddress);
+  // console.log('publicKey', publicKey);
 
   const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
   const validAccountProof = await publicClient.verifyTypedData({
