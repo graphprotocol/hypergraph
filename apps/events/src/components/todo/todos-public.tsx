@@ -1,7 +1,13 @@
 import { Id } from '@graphprotocol/grc-20';
-import { _generateDeleteOps, publishOps, useCreateEntity, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
-import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
-import { useGenerateCreateOps } from '@graphprotocol/hypergraph-react/internal/use-generate-create-ops';
+import {
+  _generateDeleteOps,
+  publishOps,
+  useCreateEntity,
+  _useGenerateCreateOps as useGenerateCreateOps,
+  useHypergraphApp,
+  useQuery,
+  useSpace,
+} from '@graphprotocol/hypergraph-react';
 import { Todo2 } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
