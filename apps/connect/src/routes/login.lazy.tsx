@@ -1,13 +1,12 @@
 import GeoLogo from '@/assets/images/geo-logo-branded.svg?react';
 import { AppTitle } from '@/components/ui/AppTitle';
 import { Connect, type Identity } from '@graphprotocol/hypergraph';
-import { GEOGENESIS, GEO_TESTNET } from '@graphprotocol/hypergraph/connect/smart-account';
 import { type ConnectedWallet, useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { type WalletClient, createWalletClient, custom } from 'viem';
 
-const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
+const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const syncServerUri = import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN;
 const storage = localStorage;
 
