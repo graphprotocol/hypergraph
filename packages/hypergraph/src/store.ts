@@ -245,8 +245,6 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         }
       }
 
-      console.log('storecontext', storeContext);
-
       return storeContext;
     },
     applyEvent: (context, event: { spaceId: string; event: SpaceEvent; state: SpaceState }) => {
