@@ -17,16 +17,31 @@ pnpm install -g @graphprotocol/hypergraph-cli
 
 ## Running
 
-```bash
-hypergraph --help
-hg --help   # short alias
+### Setup
 
-# opening TypeSync
+```sh
+pnpm install
+cd apps/server
+cp .env.example .env
+# add the PRIVY_APP_SECRET & PRIVY_APP_ID to the apps/server/.env file
+pnpm prisma migrate dev
+```
+
+### Development
+
+```sh
+pnpm build --watch
+# in another tab
+cd apps/events
+pnpm dev
+# in another tab
+cd apps/server
+pnpm dev
+# in another tab
+cd apps/typesync
+pnpm build
+# then, from anywhere in the repo, start Typesync
 hypergraph typesync
-hg typesync
-
-# opening TypeSync in firefox automatically
-hypergraph typesync --open --browser firefox
 ```
 
 ## Commands
