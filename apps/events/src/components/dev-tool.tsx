@@ -1,7 +1,6 @@
 import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { useSelector } from '@xstate/store/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from './ui/button';
 
@@ -10,13 +9,6 @@ export function DevTool({ spaceId }: { spaceId: string }) {
 
   const spaces = useSelector(store, (state) => state.context.spaces);
   const updatesInFlight = useSelector(store, (state) => state.context.updatesInFlight);
-  const { subscribeToSpace, isConnecting } = useHypergraphApp();
-
-  useEffect(() => {
-    if (!isConnecting) {
-      subscribeToSpace({ spaceId });
-    }
-  }, [isConnecting, subscribeToSpace, spaceId]);
 
   const space = spaces.find((space) => space.id === spaceId);
 
@@ -39,7 +31,6 @@ export function DevTool({ spaceId }: { spaceId: string }) {
           <p>Keys:</p>
           <pre className="text-xs">{JSON.stringify(space.keys)}</pre>
           <br />
-          <h3>Last update clock: {space.lastUpdateClock}</h3>
           <h3>Updates in flight</h3>
           <ul className="text-xs">
             {updatesInFlight.map((updateInFlight) => {

@@ -16,53 +16,14 @@ export const Route = createFileRoute('/authenticate-success')({
 
 function RouteComponent() {
   const { ciphertext, nonce } = Route.useSearch();
-  const { setIdentity } = useHypergraphApp();
+  const { processConnectAuthSuccess } = useHypergraphApp();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedNonce = localStorage.getItem('geo-connect-auth-nonce');
-    const storedExpiry = Number.parseInt(localStorage.getItem('geo-connect-auth-expiry') ?? '0', 10);
-    const storedSecretKey = localStorage.getItem('geo-connect-auth-secret-key');
-    const storedPublicKey = localStorage.getItem('geo-connect-auth-public-key');
-    if (!storedNonce || !storedExpiry || !storedSecretKey || !storedPublicKey) {
-      alert('Failed to authenticate due missing data in the local storage');
-      return;
-    }
-
-    try {
-      const parsedAuthParams = Effect.runSync(
-        Connect.parseCallbackParams({
-          ciphertext,
-          nonce,
-          storedNonce,
-          storedExpiry,
-          storedSecretKey,
-          storedPublicKey,
-        }),
-      );
-
-      setIdentity({
-        address: parsedAuthParams.appIdentityAddress,
-        addressPrivateKey: parsedAuthParams.appIdentityAddressPrivateKey,
-        accountAddress: parsedAuthParams.accountAddress,
-        signaturePublicKey: parsedAuthParams.signaturePublicKey,
-        signaturePrivateKey: parsedAuthParams.signaturePrivateKey,
-        encryptionPublicKey: parsedAuthParams.encryptionPublicKey,
-        encryptionPrivateKey: parsedAuthParams.encryptionPrivateKey,
-        sessionToken: parsedAuthParams.sessionToken,
-        sessionTokenExpires: parsedAuthParams.sessionTokenExpires,
-      });
-      localStorage.removeItem('geo-connect-auth-nonce');
-      localStorage.removeItem('geo-connect-auth-expiry');
-      localStorage.removeItem('geo-connect-auth-secret-key');
-      localStorage.removeItem('geo-connect-auth-public-key');
-      console.log('redirecting to /');
-      navigate({ to: '/', replace: true });
-    } catch (error) {
-      console.error(error);
-      alert('Failed to authenticate due invalid callback');
-    }
-  }, [ciphertext, nonce, setIdentity, navigate]);
+    processConnectAuthSuccess({ storage: localStorage, ciphertext, nonce });
+    console.log('redirecting to /');
+    navigate({ to: '/', replace: true });
+  }, [ciphertext, nonce, processConnectAuthSuccess, navigate]);
 
   return <div>Authenticating …</div>;
 }

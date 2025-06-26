@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema';
+import type { Chain } from 'viem';
 import * as Messages from '../messages/index.js';
 import { store } from '../store.js';
 import { verifyIdentityOwnership } from './prove-ownership.js';
@@ -6,6 +7,8 @@ import { verifyIdentityOwnership } from './prove-ownership.js';
 export const getVerifiedIdentity = async (
   accountAddress: string,
   syncServerUri: string,
+  chain: Chain,
+  rpcUrl: string,
 ): Promise<{
   accountAddress: string;
   encryptionPublicKey: string;
@@ -32,9 +35,11 @@ export const getVerifiedIdentity = async (
       resDecoded.signaturePublicKey,
       resDecoded.accountProof,
       resDecoded.keyProof,
+      chain,
+      rpcUrl,
     ))
   ) {
-    throw new Error('Invalid identity');
+    throw new Error('Invalid identity in getVerifiedIdentity');
   }
 
   store.send({

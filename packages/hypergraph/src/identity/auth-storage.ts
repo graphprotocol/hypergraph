@@ -11,6 +11,7 @@ export const storeIdentity = (storage: Storage, identity: PrivateAppIdentity) =>
   storage.setItem('hypergraph:encryption-private-key', identity.encryptionPrivateKey);
   storage.setItem('hypergraph:session-token', identity.sessionToken);
   storage.setItem('hypergraph:session-token-expires', identity.sessionTokenExpires.toISOString());
+  storage.setItem('hypergraph:permission-id', identity.permissionId);
 };
 
 export const loadIdentity = (storage: Storage): PrivateAppIdentity | null => {
@@ -23,6 +24,7 @@ export const loadIdentity = (storage: Storage): PrivateAppIdentity | null => {
   const encryptionPrivateKey = storage.getItem('hypergraph:encryption-private-key');
   const sessionToken = storage.getItem('hypergraph:session-token');
   const sessionTokenExpires = storage.getItem('hypergraph:session-token-expires');
+  const permissionId = storage.getItem('hypergraph:permission-id');
   if (
     !address ||
     !addressPrivateKey ||
@@ -32,7 +34,8 @@ export const loadIdentity = (storage: Storage): PrivateAppIdentity | null => {
     !encryptionPublicKey ||
     !encryptionPrivateKey ||
     !sessionToken ||
-    !sessionTokenExpires
+    !sessionTokenExpires ||
+    !permissionId
   ) {
     return null;
   }
@@ -46,6 +49,7 @@ export const loadIdentity = (storage: Storage): PrivateAppIdentity | null => {
     encryptionPrivateKey,
     sessionToken,
     sessionTokenExpires: new Date(sessionTokenExpires),
+    permissionId,
   };
 };
 
@@ -59,4 +63,5 @@ export const wipeIdentity = (storage: Storage) => {
   storage.removeItem('hypergraph:encryption-private-key');
   storage.removeItem('hypergraph:session-token');
   storage.removeItem('hypergraph:session-token-expires');
+  storage.removeItem('hypergraph:permission-id');
 };

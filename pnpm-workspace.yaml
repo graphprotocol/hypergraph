@@ -1,7 +1,9 @@
 packages:
   - apps/*
+  - apps/*/*
   - packages/*
   - docs
+
 onlyBuiltDependencies:
   - "@prisma/client"
   - "@prisma/engines"
@@ -11,3 +13,7 @@ onlyBuiltDependencies:
   - core-js
   - core-js-pure
   - prisma
+  - ./test3
+  - ./test4
+  - ./test5
+  - ./test6

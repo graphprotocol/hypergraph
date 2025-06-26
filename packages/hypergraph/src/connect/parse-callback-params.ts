@@ -53,13 +53,15 @@ export const parseCallbackParams = ({
       appIdentityAddress: data.appIdentityAddress,
       appIdentityAddressPrivateKey: data.appIdentityAddressPrivateKey,
       accountAddress: data.accountAddress,
+      permissionId: data.permissionId,
       signaturePublicKey: data.signaturePublicKey,
       signaturePrivateKey: data.signaturePrivateKey,
       encryptionPublicKey: data.encryptionPublicKey,
       encryptionPrivateKey: data.encryptionPrivateKey,
       sessionToken: data.sessionToken,
       sessionTokenExpires: new Date(data.sessionTokenExpires),
-      spaces: data.spaces,
+      privateSpaces: data.privateSpaces,
+      publicSpaces: data.publicSpaces,
     });
   } catch (error) {
     console.error(error);

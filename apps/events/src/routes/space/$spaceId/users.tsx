@@ -1,10 +1,7 @@
 import { UsersMerged } from '@/components/users/users-merged';
 import { UsersPublic } from '@/components/users/users-public';
-import { store } from '@graphprotocol/hypergraph';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
-import { useSelector } from '@xstate/store/react';
-import { useEffect } from 'react';
 import { UsersLocal } from '../../../components/users/users-local';
 export const Route = createFileRoute('/space/$spaceId/users')({
   component: UsersRouteComponent,
@@ -12,22 +9,10 @@ export const Route = createFileRoute('/space/$spaceId/users')({
 
 function UsersRouteComponent() {
   const { spaceId } = Route.useParams();
-  const spaces = useSelector(store, (state) => state.context.spaces);
-  const { subscribeToSpace, isConnecting, isLoadingSpaces } = useHypergraphApp();
-  useEffect(() => {
-    if (!isConnecting) {
-      subscribeToSpace({ spaceId });
-    }
-  }, [isConnecting, subscribeToSpace, spaceId]);
-
-  const space = spaces.find((space) => space.id === spaceId);
+  const { isConnecting, isLoadingSpaces } = useHypergraphApp();
 
   if (isConnecting || isLoadingSpaces[spaceId]) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
-  }
-
-  if (!space) {
-    return <div className="flex justify-center items-center h-screen">Space not found</div>;
   }
 
   return (

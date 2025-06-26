@@ -15,7 +15,12 @@ declare module '@tanstack/react-router' {
 
 export function Boot() {
   return (
-    <HypergraphAppProvider storage={localStorage} syncServerUri="http://localhost:3030" mapping={mapping}>
+    <HypergraphAppProvider
+      storage={localStorage}
+      syncServerUri="http://localhost:3030"
+      mapping={mapping}
+      chainId={19411}
+    >
       <RouterProvider router={router} />
     </HypergraphAppProvider>
   );

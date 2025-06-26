@@ -17,9 +17,9 @@ export {
   useCreateEntity,
   useDeleteEntity,
   useHardDeleteEntity,
-  useHypergraphSpace,
   useQueryEntity,
   useRemoveRelation,
+  useSpace,
   useUpdateEntity,
 } from './HypergraphSpaceContext.js';
 export { generateDeleteOps as _generateDeleteOps } from './internal/generate-delete-ops.js';

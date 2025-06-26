@@ -1,0 +1,38 @@
+@layer base {
+  *,
+  *::before,
+  *::after {
+    /* Prevent flex items from overflowing their containers */
+    min-width: 0;
+    min-height: 0;
+    /* Make the inheritable text properties actually inherit on form controls */
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    text-transform: inherit;
+    /* Prevent weird outline color transition when `:focus-visible` is triggered */
+    outline-color: var(--color-ring);
+    outline-width: 2px;
+    outline-offset: 2px;
+    &:focus-visible {
+      outline-style: solid; /* default is `auto`, which lets us customize the color but not the width, weirdly */
+    }
+  }
+
+  /* Prevent base styles (notably the `min-width` and `min-height` reset above) from affecting Privy dialogs */
+  #privy-dialog {
+    &,
+    &::before,
+    &::after,
+    *,
+    *::before,
+    *::after {
+      all: revert-layer;
+    }
+  }
+
+  body {
+    @apply bg-background text-foreground font-regular font-sans text-lg antialiased scheme-light-dark;
+  }
+}

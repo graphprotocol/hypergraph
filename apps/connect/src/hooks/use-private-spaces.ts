@@ -1,8 +1,9 @@
 import { getAppInfoByIds } from '@/lib/get-app-info-by-ids';
+import { Connect } from '@graphprotocol/hypergraph';
 import { useIdentityToken } from '@privy-io/react-auth';
-import { useQuery } from '@tanstack/react-query';
+import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 
-type SpaceData = {
+export type PrivateSpaceData = {
   id: string;
   name: string;
   appIdentities: { address: string; appId: string }[];
@@ -15,15 +16,17 @@ type SpaceData = {
   }[];
 };
 
-export const useSpaces = () => {
+export const usePrivateSpaces = (): UseQueryResult<PrivateSpaceData[], Error> => {
   const { identityToken } = useIdentityToken();
 
-  return useQuery<SpaceData[]>({
-    queryKey: ['spaces'],
+  return useQuery<PrivateSpaceData[]>({
+    queryKey: ['private-spaces'],
     queryFn: async () => {
       if (!identityToken) return [];
+      const accountAddress = Connect.loadAccountAddress(localStorage);
+      if (!accountAddress) return [];
       const response = await fetch(`${import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN}/connect/spaces`, {
-        headers: { 'privy-id-token': identityToken },
+        headers: { 'privy-id-token': identityToken, 'account-address': accountAddress },
       });
       const data = await response.json();
       const appIds = new Set<string>();
@@ -33,7 +36,7 @@ export const useSpaces = () => {
         }
       }
       const appInfo = await getAppInfoByIds(Array.from(appIds));
-      const spaces = data.spaces.map((space: SpaceData) => {
+      const spaces = data.spaces.map((space: PrivateSpaceData) => {
         const spaceAppIds = new Set<string>();
         for (const appIdentity of space.appIdentities) {
           spaceAppIds.add(appIdentity.appId);

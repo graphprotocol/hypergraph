@@ -1,14 +1,14 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
-import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
-import { publishOps, useHypergraphSpace } from '@graphprotocol/hypergraph-react';
+import { Graph, type Op } from '@graphprotocol/grc-20';
+import type { Connect } from '@graphprotocol/hypergraph';
+import { publishOps, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
 const createPropertiesAndTypesTodos = async ({
-  smartAccountWalletClient,
+  smartSessionClient,
   space,
-}: { smartAccountWalletClient: GeoSmartAccount; space: string }) => {
+}: { smartSessionClient: Connect.SmartSessionClient; space: string }) => {
   const ops: Array<Op> = [];
   const { id: checkedPropertyId, ops: createCheckedPropertyOps } = Graph.createProperty({
     dataType: 'CHECKBOX',
@@ -67,7 +67,7 @@ const createPropertiesAndTypesTodos = async ({
 
   const result = await publishOps({
     ops,
-    walletClient: smartAccountWalletClient,
+    walletClient: smartSessionClient,
     space,
     name: 'Create properties and types',
   });
@@ -84,10 +84,9 @@ const createPropertiesAndTypesTodos = async ({
   };
 };
 
-export const CreatePropertiesAndTypesTodos = () => {
+export const CreatePropertiesAndTypesTodos = ({ space }: { space: string }) => {
   const [mapping, setMapping] = useState<string>('');
-  const space = useHypergraphSpace();
-
+  const { getSmartSessionClient } = useHypergraphApp();
   return (
     <div>
       {mapping && (
@@ -99,9 +98,9 @@ export const CreatePropertiesAndTypesTodos = () => {
       )}
       <Button
         onClick={async () => {
-          const smartAccountWalletClient = await getSmartAccountWalletClient();
-          if (!smartAccountWalletClient) {
-            throw new Error('Missing smartAccountWalletClient');
+          const smartSessionClient = await getSmartSessionClient();
+          if (!smartSessionClient) {
+            throw new Error('Missing smartSessionClient');
           }
           const {
             todoTypeId,
@@ -113,7 +112,7 @@ export const CreatePropertiesAndTypesTodos = () => {
             websitePropertyId,
             amountPropertyId,
           } = await createPropertiesAndTypesTodos({
-            smartAccountWalletClient,
+            smartSessionClient,
             space,
           });
 
