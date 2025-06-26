@@ -205,7 +205,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
   const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {};
 
   for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
-    const properties = (queryEntity.relations ?? []).filter((a) => a.type.id === relationId);
+    const properties = (queryEntity.relations ?? []).filter((a) => a.type?.id === relationId);
     if (properties.length === 0) {
       rawEntity[key] = [] as unknown[];
       continue;
