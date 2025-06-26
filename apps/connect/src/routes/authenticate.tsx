@@ -246,7 +246,7 @@ function AuthenticateComponent() {
 
     const privateSpacesInput = privateSpacesData
       ? privateSpacesData
-          .filter((space) => selectedPrivateSpaces.has(space.id))
+          // .filter((space) => selectedPrivateSpaces.has(space.id))
           .map((space) => {
             // TODO: currently without checking we assume all keyboxes exists and we don't create any - we should check if the keyboxes exist and create them if they don't
             if (space.appIdentities.some((spaceAppIdentity) => spaceAppIdentity.address === appIdentity.address))
