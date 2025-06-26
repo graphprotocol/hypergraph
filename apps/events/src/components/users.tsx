@@ -8,7 +8,7 @@ import { UserEntry } from './user-entry.js';
 export const Users = () => {
   const { data: users } = useQuery(User, { mode: 'private' });
   const { ready: spaceReady } = useSpace({ mode: 'private' });
-  const createEntity = useCreateEntity(User, { space: '1c954768-7e14-4f0f-9396-0fe9dcd55fe8' });
+  const createEntity = useCreateEntity(User);
   const [newUserName, setNewUserName] = useState('');
 
   if (!spaceReady) {
