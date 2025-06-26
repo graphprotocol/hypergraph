@@ -49,7 +49,7 @@ export function Boot() {
       <PrivyProvider
         appId={import.meta.env.VITE_PRIVY_APP_ID}
         config={{
-          loginMethods: ['email', 'google'],
+          loginMethods: import.meta.env.VITE_PRIVY_PROVIDERS === 'development' ? ['email', 'google'] : ['email'],
           appearance: {
             theme: 'light',
             accentColor: '#6833ff',
