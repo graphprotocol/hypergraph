@@ -1,6 +1,6 @@
-import { type AnyDocumentId, Repo } from '@automerge/automerge-repo';
+import { Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Entity, Type, Utils } from '@graphprotocol/hypergraph';
+import { Entity, Type, store } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 // biome-ignore lint/style/useImportType: <explanation>
@@ -45,10 +45,24 @@ describe('HypergraphSpaceContext', () => {
 
   beforeEach(() => {
     repo = new Repo({});
-    const result = repo.findWithProgress(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
-    const automergeDocHandle = result.handle;
-    // set it to ready to interact with the document
-    automergeDocHandle.doneLoading();
+    store.send({ type: 'setRepo', repo });
+    store.send({
+      type: 'setSpace',
+      spaceId,
+      spaceState: {
+        id: spaceId,
+        members: {},
+        invitations: {},
+        removedMembers: {},
+        inboxes: {},
+        lastEventHash: '',
+      },
+      name: 'Test Space',
+      updates: { updates: [], firstUpdateClock: 0, lastUpdateClock: 0 },
+      events: [],
+      inboxes: [],
+      keys: [],
+    });
 
     wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
       <RepoContext.Provider value={repo}>
@@ -59,8 +73,8 @@ describe('HypergraphSpaceContext', () => {
 
   describe('useCreateEntity', () => {
     it('should be able to create an entity through the useCreateEntity Hook', async () => {
-      const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
       const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Event), { wrapper });
+      const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
 
       let createdEntity: Entity.Entity<typeof Event> | null = null;
 
