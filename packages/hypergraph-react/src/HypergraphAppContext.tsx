@@ -41,6 +41,9 @@ const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessag
 
 const queryClient = new QueryClient();
 
+const CHAIN = Connect.GEO_TESTNET;
+const RPC_URL = Connect.TESTNET_RPC_URL;
+
 export type HypergraphAppCtx = {
   // auth related
   logout(): void;
@@ -359,7 +362,12 @@ export function HypergraphAppProvider({
             signature: update.signature,
             accountAddress: update.accountAddress,
           });
-          const authorIdentity = await Identity.getVerifiedIdentity(update.accountAddress, syncServerUri);
+          const authorIdentity = await Identity.getVerifiedIdentity(
+            update.accountAddress,
+            syncServerUri,
+            CHAIN,
+            RPC_URL,
+          );
           if (authorIdentity.signaturePublicKey !== signer) {
             // console.error(
             //   `Received invalid signature, recovered signer is ${signer},
@@ -394,7 +402,7 @@ export function HypergraphAppProvider({
     const getVerifiedIdentity = (accountAddress: string) => {
       return Effect.gen(function* () {
         const identity = yield* Effect.tryPromise({
-          try: () => Identity.getVerifiedIdentity(accountAddress, syncServerUri),
+          try: () => Identity.getVerifiedIdentity(accountAddress, syncServerUri, CHAIN, RPC_URL),
           catch: () => new Identity.InvalidIdentityError(),
         });
         return identity;
@@ -638,6 +646,8 @@ export function HypergraphAppProvider({
               inbox,
               response.spaceId,
               syncServerUri,
+              CHAIN,
+              RPC_URL,
             );
             if (!isValid) {
               console.error('Invalid message', response.message, inbox.inboxId);
@@ -684,6 +694,8 @@ export function HypergraphAppProvider({
               inbox,
               identity.address,
               syncServerUri,
+              CHAIN,
+              RPC_URL,
             );
             if (!isValid) {
               console.error('Invalid message', response.message, inbox.inboxId);
@@ -747,7 +759,14 @@ export function HypergraphAppProvider({
               response.messages.map(
                 // If the message has a signature, check that the signature is valid for the authorAccountAddress
                 async (message) => {
-                  return Inboxes.validateAccountInboxMessage(message, inbox, identity.address, syncServerUri);
+                  return Inboxes.validateAccountInboxMessage(
+                    message,
+                    inbox,
+                    identity.address,
+                    syncServerUri,
+                    CHAIN,
+                    RPC_URL,
+                  );
                 },
               ),
             );
@@ -807,7 +826,7 @@ export function HypergraphAppProvider({
               response.messages.map(
                 // If the message has a signature, check that the signature is valid for the authorAccountAddress
                 async (message) => {
-                  return Inboxes.validateSpaceInboxMessage(message, inbox, space.id, syncServerUri);
+                  return Inboxes.validateSpaceInboxMessage(message, inbox, space.id, syncServerUri, CHAIN, RPC_URL);
                 },
               ),
             );
@@ -1259,7 +1278,7 @@ export function HypergraphAppProvider({
         console.error('No state found for space');
         return;
       }
-      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountAddress, syncServerUri);
+      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountAddress, syncServerUri, CHAIN, RPC_URL);
       const spaceEvent = await Effect.runPromiseExit(
         SpaceEvents.createInvitation({
           author: {
@@ -1305,7 +1324,7 @@ export function HypergraphAppProvider({
 
   const getVerifiedIdentity = useCallback(
     (accountAddress: string) => {
-      return Identity.getVerifiedIdentity(accountAddress, syncServerUri);
+      return Identity.getVerifiedIdentity(accountAddress, syncServerUri, CHAIN, RPC_URL);
     },
     [syncServerUri],
   );

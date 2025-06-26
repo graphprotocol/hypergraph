@@ -1,3 +1,4 @@
+import type { Chain } from 'viem';
 import * as Identity from '../identity/index.js';
 import type * as Messages from '../messages/index.js';
 import type { AccountInboxStorageEntry, SpaceInboxStorageEntry } from '../store.js';
@@ -8,6 +9,8 @@ export const validateSpaceInboxMessage = async (
   inbox: SpaceInboxStorageEntry,
   spaceId: string,
   syncServerUri: string,
+  chain: Chain,
+  rpcUrl: string,
 ) => {
   if (message.signature) {
     if (inbox.authPolicy === 'anonymous') {
@@ -19,7 +22,12 @@ export const validateSpaceInboxMessage = async (
       return false;
     }
     const signer = recoverSpaceInboxMessageSigner(message, spaceId, inbox.inboxId);
-    const verifiedIdentity = await Identity.getVerifiedIdentity(message.authorAccountAddress, syncServerUri);
+    const verifiedIdentity = await Identity.getVerifiedIdentity(
+      message.authorAccountAddress,
+      syncServerUri,
+      chain,
+      rpcUrl,
+    );
     const isValid = signer === verifiedIdentity.signaturePublicKey;
     if (!isValid) {
       console.error('Invalid signature', signer, verifiedIdentity.signaturePublicKey);
@@ -39,6 +47,8 @@ export const validateAccountInboxMessage = async (
   inbox: AccountInboxStorageEntry,
   accountAddress: string,
   syncServerUri: string,
+  chain: Chain,
+  rpcUrl: string,
 ) => {
   if (message.signature) {
     if (inbox.authPolicy === 'anonymous') {
@@ -50,7 +60,12 @@ export const validateAccountInboxMessage = async (
       return false;
     }
     const signer = recoverAccountInboxMessageSigner(message, accountAddress, inbox.inboxId);
-    const verifiedIdentity = await Identity.getVerifiedIdentity(message.authorAccountAddress, syncServerUri);
+    const verifiedIdentity = await Identity.getVerifiedIdentity(
+      message.authorAccountAddress,
+      syncServerUri,
+      chain,
+      rpcUrl,
+    );
     const isValid = signer === verifiedIdentity.signaturePublicKey;
     if (!isValid) {
       console.error('Invalid signature', signer, verifiedIdentity.signaturePublicKey);
