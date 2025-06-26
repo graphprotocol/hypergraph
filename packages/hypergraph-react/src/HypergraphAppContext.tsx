@@ -215,19 +215,28 @@ export function useHypergraphAuth() {
 }
 
 export type HypergraphAppProviderProps = Readonly<{
-  storage: Identity.Storage;
+  storage?: Identity.Storage;
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
   mapping: Mapping;
 }>;
+
+const mockStorage = {
+  getItem(_key: string) {
+    return null;
+  },
+  setItem(_key: string, _value: string) {},
+  removeItem(_key: string) {},
+};
+
 // 1) a) Get session token from local storage, or
 //    b) Auth with the sync server
 // 2) a)Try to get identity from the sync server, or
 //    b) If identity is not found, create a new identity
 //      (and store it in the sync server)
 export function HypergraphAppProvider({
-  storage,
+  storage = typeof window !== 'undefined' ? localStorage : mockStorage,
   syncServerUri = 'https://syncserver.hypergraph.thegraph.com',
   chainId = Connect.GEO_TESTNET.id,
   children,

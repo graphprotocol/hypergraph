@@ -47,7 +47,7 @@ export function Boot() {
   return (
     <QueryClientProvider client={queryClient}>
       <PrivyProvider
-        appId="cmbhnmo1x000bla0mxudtd8z9"
+        appId={import.meta.env.VITE_PRIVY_APP_ID}
         config={{
           loginMethods: ['email', 'google'],
           appearance: {
