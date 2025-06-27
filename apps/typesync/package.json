@@ -18,7 +18,10 @@
     "hypergraph": "./dist/bin.cjs",
     "hg": "./dist/bin.cjs"
   },
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "codegen:gql": "graphql-codegen --config ./graphql.codegen.ts",
     "build:client": "vite build",
@@ -40,7 +43,7 @@
   },
   "devDependencies": {
     "@effect/cli": "latest",
-    "@effect/experimental": "latest",
+    "@effect/experimental": "^0.51.1",
     "@effect/language-service": "latest",
     "@effect/platform": "latest",
     "@effect/platform-node": "latest",
@@ -75,7 +78,7 @@
     "@tanstack/react-router-devtools": "1.120.15",
     "better-sqlite3": "^11.10.0",
     "date-fns": "^4.1.0",
-    "effect": "latest",
+    "effect": "^3.16.10",
     "graphql": "^16.11.0",
     "graphql-request": "^7.2.0",
     "jotai": "^2.12.5",

@@ -23,7 +23,7 @@
     "@tanstack/react-router": "^1.120.2",
     "@xstate/store": "^3.5.1",
     "clsx": "^2.1.1",
-    "effect": "^3.16.3",
+    "effect": "^3.16.10",
     "graphql-request": "^7.2.0",
     "lucide-react": "^0.508.0",
     "react": "^19.1.0",
