@@ -44,6 +44,11 @@ export function Boot() {
     }
   }, []);
 
+  // @ts-expect-error - window is not typed
+  window.APP_VERSION = 'v1';
+  // @ts-expect-error - window is not typed
+  window.VITE_PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
+
   return (
     <QueryClientProvider client={queryClient}>
       <PrivyProvider
