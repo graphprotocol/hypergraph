@@ -32,6 +32,8 @@ export function HypergraphSpaceProvider({ space, children }: { space: string; ch
   return <HypergraphReactContext.Provider value={{ space }}>{children}</HypergraphReactContext.Provider>;
 }
 
+const subscribeToSpaceCache = new Map<string, boolean>();
+
 function useSubscribeToSpaceAndGetHandle({ spaceId, enabled }: { spaceId: string; enabled: boolean }) {
   const handle = useSelector(store, (state) => {
     const space = state.context.spaces.find((space) => space.id === spaceId);
@@ -44,11 +46,15 @@ function useSubscribeToSpaceAndGetHandle({ spaceId, enabled }: { spaceId: string
   const { subscribeToSpace, isConnecting } = useHypergraphApp();
   useEffect(() => {
     if (!isConnecting && enabled) {
-      // TODO: only subscribe to space if it is not already subscribed
+      if (subscribeToSpaceCache.has(spaceId)) {
+        return;
+      }
+      subscribeToSpaceCache.set(spaceId, true);
       subscribeToSpace({ spaceId });
     }
     return () => {
       // TODO: unsubscribe from space in case the space ID changes
+      subscribeToSpaceCache.delete(spaceId);
     };
   }, [isConnecting, subscribeToSpace, spaceId, enabled]);
 

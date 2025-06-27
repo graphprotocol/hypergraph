@@ -11,6 +11,9 @@ export const Route = createFileRoute('/')({
   component: Index,
 });
 
+// @ts-expect-error
+window.HYPERGRAPH_STORE = store;
+
 function Index() {
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const { data: privateSpaces } = useSpaces({ mode: 'private' });
