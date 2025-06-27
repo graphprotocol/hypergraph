@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph-cli",
-  "version": "0.0.0-alpha.7",
+  "version": "0.0.0-alpha.8",
   "type": "module",
   "license": "MIT",
   "description": "CLI toolchain to view existing types, select, pick, extend to create schemas and generate a @graphprotocol/hypergraph schema.",
@@ -15,19 +15,19 @@
     "linkDirectory": false
   },
   "bin": {
-    "hypergraph": "./dist/bin.cjs",
-    "hg": "./dist/bin.cjs"
+    "hypergraph": "./dist/bin.js",
+    "hg": "./dist/bin.js"
   },
   "files": ["README.md", "dist"],
   "scripts": {
     "codegen:gql": "graphql-codegen --config ./graphql.codegen.ts",
     "build:client": "vite build",
-    "build": "rm -rf ./client/dist && pnpm run build:client && tsup && pnpm run copy-all",
+    "build": "pnpm run clean && pnpm run build:client && tsup && pnpm run copy-all",
     "build:ts": "tsup",
     "dev": "vite build && pnpx tsx ./src/bin.ts typesync",
     "dev:cli": "pnpx tsx ./src/bin.ts typesync",
     "dev:client": "vite --force",
-    "clean": "rimraf dist/*",
+    "clean": "rm -rf dist client/dist",
     "start": "node ./dist/bin.js",
     "check": "tsc --noEmit",
     "test": "vitest run",
@@ -39,14 +39,14 @@
     "hypergraph": "pnpx tsx ./src/bin.ts typesync"
   },
   "devDependencies": {
-    "@effect/cli": "latest",
+    "@effect/cli": "^0.66.1",
     "@effect/experimental": "^0.51.1",
-    "@effect/language-service": "latest",
-    "@effect/platform": "latest",
-    "@effect/platform-node": "latest",
-    "@effect/sql": "latest",
-    "@effect/sql-sqlite-node": "latest",
-    "@effect/vitest": "latest",
+    "@effect/language-service": "^0.23.3",
+    "@effect/platform": "^0.87.1",
+    "@effect/platform-node": "^0.88.3",
+    "@effect/sql": "^0.40.1",
+    "@effect/sql-sqlite-node": "^0.41.1",
+    "@effect/vitest": "^0.23.10",
     "@graphprotocol/grc-20": "^0.21.3",
     "@graphql-codegen/cli": "^5.0.7",
     "@graphql-codegen/client-preset": "^4.8.3",

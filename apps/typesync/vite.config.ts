@@ -21,6 +21,8 @@ export default defineConfig({
       autoCodeSplitting: true,
       routesDirectory: 'client/src/routes',
       generatedRouteTree: 'client/src/routeTree.gen.ts',
+      tmpDir: 'client/.tanstack',
+      semicolons: true,
     }),
     react(),
     tailwindcss(),

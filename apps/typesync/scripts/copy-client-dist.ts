@@ -1,18 +1,19 @@
-import { cp, mkdir } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { FileSystem, Path } from '@effect/platform';
+import { NodeContext } from '@effect/platform-node';
+import { Effect } from 'effect';
 
-(async () => {
-  try {
-    const src = resolve(process.cwd(), 'client', 'dist');
-    const dest = resolve(process.cwd(), 'dist', 'client', 'dist');
+const program = Effect.gen(function* () {
+  const fs = yield* FileSystem.FileSystem;
+  const path = yield* Path.Path;
 
-    await mkdir(dest, { recursive: true });
-    // Node >=16.7 has cp with recursive
-    await cp(src, dest, { recursive: true });
+  const src = path.resolve('./', 'client', 'dist');
+  const dest = path.resolve('./', 'dist', 'client', 'dist');
 
-    console.info('[Build] Copied client/dist to dist/client/dist');
-  } catch (err) {
-    console.error('[Build] Failed to copy client/dist', err);
-    process.exitCode = 1;
-  }
-})();
+  yield* fs
+    .makeDirectory(dest, { recursive: true })
+    .pipe(Effect.andThen(() => fs.copy(src, dest, { overwrite: true })));
+
+  return yield* Effect.logInfo('[Build] Copied client/dist to dist/client/dist');
+}).pipe(Effect.provide(NodeContext.layer));
+
+Effect.runPromise(program).catch(console.error);

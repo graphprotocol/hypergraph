@@ -8,80 +8,80 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppsCreateRouteImport } from './routes/apps/create'
-import { Route as AppsAppIdDetailsRouteImport } from './routes/apps/$appId/details'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as IndexRouteImport } from './routes/index';
+import { Route as AppsCreateRouteImport } from './routes/apps/create';
+import { Route as AppsAppIdDetailsRouteImport } from './routes/apps/$appId/details';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AppsCreateRoute = AppsCreateRouteImport.update({
   id: '/apps/create',
   path: '/apps/create',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AppsAppIdDetailsRoute = AppsAppIdDetailsRouteImport.update({
   id: '/apps/$appId/details',
   path: '/apps/$appId/details',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/apps/create': typeof AppsCreateRoute
-  '/apps/$appId/details': typeof AppsAppIdDetailsRoute
+  '/': typeof IndexRoute;
+  '/apps/create': typeof AppsCreateRoute;
+  '/apps/$appId/details': typeof AppsAppIdDetailsRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/apps/create': typeof AppsCreateRoute
-  '/apps/$appId/details': typeof AppsAppIdDetailsRoute
+  '/': typeof IndexRoute;
+  '/apps/create': typeof AppsCreateRoute;
+  '/apps/$appId/details': typeof AppsAppIdDetailsRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/apps/create': typeof AppsCreateRoute
-  '/apps/$appId/details': typeof AppsAppIdDetailsRoute
+  __root__: typeof rootRouteImport;
+  '/': typeof IndexRoute;
+  '/apps/create': typeof AppsCreateRoute;
+  '/apps/$appId/details': typeof AppsAppIdDetailsRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/apps/create' | '/apps/$appId/details'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/apps/create' | '/apps/$appId/details'
-  id: '__root__' | '/' | '/apps/create' | '/apps/$appId/details'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: '/' | '/apps/create' | '/apps/$appId/details';
+  fileRoutesByTo: FileRoutesByTo;
+  to: '/' | '/apps/create' | '/apps/$appId/details';
+  id: '__root__' | '/' | '/apps/create' | '/apps/$appId/details';
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AppsCreateRoute: typeof AppsCreateRoute
-  AppsAppIdDetailsRoute: typeof AppsAppIdDetailsRoute
+  IndexRoute: typeof IndexRoute;
+  AppsCreateRoute: typeof AppsCreateRoute;
+  AppsAppIdDetailsRoute: typeof AppsAppIdDetailsRoute;
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/apps/create': {
-      id: '/apps/create'
-      path: '/apps/create'
-      fullPath: '/apps/create'
-      preLoaderRoute: typeof AppsCreateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/apps/create';
+      path: '/apps/create';
+      fullPath: '/apps/create';
+      preLoaderRoute: typeof AppsCreateRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/apps/$appId/details': {
-      id: '/apps/$appId/details'
-      path: '/apps/$appId/details'
-      fullPath: '/apps/$appId/details'
-      preLoaderRoute: typeof AppsAppIdDetailsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/apps/$appId/details';
+      path: '/apps/$appId/details';
+      fullPath: '/apps/$appId/details';
+      preLoaderRoute: typeof AppsAppIdDetailsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -89,7 +89,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppsCreateRoute: AppsCreateRoute,
   AppsAppIdDetailsRoute: AppsAppIdDetailsRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();

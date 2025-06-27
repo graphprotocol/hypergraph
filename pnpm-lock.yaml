@@ -422,28 +422,28 @@ importers:
         version: 4.1.11
     devDependencies:
       '@effect/cli':
-        specifier: latest
+        specifier: ^0.66.1
         version: 0.66.1(@effect/platform@0.87.1(effect@3.16.10))(@effect/printer-ansi@0.44.10(@effect/typeclass@0.35.10(effect@3.16.10))(effect@3.16.10))(@effect/printer@0.44.10(@effect/typeclass@0.35.10(effect@3.16.10))(effect@3.16.10))(effect@3.16.10)
       '@effect/experimental':
         specifier: ^0.51.1
         version: 0.51.1(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10)
       '@effect/language-service':
-        specifier: latest
+        specifier: ^0.23.3
         version: 0.23.3
       '@effect/platform':
-        specifier: latest
+        specifier: ^0.87.1
         version: 0.87.1(effect@3.16.10)
       '@effect/platform-node':
-        specifier: latest
+        specifier: ^0.88.3
         version: 0.88.3(@effect/cluster@0.41.3(@effect/platform@0.87.1(effect@3.16.10))(@effect/rpc@0.64.2(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/sql@0.40.1(@effect/experimental@0.51.1(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/workflow@0.4.2(@effect/platform@0.87.1(effect@3.16.10))(@effect/rpc@0.64.2(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(effect@3.16.10))(effect@3.16.10))(@effect/platform@0.87.1(effect@3.16.10))(@effect/rpc@0.64.2(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/sql@0.40.1(@effect/experimental@0.51.1(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(bufferutil@4.0.9)(effect@3.16.10)(utf-8-validate@5.0.10)
       '@effect/sql':
-        specifier: latest
+        specifier: ^0.40.1
         version: 0.40.1(@effect/experimental@0.51.1(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10)
       '@effect/sql-sqlite-node':
-        specifier: latest
+        specifier: ^0.41.1
         version: 0.41.1(@effect/experimental@0.51.1(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/platform@0.87.1(effect@3.16.10))(@effect/sql@0.40.1(@effect/experimental@0.51.1(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10))(effect@3.16.10)
       '@effect/vitest':
-        specifier: latest
+        specifier: ^0.23.10
         version: 0.23.10(effect@3.16.10)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.0.6)(jiti@2.4.2)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       '@graphprotocol/grc-20':
         specifier: ^0.21.3
