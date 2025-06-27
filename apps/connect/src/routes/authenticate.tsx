@@ -371,8 +371,8 @@ function AuthenticateComponent() {
       console.log('public spaces data', publicSpacesData);
       const spaces =
         publicSpacesData
-          ?.filter((space) => selectedPublicSpaces.has(space.id))
-          .map((space) => ({
+          // .filter((space) => selectedPublicSpaces.has(space.id))
+          ?.map((space) => ({
             address:
               space.type === 'personal'
                 ? (space.personalAddress as `0x${string}`)
