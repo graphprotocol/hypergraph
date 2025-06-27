@@ -6,6 +6,8 @@ import { verifyIdentityOwnership } from './prove-ownership.js';
 
 export const getVerifiedIdentity = async (
   accountAddress: string,
+  signaturePublicKey: string | null,
+  appId: string | null,
   syncServerUri: string,
   chain: Chain,
   rpcUrl: string,
@@ -14,8 +16,16 @@ export const getVerifiedIdentity = async (
   encryptionPublicKey: string;
   signaturePublicKey: string;
 }> => {
+  if (signaturePublicKey && appId) {
+    throw new Error('Cannot specify both signaturePublicKey and appId');
+  }
   const storeState = store.getSnapshot();
-  const identity = storeState.context.identities[accountAddress];
+  const identity = storeState.context.identities[accountAddress]?.find((identity) => {
+    if (signaturePublicKey) {
+      return identity.signaturePublicKey === signaturePublicKey;
+    }
+    return identity.appId === appId;
+  });
   if (identity) {
     return {
       accountAddress,
@@ -23,7 +33,8 @@ export const getVerifiedIdentity = async (
       signaturePublicKey: identity.signaturePublicKey,
     };
   }
-  const res = await fetch(`${syncServerUri}/identity?accountAddress=${accountAddress}`);
+  const query = signaturePublicKey ? `&signaturePublicKey=${signaturePublicKey}` : `&appId=${appId}`;
+  const res = await fetch(`${syncServerUri}/identity?accountAddress=${accountAddress}${query}`);
   if (res.status !== 200) {
     throw new Error('Failed to fetch identity');
   }
@@ -49,6 +60,7 @@ export const getVerifiedIdentity = async (
     signaturePublicKey: resDecoded.signaturePublicKey,
     accountProof: resDecoded.accountProof,
     keyProof: resDecoded.keyProof,
+    appId: resDecoded.appId ?? null,
   });
   return {
     accountAddress: resDecoded.accountAddress,

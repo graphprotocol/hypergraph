@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import { expect, it } from 'vitest';
 
-import { InvalidIdentityError } from '../../src/identity/types.js';
+import { InvalidIdentityError, type PublicIdentity } from '../../src/identity/types.js';
 import { applyEvent } from '../../src/space-events/apply-event.js';
 import { createSpace } from '../../src/space-events/create-space.js';
 
@@ -13,9 +13,9 @@ it('should create a space state', async () => {
     encryptionPublicKey: 'encryption',
   };
 
-  const getVerifiedIdentity = (accountAddress: string) => {
-    if (accountAddress === author.accountAddress) {
-      return Effect.succeed(author);
+  const getVerifiedIdentity = (accountAddress: string, publicKey: string) => {
+    if (accountAddress === author.accountAddress && publicKey === author.signaturePublicKey) {
+      return Effect.succeed(author as PublicIdentity);
     }
     return Effect.fail(new InvalidIdentityError());
   };

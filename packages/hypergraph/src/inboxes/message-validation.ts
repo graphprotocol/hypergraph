@@ -24,6 +24,8 @@ export const validateSpaceInboxMessage = async (
     const signer = recoverSpaceInboxMessageSigner(message, spaceId, inbox.inboxId);
     const verifiedIdentity = await Identity.getVerifiedIdentity(
       message.authorAccountAddress,
+      signer,
+      null,
       syncServerUri,
       chain,
       rpcUrl,
@@ -62,6 +64,8 @@ export const validateAccountInboxMessage = async (
     const signer = recoverAccountInboxMessageSigner(message, accountAddress, inbox.inboxId);
     const verifiedIdentity = await Identity.getVerifiedIdentity(
       message.authorAccountAddress,
+      signer,
+      null,
       syncServerUri,
       chain,
       rpcUrl,
