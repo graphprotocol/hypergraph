@@ -69,7 +69,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use(cors());
 
 app.get('/', (_req, res) => {
-  res.send('Server is running');
+  res.send('Server is running (v0.0.5)');
 });
 
 app.get('/connect/spaces', async (req, res) => {
