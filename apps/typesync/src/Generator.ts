@@ -4,8 +4,7 @@ import * as nodePath from 'node:path';
 import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
-import * as Data from 'effect/Data';
-import * as Effect from 'effect/Effect';
+import { Data, Effect } from 'effect';
 
 import * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';

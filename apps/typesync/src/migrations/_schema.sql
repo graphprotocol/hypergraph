@@ -50,8 +50,8 @@ CREATE TABLE app_schema_type_property (
       CONSTRAINT unq__app_schema_type_property__app_schema_type_id_name UNIQUE (app_schema_type_id, name)
     );
 
-INSERT INTO effect_sql_migrations VALUES(1,'2025-04-13 19:53:24','create_table__app');
-INSERT INTO effect_sql_migrations VALUES(2,'2025-04-13 19:53:24','create_table__app_events');
-INSERT INTO effect_sql_migrations VALUES(3,'2025-04-13 19:53:24','create_table__app_schema');
-INSERT INTO effect_sql_migrations VALUES(4,'2025-04-13 19:53:24','create_table__app_schema_type_property');
-INSERT INTO effect_sql_migrations VALUES(5,'2025-06-12 22:30:11','update_table_property_relationTypeName');
+INSERT INTO effect_sql_migrations VALUES(1,'2025-06-27 18:52:18','create_table__app');
+INSERT INTO effect_sql_migrations VALUES(2,'2025-06-27 18:52:18','create_table__app_events');
+INSERT INTO effect_sql_migrations VALUES(3,'2025-06-27 18:52:18','create_table__app_schema');
+INSERT INTO effect_sql_migrations VALUES(4,'2025-06-27 18:52:18','create_table__app_schema_type_property');
+INSERT INTO effect_sql_migrations VALUES(5,'2025-06-27 18:52:18','update_table_property_relationTypeName');

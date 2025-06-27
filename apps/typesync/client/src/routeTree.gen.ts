@@ -8,82 +8,43 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppsCreateRouteImport } from './routes/apps/create'
+import { Route as AppsAppIdDetailsRouteImport } from './routes/apps/$appId/details'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as IndexImport } from './routes/index'
-import { Route as AppsCreateImport } from './routes/apps/create'
-import { Route as AppsAppIdDetailsImport } from './routes/apps/$appId/details'
-
-// Create/Update Routes
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AppsCreateRoute = AppsCreateImport.update({
+const AppsCreateRoute = AppsCreateRouteImport.update({
   id: '/apps/create',
   path: '/apps/create',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AppsAppIdDetailsRoute = AppsAppIdDetailsImport.update({
+const AppsAppIdDetailsRoute = AppsAppIdDetailsRouteImport.update({
   id: '/apps/$appId/details',
   path: '/apps/$appId/details',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-// Populate the FileRoutesByPath interface
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/apps/create': {
-      id: '/apps/create'
-      path: '/apps/create'
-      fullPath: '/apps/create'
-      preLoaderRoute: typeof AppsCreateImport
-      parentRoute: typeof rootRoute
-    }
-    '/apps/$appId/details': {
-      id: '/apps/$appId/details'
-      path: '/apps/$appId/details'
-      fullPath: '/apps/$appId/details'
-      preLoaderRoute: typeof AppsAppIdDetailsImport
-      parentRoute: typeof rootRoute
-    }
-  }
-}
-
-// Create and export the route tree
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apps/create': typeof AppsCreateRoute
   '/apps/$appId/details': typeof AppsAppIdDetailsRoute
 }
-
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/apps/create': typeof AppsCreateRoute
   '/apps/$appId/details': typeof AppsAppIdDetailsRoute
 }
-
 export interface FileRoutesById {
-  __root__: typeof rootRoute
+  __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/apps/create': typeof AppsCreateRoute
   '/apps/$appId/details': typeof AppsAppIdDetailsRoute
 }
-
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/apps/create' | '/apps/$appId/details'
@@ -92,11 +53,36 @@ export interface FileRouteTypes {
   id: '__root__' | '/' | '/apps/create' | '/apps/$appId/details'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppsCreateRoute: typeof AppsCreateRoute
   AppsAppIdDetailsRoute: typeof AppsAppIdDetailsRoute
+}
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/create': {
+      id: '/apps/create'
+      path: '/apps/create'
+      fullPath: '/apps/create'
+      preLoaderRoute: typeof AppsCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/$appId/details': {
+      id: '/apps/$appId/details'
+      path: '/apps/$appId/details'
+      fullPath: '/apps/$appId/details'
+      preLoaderRoute: typeof AppsAppIdDetailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -104,31 +90,6 @@ const rootRouteChildren: RootRouteChildren = {
   AppsCreateRoute: AppsCreateRoute,
   AppsAppIdDetailsRoute: AppsAppIdDetailsRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/apps/create",
-        "/apps/$appId/details"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/apps/create": {
-      "filePath": "apps/create.tsx"
-    },
-    "/apps/$appId/details": {
-      "filePath": "apps/$appId/details.tsx"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
