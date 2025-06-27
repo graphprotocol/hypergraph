@@ -7,7 +7,7 @@ import type { Hex } from 'viem';
 
 import { createIdentityKeys } from '../../src/connect/create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from '../../src/identity/identity-encryption.js';
-import { proveIdentityOwnership, verifyIdentityOwnership } from '../../src/identity/prove-ownership.js';
+// import { proveIdentityOwnership, verifyIdentityOwnership } from '../../src/identity/prove-ownership.js';
 import type { Signer } from '../../src/identity/types.js';
 import { decryptKeyBox, encryptKeyBox } from '../../src/key/key-box.js';
 import { bytesToHex, hexToBytes } from '../../src/utils/hexBytesAddressUtils.js';

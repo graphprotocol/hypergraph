@@ -1,5 +1,9 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
-import { _useCreateEntityPublic, _useDeleteEntityPublic, useQuery } from '@graphprotocol/hypergraph-react';
+import {
+  _useCreateEntityPublic,
+  _useDeleteEntityPublic,
+  useHypergraphApp,
+  useQuery,
+} from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Event } from '../schema';
 import { Button } from './ui/button';
@@ -15,6 +19,7 @@ export const Playground = () => {
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const { getSmartSessionClient } = useHypergraphApp();
 
   const deleteEntity = _useDeleteEntityPublic(Event, {
     space: '1c954768-7e14-4f0f-9396-0fe9dcd55fe8',
@@ -34,7 +39,7 @@ export const Playground = () => {
         disabled={isCreating}
         onClick={async () => {
           setIsCreating(true);
-          const walletClient = await getSmartAccountWalletClient();
+          const walletClient = await getSmartSessionClient();
           if (!walletClient) {
             alert('Wallet client not found');
             setIsCreating(false);
@@ -45,7 +50,6 @@ export const Playground = () => {
               name: 'Test Event 42 by Nik',
               sponsors: ['347676a1-7cef-47dc-b6a7-c94fc6237dcd'],
             },
-            // @ts-expect-error - TODO: fix the types error
             { walletClient },
           );
           console.log('created', { success, cid, txResult });
@@ -60,14 +64,13 @@ export const Playground = () => {
           <Button
             onClick={async () => {
               setIsDeleting(true);
-              const walletClient = await getSmartAccountWalletClient();
+              const walletClient = await getSmartSessionClient();
               if (!walletClient) {
                 alert('Wallet client not found');
                 return;
               }
               await deleteEntity({
                 id: event.id,
-                // @ts-expect-error - TODO: fix the types error
                 walletClient,
               });
               setIsDeleting(false);

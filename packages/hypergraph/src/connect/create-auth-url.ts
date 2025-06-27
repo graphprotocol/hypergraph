@@ -13,7 +13,7 @@ export const createAuthUrl = (params: CreateAuthUrlParams) => {
   const {
     redirectUrl,
     connectUrl,
-    expiryMilliseconds = 120000, // 2 minutes
+    expiryMilliseconds = 240000, // 4 minutes
     appId,
   } = params;
   const { publicKey, secretKey } = generateKeypair();

@@ -1,19 +1,20 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { Id } from '@graphprotocol/grc-20';
 import {
   _generateDeleteOps,
   publishOps,
   useCreateEntity,
-  useHypergraphSpace,
+  _useGenerateCreateOps as useGenerateCreateOps,
+  useHypergraphApp,
   useQuery,
+  useSpace,
 } from '@graphprotocol/hypergraph-react';
-import { useGenerateCreateOps } from '@graphprotocol/hypergraph-react/internal/use-generate-create-ops';
 import { Todo2 } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
 
 export const TodosPublic = () => {
-  const space = useHypergraphSpace();
+  const { id: spaceId } = useSpace({ mode: 'public' });
+  const { getSmartSessionClient } = useHypergraphApp();
   const {
     data: dataPublic,
     isLoading: isLoadingPublic,
@@ -50,15 +51,15 @@ export const TodosPublic = () => {
 
           <Button
             onClick={async () => {
-              const smartAccountWalletClient = await getSmartAccountWalletClient();
-              if (!smartAccountWalletClient) {
-                throw new Error('Missing smartAccountWalletClient');
+              const smartSessionClient = await getSmartSessionClient();
+              if (!smartSessionClient) {
+                throw new Error('Missing smartSessionClient');
               }
-              const ops = await _generateDeleteOps({ id: todo.id, space });
+              const ops = await _generateDeleteOps({ id: todo.id, space: spaceId });
               const result = await publishOps({
                 ops,
-                walletClient: smartAccountWalletClient,
-                space,
+                walletClient: smartSessionClient,
+                space: spaceId,
                 name: 'Delete Todo',
               });
               console.log('result', result);
@@ -70,9 +71,9 @@ export const TodosPublic = () => {
       ))}
       <Button
         onClick={async () => {
-          const smartAccountWalletClient = await getSmartAccountWalletClient();
-          if (!smartAccountWalletClient) {
-            throw new Error('Missing smartAccountWalletClient');
+          const smartSessionClient = await getSmartSessionClient();
+          if (!smartSessionClient) {
+            throw new Error('Missing smartSessionClient');
           }
           const userId = Id.Id('8zPJjTGLBDPtUcj6q2tghg');
           const todo = createTodo({
@@ -89,8 +90,8 @@ export const TodosPublic = () => {
           console.log('ops', ops);
           const result = await publishOps({
             ops,
-            walletClient: smartAccountWalletClient,
-            space,
+            walletClient: smartSessionClient,
+            space: spaceId,
             name: 'Create Todo',
           });
           console.log('result', result);

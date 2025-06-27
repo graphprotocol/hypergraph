@@ -1,14 +1,14 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
-import { type GeoSmartAccount, Graph, type Op } from '@graphprotocol/grc-20';
-import { publishOps, useHypergraphSpace } from '@graphprotocol/hypergraph-react';
+import { Graph, type Op } from '@graphprotocol/grc-20';
+import type { Connect } from '@graphprotocol/hypergraph';
+import { publishOps, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
 const createPropertiesAndTypesEvent = async ({
-  smartAccountWalletClient,
+  smartSessionClient,
   space,
-}: { smartAccountWalletClient: GeoSmartAccount; space: string }) => {
+}: { smartSessionClient: Connect.SmartSessionClient; space: string }) => {
   const ops: Array<Op> = [];
   const { id: salaryPropertyId, ops: createSalaryPropertyOps } = Graph.createProperty({
     dataType: 'NUMBER',
@@ -50,10 +50,9 @@ const createPropertiesAndTypesEvent = async ({
 
   const result = await publishOps({
     ops,
-    walletClient: smartAccountWalletClient,
+    walletClient: smartSessionClient,
     space,
     name: 'Create properties and types',
-    network: 'TESTNET',
   });
   return {
     result,
@@ -66,9 +65,9 @@ const createPropertiesAndTypesEvent = async ({
   };
 };
 
-export const CreatePropertiesAndTypesEvent = () => {
+export const CreatePropertiesAndTypesEvent = ({ space }: { space: string }) => {
   const [mapping, setMapping] = useState<string>('');
-  const space = useHypergraphSpace();
+  const { getSmartSessionClient } = useHypergraphApp();
 
   return (
     <div>
@@ -81,9 +80,9 @@ export const CreatePropertiesAndTypesEvent = () => {
       )}
       <Button
         onClick={async () => {
-          const smartAccountWalletClient = await getSmartAccountWalletClient();
-          if (!smartAccountWalletClient) {
-            throw new Error('Missing smartAccountWalletClient');
+          const smartSessionClient = await getSmartSessionClient();
+          if (!smartSessionClient) {
+            throw new Error('Missing smartSessionClient');
           }
           const {
             eventTypeId,
@@ -93,8 +92,7 @@ export const CreatePropertiesAndTypesEvent = () => {
             jobOffersRelationTypeId,
             sponsorsRelationTypeId,
           } = await createPropertiesAndTypesEvent({
-            // @ts-expect-error TODO: in the future we probably only only use one smart account wallet client
-            smartAccountWalletClient,
+            smartSessionClient,
             space,
           });
 
@@ -104,13 +102,15 @@ export const CreatePropertiesAndTypesEvent = () => {
     name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   },
   relations: {
-      sponsors: Id.Id('${sponsorsRelationTypeId}'),
+    sponsors: Id.Id('${sponsorsRelationTypeId}'),
   },
 },
 Company: {
   typeIds: [Id.Id('${companyTypeId}')],
   properties: {
     name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+  },
+  relations: {
     jobOffers: Id.Id('${jobOffersRelationTypeId}'),
   },
 },

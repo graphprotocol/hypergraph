@@ -3,19 +3,17 @@ import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 import { gql, request } from 'graphql-request';
 
 const publicSpacesQueryDocument = gql`
-query Spaces($accountAddress: String!) {
-  spaces(filter: {
-      member: { is: $accountAddress }
-  }) {
-    id
-    type
-    mainVotingAddress
-    personalAddress
-    entity {
-      name
+  query Spaces($accountAddress: String!) {
+    spaces(filter: { member: { is: $accountAddress } }) {
+      id
+      type
+      mainVotingAddress
+      personalAddress
+      entity {
+        name
+      }
     }
   }
-}
 `;
 
 type SpaceQueryResult = {

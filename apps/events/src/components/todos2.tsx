@@ -1,4 +1,3 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
 import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
@@ -6,8 +5,9 @@ import {
   publishOps,
   useCreateEntity,
   useDeleteEntity,
-  useHypergraphSpace,
+  useHypergraphApp,
   useQuery,
+  useSpace,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -34,7 +34,8 @@ export const Todos2 = () => {
     isError: isErrorUsers,
     // preparePublish: preparePublishUsers,
   } = useQuery(User, { mode: 'private' });
-  const space = useHypergraphSpace();
+  const { ready: spaceReady, id: spaceId } = useSpace({ mode: 'private' });
+  const { getSmartSessionClient } = useHypergraphApp();
   const createTodo = useCreateEntity(Todo2);
   const updateTodo = useUpdateEntity(Todo2);
   const createUser = useCreateEntity(User);
@@ -56,6 +57,10 @@ export const Todos2 = () => {
   }, [dataUsers]);
 
   const userOptions = dataUsers.map((user) => ({ value: user.id, label: user.name }));
+
+  if (!spaceReady) {
+    return <div>Loading space...</div>;
+  }
 
   return (
     <>
@@ -216,9 +221,9 @@ export const Todos2 = () => {
           <Button
             onClick={async () => {
               try {
-                const smartAccountWalletClient = await getSmartAccountWalletClient();
-                if (!smartAccountWalletClient) {
-                  throw new Error('Missing smartAccountWalletClient');
+                const smartSessionClient = await getSmartSessionClient();
+                if (!smartSessionClient) {
+                  throw new Error('Missing smartSessionClient');
                 }
                 if (publishData) {
                   setIsPublishing(true);
@@ -229,9 +234,8 @@ export const Todos2 = () => {
                   ].flat();
                   const publishOpsResult = await publishOps({
                     ops,
-                    // @ts-expect-error - TODO: fix the types error
-                    walletClient: smartAccountWalletClient,
-                    space,
+                    walletClient: smartSessionClient,
+                    space: spaceId,
                     name: 'Update users and todos',
                   });
                   console.log('publishOpsResult', publishOpsResult);

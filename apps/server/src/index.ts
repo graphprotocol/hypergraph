@@ -1,6 +1,5 @@
 import { parse } from 'node:url';
-import { Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
-import { GEOGENESIS, GEO_TESTNET } from '@graphprotocol/hypergraph/connect/smart-account';
+import { Connect, Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
@@ -43,7 +42,7 @@ const decodeRequestMessage = Schema.decodeUnknownEither(Messages.RequestMessage)
 const webSocketServer = new WebSocketServer({ noServer: true });
 const PORT = process.env.PORT !== undefined ? Number.parseInt(process.env.PORT) : 3030;
 const app = express();
-const CHAIN = process.env.HYPERGRAPH_CHAIN === 'geogenesis' ? GEOGENESIS : GEO_TESTNET;
+const CHAIN = process.env.HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const RPC_URL = process.env.HYPERGRAPH_RPC_URL ?? CHAIN.rpcUrls.default.http[0];
 
 type AuthenticatedRequest = Request & { accountAddress?: string };
@@ -70,7 +69,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use(cors());
 
 app.get('/', (_req, res) => {
-  res.send('Server is running');
+  res.send('Server is running (v0.0.8)');
 });
 
 app.get('/connect/spaces', async (req, res) => {

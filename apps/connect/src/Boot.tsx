@@ -18,7 +18,8 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient();
 
-const storage = localStorage;
+const addressStorage = localStorage;
+const keysStorage = sessionStorage;
 
 export function Boot() {
   // check if the user is already authenticated on initial render
@@ -26,9 +27,9 @@ export function Boot() {
   // using a layout effect to avoid a re-render
   useLayoutEffect(() => {
     if (!initialRenderAuthCheckRef.current) {
-      const accountAddress = Connect.loadAccountAddress(storage);
+      const accountAddress = Connect.loadAccountAddress(addressStorage);
       if (accountAddress) {
-        const keys = Connect.loadKeys(storage, accountAddress);
+        const keys = Connect.loadKeys(keysStorage, accountAddress);
         if (keys) {
           // user is already authenticated, set state
           StoreConnect.store.send({
@@ -44,15 +45,20 @@ export function Boot() {
     }
   }, []);
 
+  // @ts-expect-error - window is not typed
+  window.APP_VERSION = 'v1';
+  // @ts-expect-error - window is not typed
+  window.VITE_PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
+
   return (
     <QueryClientProvider client={queryClient}>
       <PrivyProvider
-        appId="cmbhnmo1x000bla0mxudtd8z9"
+        appId={import.meta.env.VITE_PRIVY_APP_ID}
         config={{
-          loginMethods: ['email', 'google'],
+          loginMethods: import.meta.env.VITE_PRIVY_PROVIDERS === 'development' ? ['email', 'google'] : ['email'],
           appearance: {
             theme: 'light',
-            accentColor: '#676FFF',
+            accentColor: '#6833ff',
           },
           embeddedWallets: {
             createOnLogin: 'users-without-wallets',

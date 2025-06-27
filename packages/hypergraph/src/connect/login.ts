@@ -1,6 +1,7 @@
 import * as Schema from 'effect/Schema';
 import type { SmartAccountClient } from 'permissionless';
 import type { Address, Chain, Hex, WalletClient } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import { proveIdentityOwnership } from '../identity/prove-ownership.js';
 import * as Messages from '../messages/index.js';
 import { store } from '../store-connect.js';
@@ -9,6 +10,7 @@ import { createIdentityKeys } from './create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from './identity-encryption.js';
 import {
   type SmartAccountParams,
+  addSmartAccountOwner,
   getSmartAccountWalletClient,
   isSmartAccountDeployed,
   smartAccountNeedsUpdate,
@@ -29,17 +31,26 @@ export async function signup(
   smartAccountClient: SmartAccountClient,
   accountAddress: Address,
   syncServerUri: string,
-  storage: Storage,
+  addressStorage: Storage,
+  keysStorage: Storage,
   identityToken: string,
+  chain: Chain,
+  rpcUrl: string,
 ) {
   const keys = createIdentityKeys();
   const { ciphertext, nonce } = await encryptIdentity(signer, keys);
-  const { accountProof, keyProof } = await proveIdentityOwnership(
-    walletClient,
-    smartAccountClient,
-    accountAddress,
-    keys,
-  );
+
+  const localAccount = privateKeyToAccount(keys.signaturePrivateKey as `0x${string}`);
+  // This will deploy the smart account if it's not deployed
+  await addSmartAccountOwner(smartAccountClient, localAccount.address, chain, rpcUrl);
+  const localSmartAccountClient = await getSmartAccountWalletClient({
+    owner: localAccount,
+    address: accountAddress,
+    rpcUrl,
+    chain,
+  });
+
+  const { accountProof, keyProof } = await proveIdentityOwnership(localSmartAccountClient, accountAddress, keys);
 
   const req: Messages.RequestConnectCreateIdentity = {
     keyBox: { signer: await signer.getAddress(), accountAddress, ciphertext, nonce },
@@ -64,8 +75,8 @@ export async function signup(
   if (!decoded.success) {
     throw new Error('Error creating identity');
   }
-  storeKeys(storage, accountAddress, keys);
-
+  storeKeys(keysStorage, accountAddress, keys);
+  storeAccountAddress(addressStorage, accountAddress);
   return {
     accountAddress,
     keys,
@@ -76,7 +87,8 @@ export async function restoreKeys(
   signer: Signer,
   accountAddress: Address,
   syncServerUri: string,
-  storage: Storage,
+  addressStorage: Storage,
+  keysStorage: Storage,
   identityToken: string,
 ) {
   const res = await fetch(new URL('/connect/identity/encrypted', syncServerUri), {
@@ -93,7 +105,8 @@ export async function restoreKeys(
     const { keyBox } = decoded;
     const { ciphertext, nonce } = keyBox;
     const keys = await decryptIdentity(signer, ciphertext, nonce);
-    storeKeys(storage, accountAddress, keys);
+    storeKeys(keysStorage, accountAddress, keys);
+    storeAccountAddress(addressStorage, accountAddress);
     return {
       accountAddress,
       keys,
@@ -102,24 +115,13 @@ export async function restoreKeys(
   throw new Error(`Error fetching identity ${res.status}`);
 }
 
-export async function login({
-  walletClient,
-  signer,
-  syncServerUri,
-  storage,
-  identityToken,
-  rpcUrl,
-  chain,
-}: {
-  walletClient: WalletClient;
-  signer: Signer;
-  syncServerUri: string;
-  storage: Storage;
-  identityToken: string;
-  rpcUrl: string;
-  chain: Chain;
-}) {
-  const accountAddressFromStorage = loadAccountAddress(storage) as Hex;
+const getAndUpdateSmartAccount = async (
+  walletClient: WalletClient,
+  rpcUrl: string,
+  chain: Chain,
+  addressStorage: Storage,
+) => {
+  const accountAddressFromStorage = loadAccountAddress(addressStorage) as Hex;
   const smartAccountParams: SmartAccountParams = {
     owner: walletClient,
     rpcUrl,
@@ -137,29 +139,40 @@ export async function login({
   console.log('is deployed', await isSmartAccountDeployed(smartAccountWalletClient));
   // This will prompt the user to sign a user operation to update the smart account
   if (await smartAccountNeedsUpdate(smartAccountWalletClient, chain, rpcUrl)) {
+    console.log('updating smart account');
     await updateLegacySmartAccount(smartAccountWalletClient, chain, rpcUrl);
+    smartAccountParams.address = smartAccountWalletClient.account.address;
+    // Create the client again to ensure we have the 7579 config now
+    return getSmartAccountWalletClient(smartAccountParams);
   }
+  return smartAccountWalletClient;
+};
 
-  // TODO: remove this once we manage to get counterfactual signatures working
-  if (!(await isSmartAccountDeployed(smartAccountWalletClient))) {
-    console.log('sending dummy userOp to deploy smart account');
-    if (!walletClient.account) {
-      throw new Error('Wallet client account not found');
-    }
-    const tx = await smartAccountWalletClient.sendUserOperation({
-      calls: [{ to: walletClient.account.address, data: '0x' }],
-      account: smartAccountWalletClient.account,
-    });
-
-    console.log('tx', tx);
-    const receipt = await smartAccountWalletClient.waitForUserOperationReceipt({ hash: tx });
-    console.log('receipt', receipt);
+export async function login({
+  walletClient,
+  signer,
+  syncServerUri,
+  addressStorage,
+  keysStorage,
+  identityToken,
+  rpcUrl,
+  chain,
+}: {
+  walletClient: WalletClient;
+  signer: Signer;
+  syncServerUri: string;
+  addressStorage: Storage;
+  keysStorage: Storage;
+  identityToken: string;
+  rpcUrl: string;
+  chain: Chain;
+}) {
+  const smartAccountWalletClient = await getAndUpdateSmartAccount(walletClient, rpcUrl, chain, addressStorage);
+  if (!smartAccountWalletClient.account) {
+    throw new Error('Smart account wallet client account not found');
   }
   const accountAddress = smartAccountWalletClient.account.address;
-  if (accountAddressFromStorage === undefined) {
-    storeAccountAddress(storage, accountAddress);
-  }
-  // const keys = loadKeys(storage, accountAddress);
+
   let authData: {
     accountAddress: Address;
     keys: IdentityKeys;
@@ -172,11 +185,14 @@ export async function login({
       smartAccountWalletClient,
       accountAddress,
       syncServerUri,
-      storage,
+      addressStorage,
+      keysStorage,
       identityToken,
+      chain,
+      rpcUrl,
     );
   } else {
-    authData = await restoreKeys(signer, accountAddress, syncServerUri, storage, identityToken);
+    authData = await restoreKeys(signer, accountAddress, syncServerUri, addressStorage, keysStorage, identityToken);
   }
   store.send({ type: 'reset' });
   store.send({

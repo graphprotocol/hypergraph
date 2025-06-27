@@ -43,6 +43,7 @@ export const createSpace = async ({
 
   const result = await Effect.runPromiseExit(SpaceEvents.applyEvent({ event, state: undefined, getVerifiedIdentity }));
   if (Exit.isFailure(result)) {
+    console.error('Create space: Invalid event', result.cause);
     throw new Error('Invalid event');
   }
 

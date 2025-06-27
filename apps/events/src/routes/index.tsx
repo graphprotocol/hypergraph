@@ -11,6 +11,9 @@ export const Route = createFileRoute('/')({
   component: Index,
 });
 
+// @ts-expect-error
+window.HYPERGRAPH_STORE = store;
+
 function Index() {
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const { data: privateSpaces } = useSpaces({ mode: 'private' });
@@ -19,7 +22,6 @@ function Index() {
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
   const {
     createSpace,
-    listSpaces,
     listInvitations,
     invitations,
     acceptInvitation,
@@ -30,11 +32,10 @@ function Index() {
 
   useEffect(() => {
     if (!isConnecting) {
-      listSpaces();
       listInvitations();
       getOwnAccountInboxes();
     }
-  }, [isConnecting, listSpaces, listInvitations, getOwnAccountInboxes]);
+  }, [isConnecting, listInvitations, getOwnAccountInboxes]);
 
   if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
@@ -79,9 +80,9 @@ function Index() {
           disabled={true} // disabled until we have delegation for creating a space
           onClick={async (event) => {
             event.preventDefault();
-            // const smartAccountWalletClient = await getSmartAccountWalletClient();
-            // if (!smartAccountWalletClient) {
-            //   throw new Error('Missing smartAccountWalletClient');
+            // const smartSessionClient = await getSmartSessionClient();
+            // if (!smartSessionClient) {
+            //   throw new Error('Missing smartSessionClient');
             // }
             createSpace({ name: spaceName });
             setSpaceName('');
