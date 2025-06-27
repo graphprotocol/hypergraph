@@ -1,9 +1,8 @@
 import { execSync } from 'node:child_process';
 import * as fsSync from 'node:fs';
 import * as nodePath from 'node:path';
-import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
-import * as FileSystem from '@effect/platform/FileSystem';
-import * as Path from '@effect/platform/Path';
+import { FileSystem, Path } from '@effect/platform';
+import { NodeFileSystem } from '@effect/platform-node';
 import { Data, Effect } from 'effect';
 
 import * as Domain from '../domain/Domain.js';

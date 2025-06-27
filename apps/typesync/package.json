@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph-cli",
-  "version": "0.0.0-alpha.8",
+  "version": "0.0.0-alpha.13",
   "type": "module",
   "license": "MIT",
   "description": "CLI toolchain to view existing types, select, pick, extend to create schemas and generate a @graphprotocol/hypergraph schema.",

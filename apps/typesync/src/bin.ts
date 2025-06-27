@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-import * as NodeContext from '@effect/platform-node/NodeContext';
-import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
-import * as NodeRuntime from '@effect/platform-node/NodeRuntime';
+import { NodeContext, NodeFileSystem, NodeRuntime } from '@effect/platform-node';
 import * as Effect from 'effect/Effect';
 
 import { run } from './Cli.js';
