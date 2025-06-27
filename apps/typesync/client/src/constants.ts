@@ -1,2 +1,2 @@
 export const API_ROOT_URL = 'http://localhost:3000/api/v1';
-export const ROOT_SPACE_ID = '8ef40bdd-cf69-4ad7-a9a1-f71c15653994';
+export const ROOT_SPACE_ID = '64ed9ffa-e7b3-40f6-ae99-fbf6112d10f8';

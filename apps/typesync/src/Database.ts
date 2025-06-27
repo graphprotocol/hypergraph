@@ -12,8 +12,6 @@ const SqlLive = SqliteClient.layer({
 });
 const MigratorLive = Migrator.layer({
   loader: Migrator.fromFileSystem(fileURLToPath(new URL('migrations', import.meta.url))),
-  // Where to put the `_schema.sql` file
-  schemaDirectory: 'src/migrations',
 }).pipe(Layer.provide(SqlLive));
 
 const DatabaseLive = Layer.mergeAll(SqlLive, MigratorLive).pipe(Layer.provide(NodeContext.layer));
