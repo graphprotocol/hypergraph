@@ -104,7 +104,6 @@ function CreateAppPage() {
       await mutateAsync(value).then(() => formApi.reset(undefined, { keepDefaultValues: true }));
     },
   });
-  const allErrors = useStore(createAppForm.store, (state) => state.errors);
   const formattedAppName = useStore(createAppForm.store, (state) =>
     pipe(state.values.name, EffectString.toLowerCase, EffectString.replaceAll(/\s/g, '-')),
   );
@@ -792,8 +791,6 @@ function CreateAppPage() {
             </div>
           </div>
         </TabsPrimitive.Content>
-
-        <div>{EffectArray.filter(allErrors, (err) => err != null).map((record) => JSON.stringify(record))}</div>
 
         <TabsPrimitive.List className="mt-6 flex items-center justify-end gap-x-6">
           <Link to="/" className="text-sm/6 font-semibold text-gray-900 dark:text-white">

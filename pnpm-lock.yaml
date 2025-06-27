@@ -95,7 +95,7 @@ importers:
         version: 4.1.10(vite@6.3.5(@types/node@22.15.15)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.19.4)(yaml@2.7.0))
       '@tanstack/router-devtools':
         specifier: ^1.120.2
-        version: 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
+        version: 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
       '@tanstack/router-plugin':
         specifier: ^1.120.2
         version: 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(vite@6.3.5(@types/node@22.15.15)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.19.4)(yaml@2.7.0))(webpack@5.99.8)
@@ -219,7 +219,7 @@ importers:
         version: 4.1.5(vite@6.3.5(@types/node@22.15.15)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.19.4)(yaml@2.7.0))
       '@tanstack/router-devtools':
         specifier: ^1.120.2
-        version: 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
+        version: 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
       '@tanstack/router-plugin':
         specifier: ^1.120.2
         version: 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(vite@6.3.5(@types/node@22.15.15)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.19.4)(yaml@2.7.0))(webpack@5.99.8)
@@ -383,7 +383,7 @@ importers:
         version: 1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-router-devtools':
         specifier: 1.120.15
-        version: 1.120.15(@tanstack/react-router@1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
+        version: 1.120.15(@tanstack/react-router@1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
       better-sqlite3:
         specifier: ^11.10.0
         version: 11.10.0
@@ -501,23 +501,23 @@ importers:
         specifier: ^1.1.12
         version: 1.1.12(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tailwindcss/vite':
-        specifier: ^4.1.8
+        specifier: ^4.1.10
         version: 4.1.10(vite@6.3.5(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.19.4)(yaml@2.7.0))
       '@tanstack/react-form':
-        specifier: ^1.12.1
-        version: 1.12.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^1.12.3
+        version: 1.12.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-query':
-        specifier: ^5.79.2
-        version: 5.79.2(react@19.1.0)
+        specifier: ^5.80.7
+        version: 5.81.4(react@19.1.0)
       '@tanstack/react-query-devtools':
-        specifier: ^5.79.2
-        version: 5.79.2(@tanstack/react-query@5.79.2(react@19.1.0))(react@19.1.0)
+        specifier: ^5.80.7
+        version: 5.81.4(@tanstack/react-query@5.81.4(react@19.1.0))(react@19.1.0)
       '@tanstack/react-router':
-        specifier: ^1.120.15
-        version: 1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^1.121.2
+        version: 1.121.41(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-router-devtools':
-        specifier: 1.120.15
-        version: 1.120.15(@tanstack/react-router@1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
+        specifier: 1.121.8
+        version: 1.121.8(@tanstack/react-router@1.121.41(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(solid-js@1.9.5)(tiny-invariant@1.3.3)
       better-sqlite3:
         specifier: ^11.10.0
         version: 11.10.0
@@ -525,7 +525,7 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       effect:
-        specifier: ^3.16.10
+        specifier: latest
         version: 3.16.10
       graphql:
         specifier: ^16.11.0
@@ -546,10 +546,10 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
       shiki:
-        specifier: ^3.4.2
-        version: 3.4.2
+        specifier: ^3.6.0
+        version: 3.7.0
       tailwindcss:
-        specifier: ^4.1.8
+        specifier: ^4.1.10
         version: 4.1.10
 
   docs:
@@ -4165,20 +4165,38 @@ packages:
   '@shikijs/core@3.4.2':
     resolution: {integrity: sha512-AG8vnSi1W2pbgR2B911EfGqtLE9c4hQBYkv/x7Z+Kt0VxhgQKcW7UNDVYsu9YxwV6u+OJrvdJrMq6DNWoBjihQ==}
 
+  '@shikijs/core@3.7.0':
+    resolution: {integrity: sha512-yilc0S9HvTPyahHpcum8eonYrQtmGTU0lbtwxhA6jHv4Bm1cAdlPFRCJX4AHebkCm75aKTjjRAW+DezqD1b/cg==}
+
   '@shikijs/engine-javascript@3.4.2':
     resolution: {integrity: sha512-1/adJbSMBOkpScCE/SB6XkjJU17ANln3Wky7lOmrnpl+zBdQ1qXUJg2GXTYVHRq+2j3hd1DesmElTXYDgtfSOQ==}
+
+  '@shikijs/engine-javascript@3.7.0':
+    resolution: {integrity: sha512-0t17s03Cbv+ZcUvv+y33GtX75WBLQELgNdVghnsdhTgU3hVcWcMsoP6Lb0nDTl95ZJfbP1mVMO0p3byVh3uuzA==}
 
   '@shikijs/engine-oniguruma@3.4.2':
     resolution: {integrity: sha512-zcZKMnNndgRa3ORja6Iemsr3DrLtkX3cAF7lTJkdMB6v9alhlBsX9uNiCpqofNrXOvpA3h6lHcLJxgCIhVOU5Q==}
 
+  '@shikijs/engine-oniguruma@3.7.0':
+    resolution: {integrity: sha512-5BxcD6LjVWsGu4xyaBC5bu8LdNgPCVBnAkWTtOCs/CZxcB22L8rcoWfv7Hh/3WooVjBZmFtyxhgvkQFedPGnFw==}
+
   '@shikijs/langs@3.4.2':
     resolution: {integrity: sha512-H6azIAM+OXD98yztIfs/KH5H4PU39t+SREhmM8LaNXyUrqj2mx+zVkr8MWYqjceSjDw9I1jawm1WdFqU806rMA==}
+
+  '@shikijs/langs@3.7.0':
+    resolution: {integrity: sha512-1zYtdfXLr9xDKLTGy5kb7O0zDQsxXiIsw1iIBcNOO8Yi5/Y1qDbJ+0VsFoqTlzdmneO8Ij35g7QKF8kcLyznCQ==}
 
   '@shikijs/themes@3.4.2':
     resolution: {integrity: sha512-qAEuAQh+brd8Jyej2UDDf+b4V2g1Rm8aBIdvt32XhDPrHvDkEnpb7Kzc9hSuHUxz0Iuflmq7elaDuQAP9bHIhg==}
 
+  '@shikijs/themes@3.7.0':
+    resolution: {integrity: sha512-VJx8497iZPy5zLiiCTSIaOChIcKQwR0FebwE9S3rcN0+J/GTWwQ1v/bqhTbpbY3zybPKeO8wdammqkpXc4NVjQ==}
+
   '@shikijs/types@3.4.2':
     resolution: {integrity: sha512-zHC1l7L+eQlDXLnxvM9R91Efh2V4+rN3oMVS2swCBssbj2U/FBwybD1eeLaq8yl/iwT+zih8iUbTBCgGZOYlVg==}
+
+  '@shikijs/types@3.7.0':
+    resolution: {integrity: sha512-MGaLeaRlSWpnP0XSAum3kP3a8vtcTsITqoEPYdt3lQG3YCdQH4DnEhodkYcNMcU0uW0RffhoD1O3e0vG5eSBBg==}
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
@@ -4733,8 +4751,15 @@ packages:
   '@tanstack/form-core@1.12.1':
     resolution: {integrity: sha512-cCR3udteesUakO0K7T+2GkL8F2HKp7+khJmdLbebz63XbKCuHqSuEtC+bz4cw+Ad6eZxV2hvTkmZxdn39F8XUw==}
 
+  '@tanstack/form-core@1.12.4':
+    resolution: {integrity: sha512-BhfNI5sEjI68Im1Vqezf9w68fJL4EB80cqW5w0zb/MV1erHHsXNRwLGmljF88VnCx1t/xd4fmF0D08wNajBauQ==}
+
   '@tanstack/history@1.115.0':
     resolution: {integrity: sha512-K7JJNrRVvyjAVnbXOH2XLRhFXDkeP54Kt2P4FR1Kl2KDGlIbkua5VqZQD2rot3qaDrpufyUa63nuLai1kOLTsQ==}
+    engines: {node: '>=12'}
+
+  '@tanstack/history@1.121.34':
+    resolution: {integrity: sha512-YL8dGi5ZU+xvtav2boRlw4zrRghkY6hvdcmHhA0RGSJ/CBgzv+cbADW9eYJLx74XMZvIQ1pp6VMbrpXnnM5gHA==}
     engines: {node: '>=12'}
 
   '@tanstack/query-core@5.75.5':
@@ -4743,11 +4768,29 @@ packages:
   '@tanstack/query-core@5.79.2':
     resolution: {integrity: sha512-kr+KQrBuqd6495eP9S41BoftFI1H50XA9O+6FmbnTx/Te6bjiq1mj8rt9rJjW3YZSO2aaUNUres0TWesJW1j1g==}
 
+  '@tanstack/query-core@5.81.4':
+    resolution: {integrity: sha512-z0yBgRFTPIEYcjFFiahOwtEU3kEKpF5Rwls7UjBCsRghmhwIXyxd5U2p0yEmUfcwm85W4XZkt4dc1OWc5my3Yw==}
+
   '@tanstack/query-devtools@5.76.0':
     resolution: {integrity: sha512-1p92nqOBPYVqVDU0Ua5nzHenC6EGZNrLnB2OZphYw8CNA1exuvI97FVgIKON7Uug3uQqvH/QY8suUKpQo8qHNQ==}
 
+  '@tanstack/query-devtools@5.81.2':
+    resolution: {integrity: sha512-jCeJcDCwKfoyyBXjXe9+Lo8aTkavygHHsUHAlxQKKaDeyT0qyQNLKl7+UyqYH2dDF6UN/14873IPBHchcsU+Zg==}
+
   '@tanstack/react-form@1.12.1':
     resolution: {integrity: sha512-wcxqqM9mKcjy4ePUQNYZDpuK1dicGHGYbM21UujKNGY2maYk7eXPmZ2xeCYAOEl2rpCjgOf2MZHlfi3Exlaocg==}
+    peerDependencies:
+      '@tanstack/react-start': ^1.112.0
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+      vinxi: ^0.5.0
+    peerDependenciesMeta:
+      '@tanstack/react-start':
+        optional: true
+      vinxi:
+        optional: true
+
+  '@tanstack/react-form@1.12.4':
+    resolution: {integrity: sha512-MsWHTTUl1Db7tcawbREEMjUtnjK1wC9HnwEITFFhO6e9jN4vR8gb7qRM6TDKg0tkBf42fd5jhEI5qCYA8Sl2pQ==}
     peerDependencies:
       '@tanstack/react-start': ^1.112.0
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -4764,6 +4807,12 @@ packages:
       '@tanstack/react-query': ^5.79.2
       react: ^18 || ^19
 
+  '@tanstack/react-query-devtools@5.81.4':
+    resolution: {integrity: sha512-zFg7rzOmM9Q+Ym/TujWR4HD+jKwQd+N8WuWZRmHU8sjI2flyxWTWIEQvl9BFt+HiNA6leS3ODZ9SHYmEb3zduw==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.81.4
+      react: ^18 || ^19
+
   '@tanstack/react-query@5.75.5':
     resolution: {integrity: sha512-QrLCJe40BgBVlWdAdf2ZEVJ0cISOuEy/HKupId1aTKU6gPJZVhSvZpH+Si7csRflCJphzlQ77Yx6gUxGW9o0XQ==}
     peerDependencies:
@@ -4771,6 +4820,11 @@ packages:
 
   '@tanstack/react-query@5.79.2':
     resolution: {integrity: sha512-kadeprsH6bWuhHCpqukXHRykJkxcLBxAaF0cQ05yawPmLZ/KiCpR1DyQenonF7A/70rnRUxhJD0RJejqk9wImQ==}
+    peerDependencies:
+      react: ^18 || ^19
+
+  '@tanstack/react-query@5.81.4':
+    resolution: {integrity: sha512-bBrf5kTNr9t5BnskvyHQGwe2LRZsgnmx1sClyRQbAHxhSJfnT6z9h27IfGpY6JtfEH5y5R9jJegTG/93zyox/A==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -4790,6 +4844,14 @@ packages:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
+  '@tanstack/react-router-devtools@1.121.8':
+    resolution: {integrity: sha512-QwFG4kWTNV0jSjJDvMs5LfK7X+GPQz9NZhSDStZMkC6xu+s+n+Wk/Szv/FDZ/wqjcJ3/k0rh4C5DEfZvMtSdOg==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      '@tanstack/react-router': ^1.121.2
+      react: '>=18.0.0 || >=19.0.0'
+      react-dom: '>=18.0.0 || >=19.0.0'
+
   '@tanstack/react-router@1.120.15':
     resolution: {integrity: sha512-apzBmXh4pHwqUGU3kD8y2FJMi7rVoUbRxh5oV7v8kEb6Aq5Xpdo+OcpThw8h/M2zv7v4Ef8IoY6WFCKKu3HBjQ==}
     engines: {node: '>=12'}
@@ -4799,6 +4861,13 @@ packages:
 
   '@tanstack/react-router@1.120.2':
     resolution: {integrity: sha512-CNduh/O3miW6A/WDMd2cfca8D8x+kVJTYwG5fMaBfcEF/bfjneDnEWXsmKLMdB2iLc6miaRQu66ryPSMdIBUAw==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: '>=18.0.0 || >=19.0.0'
+      react-dom: '>=18.0.0 || >=19.0.0'
+
+  '@tanstack/react-router@1.121.41':
+    resolution: {integrity: sha512-hbk3AbIJ5A+VtManyuaLCrrJu562bR/GvkiYxBR7Sgk3OTWcc1vuAjbpEmgjCaD7lFSJGwgQqMLsUmqu9u3URw==}
     engines: {node: '>=12'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
@@ -4840,6 +4909,10 @@ packages:
     resolution: {integrity: sha512-soLj+mEuvSxAVFK/3b85IowkkvmSuQL6J0RSIyKJFGFgy0CmUzpcBGEO99+JNWvvvzHgIoY4F4KtLIN+rvFSFA==}
     engines: {node: '>=12'}
 
+  '@tanstack/router-core@1.121.40':
+    resolution: {integrity: sha512-4tZJXgKPUH+fYUO9u6PE2Kq0MXf/ZYxCIkTiHzl20wrQXwQ0pElQkpPcjwJa+ayvmLR5cT+0fPQgWGgQubX2Fw==}
+    engines: {node: '>=12'}
+
   '@tanstack/router-devtools-core@1.119.0':
     resolution: {integrity: sha512-CH2Hx4J2UOigFtKR0anQfNiWQfidV2S7AZafkeo/S885IxwoFK7xXWzYxNbUhCDJC2tsBJ+XKjgxeBv5wGi62Q==}
     engines: {node: '>=12'}
@@ -4857,6 +4930,18 @@ packages:
     engines: {node: '>=12'}
     peerDependencies:
       '@tanstack/router-core': ^1.120.15
+      csstype: ^3.0.10
+      solid-js: '>=1.9.5'
+      tiny-invariant: ^1.3.3
+    peerDependenciesMeta:
+      csstype:
+        optional: true
+
+  '@tanstack/router-devtools-core@1.121.40':
+    resolution: {integrity: sha512-V7zd1Ql48FXu7mg9kbvwxnsSdT4zNsHVTseES90a2IonyU6tF14TdtiwRhXrMKK/JGu7NdIHkyc4WqSIAPyFEw==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      '@tanstack/router-core': ^1.121.40
       csstype: ^3.0.10
       solid-js: '>=1.9.5'
       tiny-invariant: ^1.3.3
@@ -8009,6 +8094,10 @@ packages:
     resolution: {integrity: sha512-YKBKVkKhty7s8rxddb40oOkuP0NbaeXrQvLin6QMHL7Ypiy2RW9LwOVrVgZRyOrhQlayMd9t+D8yDy8MKFTSDQ==}
     engines: {node: '>= 18.0.0'}
 
+  isbot@5.1.28:
+    resolution: {integrity: sha512-qrOp4g3xj8YNse4biorv6O5ZShwsJM0trsoda4y7j/Su7ZtTTfVXFzbKkpgcSoDrHS8FcTuUwcU04YimZlZOxw==}
+    engines: {node: '>=18'}
+
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
@@ -10635,6 +10724,9 @@ packages:
 
   shiki@3.4.2:
     resolution: {integrity: sha512-wuxzZzQG8kvZndD7nustrNFIKYJ1jJoWIPaBpVe2+KHSvtzMi4SBjOxrigs8qeqce/l3U0cwiC+VAkLKSunHQQ==}
+
+  shiki@3.7.0:
+    resolution: {integrity: sha512-ZcI4UT9n6N2pDuM2n3Jbk0sR4Swzq43nLPgS/4h0E3B/NrFn2HKElrDtceSf8Zx/OWYOo7G1SAtBLypCp+YXqg==}
 
   side-channel-list@1.0.0:
     resolution: {integrity: sha512-FCLHtRD/gnpCiCHEiJLOwdmFP+wzCmDEkc9y7NsYxeF4u7Btsn1ZuwgwJGxImImHicJArLP4R0yX4c2KCrMrTA==}
@@ -17185,9 +17277,22 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
+  '@shikijs/core@3.7.0':
+    dependencies:
+      '@shikijs/types': 3.7.0
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.4
+      hast-util-to-html: 9.0.5
+
   '@shikijs/engine-javascript@3.4.2':
     dependencies:
       '@shikijs/types': 3.4.2
+      '@shikijs/vscode-textmate': 10.0.2
+      oniguruma-to-es: 4.3.3
+
+  '@shikijs/engine-javascript@3.7.0':
+    dependencies:
+      '@shikijs/types': 3.7.0
       '@shikijs/vscode-textmate': 10.0.2
       oniguruma-to-es: 4.3.3
 
@@ -17196,15 +17301,33 @@ snapshots:
       '@shikijs/types': 3.4.2
       '@shikijs/vscode-textmate': 10.0.2
 
+  '@shikijs/engine-oniguruma@3.7.0':
+    dependencies:
+      '@shikijs/types': 3.7.0
+      '@shikijs/vscode-textmate': 10.0.2
+
   '@shikijs/langs@3.4.2':
     dependencies:
       '@shikijs/types': 3.4.2
+
+  '@shikijs/langs@3.7.0':
+    dependencies:
+      '@shikijs/types': 3.7.0
 
   '@shikijs/themes@3.4.2':
     dependencies:
       '@shikijs/types': 3.4.2
 
+  '@shikijs/themes@3.7.0':
+    dependencies:
+      '@shikijs/types': 3.7.0
+
   '@shikijs/types@3.4.2':
+    dependencies:
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.4
+
+  '@shikijs/types@3.7.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -17738,17 +17861,37 @@ snapshots:
     dependencies:
       '@tanstack/store': 0.7.1
 
+  '@tanstack/form-core@1.12.4':
+    dependencies:
+      '@tanstack/store': 0.7.1
+
   '@tanstack/history@1.115.0': {}
+
+  '@tanstack/history@1.121.34': {}
 
   '@tanstack/query-core@5.75.5': {}
 
   '@tanstack/query-core@5.79.2': {}
 
+  '@tanstack/query-core@5.81.4': {}
+
   '@tanstack/query-devtools@5.76.0': {}
+
+  '@tanstack/query-devtools@5.81.2': {}
 
   '@tanstack/react-form@1.12.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@tanstack/form-core': 1.12.1
+      '@tanstack/react-store': 0.7.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      decode-formdata: 0.9.0
+      devalue: 5.1.1
+      react: 19.1.0
+    transitivePeerDependencies:
+      - react-dom
+
+  '@tanstack/react-form@1.12.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/form-core': 1.12.4
       '@tanstack/react-store': 0.7.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       decode-formdata: 0.9.0
       devalue: 5.1.1
@@ -17762,6 +17905,12 @@ snapshots:
       '@tanstack/react-query': 5.79.2(react@19.1.0)
       react: 19.1.0
 
+  '@tanstack/react-query-devtools@5.81.4(@tanstack/react-query@5.81.4(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-devtools': 5.81.2
+      '@tanstack/react-query': 5.81.4(react@19.1.0)
+      react: 19.1.0
+
   '@tanstack/react-query@5.75.5(react@19.1.0)':
     dependencies:
       '@tanstack/query-core': 5.75.5
@@ -17772,10 +17921,15 @@ snapshots:
       '@tanstack/query-core': 5.79.2
       react: 19.1.0
 
-  '@tanstack/react-router-devtools@1.120.15(@tanstack/react-router@1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)':
+  '@tanstack/react-query@5.81.4(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-core': 5.81.4
+      react: 19.1.0
+
+  '@tanstack/react-router-devtools@1.120.15(@tanstack/react-router@1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)':
     dependencies:
       '@tanstack/react-router': 1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@tanstack/router-devtools-core': 1.120.15(@tanstack/router-core@1.120.15)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)
+      '@tanstack/router-devtools-core': 1.120.15(@tanstack/router-core@1.121.40)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       solid-js: 1.9.5
@@ -17784,16 +17938,28 @@ snapshots:
       - csstype
       - tiny-invariant
 
-  '@tanstack/react-router-devtools@1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)':
+  '@tanstack/react-router-devtools@1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)':
     dependencies:
       '@tanstack/react-router': 1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@tanstack/router-devtools-core': 1.119.0(@tanstack/router-core@1.120.15)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)
+      '@tanstack/router-devtools-core': 1.119.0(@tanstack/router-core@1.121.40)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       solid-js: 1.9.5
     transitivePeerDependencies:
       - '@tanstack/router-core'
       - csstype
+      - tiny-invariant
+
+  '@tanstack/react-router-devtools@1.121.8(@tanstack/react-router@1.121.41(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(solid-js@1.9.5)(tiny-invariant@1.3.3)':
+    dependencies:
+      '@tanstack/react-router': 1.121.41(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@tanstack/router-devtools-core': 1.121.40(@tanstack/router-core@1.121.40)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+    transitivePeerDependencies:
+      - '@tanstack/router-core'
+      - csstype
+      - solid-js
       - tiny-invariant
 
   '@tanstack/react-router@1.120.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
@@ -17812,6 +17978,18 @@ snapshots:
       '@tanstack/history': 1.115.0
       '@tanstack/react-store': 0.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/router-core': 1.119.0
+      jsesc: 3.1.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      tiny-invariant: 1.3.3
+      tiny-warning: 1.0.3
+
+  '@tanstack/react-router@1.121.41(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/history': 1.121.34
+      '@tanstack/react-store': 0.7.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@tanstack/router-core': 1.121.40
+      isbot: 5.1.28
       jsesc: 3.1.0
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
@@ -17862,9 +18040,18 @@ snapshots:
       '@tanstack/store': 0.7.1
       tiny-invariant: 1.3.3
 
-  '@tanstack/router-devtools-core@1.119.0(@tanstack/router-core@1.120.15)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)':
+  '@tanstack/router-core@1.121.40':
     dependencies:
-      '@tanstack/router-core': 1.120.15
+      '@tanstack/history': 1.121.34
+      '@tanstack/store': 0.7.1
+      cookie-es: 1.2.2
+      jsesc: 3.1.0
+      tiny-invariant: 1.3.3
+      tiny-warning: 1.0.3
+
+  '@tanstack/router-devtools-core@1.119.0(@tanstack/router-core@1.121.40)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)':
+    dependencies:
+      '@tanstack/router-core': 1.121.40
       clsx: 2.1.1
       goober: 2.1.16(csstype@3.1.3)
       solid-js: 1.9.5
@@ -17872,9 +18059,9 @@ snapshots:
     optionalDependencies:
       csstype: 3.1.3
 
-  '@tanstack/router-devtools-core@1.120.15(@tanstack/router-core@1.120.15)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)':
+  '@tanstack/router-devtools-core@1.120.15(@tanstack/router-core@1.121.40)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)':
     dependencies:
-      '@tanstack/router-core': 1.120.15
+      '@tanstack/router-core': 1.121.40
       clsx: 2.1.1
       goober: 2.1.16(csstype@3.1.3)
       solid-js: 1.9.5
@@ -17882,10 +18069,20 @@ snapshots:
     optionalDependencies:
       csstype: 3.1.3
 
-  '@tanstack/router-devtools@1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)':
+  '@tanstack/router-devtools-core@1.121.40(@tanstack/router-core@1.121.40)(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)':
+    dependencies:
+      '@tanstack/router-core': 1.121.40
+      clsx: 2.1.1
+      goober: 2.1.16(csstype@3.1.3)
+      solid-js: 1.9.5
+      tiny-invariant: 1.3.3
+    optionalDependencies:
+      csstype: 3.1.3
+
+  '@tanstack/router-devtools@1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)':
     dependencies:
       '@tanstack/react-router': 1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@tanstack/react-router-devtools': 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.120.15)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
+      '@tanstack/react-router-devtools': 1.120.2(@tanstack/react-router@1.120.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.121.40)(csstype@3.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tiny-invariant@1.3.3)
       clsx: 2.1.1
       goober: 2.1.16(csstype@3.1.3)
       react: 19.1.0
@@ -19254,7 +19451,7 @@ snapshots:
 
   babel-plugin-macros@3.1.0:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.27.6
       cosmiconfig: 7.1.0
       resolve: 1.22.10
 
@@ -21995,6 +22192,8 @@ snapshots:
   isarray@2.0.5: {}
 
   isbinaryfile@5.0.4: {}
+
+  isbot@5.1.28: {}
 
   isexe@2.0.0: {}
 
@@ -25179,6 +25378,17 @@ snapshots:
       '@shikijs/langs': 3.4.2
       '@shikijs/themes': 3.4.2
       '@shikijs/types': 3.4.2
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.4
+
+  shiki@3.7.0:
+    dependencies:
+      '@shikijs/core': 3.7.0
+      '@shikijs/engine-javascript': 3.7.0
+      '@shikijs/engine-oniguruma': 3.7.0
+      '@shikijs/langs': 3.7.0
+      '@shikijs/themes': 3.7.0
+      '@shikijs/types': 3.7.0
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
