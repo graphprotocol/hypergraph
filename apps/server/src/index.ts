@@ -1,9 +1,9 @@
-import { parse } from 'node:url';
 import { Connect, Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import WebSocket, { WebSocketServer } from 'ws';
 import { addAppIdentityToSpaces } from './handlers/add-app-identity-to-spaces.js';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
@@ -69,7 +69,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use(cors());
 
 app.get('/', (_req, res) => {
-  res.send('Server is running (v0.0.6)');
+  res.send('Server is running (v0.0.7)');
 });
 
 app.get('/connect/spaces', async (req, res) => {
