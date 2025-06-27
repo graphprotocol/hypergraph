@@ -3,11 +3,13 @@ packages:
   - packages/*
   - docs
 onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
-  - "@swc/core"
-  - "@tailwindcss/oxide"
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@swc/core'
+  - '@tailwindcss/oxide'
   - better-sqlite3
   - core-js
   - core-js-pure
+  - esbuild
   - prisma
+  - sharp
