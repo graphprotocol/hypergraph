@@ -8,7 +8,8 @@ import { type WalletClient, createWalletClient, custom } from 'viem';
 
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const syncServerUri = import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN;
-const storage = localStorage;
+const addressStorage = localStorage;
+const keysStorage = sessionStorage;
 
 export const Route = createLazyFileRoute('/login')({
   component: () => <Login />,
@@ -52,7 +53,16 @@ function Login() {
       console.log(walletClient);
       console.log(rpcUrl);
       console.log(CHAIN);
-      await Connect.login({ walletClient, signer, syncServerUri, storage, identityToken, rpcUrl, chain: CHAIN });
+      await Connect.login({
+        walletClient,
+        signer,
+        syncServerUri,
+        addressStorage,
+        keysStorage,
+        identityToken,
+        rpcUrl,
+        chain: CHAIN,
+      });
     },
     [identityToken, signMessage],
   );

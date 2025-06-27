@@ -12,6 +12,7 @@ import { Effect, Schema } from 'effect';
 import { TriangleAlert } from 'lucide-react';
 import { useEffect } from 'react';
 import { createWalletClient, custom } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 
@@ -381,9 +382,11 @@ function AuthenticateComponent() {
           })) ?? [];
       console.log('spaces', spaces);
 
+      const localAccount = privateKeyToAccount(keys.signaturePrivateKey as `0x${string}`);
+      console.log('local account', localAccount.address);
       // TODO: add additional actions (must be passed from the app)
       const permissionId = await Connect.createSmartSession(
-        walletClient,
+        localAccount,
         accountAddress,
         newAppIdentity.addressPrivateKey,
         CHAIN,
@@ -396,12 +399,13 @@ function AuthenticateComponent() {
       );
       console.log('smart session created');
       const smartAccountClient = await Connect.getSmartAccountWalletClient({
-        owner: walletClient,
+        owner: localAccount,
         address: accountAddress,
         chain: CHAIN,
         rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
       });
 
+      console.log('encrypting app identity');
       const { ciphertext, nonce } = await Connect.encryptAppIdentity(
         signer,
         newAppIdentity.address,
@@ -409,8 +413,8 @@ function AuthenticateComponent() {
         permissionId,
         keys,
       );
+      console.log('proving ownership');
       const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
-        walletClient,
         smartAccountClient,
         accountAddress,
         keys,

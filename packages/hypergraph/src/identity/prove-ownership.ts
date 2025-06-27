@@ -1,4 +1,4 @@
-import { http, type Chain, type Hex, type WalletClient, createPublicClient, verifyMessage } from 'viem';
+import { http, type Chain, type Hex, createPublicClient, verifyMessage } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
 import type { SmartAccountClient } from 'permissionless';
@@ -19,7 +19,6 @@ export const accountProofDomain = {
 };
 
 export const proveIdentityOwnership = async (
-  walletClient: WalletClient,
   smartAccountClient: SmartAccountClient,
   accountAddress: string,
   keys: IdentityKeys,
