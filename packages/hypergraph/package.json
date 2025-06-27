@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
   "publishConfig": {
     "access": "public",
