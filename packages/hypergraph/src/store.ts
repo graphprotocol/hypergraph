@@ -1,6 +1,7 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { type Store, createStore } from '@xstate/store';
 import type { PrivateAppIdentity } from './connect/types.js';
+import type { DocumentContent } from './entity/types.js';
 import { mergeMessages } from './inboxes/merge-messages.js';
 import type { InboxSenderAuthPolicy } from './inboxes/types.js';
 import type { Invitation, Updates } from './messages/index.js';
@@ -47,7 +48,7 @@ export type SpaceStorageEntry = {
   events: SpaceEvent[];
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
-  automergeDocHandle: DocHandle<unknown> | undefined;
+  automergeDocHandle: DocHandle<DocumentContent>;
   inboxes: SpaceInboxStorageEntry[];
 };
 
@@ -194,7 +195,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
       for (const space of event.spaces) {
         const existingSpace = context.spaces.find((s) => s.id === space.id);
         const lastUpdateClock = context.lastUpdateClock[space.id] ?? -1;
-        const result = context.repo.findWithProgress(idToAutomergeId(space.id) as AnyDocumentId);
+        const result = context.repo.findWithProgress<DocumentContent>(idToAutomergeId(space.id) as AnyDocumentId);
 
         // set it to ready to interact with the document
         result.handle.doneLoading();
@@ -244,8 +245,6 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
           };
         }
       }
-
-      console.log('storecontext', storeContext);
 
       return storeContext;
     },
@@ -439,7 +438,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     ) => {
       const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
       if (!existingSpace && context.repo) {
-        const result = context.repo.findWithProgress(idToAutomergeId(event.spaceId) as AnyDocumentId);
+        const result = context.repo.findWithProgress<DocumentContent>(idToAutomergeId(event.spaceId) as AnyDocumentId);
         // set it to ready to interact with the document
         result.handle.doneLoading();
 

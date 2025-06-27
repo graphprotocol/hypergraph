@@ -11,6 +11,9 @@ export const Route = createFileRoute('/')({
   component: Index,
 });
 
+// @ts-expect-error
+window.HYPERGRAPH_STORE = store;
+
 function Index() {
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const { data: privateSpaces } = useSpaces({ mode: 'private' });
@@ -19,7 +22,6 @@ function Index() {
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
   const {
     createSpace,
-    listSpaces,
     listInvitations,
     invitations,
     acceptInvitation,
@@ -30,11 +32,10 @@ function Index() {
 
   useEffect(() => {
     if (!isConnecting) {
-      listSpaces();
       listInvitations();
       getOwnAccountInboxes();
     }
-  }, [isConnecting, listSpaces, listInvitations, getOwnAccountInboxes]);
+  }, [isConnecting, listInvitations, getOwnAccountInboxes]);
 
   if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;

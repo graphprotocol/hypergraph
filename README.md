@@ -1,4 +1,4 @@
-# Graph Framework
+# Hypergraph Framework
 
 ## Development
 
@@ -22,7 +22,13 @@ pnpm dev
 # in another tab
 cd apps/server
 pnpm dev
+# in another tab
+cd apps/typesync
+pnpm build
+# then, from anywhere in the repo, start Typesync
+hypergraph typesync
 ```
+
 
 Any time you make changes to the schema, you will need to run the following commands:
 
@@ -31,7 +37,7 @@ cd apps/server
 pnpm prisma migrate dev # this will also generate the Prisma client
 ```
 
-You can run the next example app with:
+You can run the Typesync Next example app with:
 
 ```sh
 # Notes:
@@ -39,6 +45,7 @@ You can run the next example app with:
 cd apps/next-example
 pnpm dev
 ```
+
 
 ## Upgrading Dependencies
 

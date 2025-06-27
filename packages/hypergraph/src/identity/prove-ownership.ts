@@ -2,7 +2,6 @@ import { http, type Chain, type Hex, createPublicClient, verifyMessage } from 'v
 import { privateKeyToAccount } from 'viem/accounts';
 
 import type { SmartAccountClient } from 'permissionless';
-import { DEFAULT_RPC_URL, GEOGENESIS } from '../connect/smart-account.js';
 import { publicKeyToAddress } from '../utils/index.js';
 import type { IdentityKeys } from './types.js';
 
@@ -54,22 +53,21 @@ export const verifyIdentityOwnership = async (
   publicKey: string,
   accountProof: string,
   keyProof: string,
-  chain: Chain = GEOGENESIS,
-  rpcUrl: string = DEFAULT_RPC_URL,
+  chain: Chain,
+  rpcUrl: string,
 ): Promise<boolean> => {
-  console.log('verifyIdentityOwnership', accountAddress, publicKey, accountProof, keyProof, chain, rpcUrl);
   const keyProofMessage = getKeyProofMessage(accountAddress, publicKey);
   const publicClient = createPublicClient({
     chain,
     transport: http(rpcUrl),
   });
-  console.log('publicClient', publicClient);
-  console.log('rpcUrl', rpcUrl);
-  console.log('chain', chain);
+  // console.log('publicClient', publicClient);
+  // console.log('rpcUrl', rpcUrl);
+  // console.log('chain', chain);
 
-  console.log('accountProof', accountProof);
-  console.log('accountAddress', accountAddress);
-  console.log('publicKey', publicKey);
+  // console.log('accountProof', accountProof);
+  // console.log('accountAddress', accountAddress);
+  // console.log('publicKey', publicKey);
 
   const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
   const validAccountProof = await publicClient.verifyTypedData({

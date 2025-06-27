@@ -35,12 +35,14 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Address } from 'viem';
-import type { Hex } from 'viem';
+import type { Address, Hex } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
 
 const queryClient = new QueryClient();
+
+const CHAIN = Connect.GEO_TESTNET;
+const RPC_URL = Connect.TESTNET_RPC_URL;
 
 export type HypergraphAppCtx = {
   // auth related
@@ -213,20 +215,29 @@ export function useHypergraphAuth() {
 }
 
 export type HypergraphAppProviderProps = Readonly<{
-  storage: Identity.Storage;
+  storage?: Identity.Storage;
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
   mapping: Mapping;
 }>;
+
+const mockStorage = {
+  getItem(_key: string) {
+    return null;
+  },
+  setItem(_key: string, _value: string) {},
+  removeItem(_key: string) {},
+};
+
 // 1) a) Get session token from local storage, or
 //    b) Auth with the sync server
 // 2) a)Try to get identity from the sync server, or
 //    b) If identity is not found, create a new identity
 //      (and store it in the sync server)
 export function HypergraphAppProvider({
-  storage,
-  syncServerUri = 'https://syncserver.hypergraph.thegraph.com',
+  storage = typeof window !== 'undefined' ? localStorage : mockStorage,
+  syncServerUri = 'https://hypergraph.fly.dev',
   chainId = Connect.GEO_TESTNET.id,
   children,
   mapping,
@@ -360,12 +371,17 @@ export function HypergraphAppProvider({
             signature: update.signature,
             accountAddress: update.accountAddress,
           });
-          const authorIdentity = await Identity.getVerifiedIdentity(update.accountAddress, syncServerUri);
+          const authorIdentity = await Identity.getVerifiedIdentity(
+            update.accountAddress,
+            syncServerUri,
+            CHAIN,
+            RPC_URL,
+          );
           if (authorIdentity.signaturePublicKey !== signer) {
-            console.error(
-              `Received invalid signature, recovered signer is ${signer},
-            expected ${authorIdentity.signaturePublicKey}`,
-            );
+            // console.error(
+            //   `Received invalid signature, recovered signer is ${signer},
+            // expected ${authorIdentity.signaturePublicKey}`,
+            // );
             // TODO bring back signature verfication
             // return { valid: false, update: new Uint8Array([]) };
           }
@@ -395,7 +411,7 @@ export function HypergraphAppProvider({
     const getVerifiedIdentity = (accountAddress: string) => {
       return Effect.gen(function* () {
         const identity = yield* Effect.tryPromise({
-          try: () => Identity.getVerifiedIdentity(accountAddress, syncServerUri),
+          try: () => Identity.getVerifiedIdentity(accountAddress, syncServerUri, CHAIN, RPC_URL),
           catch: () => new Identity.InvalidIdentityError(),
         });
         return identity;
@@ -639,6 +655,8 @@ export function HypergraphAppProvider({
               inbox,
               response.spaceId,
               syncServerUri,
+              CHAIN,
+              RPC_URL,
             );
             if (!isValid) {
               console.error('Invalid message', response.message, inbox.inboxId);
@@ -685,6 +703,8 @@ export function HypergraphAppProvider({
               inbox,
               identity.address,
               syncServerUri,
+              CHAIN,
+              RPC_URL,
             );
             if (!isValid) {
               console.error('Invalid message', response.message, inbox.inboxId);
@@ -748,7 +768,14 @@ export function HypergraphAppProvider({
               response.messages.map(
                 // If the message has a signature, check that the signature is valid for the authorAccountAddress
                 async (message) => {
-                  return Inboxes.validateAccountInboxMessage(message, inbox, identity.address, syncServerUri);
+                  return Inboxes.validateAccountInboxMessage(
+                    message,
+                    inbox,
+                    identity.address,
+                    syncServerUri,
+                    CHAIN,
+                    RPC_URL,
+                  );
                 },
               ),
             );
@@ -808,7 +835,7 @@ export function HypergraphAppProvider({
               response.messages.map(
                 // If the message has a signature, check that the signature is valid for the authorAccountAddress
                 async (message) => {
-                  return Inboxes.validateSpaceInboxMessage(message, inbox, space.id, syncServerUri);
+                  return Inboxes.validateSpaceInboxMessage(message, inbox, space.id, syncServerUri, CHAIN, RPC_URL);
                 },
               ),
             );
@@ -1260,7 +1287,7 @@ export function HypergraphAppProvider({
         console.error('No state found for space');
         return;
       }
-      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountAddress, syncServerUri);
+      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountAddress, syncServerUri, CHAIN, RPC_URL);
       const spaceEvent = await Effect.runPromiseExit(
         SpaceEvents.createInvitation({
           author: {
@@ -1306,7 +1333,7 @@ export function HypergraphAppProvider({
 
   const getVerifiedIdentity = useCallback(
     (accountAddress: string) => {
-      return Identity.getVerifiedIdentity(accountAddress, syncServerUri);
+      return Identity.getVerifiedIdentity(accountAddress, syncServerUri, CHAIN, RPC_URL);
     },
     [syncServerUri],
   );

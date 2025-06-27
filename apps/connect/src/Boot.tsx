@@ -45,12 +45,17 @@ export function Boot() {
     }
   }, []);
 
+  // @ts-expect-error - window is not typed
+  window.APP_VERSION = 'v1';
+  // @ts-expect-error - window is not typed
+  window.VITE_PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
+
   return (
     <QueryClientProvider client={queryClient}>
       <PrivyProvider
-        appId="cmbhnmo1x000bla0mxudtd8z9"
+        appId={import.meta.env.VITE_PRIVY_APP_ID}
         config={{
-          loginMethods: ['email', 'google'],
+          loginMethods: import.meta.env.VITE_PRIVY_PROVIDERS === 'development' ? ['email', 'google'] : ['email'],
           appearance: {
             theme: 'light',
             accentColor: '#6833ff',

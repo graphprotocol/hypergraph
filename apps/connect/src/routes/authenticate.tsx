@@ -4,7 +4,6 @@ import { Loading } from '@/components/ui/Loading';
 import { usePrivateSpaces } from '@/hooks/use-private-spaces';
 import { usePublicSpaces } from '@/hooks/use-public-spaces';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
-
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
@@ -247,7 +246,7 @@ function AuthenticateComponent() {
 
     const privateSpacesInput = privateSpacesData
       ? privateSpacesData
-          .filter((space) => selectedPrivateSpaces.has(space.id))
+          // .filter((space) => selectedPrivateSpaces.has(space.id))
           .map((space) => {
             // TODO: currently without checking we assume all keyboxes exists and we don't create any - we should check if the keyboxes exist and create them if they don't
             if (space.appIdentities.some((spaceAppIdentity) => spaceAppIdentity.address === appIdentity.address))
@@ -373,8 +372,8 @@ function AuthenticateComponent() {
       console.log('public spaces data', publicSpacesData);
       const spaces =
         publicSpacesData
-          ?.filter((space) => selectedPublicSpaces.has(space.id))
-          .map((space) => ({
+          // .filter((space) => selectedPublicSpaces.has(space.id))
+          ?.map((space) => ({
             address:
               space.type === 'personal'
                 ? (space.personalAddress as `0x${string}`)

@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prebuild": "pnpm --workspace-concurrency 1 --filter @graphprotocol/hypergraph run build && pnpm --workspace-concurrency 1 --filter @graphprotocol/hypergraph-react run build"
   },
   "type": "module",
   "dependencies": {

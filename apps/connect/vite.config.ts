@@ -4,6 +4,7 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import unfonts from 'unplugin-fonts/vite';
 import { defineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgr from 'vite-plugin-svgr';
 
 // https://vitejs.dev/config/
@@ -12,6 +13,13 @@ export default defineConfig({
     port: 5180,
   },
   plugins: [
+    nodePolyfills({
+      protocolImports: true,
+      globals: {
+        Buffer: true,
+      },
+      include: ['buffer'],
+    }),
     TanStackRouterVite(),
     react(),
     tailwindcss(),

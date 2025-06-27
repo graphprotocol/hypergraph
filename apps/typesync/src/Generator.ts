@@ -1,3 +1,6 @@
+import { execSync } from 'node:child_process';
+import * as fsSync from 'node:fs';
+import * as nodePath from 'node:path';
 import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
@@ -24,11 +27,27 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
       codegen(app: Domain.InsertAppSchema) {
         return Effect.gen(function* () {
           // check directory
-          /** @todo solve directory pathing */
-          let directory = app.directory;
-          if (!directory) {
-            directory = `./${app.name}`;
-          }
+          /**
+           * Decide where to place the new application.
+           * If the caller explicitly provides `app.directory` we respect it.
+           * Otherwise, we always create the application inside the repository-root
+           * `apps` folder so it shows up next to `connect`, `events`, etc.
+           */
+
+          // 1. Locate the repo root by walking up until we find `pnpm-workspace.yaml`
+          const findRepoRoot = (start: string): string => {
+            let dir = start;
+            while (true) {
+              if (fsSync.existsSync(nodePath.join(dir, 'pnpm-workspace.yaml'))) return dir;
+              const parent = nodePath.dirname(dir);
+              if (parent === dir) return start; // Fallback if we can't find it
+              dir = parent;
+            }
+          };
+
+          const repoRoot = findRepoRoot(process.cwd());
+
+          const directory = app.directory?.length ? app.directory : nodePath.join(repoRoot, 'apps', app.name);
           const directoryExists = yield* fs.exists(directory);
           if (directoryExists) {
             // directory already exists, fail
@@ -52,15 +71,68 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
           ]);
           // create the src directory inside
           yield* fs.makeDirectory(path.join(directory, 'src'));
+          yield* fs.makeDirectory(path.join(directory, 'src', 'routes'));
 
           // create the src files
           yield* Effect.all([
             fs.writeFileString(path.join(directory, 'src', 'index.css'), indexcss),
             fs.writeFileString(path.join(directory, 'src', 'main.tsx'), mainTsx),
-            fs.writeFileString(path.join(directory, 'src', 'App.tsx'), appTsx),
             fs.writeFileString(path.join(directory, 'src', 'vite-env.d.ts'), vitEnvDTs),
             fs.writeFileString(path.join(directory, 'src', 'schema.ts'), buildSchemaFile(app)),
+            fs.writeFileString(path.join(directory, 'src', 'routes', '__root.tsx'), rootRouteTsx),
+            fs.writeFileString(path.join(directory, 'src', 'routes', 'index.tsx'), indexRouteTsx),
           ]);
+
+          // -----------------------------
+          // Post-generation helpers
+          // 1. Add the new directory to pnpm-workspace.yaml
+          // 2. Run `pnpm install` inside the new directory so deps are ready
+          // 3. Run `pnpm install` at repo root to update lockfile/hoist
+          // -----------------------------
+
+          const workspaceFile = nodePath.join(repoRoot, 'pnpm-workspace.yaml');
+          const workspaceExists = yield* fs.exists(workspaceFile);
+          if (workspaceExists) {
+            const current = yield* fs.readFileString(workspaceFile);
+            const lines = current.split('\n');
+
+            const relPackagePath = nodePath.relative(repoRoot, directory);
+            const newPackageLine = `  - ${relPackagePath}`;
+            const alreadyExists = lines.some((line) => line.trim() === newPackageLine.trim());
+
+            if (!alreadyExists) {
+              const packagesLineIndex = lines.findIndex((line) => line.startsWith('packages:'));
+
+              if (packagesLineIndex !== -1) {
+                let lastPackageLineIndex = packagesLineIndex;
+                for (let i = packagesLineIndex + 1; i < lines.length; i++) {
+                  if (lines[i].trim().startsWith('- ')) {
+                    lastPackageLineIndex = i;
+                  } else if (lines[i].trim() !== '') {
+                    break;
+                  }
+                }
+                lines.splice(lastPackageLineIndex + 1, 0, newPackageLine);
+                const updated = lines.join('\n');
+                yield* fs.writeFileString(workspaceFile, updated);
+              }
+            }
+          }
+
+          // helper to run a shell command synchronously (cross-platform)
+          const run = (cmd: string, cwd?: string) =>
+            Effect.sync(() => {
+              try {
+                execSync(cmd, { stdio: 'inherit', cwd });
+              } catch {
+                throw new Error(`command failed (${cmd})`);
+              }
+            });
+
+          // install deps within the new app folder
+          yield* run('pnpm install', directory);
+          // update lockfile/hoist at repo root
+          yield* run('pnpm install');
 
           return { directory };
         });
@@ -343,7 +415,11 @@ const prettierrc = {
   singleQuote: true,
   printWidth: 120,
 };
-const prettierignore = 'dist/';
+const prettierignore = `
+# Ignore artifacts:
+build
+dist
+`;
 
 // --------------------
 // vite.config.ts
@@ -423,33 +499,75 @@ dist-ssr
 // src/
 // --------------------
 
-const indexcss = `@import "tailwindcss";`;
+const indexcss = `
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+`;
 
-const vitEnvDTs = `/// <reference types="vite/client" />`;
+const vitEnvDTs = `/// <reference types="vite/client" />
+`;
 
-const appTsx = `export default function App() {
-  return (
-    <div className="flex flex-col gap-y-8 h-full items-center justify-center py-16">
-      <h1>Vite + React + Hypergraph starter</h1>
+const mainTsx = `import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import './index.css';
 
-      <p>Import schema from '@/schema'</p>
-    </div>
-  )
+// Import the generated route tree
+import { routeTree } from './routeTree.gen';
+
+// Create a new router instance
+const router = createRouter({ routeTree });
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+// Render the app
+const rootElement = document.getElementById('root');
+if (rootElement && !rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <RouterProvider router={router} />
+    </React.StrictMode>
+  );
 }
 `;
 
-const mainTsx = `import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+const rootRouteTsx = `import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
-import './index.css'
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <div className="min-h-screen bg-gray-900 text-white p-4">
+        <h1 className="text-2xl font-bold mb-4">My Hypergraph App</h1>
+        <Outlet />
+      </div>
+      <TanStackRouterDevtools />
+    </>
+  ),
+});
+`;
 
-import App from './App.tsx'
+const indexRouteTsx = `import { createFileRoute } from '@tanstack/react-router';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+export const Route = createFileRoute('/')({
+  component: Index,
+});
+
+function Index() {
+  return (
+    <div className="p-2">
+      <h3 className="text-xl">Welcome Home!</h3>
+      <p className="mt-2">This is your new application generated by Typesync.</p>
+    </div>
+  );
+}
 `;
 
 // --------------------

@@ -1,7 +1,5 @@
-import { Connect } from '@graphprotocol/hypergraph';
 import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import * as Effect from 'effect/Effect';
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/authenticate-success')({
