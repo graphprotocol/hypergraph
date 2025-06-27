@@ -18,10 +18,7 @@
     "hypergraph": "./dist/bin.cjs",
     "hg": "./dist/bin.cjs"
   },
-  "files": [
-    "README.md",
-    "dist"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
     "codegen:gql": "graphql-codegen --config ./graphql.codegen.ts",
     "build:client": "vite build",
