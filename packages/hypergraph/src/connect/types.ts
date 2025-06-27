@@ -36,7 +36,6 @@ export const AppIdentityResponse = Schema.Struct({
   accountProof: Schema.String,
   keyProof: Schema.String,
   ciphertext: Schema.String,
-  nonce: Schema.String,
   sessionToken: Schema.String,
   address: Schema.String,
   appId: Schema.String,
