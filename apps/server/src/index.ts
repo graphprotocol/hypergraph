@@ -340,7 +340,6 @@ app.post('/connect/app-identity', async (req, res) => {
       appId: message.appId,
       address: message.address,
       ciphertext: message.ciphertext,
-      nonce: message.nonce,
       signaturePublicKey: message.signaturePublicKey,
       encryptionPublicKey: message.encryptionPublicKey,
       accountProof: message.accountProof,

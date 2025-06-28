@@ -134,37 +134,13 @@ function AuthenticateComponent() {
   const accountAddress = useSelector(StoreConnect.store, (state) => state.context.accountAddress);
   const keys = useSelector(StoreConnect.store, (state) => state.context.keys);
 
-  const { signMessage } = usePrivy();
   const { wallets } = useWallets();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
 
   const state = useSelector(componentStore, (state) => state.context);
 
   const { isPending: privateSpacesPending, error: privateSpacesError, data: privateSpacesData } = usePrivateSpaces();
-  const {
-    isPending: publicSpacesPending,
-    error: publicSpacesError,
-    data: publicSpacesData,
-  } = usePublicSpaces(import.meta.env.VITE_HYPERGRAPH_API_URL);
-
-  const selectedPrivateSpaces = new Set<string>();
-  const selectedPublicSpaces = new Set<string>();
-
-  const handlePrivateSpaceToggle = (spaceId: string, checked: boolean) => {
-    if (checked) {
-      selectedPrivateSpaces.add(spaceId);
-    } else {
-      selectedPrivateSpaces.delete(spaceId);
-    }
-  };
-
-  const handlePublicSpaceToggle = (spaceId: string, checked: boolean) => {
-    if (checked) {
-      selectedPublicSpaces.add(spaceId);
-    } else {
-      selectedPublicSpaces.delete(spaceId);
-    }
-  };
+  const { data: publicSpacesData } = usePublicSpaces(import.meta.env.VITE_HYPERGRAPH_API_URL);
 
   useEffect(() => {
     const run = async () => {
@@ -351,21 +327,6 @@ function AuthenticateComponent() {
         transport: custom(privyProvider),
       });
 
-      const signer: Identity.Signer = {
-        getAddress: async () => {
-          const [address] = await walletClient.getAddresses();
-          return address;
-        },
-        signMessage: async (message: string) => {
-          if (embeddedWallet.walletClientType === 'privy') {
-            const { signature } = await signMessage({ message });
-            return signature;
-          }
-          const [address] = await walletClient.getAddresses();
-          return await walletClient.signMessage({ account: address, message });
-        },
-      };
-
       const newAppIdentity = Connect.createAppIdentity();
 
       console.log('creating smart session');
@@ -405,25 +366,13 @@ function AuthenticateComponent() {
         rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
       });
 
-      const appIdentityKeys = {
-        encryptionPrivateKey: newAppIdentity.encryptionPrivateKey,
-        encryptionPublicKey: newAppIdentity.encryptionPublicKey,
-        signaturePrivateKey: newAppIdentity.signaturePrivateKey,
-        signaturePublicKey: newAppIdentity.signaturePublicKey,
-      };
       console.log('encrypting app identity');
-      const { ciphertext, nonce } = await Connect.encryptAppIdentity(
-        signer,
-        newAppIdentity.address,
-        newAppIdentity.addressPrivateKey,
-        permissionId,
-        appIdentityKeys,
-      );
+      const { ciphertext } = await Connect.encryptAppIdentity({ ...newAppIdentity, permissionId }, keys);
       console.log('proving ownership');
       const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
         smartAccountClient,
         accountAddress,
-        appIdentityKeys,
+        newAppIdentity,
       );
 
       const message: Messages.RequestConnectCreateAppIdentity = {
@@ -433,7 +382,6 @@ function AuthenticateComponent() {
         signaturePublicKey: newAppIdentity.signaturePublicKey,
         encryptionPublicKey: newAppIdentity.encryptionPublicKey,
         ciphertext,
-        nonce,
         accountProof,
         keyProof,
       };
@@ -474,48 +422,16 @@ function AuthenticateComponent() {
   };
 
   const decryptAppIdentityAndRedirect = async () => {
-    if (!state.appIdentityResponse) {
+    if (!state.appIdentityResponse || !keys) {
       return;
     }
 
-    const privyProvider = await embeddedWallet.getEthereumProvider();
-    const walletClient = createWalletClient({
-      account: embeddedWallet.address as `0x${string}`,
-      chain: CHAIN,
-      transport: custom(privyProvider),
-    });
-
-    const signer: Identity.Signer = {
-      getAddress: async () => {
-        const [address] = await walletClient.getAddresses();
-        return address;
-      },
-      signMessage: async (message: string) => {
-        if (embeddedWallet.walletClientType === 'privy') {
-          const { signature } = await signMessage({ message });
-          return signature;
-        }
-        const [address] = await walletClient.getAddresses();
-        return await walletClient.signMessage({ account: address, message });
-      },
-    };
-
-    const decryptedIdentity = await Connect.decryptAppIdentity(
-      signer,
-      state.appIdentityResponse.ciphertext,
-      state.appIdentityResponse.nonce,
-    );
+    const decryptedIdentity = await Connect.decryptAppIdentity(state.appIdentityResponse.ciphertext, keys);
     await encryptSpacesAndRedirect({
       accountAddress: state.appIdentityResponse.accountAddress,
       appIdentity: {
-        address: decryptedIdentity.address,
-        addressPrivateKey: decryptedIdentity.addressPrivateKey,
+        ...decryptedIdentity,
         accountAddress: state.appIdentityResponse.accountAddress,
-        permissionId: decryptedIdentity.permissionId,
-        encryptionPrivateKey: decryptedIdentity.encryptionPrivateKey,
-        signaturePrivateKey: decryptedIdentity.signaturePrivateKey,
-        encryptionPublicKey: decryptedIdentity.encryptionPublicKey,
-        signaturePublicKey: decryptedIdentity.signaturePublicKey,
         sessionToken: state.appIdentityResponse.sessionToken,
         sessionTokenExpires: new Date(state.appIdentityResponse.sessionTokenExpires),
       },
