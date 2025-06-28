@@ -5,6 +5,7 @@ import type { Messages } from '@graphprotocol/hypergraph';
 import { Identity, SpaceEvents } from '@graphprotocol/hypergraph';
 
 import { prisma } from '../prisma.js';
+import { getAppOrConnectIdentity } from './getAppOrConnectIdentity.js';
 import { getConnectIdentity } from './getConnectIdentity.js';
 
 type Params = {
@@ -26,7 +27,7 @@ export const createSpace = async ({
   infoSignatureRecovery,
   name,
 }: Params) => {
-  const getVerifiedIdentity = (accountAddressToFetch: string) => {
+  const getVerifiedIdentity = (accountAddressToFetch: string, publicKey: string) => {
     // applySpaceEvent is only allowed to be called by the account that is applying the event
     if (accountAddressToFetch !== accountAddress) {
       return Effect.fail(new Identity.InvalidIdentityError());
@@ -34,7 +35,7 @@ export const createSpace = async ({
 
     return Effect.gen(function* () {
       const identity = yield* Effect.tryPromise({
-        try: () => getConnectIdentity({ accountAddress: accountAddressToFetch }),
+        try: () => getAppOrConnectIdentity({ accountAddress: accountAddressToFetch, signaturePublicKey: publicKey }),
         catch: () => new Identity.InvalidIdentityError(),
       });
       return identity;
