@@ -35,7 +35,7 @@ const { data, isPending, isError } = useSpaces({ mode: "public" });
 ### Querying a single private Space
 
 ```tsx
-const { name, isReady } = useSpace({ mode: "private" });
+const { name, isReady, id } = useSpace({ mode: "private" });
 ```
 
 The `useSpace` hook returns the name of the space and a boolean if the space is ready.
@@ -43,13 +43,13 @@ The `useSpace` hook returns the name of the space and a boolean if the space is 
 Optionally you can provide a space ID to query a specific space. By default the space ID is the one defined in the `HypergraphSpaceProvider` component.
 
 ```tsx
-const { name, isReady } = useSpace({ mode: "private", space: "space-id" });
+const { name, isReady, id } = useSpace({ mode: "private", space: "space-id" });
 ```
 
 ### Querying a single public Space
 
 ```tsx
-const { name, isReady } = useSpace({ mode: "public", space: "space-id" });
+const { name, isReady, id } = useSpace({ mode: "public", space: "space-id" });
 ```
 
 The `useSpace` hook returns the name of the space and a boolean if the space is ready.
@@ -57,7 +57,7 @@ The `useSpace` hook returns the name of the space and a boolean if the space is 
 Optionally you can provide a space ID to query a specific space. By default the space ID is the one defined in the `HypergraphSpaceProvider` component.
 
 ```tsx
-const { name, isReady } = useSpace({ mode: "public", space: "space-id" });
+const { name, isReady, id } = useSpace({ mode: "public", space: "space-id" });
 ```
 
 ## Creating Spaces

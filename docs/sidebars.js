@@ -21,6 +21,7 @@ const sidebars = {
     // { type: 'doc', id: 'faucet', label: '🪙 Testnet Faucet' },
     { type: 'doc', id: 'key-features', label: '🌟 Key Features' },
     { type: 'doc', id: 'core-concepts', label: '🧠 Core Concepts' },
+    { type: 'doc', id: 'providers', label: '🔗 Providers' },
     { type: 'doc', id: 'authentication', label: '🔗 Authentication' },
     { type: 'doc', id: 'spaces', label: '🏠 Spaces' },
     { type: 'doc', id: 'schema', label: '🔗 Schema' },
