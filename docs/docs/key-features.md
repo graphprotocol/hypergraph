@@ -11,32 +11,32 @@ Hypergraph is **more than a database**—it's a complete data layer for building
 
 ## Table of Contents
 
-- [Local-first by design](#local-first-by-design)
+<!-- - [Local-first by design](#local-first-by-design) -->
 - [End-to-end encryption](#end-to-end-encryption)
 - [Knowledge Graph SDK](#knowledge-graph-sdk)
 - [Graph-based data model](#graph-based-data-model)
 - [Conflict-free sync (CRDTs)](#conflict-free-sync-crdts)
 - [Spaces & fine-grained auth](#spaces--fine-grained-auth)
-- [Web3-native identities](#web3-native-identities)
-- [Headless React hooks](#headless-react-hooks)
-- [Offline support & optimistic UI](#offline-support--optimistic-ui)
-- [Tiny sync server](#tiny-sync-server)
-- [Open standards](#open-standards)
+<!-- - [Web3-native identities](#web3-native-identities) -->
+<!-- - [Headless React hooks](#headless-react-hooks) -->
+<!-- - [Offline support & optimistic UI](#offline-support--optimistic-ui) -->
+<!-- - [Tiny sync server](#tiny-sync-server) -->
+<!-- - [Open standards](#open-standards) -->
 
 ---
 
-## Local-first by design
+<!-- ## Local-first by design
 
 Data is **persisted first on the client**—not on a remote database. Users can create, read and mutate data instantly with zero network latency. Changes sync asynchronously when connectivity is available.
 
 * **No loading spinners.** State is always available locally.
-* **No data silos.** You own the raw event log.
+* **No data silos.** You own the raw event log. -->
 
 ## End-to-end encryption
 
 Every update is encrypted **on the client** using XChaCha20-Poly1305. Only members of a Space possess the symmetric key, so neither the sync server nor The Graph can read private data.
 
-* **Automatic key rotation** when members join/leave.
+* **Automatic key rotation** when members join/leave (not yet implemented).
 * **Multi-device**: each device holds its own key pair.
 
 ## Knowledge Graph SDK
@@ -45,7 +45,7 @@ Build, link, and publish knowledge as entities and relations using the [`@graphp
 
 ## Graph-based data model
 
-Under the hood, Hypergraph stores JSON-LD values that map nicely to **knowledge graphs**. This makes it trivial to expose public data on-chain or query it with SPARQL later.
+Under the hood, Hypergraph stores JSON-LD values that map nicely to **knowledge graphs**. This makes it trivial to expose public data on-chain or query it with a GRC-20 compliant indexer later.
 
 ## Conflict-free sync (CRDTs)
 
@@ -53,13 +53,14 @@ We use **Automerge** (a JSON CRDT) to merge concurrent edits without conflicts. 
 
 ## Spaces & fine-grained auth
 
-A **Space** groups both *people* and *data*. Roles (`admin`, `member`, `viewer`) are enforced on the wire and checked again client-side.
+A **Space** groups both *people* and *data*. Fine-grained access will come soon.
+<!-- Roles (`admin`, `member`, `viewer`) are enforced on the wire and checked again client-side. -->
 
-## Web3-native identities
+<!-- ## Web3-native identities
 
-Authentication is handled by **SIWE (Sign-In With Ethereum)**. Each user signs requests with an Ed25519 key that can be deterministically derived from their wallet.
+Authentication is handled by **SIWE (Sign-In With Ethereum)**. Each user signs requests with an Ed25519 key that can be deterministically derived from their wallet. -->
 
-## Headless React hooks
+<!-- ## Headless React hooks
 
 The `@graphprotocol/hypergraph-react` package exposes ergonomic hooks:
 
@@ -67,21 +68,21 @@ The `@graphprotocol/hypergraph-react` package exposes ergonomic hooks:
 const { space, updates, send } = useHypergraph(spaceId);
 ```
 
-They work in **React Server Components** and React Native alike.
+They work in **React Server Components** and React Native alike. -->
 
-## Offline support & optimistic UI
+<!-- ## Offline support & optimistic UI
 
-Because writes land locally first, you can render results immediately. Hypergraph retries sync in the background with exponential back-off.
+Because writes land locally first, you can render results immediately. Hypergraph retries sync in the background with exponential back-off. -->
 
-## Tiny sync server
+<!-- ## Tiny sync server
 
-All the server does is **relay encrypted events** and store blobs. It's stateless, horizontally scalable and can be deployed on a hobby tier instance.
+All the server does is **relay encrypted events** and store blobs. It's stateless, horizontally scalable and can be deployed on a hobby tier instance. -->
 
-## Open standards
+<!-- ## Open standards
 
 * **JSON-LD** for semantics
 * **IPFS** for public blobs
-* **DID / SIWE** for identity
+* **DID / SIWE** for identity -->
 
 ---
 

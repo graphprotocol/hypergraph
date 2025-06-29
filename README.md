@@ -29,7 +29,6 @@ pnpm build
 hypergraph typesync
 ```
 
-
 Any time you make changes to the schema, you will need to run the following commands:
 
 ```sh
@@ -44,6 +43,13 @@ You can run the Typesync Next example app with:
 # - You need to build the packages first and every time you make changes to the packages
 cd apps/next-example
 pnpm dev
+```
+
+To run the docs locally, you can run:
+
+```sh
+cd docs
+pnpm start
 ```
 
 

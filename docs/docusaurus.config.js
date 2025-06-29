@@ -10,8 +10,8 @@ import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Hypergraph Splash Page',
-  tagline: 'Local-first apps. Global knowledge.',
+  title: 'Hypergraph',
+  tagline: 'Framework for building web3 apps',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here

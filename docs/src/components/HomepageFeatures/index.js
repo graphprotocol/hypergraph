@@ -4,33 +4,32 @@ import styles from './styles.module.css';
 
 const FeatureList = [
   {
+    title: 'Secure by Default',
+    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    description: (
+      <>
+        Private content is end-to-end encrypted by default, and public content is stored in the Knowledge Graph backed
+        by IPFS and a blockchain.
+      </>
+    ),
+  },
+  {
     title: 'Easy to Use',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and used to get your website up and running
-        quickly.
+        When building with Hypergraph, developers only need to write client-side software - the framework takes care of
+        the infrastructure, including privacy (E2EE) by default and storing public content in an interoperable,
+        interconnected Knowledge Graph.
       </>
     ),
   },
+
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
-    description: (
-      <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go ahead and move your docs into the{' '}
-        <code>docs</code> directory.
-      </>
-    ),
-  },
-  {
-    title: 'Powered by React',
+    title: 'Collaboration built-in',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can be extended while reusing the same
-        header and footer.
-      </>
+      <>Hypergraph spaces can be shared with other users, and can be used to collaborate on content in real-time.</>
     ),
   },
 ];
