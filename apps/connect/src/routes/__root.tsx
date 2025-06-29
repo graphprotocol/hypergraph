@@ -4,7 +4,7 @@ import { AppTitle } from '@/components/ui/AppTitle';
 import { StoreConnect } from '@graphprotocol/hypergraph';
 import { usePrivy } from '@privy-io/react-auth';
 import { Outlet, createRootRoute, useLayoutEffect, useRouter } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { useSelector } from '@xstate/store/react';
 
 export const Route = createRootRoute({

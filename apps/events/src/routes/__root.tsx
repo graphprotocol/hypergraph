@@ -1,7 +1,7 @@
 import { Logout } from '@/components/logout';
 import { useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { Link, Outlet, createRootRoute, useLayoutEffect, useRouter } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
 export const Route = createRootRoute({
   component: () => {

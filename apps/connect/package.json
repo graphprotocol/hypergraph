@@ -21,6 +21,7 @@
     "@privy-io/react-auth": "^2.13.0",
     "@tanstack/react-query": "^5.75.5",
     "@tanstack/react-router": "^1.120.2",
+    "@tanstack/react-router-devtools": "^1.122.0",
     "@xstate/store": "^3.5.1",
     "clsx": "^2.1.1",
     "effect": "^3.16.10",
@@ -34,7 +35,6 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.10",
-    "@tanstack/router-devtools": "^1.120.2",
     "@tanstack/router-plugin": "^1.120.2",
     "@types/node": "^22.15.15",
     "@types/react": "^19.1.3",
