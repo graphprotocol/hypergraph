@@ -1,31 +1,17 @@
 import { fileURLToPath } from 'node:url';
-import * as NodeContext from '@effect/platform-node/NodeContext';
-import * as SqliteClient from '@effect/sql-sqlite-node/SqliteClient';
-import * as Migrator from '@effect/sql-sqlite-node/SqliteMigrator';
-import * as SqlClient from '@effect/sql/SqlClient';
-import * as SqlError from '@effect/sql/SqlError';
-import * as SqlResolver from '@effect/sql/SqlResolver';
-import * as SqlSchema from '@effect/sql/SqlSchema';
-import * as EffectArray from 'effect/Array';
-import * as Chunk from 'effect/Chunk';
-import * as Console from 'effect/Console';
-import * as Effect from 'effect/Effect';
-import * as Layer from 'effect/Layer';
-import * as Option from 'effect/Option';
-import * as Order from 'effect/Order';
-import * as Schema from 'effect/Schema';
-import * as Stream from 'effect/Stream';
+import { NodeContext } from '@effect/platform-node';
+import { SqlClient, SqlError, SqlResolver, SqlSchema } from '@effect/sql';
+import { SqliteMigrator as Migrator, SqliteClient } from '@effect/sql-sqlite-node';
+import { Chunk, Console, Effect, Array as EffectArray, Layer, Option, Order, Schema, Stream } from 'effect';
 
 import * as TypesyncDomain from '../domain/Domain.js';
 import * as Domain from './Domain.js';
 
 const SqlLive = SqliteClient.layer({
-  filename: 'typesync.db',
+  filename: '.typesync.db',
 });
 const MigratorLive = Migrator.layer({
   loader: Migrator.fromFileSystem(fileURLToPath(new URL('migrations', import.meta.url))),
-  // Where to put the `_schema.sql` file
-  schemaDirectory: 'src/migrations',
 }).pipe(Layer.provide(SqlLive));
 
 const DatabaseLive = Layer.mergeAll(SqlLive, MigratorLive).pipe(Layer.provide(NodeContext.layer));

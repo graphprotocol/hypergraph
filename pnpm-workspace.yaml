@@ -3,17 +3,21 @@ packages:
   - apps/*/*
   - packages/*
   - docs
-
 onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
-  - "@swc/core"
-  - "@tailwindcss/oxide"
+  - '@biomejs/biome'
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@reown/appkit'
+  - '@swc/core'
+  - '@tailwindcss/oxide'
   - better-sqlite3
+  - bufferutil
+  - cbor-extract
   - core-js
   - core-js-pure
+  - esbuild
+  - msgpackr-extract
   - prisma
-  - ./test3
-  - ./test4
-  - ./test5
-  - ./test6
+  - sharp
+  - utf-8-validate

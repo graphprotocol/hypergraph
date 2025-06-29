@@ -1,11 +1,9 @@
 import { execSync } from 'node:child_process';
 import * as fsSync from 'node:fs';
 import * as nodePath from 'node:path';
-import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
-import * as FileSystem from '@effect/platform/FileSystem';
-import * as Path from '@effect/platform/Path';
-import * as Data from 'effect/Data';
-import * as Effect from 'effect/Effect';
+import { FileSystem, Path } from '@effect/platform';
+import { NodeFileSystem } from '@effect/platform-node';
+import { Data, Effect } from 'effect';
 
 import * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';
@@ -265,9 +263,8 @@ function generatePackageJson(app: Domain.InsertAppSchema) {
       '@automerge/automerge': '^2.2.9',
       '@automerge/automerge-repo': '=2.0.0-beta.5',
       '@automerge/automerge-repo-react-hooks': '=2.0.0-beta.5',
-      '@graphprotocol/hypergraph': 'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
-      '@graphprotocol/hypergraph-react':
-        'https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph-react@82b867a',
+      '@graphprotocol/hypergraph': '@graphprotocol/hypergraph',
+      '@graphprotocol/hypergraph-react': '@graphprotocol/hypergraph-react',
       '@privy-io/react-auth': '^2.13.7',
       '@tailwindcss/vite': '^4.1.8',
       '@tanstack/react-query': '^5.79.2',

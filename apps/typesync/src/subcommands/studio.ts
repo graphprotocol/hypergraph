@@ -1,12 +1,8 @@
 import { createServer } from 'node:http';
-import * as Command from '@effect/cli/Command';
-import * as Options from '@effect/cli/Options';
-import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
-import * as HttpServer from '@effect/platform/HttpServer';
-import * as Console from 'effect/Console';
-import * as Data from 'effect/Data';
-import * as Effect from 'effect/Effect';
-import * as Layer from 'effect/Layer';
+import { Command, Options } from '@effect/cli';
+import { HttpServer } from '@effect/platform';
+import { NodeHttpServer } from '@effect/platform-node';
+import { Console, Data, Effect, Layer } from 'effect';
 import open, { type AppName, apps } from 'open';
 
 import * as Server from '../Server.js';
