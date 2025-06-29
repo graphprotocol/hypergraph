@@ -299,9 +299,12 @@ export function HypergraphAppProvider({
 
     const syncServerUrl = new URL(syncServerUri);
     const syncServerWsUrl = new URL(`/?token=${identity.sessionToken}`, syncServerUrl.toString());
-    syncServerWsUrl.protocol = 'ws:';
-    const syncServerWsUrlString = syncServerWsUrl.toString();
 
+    // Use 'wss:' by default, only use 'ws:' for local development
+    const isLocalDev = syncServerUrl.hostname === 'localhost' || syncServerUrl.hostname === '127.0.0.1';
+    syncServerWsUrl.protocol = isLocalDev ? 'ws:' : 'wss:';
+
+    const syncServerWsUrlString = syncServerWsUrl.toString();
     const websocketConnection = new WebSocket(syncServerWsUrlString);
 
     setWebsocketConnection(websocketConnection);
