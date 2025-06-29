@@ -20,6 +20,10 @@ const sidebars = {
     { type: 'doc', id: 'quickstart', label: '🚀 Quickstart' },
     // { type: 'doc', id: 'faucet', label: '🪙 Testnet Faucet' },
     { type: 'doc', id: 'key-features', label: '🌟 Key Features' },
+
+    { type: 'doc', id: 'schema', label: '🔗 Schema' },
+    { type: 'doc', id: 'query-private-data', label: '🔍 Query Private Data' },
+    { type: 'doc', id: 'query-public-data', label: '🔍 Query Public Data' },
     { type: 'doc', id: 'core-concepts', label: '🧠 Core Concepts' },
     { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
     { type: 'doc', id: 'troubleshooting', label: '🛠️ Troubleshooting' },
