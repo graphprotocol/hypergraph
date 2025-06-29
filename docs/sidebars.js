@@ -18,13 +18,24 @@ const sidebars = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   docs: [
     { type: 'doc', id: 'quickstart', label: '🚀 Quickstart' },
-    { type: 'doc', id: 'faucet', label: '🪙 Testnet Faucet' },
+    // { type: 'doc', id: 'faucet', label: '🪙 Testnet Faucet' },
     { type: 'doc', id: 'key-features', label: '🌟 Key Features' },
     { type: 'doc', id: 'core-concepts', label: '🧠 Core Concepts' },
     { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
     { type: 'doc', id: 'troubleshooting', label: '🛠️ Troubleshooting' },
     { type: 'doc', id: 'faq', label: '❓ FAQ' },
-    { type: 'doc', id: 'legacy/README', label: '🗃️ Legacy Documentation' },
+    // { type: 'doc', id: 'legacy/README', label: '🗃️ Legacy Documentation' },
+    {
+      type: 'category',
+      label: 'Advanced',
+      items: [
+        {
+          type: 'doc',
+          id: 'advanced/running-connect-and-sync-server-locally',
+          label: 'Running Geo Connect and Sync Server Locally',
+        },
+      ],
+    },
   ],
 
   // But you can create a sidebar manually

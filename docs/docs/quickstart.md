@@ -13,8 +13,8 @@ This approach is perfect for developers who want to quickly build an application
 
 ## Prerequisites
 
-- Node.js >= 18 (we recommend v20+)
-- pnpm >= 7 (install with `npm install -g pnpm`)
+- Node.js >= 22
+- pnpm >= 10 (install with `npm install -g pnpm`)
 
 ## 1. Get the Hypergraph Toolkit
 
