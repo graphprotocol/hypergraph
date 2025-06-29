@@ -27,11 +27,11 @@ FROM base AS build
 # ENV DATABASE_URL="file:./dev.db"
 RUN \
   # TODO: This initalizes the database. But we should probably remove this later.
-  pnpm --filter server prisma migrate reset --force && \
-  # Generate the prisma client
-  pnpm --filter server prisma generate && \
+  # pnpm --filter server prisma migrate reset --force && \
   # Build the monorepo packages
   pnpm build && \
+  # Generate the prisma client
+  pnpm --filter server prisma generate && \
   # Build the server.
   pnpm --filter server build && \
   # Create an isolated deployment for the server.
