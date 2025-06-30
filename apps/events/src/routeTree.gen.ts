@@ -22,6 +22,7 @@ import { Route as SpaceSpaceIdIndexImport } from './routes/space/$spaceId/index'
 import { Route as SpaceSpaceIdUsersImport } from './routes/space/$spaceId/users'
 import { Route as SpaceSpaceIdPublicIntegrationImport } from './routes/space/$spaceId/public-integration'
 import { Route as SpaceSpaceIdPlaygroundImport } from './routes/space/$spaceId/playground'
+import { Route as SpaceSpaceIdEventsImport } from './routes/space/$spaceId/events'
 import { Route as SpaceSpaceIdChatImport } from './routes/space/$spaceId/chat'
 
 // Create Virtual Routes
@@ -98,6 +99,12 @@ const SpaceSpaceIdPlaygroundRoute = SpaceSpaceIdPlaygroundImport.update({
   getParentRoute: () => SpaceSpaceIdRoute,
 } as any)
 
+const SpaceSpaceIdEventsRoute = SpaceSpaceIdEventsImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => SpaceSpaceIdRoute,
+} as any)
+
 const SpaceSpaceIdChatRoute = SpaceSpaceIdChatImport.update({
   id: '/chat',
   path: '/chat',
@@ -164,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpaceSpaceIdChatImport
       parentRoute: typeof SpaceSpaceIdImport
     }
+    '/space/$spaceId/events': {
+      id: '/space/$spaceId/events'
+      path: '/events'
+      fullPath: '/space/$spaceId/events'
+      preLoaderRoute: typeof SpaceSpaceIdEventsImport
+      parentRoute: typeof SpaceSpaceIdImport
+    }
     '/space/$spaceId/playground': {
       id: '/space/$spaceId/playground'
       path: '/playground'
@@ -199,6 +213,7 @@ declare module '@tanstack/react-router' {
 
 interface SpaceSpaceIdRouteChildren {
   SpaceSpaceIdChatRoute: typeof SpaceSpaceIdChatRoute
+  SpaceSpaceIdEventsRoute: typeof SpaceSpaceIdEventsRoute
   SpaceSpaceIdPlaygroundRoute: typeof SpaceSpaceIdPlaygroundRoute
   SpaceSpaceIdPublicIntegrationRoute: typeof SpaceSpaceIdPublicIntegrationRoute
   SpaceSpaceIdUsersRoute: typeof SpaceSpaceIdUsersRoute
@@ -207,6 +222,7 @@ interface SpaceSpaceIdRouteChildren {
 
 const SpaceSpaceIdRouteChildren: SpaceSpaceIdRouteChildren = {
   SpaceSpaceIdChatRoute: SpaceSpaceIdChatRoute,
+  SpaceSpaceIdEventsRoute: SpaceSpaceIdEventsRoute,
   SpaceSpaceIdPlaygroundRoute: SpaceSpaceIdPlaygroundRoute,
   SpaceSpaceIdPublicIntegrationRoute: SpaceSpaceIdPublicIntegrationRoute,
   SpaceSpaceIdUsersRoute: SpaceSpaceIdUsersRoute,
@@ -226,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/friends/$accountId': typeof FriendsAccountIdRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
+  '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
   '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
@@ -240,6 +257,7 @@ export interface FileRoutesByTo {
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountId': typeof FriendsAccountIdRoute
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
+  '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
   '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
@@ -256,6 +274,7 @@ export interface FileRoutesById {
   '/friends/$accountId': typeof FriendsAccountIdRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
+  '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
   '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
@@ -273,6 +292,7 @@ export interface FileRouteTypes {
     | '/friends/$accountId'
     | '/space/$spaceId'
     | '/space/$spaceId/chat'
+    | '/space/$spaceId/events'
     | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/users'
@@ -286,6 +306,7 @@ export interface FileRouteTypes {
     | '/account-inbox/$inboxId'
     | '/friends/$accountId'
     | '/space/$spaceId/chat'
+    | '/space/$spaceId/events'
     | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/users'
@@ -300,6 +321,7 @@ export interface FileRouteTypes {
     | '/friends/$accountId'
     | '/space/$spaceId'
     | '/space/$spaceId/chat'
+    | '/space/$spaceId/events'
     | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/users'
@@ -368,6 +390,7 @@ export const routeTree = rootRoute
       "filePath": "space/$spaceId.tsx",
       "children": [
         "/space/$spaceId/chat",
+        "/space/$spaceId/events",
         "/space/$spaceId/playground",
         "/space/$spaceId/public-integration",
         "/space/$spaceId/users",
@@ -376,6 +399,10 @@ export const routeTree = rootRoute
     },
     "/space/$spaceId/chat": {
       "filePath": "space/$spaceId/chat.tsx",
+      "parent": "/space/$spaceId"
+    },
+    "/space/$spaceId/events": {
+      "filePath": "space/$spaceId/events.tsx",
       "parent": "/space/$spaceId"
     },
     "/space/$spaceId/playground": {

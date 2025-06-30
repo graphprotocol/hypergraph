@@ -1,13 +1,4 @@
-import { Id } from '@graphprotocol/grc-20';
-import {
-  _generateDeleteOps,
-  publishOps,
-  useCreateEntity,
-  _useGenerateCreateOps as useGenerateCreateOps,
-  useHypergraphApp,
-  useQuery,
-  useSpace,
-} from '@graphprotocol/hypergraph-react';
+import { _generateDeleteOps, publishOps, useHypergraphApp, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
 import { Todo2 } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
@@ -23,9 +14,6 @@ export const TodosPublic = () => {
     mode: 'public',
     include: { assignees: {} },
   });
-
-  const createTodo = useCreateEntity(Todo2);
-  const generateCreateOps = useGenerateCreateOps(Todo2);
 
   return (
     <>
@@ -69,36 +57,6 @@ export const TodosPublic = () => {
           </Button>
         </div>
       ))}
-      <Button
-        onClick={async () => {
-          const smartSessionClient = await getSmartSessionClient();
-          if (!smartSessionClient) {
-            throw new Error('Missing smartSessionClient');
-          }
-          const userId = Id.Id('8zPJjTGLBDPtUcj6q2tghg');
-          const todo = createTodo({
-            name: 'New Todo 22',
-            checked: false,
-            assignees: [userId],
-            due: new Date('2025-08-20'),
-            amount: 200,
-            point: [12.34, 56.78],
-            website: new URL('https://example.com'),
-          });
-          console.log('todo', todo);
-          const { ops } = generateCreateOps(todo);
-          console.log('ops', ops);
-          const result = await publishOps({
-            ops,
-            walletClient: smartSessionClient,
-            space: spaceId,
-            name: 'Create Todo',
-          });
-          console.log('result', result);
-        }}
-      >
-        Create
-      </Button>
     </>
   );
 };

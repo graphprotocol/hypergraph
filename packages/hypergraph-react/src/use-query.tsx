@@ -148,7 +148,6 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: Q
   const publicResult = useQueryPublic(type, { enabled: mode === 'public', include });
   const localResult = useQueryLocal(type, { enabled: mode === 'private', filter, include, space });
   // const mapping = useSelector(store, (state) => state.context.mapping);
-  // const generateCreateOps = useGenerateCreateOps(type, mode === 'merged');
   // const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
 
   // const mergedData = useMemo(() => {

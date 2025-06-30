@@ -312,7 +312,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
     });
 
     if (Either.isRight(decodeResult)) {
-      data.push(decodeResult.right);
+      data.push({ ...decodeResult.right, __schema: type });
     } else {
       invalidEntities.push(rawEntity);
     }
