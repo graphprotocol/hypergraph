@@ -169,13 +169,23 @@ export function CmdPalette() {
                 as="ul"
                 className="max-h-80 scroll-py-2 divide-y divide-gray-500/20 overflow-y-auto"
               >
-                <li className="p-2">
-                  <ul className="text-sm text-gray-400">
-                    {results.map((result) => (
-                      <Option key={result.id} result={result} />
-                    ))}
-                  </ul>
-                </li>
+                {query === '' && !isLoading && results.length === 0 ? (
+                  <div className="px-6 py-10 text-center text-sm sm:px-14 flex flex-col items-center gap-y-2">
+                    <p className="font-semibold text-gray-900">No apps created</p>
+                    <p className="text-gray-500">
+                      Get started by creating a new App, building the App schema, and generating the hypergraph schema
+                      code. Click the "Create new app" option below
+                    </p>
+                  </div>
+                ) : (
+                  <li className="p-2">
+                    <ul className="text-sm text-gray-400">
+                      {results.map((result) => (
+                        <Option key={result.id} result={result} />
+                      ))}
+                    </ul>
+                  </li>
+                )}
                 {query === '' && !isLoading ? (
                   <li className="p-2">
                     <h2 className="sr-only">Quick actions</h2>

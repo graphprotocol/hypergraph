@@ -14,7 +14,7 @@ const config = {
   overwrite: true,
   generates: {
     './client/src/generated/': {
-      schema: 'https://hypergraph-v2.up.railway.app/graphql',
+      schema: 'https://hypergraph-v2-testnet.up.railway.app/graphql',
       documents: ['./client/src/**/*.{ts,tsx}'],
       preset: 'client',
       config: pluginConfig,
