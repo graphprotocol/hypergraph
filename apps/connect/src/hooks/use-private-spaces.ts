@@ -45,7 +45,6 @@ export const usePrivateSpaces = (): UseQueryResult<PrivateSpaceData[], Error> =>
           ...space,
           apps: Array.from(spaceAppIds).map((appId) => {
             return {
-              // @ts-expect-error - need to improve appInfo typing
               name: appInfo[appId]?.name ?? 'Unknown',
               id: appId,
             };
