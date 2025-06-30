@@ -14,6 +14,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { useHypergraphApp } from './HypergraphAppContext.js';
+import { usePublicSpace } from './internal/use-public-space.js';
 
 // TODO space can be undefined
 export type HypergraphContext = { space: string };
@@ -64,8 +65,9 @@ export function useSpace(options: { space?: string; mode: 'private' | 'public' }
   const spaceId = spaceIdFromParams ?? spaceIdFromContext;
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId, enabled: options.mode === 'private' });
   const ready = options.mode === 'public' ? true : handle ? handle.isReady() : false;
-  const space = useSelector(store, (state) => state.context.spaces.find((space) => space.id === spaceId));
-  return { ready, name: space?.name, id: spaceId };
+  const privateSpace = useSelector(store, (state) => state.context.spaces.find((space) => space.id === spaceId));
+  const publicSpace = usePublicSpace({ spaceId, enabled: options.mode === 'public' });
+  return { ready, name: options.mode === 'private' ? privateSpace?.name : publicSpace?.name, id: spaceId };
 }
 
 export function useCreateEntity<const S extends Entity.AnyNoContext>(type: S, options?: { space?: string }) {
