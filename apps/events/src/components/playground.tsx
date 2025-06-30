@@ -22,11 +22,11 @@ export const Playground = () => {
   const { getSmartSessionClient } = useHypergraphApp();
 
   const deleteEntity = _useDeleteEntityPublic(Event, {
-    space: '1c954768-7e14-4f0f-9396-0fe9dcd55fe8',
+    space: 'a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862',
   });
 
   const createEntity = _useCreateEntityPublic(Event, {
-    space: '1c954768-7e14-4f0f-9396-0fe9dcd55fe8',
+    space: 'a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862',
   });
 
   console.log({ isLoading, isError, data });

@@ -91,6 +91,7 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
       });
     }
     const { ops: createOps } = Graph.createEntity({
+      id: entity.id,
       types: mappingEntry.typeIds,
       values,
       relations,

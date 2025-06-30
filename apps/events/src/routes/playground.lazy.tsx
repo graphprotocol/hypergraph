@@ -10,12 +10,12 @@ export const Route = createLazyFileRoute('/playground')({
 
 function RouteComponent() {
   return (
-    <HypergraphSpaceProvider space="d9814a82-8dab-4d02-86d2-9d413f7dc336">
+    <HypergraphSpaceProvider space="a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862">
       <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
         <h1 className="text-2xl font-bold">Playground</h1>
         <Playground />
-        <CreatePropertiesAndTypesEvent space="d9814a82-8dab-4d02-86d2-9d413f7dc336" />
-        <CreateEvents space="d9814a82-8dab-4d02-86d2-9d413f7dc336" />
+        <CreatePropertiesAndTypesEvent space="a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862" />
+        <CreateEvents space="a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862" />
       </div>
     </HypergraphSpaceProvider>
   );
