@@ -21,6 +21,7 @@ query entityToPublish($entityId: String!, $spaceId: String!) {
   entity(id: $entityId, spaceId: $spaceId) {
     values {
       propertyId
+      value
     }
     relations {
       id
@@ -33,6 +34,7 @@ type EntityToPublishQueryResult = {
   entity: {
     values: {
       propertyId: string;
+      value: string;
     }[];
     relations: {
       id: string;
@@ -97,7 +99,34 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
     return { ops };
   }
 
-  // TODO: implement updating an existing entity
+  if (data?.entity) {
+    for (const [key, propertyId] of Object.entries(mappingEntry.properties || {})) {
+      let serializedValue: string = entity[key];
+      if (fields[key] === Type.Checkbox) {
+        serializedValue = Graph.serializeCheckbox(entity[key]);
+      } else if (fields[key] === Type.Date) {
+        serializedValue = Graph.serializeDate(entity[key]);
+      } else if (fields[key] === Type.Point) {
+        serializedValue = Graph.serializePoint(entity[key]);
+      } else if (fields[key] === Type.Number) {
+        serializedValue = Graph.serializeNumber(entity[key]);
+      }
+
+      const existingValue = data.entity.values.find((value) => value.propertyId === propertyId);
+
+      if (serializedValue !== existingValue?.value) {
+        values.push({ property: propertyId, value: serializedValue });
+      }
+    }
+
+    // TODO: handle added or removed relations
+    // TODO: handle updated relations
+    // TODO: handle added or removed types
+    if (values.length > 0) {
+      const { ops: updateEntityOps } = Graph.updateEntity({ id: entity.id, values });
+      ops.push(...updateEntityOps);
+    }
+  }
 
   return { ops };
 };
