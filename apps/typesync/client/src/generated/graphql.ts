@@ -1,5 +1,6 @@
 /* eslint-disable */
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -14,6 +15,19 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+};
+
+export type Account = {
+  __typename?: 'Account';
+  address: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  spacesWhereEdtitor?: Maybe<Array<Maybe<Space>>>;
+  spacesWhereMember?: Maybe<Array<Maybe<Space>>>;
+};
+
+export type AddressFilter = {
+  in?: InputMaybe<Array<Scalars['String']['input']>>;
+  is?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Block = {
@@ -50,6 +64,7 @@ export type DataType =
 
 export type Entity = {
   __typename?: 'Entity';
+  backlinks: Array<Maybe<Relation>>;
   blocks: Array<Maybe<Block>>;
   createdAt: Scalars['String']['output'];
   createdAtBlock: Scalars['String']['output'];
@@ -65,6 +80,12 @@ export type Entity = {
 };
 
 
+export type EntityBacklinksArgs = {
+  filter?: InputMaybe<RelationFilter>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type EntityRelationsArgs = {
   filter?: InputMaybe<RelationFilter>;
   spaceId?: InputMaybe<Scalars['String']['input']>;
@@ -77,11 +98,12 @@ export type EntityValuesArgs = {
 };
 
 export type EntityFilter = {
-  NOT?: InputMaybe<EntityFilter>;
-  OR?: InputMaybe<Array<EntityFilter>>;
-  fromRelation?: InputMaybe<RelationFilter>;
+  backlinks?: InputMaybe<RelationFilter>;
   id?: InputMaybe<IdFilter>;
-  toRelation?: InputMaybe<RelationFilter>;
+  not?: InputMaybe<EntityFilter>;
+  or?: InputMaybe<Array<EntityFilter>>;
+  relations?: InputMaybe<RelationFilter>;
+  types?: InputMaybe<IdFilter>;
   value?: InputMaybe<ValueFilter>;
 };
 
@@ -89,14 +111,28 @@ export type IdFilter = {
   in?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
+export type Membership = {
+  __typename?: 'Membership';
+  address: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  space?: Maybe<Space>;
+  spaceId: Scalars['String']['output'];
+};
+
+export type Meta = {
+  __typename?: 'Meta';
+  blockCursor?: Maybe<Scalars['String']['output']>;
+  blockNumber?: Maybe<Scalars['String']['output']>;
+};
+
 export type NumberFilter = {
-  NOT?: InputMaybe<NumberFilter>;
   exists?: InputMaybe<Scalars['Boolean']['input']>;
   greaterThan?: InputMaybe<Scalars['Float']['input']>;
   greaterThanOrEqual?: InputMaybe<Scalars['Float']['input']>;
   is?: InputMaybe<Scalars['Float']['input']>;
   lessThan?: InputMaybe<Scalars['Float']['input']>;
   lessThanOrEqual?: InputMaybe<Scalars['Float']['input']>;
+  not?: InputMaybe<NumberFilter>;
 };
 
 export type PointFilter = {
@@ -110,20 +146,33 @@ export type Property = {
   entity?: Maybe<Entity>;
   id: Scalars['ID']['output'];
   relationValueTypes?: Maybe<Array<Maybe<Type>>>;
-  renderableType?: Maybe<RenderableType>;
+  renderableType?: Maybe<Scalars['String']['output']>;
 };
 
 export type PropertyFilter = {
   dataType?: InputMaybe<DataType>;
+  id?: InputMaybe<IdFilter>;
 };
 
 export type Query = {
   __typename?: 'Query';
+  account?: Maybe<Account>;
   entities: Array<Maybe<Entity>>;
   entity?: Maybe<Entity>;
+  meta?: Maybe<Meta>;
   properties: Array<Maybe<Property>>;
+  property?: Maybe<Property>;
+  relation?: Maybe<Relation>;
+  relations: Array<Maybe<Relation>>;
   search: Array<Maybe<Entity>>;
+  space?: Maybe<Space>;
+  spaces: Array<Maybe<Space>>;
   types: Array<Maybe<Type>>;
+};
+
+
+export type QueryAccountArgs = {
+  address: Scalars['String']['input'];
 };
 
 
@@ -148,12 +197,43 @@ export type QueryPropertiesArgs = {
 };
 
 
+export type QueryPropertyArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryRelationArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryRelationsArgs = {
+  filter?: InputMaybe<RelationFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QuerySearchArgs = {
+  filter?: InputMaybe<SearchFilter>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   query: Scalars['String']['input'];
   spaceId?: InputMaybe<Scalars['String']['input']>;
   threshold?: InputMaybe<Scalars['Float']['input']>;
+};
+
+
+export type QuerySpaceArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QuerySpacesArgs = {
+  filter?: InputMaybe<SpaceFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -181,21 +261,52 @@ export type Relation = {
 };
 
 export type RelationFilter = {
+  fromEntity?: InputMaybe<EntityFilter>;
   fromEntityId?: InputMaybe<Scalars['String']['input']>;
+  relationEntity?: InputMaybe<EntityFilter>;
+  relationEntityId?: InputMaybe<Scalars['String']['input']>;
+  toEntity?: InputMaybe<EntityFilter>;
   toEntityId?: InputMaybe<Scalars['String']['input']>;
+  type?: InputMaybe<IdFilter>;
   typeId?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type RenderableType =
-  | 'IMAGE'
-  | 'URL';
+export type SearchFilter = {
+  not?: InputMaybe<SearchFilter>;
+  or?: InputMaybe<Array<SearchFilter>>;
+  types?: InputMaybe<IdFilter>;
+};
+
+export type Space = {
+  __typename?: 'Space';
+  daoAddress: Scalars['String']['output'];
+  editors?: Maybe<Array<Membership>>;
+  entity?: Maybe<Entity>;
+  id: Scalars['ID']['output'];
+  mainVotingAddress?: Maybe<Scalars['String']['output']>;
+  members?: Maybe<Array<Membership>>;
+  membershipAddress?: Maybe<Scalars['String']['output']>;
+  personalAddress?: Maybe<Scalars['String']['output']>;
+  spaceAddress: Scalars['String']['output'];
+  type: SpaceType;
+};
+
+export type SpaceFilter = {
+  editor?: InputMaybe<AddressFilter>;
+  id?: InputMaybe<IdFilter>;
+  member?: InputMaybe<AddressFilter>;
+};
+
+export type SpaceType =
+  | 'PERSONAL'
+  | 'PUBLIC';
 
 export type TextFilter = {
-  NOT?: InputMaybe<TextFilter>;
   contains?: InputMaybe<Scalars['String']['input']>;
   endsWith?: InputMaybe<Scalars['String']['input']>;
   exists?: InputMaybe<Scalars['Boolean']['input']>;
   is?: InputMaybe<Scalars['String']['input']>;
+  not?: InputMaybe<TextFilter>;
   startsWith?: InputMaybe<Scalars['String']['input']>;
 };
 
