@@ -8,12 +8,12 @@ import 'react-dom';
 
 export default defineConfig({
   root: './client',
-  // server: {
-  //   port: 3000,
-  // },
-  // preview: {
-  //   port: 5000,
-  // },
+  server: {
+    port: 3000,
+  },
+  preview: {
+    port: 5000,
+  },
   plugins: [
     tanstackRouter({
       target: 'react',
