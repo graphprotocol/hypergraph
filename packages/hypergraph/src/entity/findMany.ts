@@ -358,9 +358,13 @@ export function findMany<const S extends AnyNoContext>(
         const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
         if (filter) {
           if (evaluateEntityFilter(filter, decoded)) {
+            // injecting the schema to the entity to be able to access it in the preparePublish function
+            decoded.__schema = type;
             filtered.push(decoded);
           }
         } else {
+          // injecting the schema to the entity to be able to access it in the preparePublish function
+          decoded.__schema = type;
           filtered.push(decoded);
         }
       } catch (error) {

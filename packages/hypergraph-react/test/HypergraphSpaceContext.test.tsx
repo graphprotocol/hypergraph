@@ -130,11 +130,22 @@ describe('HypergraphSpaceContext', () => {
         createdEntity = updateEntity(id, { name: 'Test User', age: 2112 });
       });
 
-      expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
+      expect(createdEntity).toEqual({
+        id,
+        name: 'Test User',
+        age: 2112,
+        type: Person.name,
+        __schema: Person,
+      });
 
       const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
-      // @ts-expect-error - TODO: fix the types error
-      expect(queryEntityResult.current).toEqual({ ...createdEntity, __version: '', __deleted: false });
+      expect(queryEntityResult.current).toEqual({
+        // @ts-expect-error - TODO: fix the types error
+        ...createdEntity,
+        __version: '',
+        __deleted: false,
+        __schema: Person,
+      });
 
       const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Person), { wrapper });
 
@@ -143,7 +154,7 @@ describe('HypergraphSpaceContext', () => {
       expect(queryEntitiesResult.current).toEqual({
         deletedEntities: [],
         // @ts-expect-error - TODO: fix the types error
-        entities: [{ ...createdEntity, __version: '', __deleted: false }],
+        entities: [{ ...createdEntity, __version: '', __deleted: false, __schema: Person }],
       });
     });
   });

@@ -24,6 +24,9 @@ function RouteComponent() {
           >
             Home
           </Link>
+          <Link to={'/space/$spaceId/events'} params={{ spaceId }} className="px-3 py-2 text-sm font-medium rounded-md">
+            Events
+          </Link>
           <Link
             to={'/space/$spaceId/public-integration'}
             params={{ spaceId }}
