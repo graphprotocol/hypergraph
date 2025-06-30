@@ -3,6 +3,7 @@ import {
   _useDeleteEntityPublic,
   useHypergraphApp,
   useQuery,
+  useSpace,
 } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Event } from '../schema';
@@ -21,18 +22,16 @@ export const Playground = () => {
   const [isCreating, setIsCreating] = useState(false);
   const { getSmartSessionClient } = useHypergraphApp();
 
-  const deleteEntity = _useDeleteEntityPublic(Event, {
-    space: 'a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862',
-  });
+  const { name, id: spaceId } = useSpace({ mode: 'public' });
 
-  const createEntity = _useCreateEntityPublic(Event, {
-    space: 'a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862',
-  });
+  const deleteEntity = _useDeleteEntityPublic(Event, { space: spaceId });
+  const createEntity = _useCreateEntityPublic(Event, { space: spaceId });
 
   console.log({ isLoading, isError, data });
 
   return (
     <div>
+      <h2 className="text-lg font-bold">Space: {name}</h2>
       {isLoading && <div>Loading...</div>}
       {isError && <div>Error</div>}
       <Button
