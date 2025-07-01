@@ -2,39 +2,69 @@
 
 Once you want to share your data with the world you need to publish it. This is done by creating the necessary `Opertations` (Ops) and then publishing them.
 
-## Prepare Publish (not yet supported)
+## Prepare Publish
 
 Based on entity Ids, the source space and the target space this function calculates the necessary `Operations` to publish the data.
 
 ```tsx
 import { preparePublish } from "@graphprotocol/hypergraph-react";
 
-const { ops, diff } = preparePublish({
-  entityIds: ["entity-id-1", "entity-id-2"],
-  privateSourceSpace: "private-source-space-id",
-  publicTargetSpace: "public-target-space-id",
+const { ops } = preparePublish({
+  entity: entity,
+  publicSpace: "public-space-id",
 });
 ```
 
-## Publishing Relations
+The entity can come from a `useCreateEntity` result or from a `useQuery` result e.g.
 
 ```tsx
-import { publishOps } from '@graphprotocol/hypergraph-react';
+const MyComponent = () => {
+  const { data: events } = useQuery(Event, { mode: "private" });
+
+  const createOpsForPublishing = async (event) => {
+    const { ops } = preparePublish({
+      entity: event,
+      publicSpace: "public-space-id",
+    });
+  };
+
+  return (
+    <div>
+      {events.map((event) => (
+        <button key={event.id} onClick={() => createOpsForPublishing(event)}>
+          {event.name}
+        </button>
+      ))}
+    </div>
+  );
+};
+```
+
+## Publish
+
+The `publishOps` function is used to publish the changes to the public space. Here is a full example flow:
+
+```tsx
+import { publishOps } from "@graphprotocol/hypergraph-react";
 
 const MyComponent = () => {
   const { getSmartSessionClient } = useHypergraphApp();
 
   const publishChanges = async () => {
     const smartSessionClient = await getSmartSessionClient();
+    const publicSpaceId = "public-space-id";
 
-    const ops = […];
+    const { ops } = preparePublish({
+      entity: entity,
+      publicSpace: publicSpaceId,
+    });
 
     const result = await publishOps({
       ops,
       walletClient: smartSessionClient,
-      space,
-      name: 'Create Job Offers',
+      space: publicSpaceId,
+      name: "Create Job Offers",
     });
-  }
-}
+  };
+};
 ```
