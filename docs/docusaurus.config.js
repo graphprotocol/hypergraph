@@ -103,8 +103,8 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
-                to: '/docs/intro',
+                label: 'Quickstart',
+                to: '/docs/quickstart',
               },
             ],
           },
@@ -127,9 +127,9 @@ const config = {
               {
                 label: 'Geo',
                 to: 'https://geobrowser.io',
-              }
+              },
             ],
-          }
+          },
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Geo Browser & contributors.`,
       },

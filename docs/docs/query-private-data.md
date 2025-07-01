@@ -51,7 +51,8 @@ useQuery for private data returns:
 
 - data - a list of entities defined in your schema
 - invalidEntities - a list of entities that are in your space storage with correct type, but can't be parsed to your schema
+- deleted - a list of entities that are marked as deleted, we keep them around to be able to later be able to publish the deleted information to the public knowledge graph
 
 ```ts
-const { data, invalidEntities } = useQuery(Event, { mode: 'private' });
+const { data, invalidEntities, deleted } = useQuery(Event, { mode: 'private' });
 ```
