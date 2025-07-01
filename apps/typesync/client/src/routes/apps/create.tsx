@@ -366,7 +366,23 @@ function CreateAppPage() {
                 <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Create New App</h2>
                 <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                   <div className="sm:col-span-4">
-                    <createAppForm.AppField name="name">
+                    <createAppForm.AppField
+                      name="name"
+                      listeners={{
+                        onBlur({ value }) {
+                          // set the default value of the directory to be `./${formatted app name}
+                          if (
+                            EffectString.isNonEmpty(value) &&
+                            EffectString.isEmpty(createAppForm.state.values.directory || '')
+                          ) {
+                            createAppForm.setFieldValue(
+                              'directory',
+                              `./${pipe(value, EffectString.toLowerCase, EffectString.replaceAll(/\s/g, '-'))}`,
+                            );
+                          }
+                        },
+                      }}
+                    >
                       {(field) => (
                         <field.FormComponentTextField
                           id="name"
