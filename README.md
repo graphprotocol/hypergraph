@@ -1,4 +1,8 @@
-# Hypergraph Framework
+# Hypergraph
+
+Hypergraph is a framework for building web3 applications.
+
+*Status: Developer Preview*
 
 ## Development
 
