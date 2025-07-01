@@ -33,7 +33,10 @@ export function FormComponentTextField({ id, label, hint, ...rest }: Readonly<Fo
             {...rest}
             value={field.state.value}
             onBlur={field.handleBlur}
-            onChange={(e) => field.handleChange(e.target.value)}
+            onChange={(e) => {
+              field.handleChange(e.target.value);
+              rest.onChange?.(e);
+            }}
             data-state={hasErrors ? 'invalid' : undefined}
             aria-invalid={hasErrors ? 'true' : undefined}
             aria-describedby={hasErrors ? `${id}-invalid` : hint != null ? `${id}-hint` : undefined}

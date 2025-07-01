@@ -117,6 +117,7 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
             ),
             Effect.andThen(() => updatePackageJson(app, directory)),
             Effect.andThen(() => fs.writeFileString(path.join(directory, 'src', 'schema.ts'), buildSchemaFile(app))),
+            Effect.andThen(() => fs.writeFileString(path.join(directory, 'src', 'mapping.ts'), buildMappingFile(app))),
             Effect.andThen(() => cleanup),
           );
 
@@ -290,9 +291,55 @@ ${fieldStrings.join(',\n')}
 
 function buildSchemaFile(schema: Domain.InsertAppSchema) {
   const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';`;
+
   const typeDefinitions = schema.types
     .map(typeDefinitionToString)
     .filter((def) => def != null)
     .join('\n\n');
   return [importStatement, typeDefinitions].join('\n\n');
+}
+
+export function buildMappingFile(schema: Domain.InsertAppSchema) {
+  const importStatement1 = `import { Id } from '@graphprotocol/grc-20';`;
+  const importStatement2 = `import type { Mapping } from '@graphprotocol/hypergraph';`;
+
+  const typeMappings: string[] = [];
+
+  for (const type of schema.types) {
+    const properties: string[] = [];
+    const relations: string[] = [];
+
+    // Process properties and relations
+    for (const property of type.properties) {
+      if (Domain.isDataTypeRelation(property.dataType)) {
+        // This is a relation
+        relations.push(`      ${Utils.toCamelCase(property.name)}: Id.Id('${property.knowledgeGraphId}')`);
+      } else {
+        // This is a regular property
+        properties.push(`      ${Utils.toCamelCase(property.name)}: Id.Id('${property.knowledgeGraphId}')`);
+      }
+    }
+
+    const typeMapping = `  ${type.name}: {
+    typeIds: [Id.Id('${type.knowledgeGraphId}')],
+    properties: {
+${properties.join(',\n')},
+    },${
+      relations.length > 0
+        ? `
+    relations: {
+${relations.join(',\n')},
+    },`
+        : ''
+    }
+  }`;
+
+    typeMappings.push(typeMapping);
+  }
+
+  const mappingString = `export const mapping: Mapping = {
+${typeMappings.join(',\n')},
+};`;
+
+  return [importStatement1, importStatement2, '', mappingString].join('\n');
 }
