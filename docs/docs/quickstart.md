@@ -35,7 +35,7 @@ It will walk you through creating a new, fully-functional React application powe
 
 ### 1. Install the Hypergraph CLI
 
-First, clone the Hypergraph repository, which contains TypeSync.
+First install the Hypergraph CLI.
 
 ```bash
 npm install -g @graphprotocol/hypergraph-cli@latest
