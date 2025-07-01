@@ -4,7 +4,7 @@ The Hypergraph schema allows you define the data model for your application. It 
 
 ## Example
 
-Here is an example of a schema for a Todo app with the properties `name` and `completed`.
+Here is an example of a schema for an Event app with the properties `name` and `description`.
 
 ```ts
 import { Entity, Type } from '@graphprotocol/hypergraph';
