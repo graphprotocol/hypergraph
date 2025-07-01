@@ -79,7 +79,7 @@ const config = {
         title: 'Hypergraph',
         logo: {
           alt: 'Hypergraph Logo',
-          src: 'img/logo.svg',
+          src: 'img/HypergraphLogo.png',
         },
         items: [
           {
@@ -90,14 +90,14 @@ const config = {
           },
           { to: '/blog', label: 'Blog', position: 'left' },
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/graphprotocol/hypergraph',
             label: 'GitHub',
             position: 'right',
           },
         ],
       },
       footer: {
-        style: 'dark',
+        style: 'light',
         links: [
           {
             title: 'Docs',
@@ -112,16 +112,12 @@ const config = {
             title: 'Community',
             items: [
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
                 label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
+                href: 'https://discord.gg/NN69QZQQAZ',
               },
               {
                 label: 'X',
-                href: 'https://x.com/docusaurus',
+                href: 'https://x.com/geobrowser',
               },
             ],
           },
@@ -129,17 +125,13 @@ const config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
-              },
+                label: 'Geo',
+                to: 'https://geobrowser.io',
+              }
             ],
-          },
+          }
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Geo Browser & contributors.`,
       },
       prism: {
         theme: prismThemes.github,
