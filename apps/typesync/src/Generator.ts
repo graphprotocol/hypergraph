@@ -1,9 +1,8 @@
 import { execSync } from 'node:child_process';
-import * as fsSync from 'node:fs';
-import * as nodePath from 'node:path';
-import { FileSystem, Path } from '@effect/platform';
+import { readdirSync } from 'node:fs';
+import { FileSystem, Path, type Error as PlatformError } from '@effect/platform';
 import { NodeFileSystem } from '@effect/platform-node';
-import { Data, Effect } from 'effect';
+import { Cause, Console, Data, Effect, String as EffectString } from 'effect';
 
 import * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';
@@ -13,6 +12,71 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
   effect: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
+
+    const tmpDirectory = path.join(process.cwd(), '.tmp');
+
+    const cleanup = fs
+      .remove(tmpDirectory, { recursive: true, force: true })
+      .pipe(Effect.tap(() => Console.log('successfully cleaned temp directory')));
+
+    /**
+     * Updates the name and description of the cloned package.json
+     */
+    function updatePackageJson(app: Pick<Domain.InsertAppSchema, 'name' | 'description'>, directory: string) {
+      return Effect.gen(function* () {
+        const packageJsonPath = path.join(directory, 'package.json');
+        const exists = yield* fs.exists(packageJsonPath);
+        if (!exists) {
+          return yield* Effect.fail(new NoPackageJsonFoundError());
+        }
+        // read the cloned package.json
+        const packageJson = yield* fs.readFileString(packageJsonPath).pipe(Effect.map(JSON.parse));
+
+        const validatedPackageName = validatePackageName(app.name);
+        const name = validatedPackageName.normalizedName;
+        // update the name and description
+        packageJson.name = name;
+        packageJson.description = app.description || '';
+
+        // rewrite file
+        yield* fs.writeFileString(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      });
+    }
+
+    const cloneTemplRepo = Effect.async<void, CloneRepoError>((resume) => {
+      try {
+        execSync(`git clone git@github.com:geobrowser/hypergraph-app-template.git ${tmpDirectory}`, {
+          stdio: 'inherit',
+          cwd: process.cwd(),
+        });
+        return resume(Effect.void);
+      } catch (err) {
+        console.error('failure cloning template repo', { err });
+        return resume(Effect.fail(new CloneRepoError({ cause: err })));
+      }
+    });
+
+    const copyTempl = (src: string, dest: string): Effect.Effect<void, PlatformError.PlatformError> =>
+      Effect.gen(function* () {
+        // create the target directory
+        yield* fs.makeDirectory(dest, { recursive: true });
+        // read the cloned directory
+        const entries = readdirSync(src, { withFileTypes: true });
+
+        for (const entry of entries) {
+          // Skip .git directory
+          if (EffectString.startsWith('.git')(entry.name)) continue;
+
+          const srcPath = path.join(src, entry.name);
+          const destPath = path.join(dest, entry.name);
+
+          if (entry.isDirectory()) {
+            yield* copyTempl(srcPath, destPath);
+          } else {
+            yield* fs.copyFile(srcPath, destPath);
+          }
+        }
+      });
 
     return {
       /**
@@ -24,28 +88,7 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
        */
       codegen(app: Domain.InsertAppSchema) {
         return Effect.gen(function* () {
-          // check directory
-          /**
-           * Decide where to place the new application.
-           * If the caller explicitly provides `app.directory` we respect it.
-           * Otherwise, we always create the application inside the repository-root
-           * `apps` folder so it shows up next to `connect`, `events`, etc.
-           */
-
-          // 1. Locate the repo root by walking up until we find `pnpm-workspace.yaml`
-          const findRepoRoot = (start: string): string => {
-            let dir = start;
-            while (true) {
-              if (fsSync.existsSync(nodePath.join(dir, 'pnpm-workspace.yaml'))) return dir;
-              const parent = nodePath.dirname(dir);
-              if (parent === dir) return start; // Fallback if we can't find it
-              dir = parent;
-            }
-          };
-
-          const repoRoot = findRepoRoot(process.cwd());
-
-          const directory = app.directory?.length ? app.directory : nodePath.join(repoRoot, 'apps', app.name);
+          const directory = app.directory || `./${app.name}`;
           const directoryExists = yield* fs.exists(directory);
           if (directoryExists) {
             // directory already exists, fail
@@ -54,83 +97,28 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
 
           // create the directory
           yield* fs.makeDirectory(directory, { recursive: true });
-          // generate root level files
-          yield* Effect.all([
-            fs.writeFileString(path.join(directory, 'package.json'), JSON.stringify(generatePackageJson(app), null, 2)),
-            fs.writeFileString(path.join(directory, 'tsconfig.app.json'), JSON.stringify(tsconfigAppJson, null, 2)),
-            fs.writeFileString(path.join(directory, 'tsconfig.node.json'), JSON.stringify(tsconfigNodeJson, null, 2)),
-            fs.writeFileString(path.join(directory, 'tsconfig.json'), JSON.stringify(tsconfigJson, null, 2)),
-            fs.writeFileString(path.join(directory, '.gitignore'), gitignore),
-            fs.writeFileString(path.join(directory, 'eslint.config.mjs'), eslintConfigMjs),
-            fs.writeFileString(path.join(directory, '.prettierrc'), JSON.stringify(prettierrc, null, 2)),
-            fs.writeFileString(path.join(directory, '.prettierignore'), prettierignore),
-            fs.writeFileString(path.join(directory, 'vite.config.ts'), viteConfigTs),
-            fs.writeFileString(path.join(directory, 'index.html'), indexHtml(app.name)),
-          ]);
-          // create the src directory inside
-          yield* fs.makeDirectory(path.join(directory, 'src'));
-          yield* fs.makeDirectory(path.join(directory, 'src', 'routes'));
 
-          // create the src files
-          yield* Effect.all([
-            fs.writeFileString(path.join(directory, 'src', 'index.css'), indexcss),
-            fs.writeFileString(path.join(directory, 'src', 'main.tsx'), mainTsx),
-            fs.writeFileString(path.join(directory, 'src', 'vite-env.d.ts'), vitEnvDTs),
-            fs.writeFileString(path.join(directory, 'src', 'schema.ts'), buildSchemaFile(app)),
-            fs.writeFileString(path.join(directory, 'src', 'routes', '__root.tsx'), rootRouteTsx),
-            fs.writeFileString(path.join(directory, 'src', 'routes', 'index.tsx'), indexRouteTsx),
-          ]);
-
-          // -----------------------------
-          // Post-generation helpers
-          // 1. Add the new directory to pnpm-workspace.yaml
-          // 2. Run `pnpm install` inside the new directory so deps are ready
-          // 3. Run `pnpm install` at repo root to update lockfile/hoist
-          // -----------------------------
-
-          const workspaceFile = nodePath.join(repoRoot, 'pnpm-workspace.yaml');
-          const workspaceExists = yield* fs.exists(workspaceFile);
-          if (workspaceExists) {
-            const current = yield* fs.readFileString(workspaceFile);
-            const lines = current.split('\n');
-
-            const relPackagePath = nodePath.relative(repoRoot, directory);
-            const newPackageLine = `  - ${relPackagePath}`;
-            const alreadyExists = lines.some((line) => line.trim() === newPackageLine.trim());
-
-            if (!alreadyExists) {
-              const packagesLineIndex = lines.findIndex((line) => line.startsWith('packages:'));
-
-              if (packagesLineIndex !== -1) {
-                let lastPackageLineIndex = packagesLineIndex;
-                for (let i = packagesLineIndex + 1; i < lines.length; i++) {
-                  if (lines[i].trim().startsWith('- ')) {
-                    lastPackageLineIndex = i;
-                  } else if (lines[i].trim() !== '') {
-                    break;
-                  }
-                }
-                lines.splice(lastPackageLineIndex + 1, 0, newPackageLine);
-                const updated = lines.join('\n');
-                yield* fs.writeFileString(workspaceFile, updated);
-              }
-            }
-          }
-
-          // helper to run a shell command synchronously (cross-platform)
-          const run = (cmd: string, cwd?: string) =>
-            Effect.sync(() => {
-              try {
-                execSync(cmd, { stdio: 'inherit', cwd });
-              } catch {
-                throw new Error(`command failed (${cmd})`);
-              }
-            });
-
-          // install deps within the new app folder
-          yield* run('pnpm install', directory);
-          // update lockfile/hoist at repo root
-          yield* run('pnpm install');
+          /**
+           * 1. clone the hypergraph-app-template repo
+           * 2. copy it to the output directory from the app request
+           * 3. update the package.json
+           * 4. update the schema.ts
+           * 5. cleanup the .tmp directory
+           */
+          yield* cloneTemplRepo.pipe(
+            Effect.tapErrorCause((cause) =>
+              Console.error('failure cloning into hypergraph-app-template repo', { cause: Cause.pretty(cause) }),
+            ),
+            Effect.andThen(() => copyTempl(tmpDirectory, directory)),
+            Effect.tapErrorCause((cause) =>
+              Console.error('failure copying the cloned template repo into the directory', {
+                cause: Cause.pretty(cause),
+              }),
+            ),
+            Effect.andThen(() => updatePackageJson(app, directory)),
+            Effect.andThen(() => fs.writeFileString(path.join(directory, 'src', 'schema.ts'), buildSchemaFile(app))),
+            Effect.andThen(() => cleanup),
+          );
 
           return { directory };
         });
@@ -140,8 +128,12 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
 }) {}
 export const SchemaGeneratorLayer = SchemaGenerator.Default;
 
-export class DirectoryExistsError extends Data.TaggedError('DirectoryExistsError')<{
+export class DirectoryExistsError extends Data.TaggedError('/typesync/errors/DirectoryExistsError')<{
   readonly directory: string;
+}> {}
+export class NoPackageJsonFoundError extends Data.TaggedError('/typesync/errors/NoPackageJsonFoundError') {}
+export class CloneRepoError extends Data.TaggedError('/typesync/errors/CloneRepoError')<{
+  readonly cause: unknown;
 }> {}
 
 /**
@@ -244,328 +236,6 @@ function validatePackageName(name: string): {
     errorMessage: `Invalid package name. Suggested alternative: ${suggestedName}`,
   };
 }
-function generatePackageJson(app: Domain.InsertAppSchema) {
-  const validatedPackageName = validatePackageName(app.name);
-  const name = validatedPackageName.normalizedName;
-
-  return {
-    name,
-    description: app.description,
-    version: 'v1.0.0',
-    type: 'module',
-    scripts: {
-      build: 'tsc -b && vite build',
-      dev: 'vite --force',
-      preview: 'vite preview',
-      typecheck: 'tsc --noEmit',
-    },
-    dependencies: {
-      '@automerge/automerge': '^2.2.9',
-      '@automerge/automerge-repo': '=2.0.0-beta.5',
-      '@automerge/automerge-repo-react-hooks': '=2.0.0-beta.5',
-      '@graphprotocol/hypergraph': '@graphprotocol/hypergraph',
-      '@graphprotocol/hypergraph-react': '@graphprotocol/hypergraph-react',
-      '@privy-io/react-auth': '^2.13.7',
-      '@tailwindcss/vite': '^4.1.8',
-      '@tanstack/react-query': '^5.79.2',
-      '@tanstack/react-query-devtools': '^5.79.2',
-      '@tanstack/react-router': '^1.120.15',
-      '@tanstack/react-router-devtools': '^1.120.15',
-      effect: '^3.16.3',
-      react: '^19.1.0',
-      'react-dom': '^19.1.0',
-      tailwindcss: '^4.1.8',
-      vite: '^6.3.5',
-    },
-    devDependencies: {
-      '@eslint/js': '^9.28.0',
-      '@tanstack/router-plugin': '^1.116.1',
-      '@types/node': '^22.14.1',
-      '@types/react': '^19.1.6',
-      '@types/react-dom': '^19.1.5',
-      '@vitejs/plugin-react': '^4.3.4',
-      eslint: '^9.28.0',
-      'eslint-plugin-react-hooks': '^5.2.0',
-      'eslint-plugin-react-refresh': '^0.4.19',
-      globals: '^16.0.0',
-      prettier: '^3.5.3',
-      typescript: '~5.8.3',
-      'typescript-eslint': '^8.29.1',
-    },
-  };
-}
-
-// --------------------
-// tsconfig
-// --------------------
-const tsconfigAppJson = {
-  compilerOptions: {
-    tsBuildInfoFile: './node_modules/.tmp/tsconfig.app.tsbuildinfo',
-    target: 'ESNext',
-    useDefineForClassFields: true,
-    lib: ['ESNext', 'DOM', 'DOM.Iterable'],
-    module: 'ESNext',
-    skipLibCheck: true,
-
-    /* Bundler mode */
-    moduleResolution: 'bundler',
-    allowImportingTsExtensions: true,
-    isolatedModules: true,
-    moduleDetection: 'force',
-    noEmit: true,
-    jsx: 'react-jsx',
-
-    /* Linting */
-    strict: true,
-    strictNullChecks: true,
-    exactOptionalPropertyTypes: true,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
-    noFallthroughCasesInSwitch: true,
-    noUncheckedSideEffectImports: true,
-    composite: true,
-    downlevelIteration: true,
-    resolveJsonModule: true,
-    esModuleInterop: true,
-    declaration: true,
-    sourceMap: true,
-    declarationMap: true,
-    noImplicitReturns: false,
-    noEmitOnError: false,
-    noErrorTruncation: false,
-    allowJs: false,
-    checkJs: false,
-    forceConsistentCasingInFileNames: true,
-    noImplicitAny: true,
-    noImplicitThis: true,
-    noUncheckedIndexedAccess: false,
-
-    baseUrl: '.',
-    paths: {
-      '@/*': ['./src/*'],
-    },
-  },
-  include: ['src'],
-};
-const tsconfigNodeJson = {
-  compilerOptions: {
-    tsBuildInfoFile: './node_modules/.tmp/tsconfig.node.tsbuildinfo',
-    target: 'ESNext',
-    lib: ['ESNext'],
-    module: 'ESNext',
-    skipLibCheck: true,
-
-    /* Bundler mode */
-    moduleResolution: 'bundler',
-    allowImportingTsExtensions: true,
-    isolatedModules: true,
-    moduleDetection: 'force',
-    noEmit: true,
-
-    /* Linting */
-    strict: true,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
-    noFallthroughCasesInSwitch: true,
-    noUncheckedSideEffectImports: true,
-  },
-  include: ['vite.config.ts'],
-};
-const tsconfigJson = {
-  files: [],
-  references: [{ path: './tsconfig.app.json' }, { path: './tsconfig.node.json' }],
-};
-
-// --------------------
-// linting + prettier
-// --------------------
-const eslintConfigMjs = `import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-
-export default tseslint.config(
-  { ignores: ['dist'] },
-  {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
-    },
-  },
-)
-`;
-const prettierrc = {
-  singleQuote: true,
-  printWidth: 120,
-};
-const prettierignore = `
-# Ignore artifacts:
-build
-dist
-`;
-
-// --------------------
-// vite.config.ts
-// --------------------
-const viteConfigTs = `
-import path from 'node:path';
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
-
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    TanStackRouterVite(),
-    react(),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-});
-`;
-
-// --------------------
-// index.html
-// --------------------
-function indexHtml(appName: Domain.InsertAppSchema['name']) {
-  return `<!DOCTYPE html>
-<html
-  lang="en"
-  class="h-full min-h-screen w-full p-0 m-0 dark:bg-slate-950 dark:text-white bg-white text-gray-950 font-mono"
->
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${appName}</title>
-  </head>
-  <body class="h-full w-full">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-  `;
-}
-
-// --------------------
-// .gitignore
-// --------------------
-const gitignore = `# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-`;
-
-// --------------------
-// src/
-// --------------------
-
-const indexcss = `
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-`;
-
-const vitEnvDTs = `/// <reference types="vite/client" />
-`;
-
-const mainTsx = `import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
-import './index.css';
-
-// Import the generated route tree
-import { routeTree } from './routeTree.gen';
-
-// Create a new router instance
-const router = createRouter({ routeTree });
-
-// Register the router instance for type safety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
-
-// Render the app
-const rootElement = document.getElementById('root');
-if (rootElement && !rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>
-  );
-}
-`;
-
-const rootRouteTsx = `import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <div className="min-h-screen bg-gray-900 text-white p-4">
-        <h1 className="text-2xl font-bold mb-4">My Hypergraph App</h1>
-        <Outlet />
-      </div>
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-`;
-
-const indexRouteTsx = `import { createFileRoute } from '@tanstack/react-router';
-
-export const Route = createFileRoute('/')({
-  component: Index,
-});
-
-function Index() {
-  return (
-    <div className="p-2">
-      <h3 className="text-xl">Welcome Home!</h3>
-      <p className="mt-2">This is your new application generated by Typesync.</p>
-    </div>
-  );
-}
-`;
 
 // --------------------
 // schema builder
@@ -597,8 +267,8 @@ function fieldToEntityString({
         return 'Type.Text';
     }
   })();
-
-  return `${Utils.toCamelCase(name)}: ${entityType}`;
+  // adds a tab before the property
+  return `  ${Utils.toCamelCase(name)}: ${entityType}`;
 }
 
 function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): string | null {
@@ -619,7 +289,7 @@ ${fieldStrings.join(',\n')}
 }
 
 function buildSchemaFile(schema: Domain.InsertAppSchema) {
-  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';\nimport * as Schema from 'effect/Schema';`;
+  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';`;
   const typeDefinitions = schema.types
     .map(typeDefinitionToString)
     .filter((def) => def != null)
