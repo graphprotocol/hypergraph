@@ -1,8 +1,8 @@
+import { execSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 import { FileSystem, Path, type Error as PlatformError } from '@effect/platform';
 import { NodeFileSystem } from '@effect/platform-node';
 import { Cause, Console, Data, Effect, String as EffectString } from 'effect';
-import { execSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
 
 import * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';
