@@ -808,7 +808,7 @@ function CreateAppPage() {
           </div>
         </TabsPrimitive.Content>
 
-        <TabsPrimitive.List className="mt-6 flex items-center justify-end gap-x-6">
+        <TabsPrimitive.List className="mt-6 flex items-center justify-end gap-x-6 fixed bottom-4 right-4 bg-white dark:bg-black p-4 rounded-lg">
           <Link to="/" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
             Cancel
           </Link>
