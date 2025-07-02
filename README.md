@@ -26,11 +26,6 @@ pnpm dev
 # in another tab
 cd apps/server
 pnpm dev
-# in another tab
-cd apps/typesync
-pnpm build
-# then, from anywhere in the repo, start Typesync
-hypergraph typesync
 ```
 
 Any time you make changes to the schema, you will need to run the following commands:
@@ -40,7 +35,25 @@ cd apps/server
 pnpm prisma migrate dev # this will also generate the Prisma client
 ```
 
-You can run the Typesync Next example app with:
+To develop the Typesync CLI, you can run:
+
+```sh
+cd apps/typesync
+pnpm dev
+```
+
+To develop the Typesync frontend run:
+
+```sh
+# open the vite.config.ts and comment out the server object that specifies the port to be 3000
+cd apps/typesync
+pnpm run dev:cli
+# in another tab
+cd apps/typesync
+pnpm dev:client
+```
+
+You can run the Next example app with:
 
 ```sh
 # Notes:
@@ -86,6 +99,10 @@ fly volumes create data -s 1 -r fra
 
 # set the DATABASE_URL (not sure if it's necessary since already set in the Dockerfile)
 fly secrets set DATABASE_URL=file:/data/production.sqlite
+# set the Privy app secret, id and chain (fill in your values)
+fly secrets set PRIVY_APP_SECRET=<PRIVY_APP_SECRET>
+fly secrets set PRIVY_APP_ID=<PRIVY_APP_ID>
+fly secrets set HYPERGRAPH_CHAIN=<HYPERGRAPH_CHAIN>
 
 # deploy (ha=false to avoid starting multiple instances)
 fly launch --ha=false

@@ -1,6 +1,6 @@
-# Query Private Data
+# Query Public Data
 
-Based on your schema, you can query public data that your created using Hypergraph. It works very much like [querying private data](#query-private-data).
+Based on your schema, you can query public data that your created using Hypergraph. It works very much like [querying private data](/docs/query-private-data).
 
 ## useQuery
 
