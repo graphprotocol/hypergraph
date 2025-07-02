@@ -86,6 +86,10 @@ fly volumes create data -s 1 -r fra
 
 # set the DATABASE_URL (not sure if it's necessary since already set in the Dockerfile)
 fly secrets set DATABASE_URL=file:/data/production.sqlite
+# set the Privy app secret, id and chain (fill in your values)
+fly secrets set PRIVY_APP_SECRET=<PRIVY_APP_SECRET>
+fly secrets set PRIVY_APP_ID=<PRIVY_APP_ID>
+fly secrets set HYPERGRAPH_CHAIN=<HYPERGRAPH_CHAIN>
 
 # deploy (ha=false to avoid starting multiple instances)
 fly launch --ha=false
