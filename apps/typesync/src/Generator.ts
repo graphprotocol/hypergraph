@@ -367,11 +367,21 @@ export function buildMappingFile(schema: Domain.InsertAppSchema) {
   const typeMappings: string[] = [];
 
   for (const type of schema.types) {
+    // Skip types without a valid knowledgeGraphId
+    if (!type.knowledgeGraphId) {
+      continue;
+    }
+
     const properties: string[] = [];
     const relations: string[] = [];
 
     // Process properties and relations
     for (const property of type.properties) {
+      // Skip properties without a valid knowledgeGraphId
+      if (!property.knowledgeGraphId) {
+        continue;
+      }
+
       if (Domain.isDataTypeRelation(property.dataType)) {
         // This is a relation
         relations.push(`      ${Utils.toCamelCase(property.name)}: Id.Id('${property.knowledgeGraphId}')`);
