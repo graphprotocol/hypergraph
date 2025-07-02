@@ -1,9 +1,9 @@
+import { parse } from 'node:url';
 import { Connect, Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { parse } from 'node:url';
 import WebSocket, { WebSocketServer } from 'ws';
 import { addAppIdentityToSpaces } from './handlers/add-app-identity-to-spaces.js';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
@@ -70,24 +70,10 @@ app.use(cors());
 
 // Request timeout middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
-  req.setTimeout(30000, () => {
+  res.setTimeout(30000, () => {
     res.status(408).json({ error: 'Request timeout' });
   });
   next();
-});
-
-// Global error handling middleware
-app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
-  });
-});
-
-// 404 handler
-app.use('*', (req: Request, res: Response) => {
-  res.status(404).json({ error: 'Route not found' });
 });
 
 app.get('/', (_req, res) => {
@@ -573,6 +559,20 @@ app.post('/accounts/:accountAddress/inboxes/:inboxId/messages', async (req, res)
   const createdMessage = await createAccountInboxMessage({ accountAddress, inboxId, message });
   res.status(200).send({});
   broadcastAccountInboxMessage({ accountAddress, inboxId, message: createdMessage });
+});
+
+// Global error handling middleware
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+  });
+});
+
+// 404 handler
+app.use('*', (req: Request, res: Response) => {
+  res.status(404).json({ error: 'Route not found' });
 });
 
 const server = app.listen(PORT, () => {
