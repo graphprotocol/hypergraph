@@ -24,7 +24,7 @@ RUN --mount=type=cache,id=workspace,target=/root/.local/share/pnpm/store pnpm in
 # Build stage for the server.
 FROM base AS build
 # TODO: Remove this when we switch to an actual database.
-# ENV DATABASE_URL="file:./dev.db"
+ENV DATABASE_URL="file:/data/production.sqlite"
 RUN \
   # TODO: This initalizes the database. But we should probably remove this later.
   # pnpm --filter server prisma migrate reset --force && \
@@ -48,7 +48,8 @@ FROM node:22-alpine AS server
 WORKDIR /app
 COPY --from=build /workspace/deployment/out .
 # TODO: Remove this when we switch to an actual database.
-ENV DATABASE_URL="file:/mnt/hypergraph_data/production.sqlite"
+ENV DATABASE_URL="file:/data/production.sqlite"
 RUN npm run prisma migrate deploy --skip-generate
 EXPOSE 3030
+# can't use fly.io release_command because it doesn't mount the volume containing the sqlite db file
 CMD ["sh", "-c", "npm run prisma migrate deploy && node dist/index.js"]
