@@ -1,9 +1,9 @@
-import { parse } from 'node:url';
 import { Connect, Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
-import express, { type Request, type Response } from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import WebSocket, { WebSocketServer } from 'ws';
 import { addAppIdentityToSpaces } from './handlers/add-app-identity-to-spaces.js';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
@@ -67,6 +67,28 @@ async function verifyAuth(req: AuthenticatedRequest, res: Response, next: (err?:
 app.use(express.json({ limit: '2mb' }));
 
 app.use(cors());
+
+// Request timeout middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  req.setTimeout(30000, () => {
+    res.status(408).json({ error: 'Request timeout' });
+  });
+  next();
+});
+
+// Global error handling middleware
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+  });
+});
+
+// 404 handler
+app.use('*', (req: Request, res: Response) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
 app.get('/', (_req, res) => {
   res.send('Server is running (v0.0.10)');
@@ -556,6 +578,42 @@ app.post('/accounts/:accountAddress/inboxes/:inboxId/messages', async (req, res)
 const server = app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
+
+// Global process error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Graceful shutdown
+  server.close(() => {
+    console.log('Server closed due to uncaught exception');
+    process.exit(1);
+  });
+});
+
+// Graceful shutdown handlers
+const gracefulShutdown = (signal: string) => {
+  console.log(`Received ${signal}. Starting graceful shutdown...`);
+
+  server.close(() => {
+    console.log('HTTP server closed');
+    webSocketServer.close(() => {
+      console.log('WebSocket server closed');
+      process.exit(0);
+    });
+  });
+
+  // Force close after 30 seconds
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 function broadcastSpaceEvents({
   spaceId,
