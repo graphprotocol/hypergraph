@@ -79,14 +79,16 @@ pnpm up --interactive --latest -r
 ## Publishing
 
 ```sh
-# publish hypergraph
 pnpm build
+# publish hypergraph
 cd packages/hypergraph/publish
 pnpm publish
 # publish hypergraph-react
-pnpm build
 cd packages/hypergraph-react/publish
 pnpm publish
+# publish typesync
+cd apps/typesync
+pnpm publish --tag latest
 ```
 
 ## Deploying your own SyncServer to Fly.io (single instance)
