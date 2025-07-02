@@ -23,8 +23,8 @@ import { Data, String as EffectString } from 'effect';
  * @returns camelCased value of the input string
  */
 export function toCamelCase(str: string) {
-  if (EffectString.isEmpty(str)) {
-    throw new InvalidInputError({ input: str, cause: 'Input is empty' });
+  if (EffectString.isEmpty(str) || /^\s+$/.test(str)) {
+    throw new InvalidInputError({ input: str, cause: 'Input is empty or contains only whitespace' });
   }
 
   let result = '';
@@ -85,8 +85,8 @@ export function toCamelCase(str: string) {
  * @returns PascalCased value of the input string
  */
 export function toPascalCase(str: string): string {
-  if (EffectString.isEmpty(str)) {
-    throw new InvalidInputError({ input: str, cause: 'Input is empty' });
+  if (EffectString.isEmpty(str) || /^\s+$/.test(str)) {
+    throw new InvalidInputError({ input: str, cause: 'Input is empty or contains only whitespace' });
   }
 
   let result = '';

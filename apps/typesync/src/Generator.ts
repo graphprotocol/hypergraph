@@ -78,6 +78,64 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
         }
       });
 
+    /**
+     * Recursively processes all files in the src directory and replaces
+     * "Address", "address", and "addresses" with the first schema type
+     */
+    const replaceAddressTerms = (
+      directory: string,
+      firstTypeName: string,
+    ): Effect.Effect<void, PlatformError.PlatformError> =>
+      Effect.gen(function* () {
+        const srcPath = path.join(directory, 'src');
+        const srcExists = yield* fs.exists(srcPath);
+
+        if (!srcExists) {
+          return; // No src directory to process
+        }
+
+        const processDirectory = (dirPath: string): Effect.Effect<void, PlatformError.PlatformError> =>
+          Effect.gen(function* () {
+            const entries = yield* fs.readDirectory(dirPath);
+
+            for (const entry of entries) {
+              const entryPath = path.join(dirPath, entry);
+              const stat = yield* fs.stat(entryPath);
+
+              if (stat.type === 'Directory') {
+                // Recursively process subdirectories
+                yield* processDirectory(entryPath);
+              } else if (stat.type === 'File') {
+                // Process files that are likely to contain code
+                const fileExtension = path.extname(entry);
+                const codeExtensions = ['.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte'];
+
+                if (codeExtensions.includes(fileExtension)) {
+                  yield* Effect.gen(function* () {
+                    // Read file content
+                    const content = yield* fs.readFileString(entryPath);
+
+                    // Replace address-related terms with the first type name
+                    const pascalCaseName = Utils.toPascalCase(firstTypeName);
+                    const camelCaseName = Utils.toCamelCase(firstTypeName);
+                    const pluralName = `${camelCaseName}s`; // Simple pluralization
+
+                    const updatedContent = content
+                      .replace(/\bAddress\b/g, pascalCaseName)
+                      .replace(/\baddress\b/g, camelCaseName)
+                      .replace(/\baddresses\b/g, pluralName);
+
+                    // Write back the updated content
+                    yield* fs.writeFileString(entryPath, updatedContent);
+                  });
+                }
+              }
+            }
+          });
+
+        yield* processDirectory(srcPath);
+      });
+
     return {
       /**
        * Generate on the users machine, at the directory they provided,
@@ -103,7 +161,9 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
            * 2. copy it to the output directory from the app request
            * 3. update the package.json
            * 4. update the schema.ts
-           * 5. cleanup the .tmp directory
+           * 5. update the mapping.ts
+           * 6. replace the address terms with the first type name
+           * 7. cleanup the .tmp directory
            */
           yield* cloneTemplRepo.pipe(
             Effect.tapErrorCause((cause) =>
@@ -118,6 +178,7 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
             Effect.andThen(() => updatePackageJson(app, directory)),
             Effect.andThen(() => fs.writeFileString(path.join(directory, 'src', 'schema.ts'), buildSchemaFile(app))),
             Effect.andThen(() => fs.writeFileString(path.join(directory, 'src', 'mapping.ts'), buildMappingFile(app))),
+            Effect.andThen(() => replaceAddressTerms(directory, app.types[0]?.name || 'Address')),
             Effect.andThen(() => cleanup),
           );
 
@@ -320,7 +381,8 @@ export function buildMappingFile(schema: Domain.InsertAppSchema) {
       }
     }
 
-    const typeMapping = `  ${type.name}: {
+    const typeName = Utils.toPascalCase(type.name);
+    const typeMapping = `  ${typeName}: {
     typeIds: [Id.Id('${type.knowledgeGraphId}')],
     properties: {
 ${properties.join(',\n')},
