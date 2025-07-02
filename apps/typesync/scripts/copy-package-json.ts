@@ -12,10 +12,10 @@ const program = Effect.gen(function* () {
     version: json.version,
     type: json.type,
     description: json.description,
-    main: 'bin.cjs',
+    main: 'bin.js',
     bin: {
-      hypergraph: 'bin.cjs',
-      hg: 'bin.cjs',
+      hypergraph: 'bin.js',
+      hg: 'bin.js',
     },
     engines: json.engines,
     dependencies: json.dependencies,
