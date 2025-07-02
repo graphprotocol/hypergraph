@@ -64,8 +64,8 @@ This will start the TypeSync server. You can now access the **TypeSync** app in 
 In the TypeSync Studio:
 
 1.  Give your new application a name and a short description.
-2.  Use the visual editor to define your data models (we call them "types"). For example, you could create a `Post` type with a `name` (Text) and `content` (Text) properties.
-3.  When you're ready, click "Generate App".
+2.  Use the visual editor to define your data models (we call them "types"). Pick the type "Academic Field". 
+3.  Then click "Generate App".
 
 TypeSync will create a new directory for your application (e.g., `./my-awesome-app`) containing all the files and dependencies you need.
 
