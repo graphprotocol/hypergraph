@@ -10,12 +10,12 @@ type DeleteEntityPublicParams = {
 };
 
 const deleteEntityQueryDocument = gql`
-query entityToDelete($entityId: String!, $spaceId: String!) {
-  entity(id: $entityId, spaceId: $spaceId) {
-    values {
+query entityToDelete($entityId: UUID!, $spaceId: UUID!) {
+  entity(id: $entityId) {
+    valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
     }
-    relations {
+    relationsList(filter: {spaceId: {is: $spaceId}}) {
       id
     }
   }
@@ -24,10 +24,10 @@ query entityToDelete($entityId: String!, $spaceId: String!) {
 
 type EntityToDeleteQueryResult = {
   entity: {
-    values: {
+    valuesList: {
       propertyId: string;
     }[];
-    relations: {
+    relationsList: {
       id: string;
     }[];
   };
@@ -45,14 +45,14 @@ export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { 
       if (!result) {
         return { success: false, error: 'Entity not found' };
       }
-      const { values, relations } = result.entity;
+      const { valuesList, relationsList } = result.entity;
       const ops: Op[] = [];
       const { ops: unsetEntityValuesOps } = Graph.unsetEntityValues({
         id,
-        properties: values.map(({ propertyId }) => propertyId),
+        properties: valuesList.map(({ propertyId }) => propertyId),
       });
       ops.push(...unsetEntityValuesOps);
-      for (const relation of relations) {
+      for (const relation of relationsList) {
         const { ops: deleteRelationOps } = Graph.deleteRelation({ id: relation.id });
         ops.push(...deleteRelationOps);
       }

@@ -17,13 +17,13 @@ export type PreparePublishParams<S extends Entity.AnyNoContext> = {
 };
 
 const entityToPublishQueryDocument = gql`
-query entityToPublish($entityId: String!, $spaceId: String!) {
-  entity(id: $entityId, spaceId: $spaceId) {
-    values {
+query entityToPublish($entityId: UUID!, $spaceId: UUID!) {
+  entity(id: $entityId) {
+    valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
       value
     }
-    relations {
+    relationsList(filter: {spaceId: {is: $spaceId}}) {
       id
     }
   }
@@ -32,11 +32,11 @@ query entityToPublish($entityId: String!, $spaceId: String!) {
 
 type EntityToPublishQueryResult = {
   entity: {
-    values: {
+    valuesList: {
       propertyId: string;
       value: string;
     }[];
-    relations: {
+    relationsList: {
       id: string;
     }[];
   };
@@ -113,7 +113,7 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
         serializedValue = Graph.serializeNumber(entity[key]);
       }
 
-      const existingValue = data.entity.values.find((value) => value.propertyId === propertyId);
+      const existingValue = data.entity.valuesList.find((value) => value.propertyId === propertyId);
 
       if (serializedValue !== existingValue?.value) {
         values.push({ property: propertyId, value: serializedValue });

@@ -47,7 +47,7 @@ const createEvents = async ({
     });
     ops.push(...createCompanyTypeOps);
 
-    const { ops: createEventTypeOps } = Graph.createEntity({
+    const { ops: createEventTypeOps, id: eventTypeId } = Graph.createEntity({
       name: 'My Test Event',
       types: mapping.Event.typeIds,
       relations: {
@@ -56,13 +56,15 @@ const createEvents = async ({
     });
     ops.push(...createEventTypeOps);
 
+    console.log('eventTypeId', eventTypeId);
+
     const result = await publishOps({
       ops,
       walletClient: smartSessionClient,
       space,
       name: 'Create Job Offers, Companies and Events',
     });
-    console.log('result', result);
+    console.log('result', result, ops);
     alert('Events created');
   } catch (error) {
     console.error('error', error);

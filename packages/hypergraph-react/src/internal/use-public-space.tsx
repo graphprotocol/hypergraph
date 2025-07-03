@@ -3,9 +3,9 @@ import { gql, request } from 'graphql-request';
 import { GEO_API_TESTNET_ENDPOINT } from '../internal/constants.js';
 
 const spaceQueryDocument = gql`
-query Space($spaceId: String!) {
+query Space($spaceId: UUID!) {
   space(id: $spaceId) {
-    entity {
+    page {
       name
     }
   }
@@ -14,7 +14,7 @@ query Space($spaceId: String!) {
 
 type SpaceQueryResult = {
   space: {
-    entity: {
+    page: {
       name: string;
     };
   } | null;
@@ -27,9 +27,9 @@ export const usePublicSpace = ({ spaceId, enabled }: { spaceId: string; enabled:
       const result = await request<SpaceQueryResult>(GEO_API_TESTNET_ENDPOINT, spaceQueryDocument, {
         spaceId,
       });
-      return result?.space?.entity
+      return result?.space?.page
         ? {
-            name: result.space.entity.name,
+            name: result.space.page.name,
           }
         : null;
     },

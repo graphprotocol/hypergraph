@@ -4,12 +4,12 @@ import { gql, request } from 'graphql-request';
 
 const publicSpacesQueryDocument = gql`
   query Spaces($accountAddress: String!) {
-    spaces(filter: { member: { is: $accountAddress } }) {
+    spaces(filter: {members: {some: {address: {is: $accountAddress}}}}) {
       id
       type
       mainVotingAddress
       personalAddress
-      entity {
+      page {
         name
       }
     }
@@ -21,7 +21,7 @@ type SpaceQueryResult = {
   type: string;
   mainVotingAddress: string;
   personalAddress: string;
-  entity: {
+  page: {
     name: string;
   };
 };
@@ -50,7 +50,7 @@ export const usePublicSpaces = (url: string): UseQueryResult<PublicSpaceData[], 
       return result?.spaces
         ? result.spaces.map((space: SpaceQueryResult) => ({
             id: space.id,
-            name: space.entity.name,
+            name: space.page.name,
             type: space.type,
             mainVotingAddress: space.mainVotingAddress,
             personalAddress: space.personalAddress,
