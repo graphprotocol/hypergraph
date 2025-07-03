@@ -7,7 +7,7 @@ tags: [features, overview]
 
 # 🌟 Key Features
 
-Hypergraph is **more than a database**—it's a complete data layer for building collaborative, local-first apps. Below is a concise tour of the capabilities you get out of the box.
+Hypergraph is **more than a database**—it's a complete data layer for building collaborative, local-first apps. Below is a tour of the capabilities you get out of the box.
 
 ## Table of Contents
 

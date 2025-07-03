@@ -6,7 +6,7 @@ Spaces are owned by a single person or a group of people and not by the app. Thi
 
 ## Public Spaces
 
-Public spaces are spaces that are open to the public. They are accessible to anyone who knows the space ID.
+Public spaces are spaces that are open to the public. They are visible to anyone who knows the space ID.
 
 ## Private Spaces
 
