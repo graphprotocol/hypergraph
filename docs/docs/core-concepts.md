@@ -50,7 +50,7 @@ Hypergraph takes knowledge graphs further by making them:
 - **⚡ Real-time** — Changes sync instantly across all your devices
 - **🔗 Interoperable** — Your data works across different apps that speak the same protocol
 
-> **The magic:** Under the hood, Hypergraph serializes everything using the **GRC-20** standard. As a developer, you just work with simple SDK calls—Hypergraph handles the complex cryptography and networking. If you're curious about the low-level details, check out the [GRC-20 section](#grc-20-advanced) below.
+> **The magic:** Under the hood, Hypergraph serializes everything using the **GRC-20** standard. As a developer, you just work with simple SDK calls—Hypergraph handles the complex cryptography, serialization, and networking. If you're curious about the low-level details, check out the [GRC-20 section](#grc-20-advanced) below.
 
 ## Spaces
 

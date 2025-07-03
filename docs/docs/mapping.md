@@ -1,10 +1,10 @@
 # Mapping
 
-The public knowledge graph is based on property IDs. In order to integrate with the public knowledge graph you need to map your own schema to ID based public graph schema.
+The public knowledge graph is based on property IDs. In order to integrate with the public knowledge graph you need to map your own schema to IDs from the public graph's schema.
 
-This is done using a mapping structure that has to be provided to the `HypergraphAppProvider` component.
+This is done using an object called a mapping. The mapping has to be provided to the `HypergraphAppProvider` component.
 
-A mapping entry defined the type IDs, properties and relations of a type. Here an exmaple mapping entry for the `Event` and `Company` schema entries:
+A mapping entry defined the type IDs, properties and relations of a type. Here an example mapping for a schema with an `Event` and a `Company`:
 
 ```tsx
 export const mapping: Mapping = {
