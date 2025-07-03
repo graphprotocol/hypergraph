@@ -348,16 +348,21 @@ app.post('/connect/app-identity', async (req, res) => {
 
 app.get('/whoami', async (req, res) => {
   console.log('GET whoami');
-  const sessionToken = req.headers.authorization?.split(' ')[1];
-  if (!sessionToken) {
-    res.status(401).send('Unauthorized');
-    return;
-  }
   try {
-    const { accountAddress } = await getAppIdentityBySessionToken({ sessionToken });
-    res.status(200).send(accountAddress);
+    const sessionToken = req.headers.authorization?.split(' ')[1];
+    if (!sessionToken) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
+    try {
+      const { accountAddress } = await getAppIdentityBySessionToken({ sessionToken });
+      res.status(200).send(accountAddress);
+    } catch (error) {
+      res.status(401).send('Unauthorized');
+    }
   } catch (error) {
-    res.status(401).send('Unauthorized');
+    console.error('Error getting whoami:', error);
+    res.status(401).json({ message: 'Unauthorized' });
   }
 });
 
