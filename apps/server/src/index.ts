@@ -724,263 +724,267 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
 
   console.log('Connection established', accountAddress);
   webSocket.on('message', async (message) => {
-    const rawData = Messages.deserialize(message.toString());
-    const result = decodeRequestMessage(rawData);
-    if (result._tag === 'Right') {
-      const data = result.right;
-      switch (data.type) {
-        case 'subscribe-space': {
-          const space = await getSpace({ accountAddress, spaceId: data.id });
-          const outgoingMessage: Messages.ResponseSpace = {
-            ...space,
-            type: 'space',
-          };
-          webSocket.subscribedSpaces.add(data.id);
-          webSocket.send(Messages.serialize(outgoingMessage));
-          break;
-        }
-        case 'list-spaces': {
-          const spaces = await listSpacesByAppIdentity({ appIdentityAddress });
-          const outgoingMessage: Messages.ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
-          webSocket.send(Messages.serialize(outgoingMessage));
-          break;
-        }
-        case 'list-invitations': {
-          const invitations = await listInvitations({ accountAddress });
-          const outgoingMessage: Messages.ResponseListInvitations = {
-            type: 'list-invitations',
-            invitations: invitations,
-          };
-          webSocket.send(Messages.serialize(outgoingMessage));
-          break;
-        }
-        case 'create-space-event': {
-          const getVerifiedIdentity = (accountAddressToFetch: string) => {
-            console.log(
-              'TODO getVerifiedIdentity should work for app identities',
-              accountAddressToFetch,
-              accountAddress,
-            );
-            if (accountAddressToFetch !== accountAddress) {
-              return Effect.fail(new Identity.InvalidIdentityError());
-            }
+    try {
+      const rawData = Messages.deserialize(message.toString());
+      const result = decodeRequestMessage(rawData);
+      if (result._tag === 'Right') {
+        const data = result.right;
+        switch (data.type) {
+          case 'subscribe-space': {
+            const space = await getSpace({ accountAddress, spaceId: data.id });
+            const outgoingMessage: Messages.ResponseSpace = {
+              ...space,
+              type: 'space',
+            };
+            webSocket.subscribedSpaces.add(data.id);
+            webSocket.send(Messages.serialize(outgoingMessage));
+            break;
+          }
+          case 'list-spaces': {
+            const spaces = await listSpacesByAppIdentity({ appIdentityAddress });
+            const outgoingMessage: Messages.ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
+            webSocket.send(Messages.serialize(outgoingMessage));
+            break;
+          }
+          case 'list-invitations': {
+            const invitations = await listInvitations({ accountAddress });
+            const outgoingMessage: Messages.ResponseListInvitations = {
+              type: 'list-invitations',
+              invitations: invitations,
+            };
+            webSocket.send(Messages.serialize(outgoingMessage));
+            break;
+          }
+          case 'create-space-event': {
+            const getVerifiedIdentity = (accountAddressToFetch: string) => {
+              console.log(
+                'TODO getVerifiedIdentity should work for app identities',
+                accountAddressToFetch,
+                accountAddress,
+              );
+              if (accountAddressToFetch !== accountAddress) {
+                return Effect.fail(new Identity.InvalidIdentityError());
+              }
 
-            return Effect.gen(function* () {
-              const identity = yield* Effect.tryPromise({
-                try: () => getConnectIdentity({ accountAddress: accountAddressToFetch }),
-                catch: () => new Identity.InvalidIdentityError(),
+              return Effect.gen(function* () {
+                const identity = yield* Effect.tryPromise({
+                  try: () => getConnectIdentity({ accountAddress: accountAddressToFetch }),
+                  catch: () => new Identity.InvalidIdentityError(),
+                });
+                return identity;
               });
-              return identity;
-            });
-          };
+            };
 
-          const applyEventResult = await Effect.runPromiseExit(
-            SpaceEvents.applyEvent({
-              event: data.event,
-              state: undefined,
-              getVerifiedIdentity,
-            }),
-          );
-          if (Exit.isSuccess(applyEventResult)) {
-            const space = await createSpace({
+            const applyEventResult = await Effect.runPromiseExit(
+              SpaceEvents.applyEvent({
+                event: data.event,
+                state: undefined,
+                getVerifiedIdentity,
+              }),
+            );
+            if (Exit.isSuccess(applyEventResult)) {
+              const space = await createSpace({
+                accountAddress,
+                event: data.event,
+                keyBox: data.keyBox,
+                infoContent: new Uint8Array(),
+                infoSignatureHex: '',
+                infoSignatureRecovery: 0,
+                name: data.name,
+              });
+              const spaceWithEvents = await getSpace({ accountAddress, spaceId: space.id });
+              const outgoingMessage: Messages.ResponseSpace = {
+                ...spaceWithEvents,
+                type: 'space',
+              };
+              webSocket.send(Messages.serialize(outgoingMessage));
+            } else {
+              console.log('Failed to apply create space event');
+              console.log(applyEventResult);
+            }
+            // TODO send back error
+            break;
+          }
+          case 'create-invitation-event': {
+            await applySpaceEvent({
               accountAddress,
+              spaceId: data.spaceId,
               event: data.event,
-              keyBox: data.keyBox,
-              infoContent: new Uint8Array(),
-              infoSignatureHex: '',
-              infoSignatureRecovery: 0,
-              name: data.name,
+              keyBoxes: data.keyBoxes.map((keyBox) => keyBox),
             });
-            const spaceWithEvents = await getSpace({ accountAddress, spaceId: space.id });
+            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
+            // TODO send back confirmation instead of the entire space
             const outgoingMessage: Messages.ResponseSpace = {
               ...spaceWithEvents,
               type: 'space',
             };
             webSocket.send(Messages.serialize(outgoingMessage));
-          } else {
-            console.log('Failed to apply create space event');
-            console.log(applyEventResult);
+            for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+              if (
+                client.readyState === WebSocket.OPEN &&
+                client.accountAddress === data.event.transaction.inviteeAccountAddress
+              ) {
+                const invitations = await listInvitations({ accountAddress: client.accountAddress });
+                const outgoingMessage: Messages.ResponseListInvitations = {
+                  type: 'list-invitations',
+                  invitations: invitations,
+                };
+                // for now sending the entire list of invitations to the client - we could send only a single one
+                client.send(Messages.serialize(outgoingMessage));
+              }
+            }
+
+            broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
+            break;
           }
-          // TODO send back error
-          break;
-        }
-        case 'create-invitation-event': {
-          await applySpaceEvent({
-            accountAddress,
-            spaceId: data.spaceId,
-            event: data.event,
-            keyBoxes: data.keyBoxes.map((keyBox) => keyBox),
-          });
-          const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
-          // TODO send back confirmation instead of the entire space
-          const outgoingMessage: Messages.ResponseSpace = {
-            ...spaceWithEvents,
-            type: 'space',
-          };
-          webSocket.send(Messages.serialize(outgoingMessage));
-          for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
-            if (
-              client.readyState === WebSocket.OPEN &&
-              client.accountAddress === data.event.transaction.inviteeAccountAddress
-            ) {
-              const invitations = await listInvitations({ accountAddress: client.accountAddress });
-              const outgoingMessage: Messages.ResponseListInvitations = {
-                type: 'list-invitations',
-                invitations: invitations,
+          case 'accept-invitation-event': {
+            await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
+            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
+            const outgoingMessage: Messages.ResponseSpace = {
+              ...spaceWithEvents,
+              type: 'space',
+            };
+            webSocket.send(Messages.serialize(outgoingMessage));
+            broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
+            break;
+          }
+          case 'create-space-inbox-event': {
+            await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
+            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
+            // TODO send back confirmation instead of the entire space
+            const outgoingMessage: Messages.ResponseSpace = {
+              ...spaceWithEvents,
+              type: 'space',
+            };
+            webSocket.send(Messages.serialize(outgoingMessage));
+            broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
+            break;
+          }
+          case 'create-account-inbox': {
+            try {
+              // Check that the signature is valid for the corresponding accountAddress
+              if (data.accountAddress !== accountAddress) {
+                throw new Error('Invalid accountAddress');
+              }
+              const signer = Inboxes.recoverAccountInboxCreatorKey(data);
+              const signerAccount = await getConnectIdentity({ connectSignaturePublicKey: signer });
+              if (signerAccount.accountAddress !== accountAddress) {
+                throw new Error('Invalid signature');
+              }
+              // Create the inbox (if it doesn't exist)
+              await createAccountInbox(data);
+              // Broadcast the inbox to other clients from the same account
+              broadcastAccountInbox({ inbox: data });
+            } catch (error) {
+              console.error('Error creating account inbox:', error);
+              return;
+            }
+            break;
+          }
+          case 'get-latest-space-inbox-messages': {
+            try {
+              // Check that the user has access to this space
+              await getSpace({ accountAddress, spaceId: data.spaceId });
+              const messages = await getLatestSpaceInboxMessages({
+                inboxId: data.inboxId,
+                since: data.since,
+              });
+              const outgoingMessage: Messages.ResponseSpaceInboxMessages = {
+                type: 'space-inbox-messages',
+                spaceId: data.spaceId,
+                inboxId: data.inboxId,
+                messages,
               };
-              // for now sending the entire list of invitations to the client - we could send only a single one
-              client.send(Messages.serialize(outgoingMessage));
+              webSocket.send(Messages.serialize(outgoingMessage));
+            } catch (error) {
+              console.error('Error getting latest space inbox messages:', error);
+              return;
             }
+            break;
           }
+          case 'get-latest-account-inbox-messages': {
+            try {
+              // Check that the user has access to this inbox
+              await getAccountInbox({ accountAddress, inboxId: data.inboxId });
+              const messages = await getLatestAccountInboxMessages({
+                inboxId: data.inboxId,
+                since: data.since,
+              });
+              const outgoingMessage: Messages.ResponseAccountInboxMessages = {
+                type: 'account-inbox-messages',
+                accountAddress,
+                inboxId: data.inboxId,
+                messages,
+              };
+              webSocket.send(Messages.serialize(outgoingMessage));
+            } catch (error) {
+              console.error('Error getting latest account inbox messages:', error);
+              return;
+            }
+            break;
+          }
+          case 'get-account-inboxes': {
+            const inboxes = await listAccountInboxes({ accountAddress });
+            const outgoingMessage: Messages.ResponseAccountInboxes = {
+              type: 'account-inboxes',
+              inboxes,
+            };
+            webSocket.send(Messages.serialize(outgoingMessage));
+            break;
+          }
+          case 'create-update': {
+            try {
+              // Check that the update was signed by a valid identity
+              // belonging to this accountAddress
+              const signer = Messages.recoverUpdateMessageSigner(data);
+              const identity = await getConnectIdentity({ connectSignaturePublicKey: signer });
+              if (identity.accountAddress !== accountAddress) {
+                throw new Error('Invalid signature');
+              }
+              const update = await createUpdate({
+                accountAddress,
+                spaceId: data.spaceId,
+                update: data.update,
+                signatureHex: data.signature.hex,
+                signatureRecovery: data.signature.recovery,
+                updateId: data.updateId,
+              });
+              const outgoingMessage: Messages.ResponseUpdateConfirmed = {
+                type: 'update-confirmed',
+                updateId: data.updateId,
+                clock: update.clock,
+                spaceId: data.spaceId,
+              };
+              webSocket.send(Messages.serialize(outgoingMessage));
 
-          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
-          break;
-        }
-        case 'accept-invitation-event': {
-          await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
-          const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
-          const outgoingMessage: Messages.ResponseSpace = {
-            ...spaceWithEvents,
-            type: 'space',
-          };
-          webSocket.send(Messages.serialize(outgoingMessage));
-          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
-          break;
-        }
-        case 'create-space-inbox-event': {
-          await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
-          const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
-          // TODO send back confirmation instead of the entire space
-          const outgoingMessage: Messages.ResponseSpace = {
-            ...spaceWithEvents,
-            type: 'space',
-          };
-          webSocket.send(Messages.serialize(outgoingMessage));
-          broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
-          break;
-        }
-        case 'create-account-inbox': {
-          try {
-            // Check that the signature is valid for the corresponding accountAddress
-            if (data.accountAddress !== accountAddress) {
-              throw new Error('Invalid accountAddress');
+              broadcastUpdates({
+                spaceId: data.spaceId,
+                updates: {
+                  updates: [
+                    {
+                      accountAddress,
+                      update: data.update,
+                      signature: data.signature,
+                      updateId: data.updateId,
+                    },
+                  ],
+                  firstUpdateClock: update.clock,
+                  lastUpdateClock: update.clock,
+                },
+                currentClient: webSocket,
+              });
+            } catch (err) {
+              console.error('Error creating update:', err);
             }
-            const signer = Inboxes.recoverAccountInboxCreatorKey(data);
-            const signerAccount = await getConnectIdentity({ connectSignaturePublicKey: signer });
-            if (signerAccount.accountAddress !== accountAddress) {
-              throw new Error('Invalid signature');
-            }
-            // Create the inbox (if it doesn't exist)
-            await createAccountInbox(data);
-            // Broadcast the inbox to other clients from the same account
-            broadcastAccountInbox({ inbox: data });
-          } catch (error) {
-            console.error('Error creating account inbox:', error);
-            return;
+            break;
           }
-          break;
+          default:
+            Utils.assertExhaustive(data);
+            break;
         }
-        case 'get-latest-space-inbox-messages': {
-          try {
-            // Check that the user has access to this space
-            await getSpace({ accountAddress, spaceId: data.spaceId });
-            const messages = await getLatestSpaceInboxMessages({
-              inboxId: data.inboxId,
-              since: data.since,
-            });
-            const outgoingMessage: Messages.ResponseSpaceInboxMessages = {
-              type: 'space-inbox-messages',
-              spaceId: data.spaceId,
-              inboxId: data.inboxId,
-              messages,
-            };
-            webSocket.send(Messages.serialize(outgoingMessage));
-          } catch (error) {
-            console.error('Error getting latest space inbox messages:', error);
-            return;
-          }
-          break;
-        }
-        case 'get-latest-account-inbox-messages': {
-          try {
-            // Check that the user has access to this inbox
-            await getAccountInbox({ accountAddress, inboxId: data.inboxId });
-            const messages = await getLatestAccountInboxMessages({
-              inboxId: data.inboxId,
-              since: data.since,
-            });
-            const outgoingMessage: Messages.ResponseAccountInboxMessages = {
-              type: 'account-inbox-messages',
-              accountAddress,
-              inboxId: data.inboxId,
-              messages,
-            };
-            webSocket.send(Messages.serialize(outgoingMessage));
-          } catch (error) {
-            console.error('Error getting latest account inbox messages:', error);
-            return;
-          }
-          break;
-        }
-        case 'get-account-inboxes': {
-          const inboxes = await listAccountInboxes({ accountAddress });
-          const outgoingMessage: Messages.ResponseAccountInboxes = {
-            type: 'account-inboxes',
-            inboxes,
-          };
-          webSocket.send(Messages.serialize(outgoingMessage));
-          break;
-        }
-        case 'create-update': {
-          try {
-            // Check that the update was signed by a valid identity
-            // belonging to this accountAddress
-            const signer = Messages.recoverUpdateMessageSigner(data);
-            const identity = await getConnectIdentity({ connectSignaturePublicKey: signer });
-            if (identity.accountAddress !== accountAddress) {
-              throw new Error('Invalid signature');
-            }
-            const update = await createUpdate({
-              accountAddress,
-              spaceId: data.spaceId,
-              update: data.update,
-              signatureHex: data.signature.hex,
-              signatureRecovery: data.signature.recovery,
-              updateId: data.updateId,
-            });
-            const outgoingMessage: Messages.ResponseUpdateConfirmed = {
-              type: 'update-confirmed',
-              updateId: data.updateId,
-              clock: update.clock,
-              spaceId: data.spaceId,
-            };
-            webSocket.send(Messages.serialize(outgoingMessage));
-
-            broadcastUpdates({
-              spaceId: data.spaceId,
-              updates: {
-                updates: [
-                  {
-                    accountAddress,
-                    update: data.update,
-                    signature: data.signature,
-                    updateId: data.updateId,
-                  },
-                ],
-                firstUpdateClock: update.clock,
-                lastUpdateClock: update.clock,
-              },
-              currentClient: webSocket,
-            });
-          } catch (err) {
-            console.error('Error creating update:', err);
-          }
-          break;
-        }
-        default:
-          Utils.assertExhaustive(data);
-          break;
       }
+    } catch (error) {
+      console.error('Error processing message:', error);
     }
   });
   webSocket.on('close', () => {
