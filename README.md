@@ -1,8 +1,16 @@
 # Hypergraph
 
-Hypergraph is a framework for building web3 applications.
+Hypergraph is a local-first framework for building web3 consumer applications.
 
-*Status: Developer Preview*
+*Status: Developer Preview* Don't use in production!
+
+Build privacy preserving apps with interoperable data using the GRC-20 standard. Read the [Docs](https://docs.hypergraph.thegraph.com/docs/core-concepts), and get started using the Geo Testnet.
+
+* TypeSync - A development environment for creating and managing your app schemas
+* Geo Connect - An authentication app for granting your app permissions to user's private spaces
+* GRC-20 TS - A knowledge graph SDK for writing and publishing knowledge in the GRC-20 format
+* Hypergraph - A local-first framework for building web3 consumer applications
+* Hypergraph React - React bindings for Hypergraph
 
 ## Development
 
