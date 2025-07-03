@@ -393,169 +393,199 @@ app.get('/identity', async (req, res) => {
 
 app.get('/spaces/:spaceId/inboxes', async (req, res) => {
   console.log('GET spaces/:spaceId/inboxes');
-  const spaceId = req.params.spaceId;
-  const inboxes = await listPublicSpaceInboxes({ spaceId });
-  const outgoingMessage: Messages.ResponseListSpaceInboxesPublic = {
-    inboxes,
-  };
-  res.status(200).send(outgoingMessage);
+  try {
+    const spaceId = req.params.spaceId;
+    const inboxes = await listPublicSpaceInboxes({ spaceId });
+    const outgoingMessage: Messages.ResponseListSpaceInboxesPublic = {
+      inboxes,
+    };
+    res.status(200).send(outgoingMessage);
+  } catch (error) {
+    console.error('Error getting spaces/:spaceId/inboxes:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.get('/spaces/:spaceId/inboxes/:inboxId', async (req, res) => {
   console.log('GET spaces/:spaceId/inboxes/:inboxId');
-  const spaceId = req.params.spaceId;
-  const inboxId = req.params.inboxId;
-  const inbox = await getSpaceInbox({ spaceId, inboxId });
-  const outgoingMessage: Messages.ResponseSpaceInboxPublic = {
-    inbox,
-  };
-  res.status(200).send(outgoingMessage);
+  try {
+    const spaceId = req.params.spaceId;
+    const inboxId = req.params.inboxId;
+    const inbox = await getSpaceInbox({ spaceId, inboxId });
+    const outgoingMessage: Messages.ResponseSpaceInboxPublic = {
+      inbox,
+    };
+    res.status(200).send(outgoingMessage);
+  } catch (error) {
+    console.error('Error getting spaces/:spaceId/inboxes/:inboxId:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.post('/spaces/:spaceId/inboxes/:inboxId/messages', async (req, res) => {
   console.log('POST spaces/:spaceId/inboxes/:inboxId/messages');
-  const spaceId = req.params.spaceId;
-  const inboxId = req.params.inboxId;
-  const message = Schema.decodeUnknownSync(Messages.RequestCreateSpaceInboxMessage)(req.body);
-  let spaceInbox: Messages.SpaceInboxPublic;
   try {
-    spaceInbox = await getSpaceInbox({ spaceId, inboxId });
-  } catch (error) {
-    res.status(404).send({ error: 'Inbox not found' });
-    return;
-  }
-
-  switch (spaceInbox.authPolicy) {
-    case 'requires_auth':
-      if (!message.signature || !message.authorAccountAddress) {
-        res.status(400).send({ error: 'Signature and authorAccountAddress required' });
-        return;
-      }
-      break;
-    case 'anonymous':
-      if (message.signature || message.authorAccountAddress) {
-        res.status(400).send({ error: 'Signature and authorAccountAddress not allowed' });
-        return;
-      }
-      break;
-    case 'optional_auth':
-      if (
-        (message.signature && !message.authorAccountAddress) ||
-        (!message.signature && message.authorAccountAddress)
-      ) {
-        res.status(400).send({ error: 'Signature and authorAccountAddress must be provided together' });
-        return;
-      }
-      break;
-    default:
-      // This shouldn't happen
-      res.status(500).send({ error: 'Unknown auth policy' });
-      return;
-  }
-
-  if (message.signature && message.authorAccountAddress) {
-    // Recover the public key from the signature
-    const authorPublicKey = Inboxes.recoverSpaceInboxMessageSigner(message, spaceId, inboxId);
-
-    // Check if this public key corresponds to a user's identity
-    let authorIdentity: GetIdentityResult;
+    const spaceId = req.params.spaceId;
+    const inboxId = req.params.inboxId;
+    const message = Schema.decodeUnknownSync(Messages.RequestCreateSpaceInboxMessage)(req.body);
+    let spaceInbox: Messages.SpaceInboxPublic;
     try {
-      authorIdentity = await getConnectIdentity({ connectSignaturePublicKey: authorPublicKey });
+      spaceInbox = await getSpaceInbox({ spaceId, inboxId });
     } catch (error) {
-      res.status(403).send({ error: 'Not authorized to post to this inbox' });
+      res.status(404).send({ error: 'Inbox not found' });
       return;
     }
-    if (authorIdentity.accountAddress !== message.authorAccountAddress) {
-      res.status(403).send({ error: 'Not authorized to post to this inbox' });
-      return;
+
+    switch (spaceInbox.authPolicy) {
+      case 'requires_auth':
+        if (!message.signature || !message.authorAccountAddress) {
+          res.status(400).send({ error: 'Signature and authorAccountAddress required' });
+          return;
+        }
+        break;
+      case 'anonymous':
+        if (message.signature || message.authorAccountAddress) {
+          res.status(400).send({ error: 'Signature and authorAccountAddress not allowed' });
+          return;
+        }
+        break;
+      case 'optional_auth':
+        if (
+          (message.signature && !message.authorAccountAddress) ||
+          (!message.signature && message.authorAccountAddress)
+        ) {
+          res.status(400).send({ error: 'Signature and authorAccountAddress must be provided together' });
+          return;
+        }
+        break;
+      default:
+        // This shouldn't happen
+        res.status(500).send({ error: 'Unknown auth policy' });
+        return;
     }
+
+    if (message.signature && message.authorAccountAddress) {
+      // Recover the public key from the signature
+      const authorPublicKey = Inboxes.recoverSpaceInboxMessageSigner(message, spaceId, inboxId);
+
+      // Check if this public key corresponds to a user's identity
+      let authorIdentity: GetIdentityResult;
+      try {
+        authorIdentity = await getConnectIdentity({ connectSignaturePublicKey: authorPublicKey });
+      } catch (error) {
+        res.status(403).send({ error: 'Not authorized to post to this inbox' });
+        return;
+      }
+      if (authorIdentity.accountAddress !== message.authorAccountAddress) {
+        res.status(403).send({ error: 'Not authorized to post to this inbox' });
+        return;
+      }
+    }
+    const createdMessage = await createSpaceInboxMessage({ spaceId, inboxId, message });
+    res.status(200).send({});
+    broadcastSpaceInboxMessage({ spaceId, inboxId, message: createdMessage });
+  } catch (error) {
+    console.error('Error posting spaces/:spaceId/inboxes/:inboxId/messages:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-  const createdMessage = await createSpaceInboxMessage({ spaceId, inboxId, message });
-  res.status(200).send({});
-  broadcastSpaceInboxMessage({ spaceId, inboxId, message: createdMessage });
 });
 
 app.get('/accounts/:accountAddress/inboxes', async (req, res) => {
   console.log('GET accounts/:accountAddress/inboxes');
-  const accountAddress = req.params.accountAddress;
-  const inboxes = await listPublicAccountInboxes({ accountAddress });
-  const outgoingMessage: Messages.ResponseListAccountInboxesPublic = {
-    inboxes,
-  };
-  res.status(200).send(outgoingMessage);
+  try {
+    const accountAddress = req.params.accountAddress;
+    const inboxes = await listPublicAccountInboxes({ accountAddress });
+    const outgoingMessage: Messages.ResponseListAccountInboxesPublic = {
+      inboxes,
+    };
+    res.status(200).send(outgoingMessage);
+  } catch (error) {
+    console.error('Error getting accounts/:accountAddress/inboxes:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.get('/accounts/:accountAddress/inboxes/:inboxId', async (req, res) => {
   console.log('GET accounts/:accountAddress/inboxes/:inboxId');
-  const accountAddress = req.params.accountAddress;
-  const inboxId = req.params.inboxId;
-  const inbox = await getAccountInbox({ accountAddress, inboxId });
-  const outgoingMessage: Messages.ResponseAccountInboxPublic = {
-    inbox,
-  };
-  res.status(200).send(outgoingMessage);
+  try {
+    const accountAddress = req.params.accountAddress;
+    const inboxId = req.params.inboxId;
+    const inbox = await getAccountInbox({ accountAddress, inboxId });
+    const outgoingMessage: Messages.ResponseAccountInboxPublic = {
+      inbox,
+    };
+    res.status(200).send(outgoingMessage);
+  } catch (error) {
+    console.error('Error getting accounts/:accountAddress/inboxes/:inboxId:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.post('/accounts/:accountAddress/inboxes/:inboxId/messages', async (req, res) => {
   console.log('POST accounts/:accountAddress/inboxes/:inboxId/messages');
-  const accountAddress = req.params.accountAddress;
-  const inboxId = req.params.inboxId;
-  const message = Schema.decodeUnknownSync(Messages.RequestCreateAccountInboxMessage)(req.body);
-  let accountInbox: Messages.AccountInboxPublic;
   try {
-    accountInbox = await getAccountInbox({ accountAddress, inboxId });
-  } catch (error) {
-    res.status(404).send({ error: 'Inbox not found' });
-    return;
-  }
-
-  switch (accountInbox.authPolicy) {
-    case 'requires_auth':
-      if (!message.signature || !message.authorAccountAddress) {
-        res.status(400).send({ error: 'Signature and authorAccountAddress required' });
-        return;
-      }
-      break;
-    case 'anonymous':
-      if (message.signature || message.authorAccountAddress) {
-        res.status(400).send({ error: 'Signature and authorAccountAddress not allowed' });
-        return;
-      }
-      break;
-    case 'optional_auth':
-      if (
-        (message.signature && !message.authorAccountAddress) ||
-        (!message.signature && message.authorAccountAddress)
-      ) {
-        res.status(400).send({ error: 'Signature and authorAccountAddress must be provided together' });
-        return;
-      }
-      break;
-    default:
-      // This shouldn't happen
-      res.status(500).send({ error: 'Unknown auth policy' });
-      return;
-  }
-  if (message.signature && message.authorAccountAddress) {
-    // Recover the public key from the signature
-    const authorPublicKey = Inboxes.recoverAccountInboxMessageSigner(message, accountAddress, inboxId);
-
-    // Check if this public key corresponds to a user's identity
-    let authorIdentity: GetIdentityResult;
+    const accountAddress = req.params.accountAddress;
+    const inboxId = req.params.inboxId;
+    const message = Schema.decodeUnknownSync(Messages.RequestCreateAccountInboxMessage)(req.body);
+    let accountInbox: Messages.AccountInboxPublic;
     try {
-      authorIdentity = await getConnectIdentity({ connectSignaturePublicKey: authorPublicKey });
+      accountInbox = await getAccountInbox({ accountAddress, inboxId });
     } catch (error) {
-      res.status(403).send({ error: 'Not authorized to post to this inbox' });
+      res.status(404).send({ error: 'Inbox not found' });
       return;
     }
-    if (authorIdentity.accountAddress !== message.authorAccountAddress) {
-      res.status(403).send({ error: 'Not authorized to post to this inbox' });
-      return;
+
+    switch (accountInbox.authPolicy) {
+      case 'requires_auth':
+        if (!message.signature || !message.authorAccountAddress) {
+          res.status(400).send({ error: 'Signature and authorAccountAddress required' });
+          return;
+        }
+        break;
+      case 'anonymous':
+        if (message.signature || message.authorAccountAddress) {
+          res.status(400).send({ error: 'Signature and authorAccountAddress not allowed' });
+          return;
+        }
+        break;
+      case 'optional_auth':
+        if (
+          (message.signature && !message.authorAccountAddress) ||
+          (!message.signature && message.authorAccountAddress)
+        ) {
+          res.status(400).send({ error: 'Signature and authorAccountAddress must be provided together' });
+          return;
+        }
+        break;
+      default:
+        // This shouldn't happen
+        res.status(500).send({ error: 'Unknown auth policy' });
+        return;
     }
+    if (message.signature && message.authorAccountAddress) {
+      // Recover the public key from the signature
+      const authorPublicKey = Inboxes.recoverAccountInboxMessageSigner(message, accountAddress, inboxId);
+
+      // Check if this public key corresponds to a user's identity
+      let authorIdentity: GetIdentityResult;
+      try {
+        authorIdentity = await getConnectIdentity({ connectSignaturePublicKey: authorPublicKey });
+      } catch (error) {
+        res.status(403).send({ error: 'Not authorized to post to this inbox' });
+        return;
+      }
+      if (authorIdentity.accountAddress !== message.authorAccountAddress) {
+        res.status(403).send({ error: 'Not authorized to post to this inbox' });
+        return;
+      }
+    }
+    const createdMessage = await createAccountInboxMessage({ accountAddress, inboxId, message });
+    res.status(200).send({});
+    broadcastAccountInboxMessage({ accountAddress, inboxId, message: createdMessage });
+  } catch (error) {
+    console.error('Error posting accounts/:accountAddress/inboxes/:inboxId/messages:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-  const createdMessage = await createAccountInboxMessage({ accountAddress, inboxId, message });
-  res.status(200).send({});
-  broadcastAccountInboxMessage({ accountAddress, inboxId, message: createdMessage });
 });
 
 const server = app.listen(PORT, () => {
