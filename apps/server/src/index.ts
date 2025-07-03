@@ -1,9 +1,9 @@
-import { parse } from 'node:url';
 import { Connect, Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
 import express, { type Request, type Response } from 'express';
+import { parse } from 'node:url';
 import WebSocket, { WebSocketServer } from 'ws';
 import { addAppIdentityToSpaces } from './handlers/add-app-identity-to-spaces.js';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
@@ -597,17 +597,21 @@ function broadcastSpaceEvents({
   event,
   currentClient,
 }: { spaceId: string; event: SpaceEvents.SpaceEvent; currentClient: CustomWebSocket }) {
-  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
-    if (currentClient === client) continue;
+  try {
+    for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+      if (currentClient === client) continue;
 
-    const outgoingMessage: Messages.ResponseSpaceEvent = {
-      type: 'space-event',
-      spaceId,
-      event,
-    };
-    if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
-      client.send(Messages.serialize(outgoingMessage));
+      const outgoingMessage: Messages.ResponseSpaceEvent = {
+        type: 'space-event',
+        spaceId,
+        event,
+      };
+      if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+        client.send(Messages.serialize(outgoingMessage));
+      }
     }
+  } catch (error) {
+    console.error('Error broadcasting space events:', error);
   }
 }
 
@@ -616,17 +620,21 @@ function broadcastUpdates({
   updates,
   currentClient,
 }: { spaceId: string; updates: Messages.Updates; currentClient: CustomWebSocket }) {
-  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
-    if (currentClient === client) continue;
+  try {
+    for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+      if (currentClient === client) continue;
 
-    const outgoingMessage: Messages.ResponseUpdatesNotification = {
-      type: 'updates-notification',
-      updates,
-      spaceId,
-    };
-    if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
-      client.send(Messages.serialize(outgoingMessage));
+      const outgoingMessage: Messages.ResponseUpdatesNotification = {
+        type: 'updates-notification',
+        updates,
+        spaceId,
+      };
+      if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+        client.send(Messages.serialize(outgoingMessage));
+      }
     }
+  } catch (error) {
+    console.error('Error broadcasting updates:', error);
   }
 }
 
@@ -635,28 +643,36 @@ function broadcastSpaceInboxMessage({
   inboxId,
   message,
 }: { spaceId: string; inboxId: string; message: Messages.InboxMessage }) {
-  const outgoingMessage: Messages.ResponseSpaceInboxMessage = {
-    type: 'space-inbox-message',
-    spaceId,
-    inboxId,
-    message,
-  };
-  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
-    if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
-      client.send(Messages.serialize(outgoingMessage));
+  try {
+    const outgoingMessage: Messages.ResponseSpaceInboxMessage = {
+      type: 'space-inbox-message',
+      spaceId,
+      inboxId,
+      message,
+    };
+    for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+      if (client.readyState === WebSocket.OPEN && client.subscribedSpaces.has(spaceId)) {
+        client.send(Messages.serialize(outgoingMessage));
+      }
     }
+  } catch (error) {
+    console.error('Error broadcasting space inbox message:', error);
   }
 }
 
 function broadcastAccountInbox({ inbox }: { inbox: Messages.AccountInboxPublic }) {
-  const outgoingMessage: Messages.ResponseAccountInbox = {
-    type: 'account-inbox',
-    inbox,
-  };
-  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
-    if (client.readyState === WebSocket.OPEN && client.accountAddress === inbox.accountAddress) {
-      client.send(Messages.serialize(outgoingMessage));
+  try {
+    const outgoingMessage: Messages.ResponseAccountInbox = {
+      type: 'account-inbox',
+      inbox,
+    };
+    for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+      if (client.readyState === WebSocket.OPEN && client.accountAddress === inbox.accountAddress) {
+        client.send(Messages.serialize(outgoingMessage));
+      }
     }
+  } catch (error) {
+    console.error('Error broadcasting account inbox:', error);
   }
 }
 
@@ -665,16 +681,20 @@ function broadcastAccountInboxMessage({
   inboxId,
   message,
 }: { accountAddress: string; inboxId: string; message: Messages.InboxMessage }) {
-  const outgoingMessage: Messages.ResponseAccountInboxMessage = {
-    type: 'account-inbox-message',
-    accountAddress,
-    inboxId,
-    message,
-  };
-  for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
-    if (client.readyState === WebSocket.OPEN && client.accountAddress === accountAddress) {
-      client.send(Messages.serialize(outgoingMessage));
+  try {
+    const outgoingMessage: Messages.ResponseAccountInboxMessage = {
+      type: 'account-inbox-message',
+      accountAddress,
+      inboxId,
+      message,
+    };
+    for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
+      if (client.readyState === WebSocket.OPEN && client.accountAddress === accountAddress) {
+        client.send(Messages.serialize(outgoingMessage));
+      }
     }
+  } catch (error) {
+    console.error('Error broadcasting account inbox message:', error);
   }
 }
 
