@@ -7,6 +7,7 @@ import { graphqlClient } from '../clients/graphql.js';
 import { ROOT_SPACE_ID } from '../constants.js';
 import { graphql } from '../generated/gql.js';
 import type { PropertiesQuery, SchemaBrowserTypesQuery } from '../generated/graphql.js';
+import { typesData } from '../typesData.js';
 
 const SchemaBrowser = graphql(`
   query SchemaBrowserTypes($spaceId: String!, $limit: Int) {
@@ -93,7 +94,7 @@ function slugifyKnowlegeGraphType(type: KnowledgeGraphType): string {
   return `${type.name || ''}${slugifiedProps}`.toLowerCase();
 }
 async function fetchAndTransformSchemaTypes(): Promise<Array<ExtendedSchemaBrowserType>> {
-  const data = await fetchSchemaTypes();
+  const data = typesData;
   const types = data.types ?? [];
 
   return pipe(
