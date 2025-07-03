@@ -1,6 +1,6 @@
 # Writing Private Data
 
-There are serveral ways to write private data to the Hypergraph.
+There are several ways to write private data to the Hypergraph.
 
 ## Creating Entities
 
