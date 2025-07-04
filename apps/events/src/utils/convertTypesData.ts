@@ -4,7 +4,7 @@ import { typesData } from '../data/typesData';
 // Type definitions for the data structure
 interface Property {
   id: string;
-  dataType: 'TEXT' | 'NUMBER' | 'RELATION' | 'CHECKBOX' | 'DATE' | 'POINT' | 'URL';
+  dataType: string;
   relationValueTypes: Array<{
     id: string;
     name: string;
@@ -38,6 +38,15 @@ interface MappingEntry {
   typeIds: string[];
   properties: Record<string, string>;
   relations?: Record<string, string>;
+}
+
+interface TypeWithSchemaAndMapping {
+  id: string;
+  name: string;
+  className: string;
+  properties: Property[];
+  schema: string;
+  mapping: string;
 }
 
 // Helper function to convert dataType to Type
@@ -93,6 +102,21 @@ function createClassName(typeName: string): string {
     .join('');
 }
 
+// Helper function to convert string to camelCase
+function toCamelCase(str: string): string {
+  return str
+    .split(' ')
+    .map((word, index) => {
+      if (index === 0) {
+        // First word should be lowercase
+        return word.toLowerCase();
+      }
+      // Subsequent words should be capitalized
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join('');
+}
+
 export function convertTypesDataToSchemaAndMapping() {
   const schemaEntries: string[] = [];
   const mappingEntries: Record<string, MappingEntry> = {};
@@ -117,7 +141,7 @@ export function convertTypesDataToSchemaAndMapping() {
     const mappingRelations: Record<string, string> = {};
 
     for (const property of type.properties) {
-      const propertyName = property.entity.name.toLowerCase().replace(/\s+/g, '');
+      const propertyName = toCamelCase(property.entity.name);
 
       if (property.dataType === 'RELATION') {
         const targetClassName = getRelationTargetClassName(property.relationValueTypes);
@@ -203,4 +227,90 @@ export const mapping: Mapping = {
 ${mappingEntries}
 };
 `;
+}
+
+// Function to generate schema for a single type
+export function generateSchemaForType(type: TypeData): string {
+  const className = createClassName(type.name);
+
+  const properties: string[] = [];
+
+  for (const property of type.properties) {
+    const propertyName = toCamelCase(property.entity.name);
+
+    if (property.dataType === 'RELATION') {
+      const targetClassName = getRelationTargetClassName(property.relationValueTypes);
+      if (targetClassName) {
+        const targetClass = createClassName(targetClassName);
+        properties.push(`  ${propertyName}: Type.Relation(${targetClass})`);
+      }
+    } else {
+      const typeInstance = dataTypeToType(property.dataType);
+      const typeName = typeInstance.name.endsWith('$') ? typeInstance.name.slice(0, -1) : typeInstance.name;
+      properties.push(`  ${propertyName}: Type.${typeName}`);
+    }
+  }
+
+  return `export class ${className} extends Entity.Class<${className}>('${className}')({
+${properties.join(',\n')}
+}) {}`;
+}
+
+// Function to generate mapping for a single type
+export function generateMappingForType(type: TypeData): string {
+  const className = createClassName(type.name);
+
+  const mappingProperties: Record<string, string> = {};
+  const mappingRelations: Record<string, string> = {};
+
+  for (const property of type.properties) {
+    const propertyName = toCamelCase(property.entity.name);
+
+    if (property.dataType === 'RELATION') {
+      const targetClassName = getRelationTargetClassName(property.relationValueTypes);
+      if (targetClassName) {
+        mappingRelations[propertyName] = `Id.Id('${property.id}')`;
+      }
+    } else {
+      mappingProperties[propertyName] = `Id.Id('${property.id}')`;
+    }
+  }
+
+  const properties = Object.entries(mappingProperties)
+    .map(([key, value]) => `    ${key}: ${value}`)
+    .join(',\n');
+
+  const relations = Object.entries(mappingRelations)
+    .map(([key, value]) => `    ${key}: ${value}`)
+    .join(',\n');
+
+  return `  ${className}: {
+    typeIds: [Id.Id('${type.id}')],
+    properties: {
+${properties}
+    },
+${
+  relations
+    ? `    relations: {
+${relations}
+    },`
+    : ''
+}
+  }`;
+}
+
+// Function to get all types with their individual schema and mapping
+export function getTypesWithSchemaAndMapping(): TypeWithSchemaAndMapping[] {
+  return typesData.types.map((type) => {
+    const className = createClassName(type.name);
+
+    return {
+      id: type.id,
+      name: type.name,
+      className,
+      properties: type.properties,
+      schema: generateSchemaForType(type),
+      mapping: generateMappingForType(type),
+    };
+  });
 }
