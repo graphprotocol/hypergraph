@@ -27,7 +27,7 @@
     "dev": "vite build && pnpx tsx ./src/bin.ts typesync",
     "dev:cli": "pnpx tsx ./src/bin.ts typesync",
     "dev:client": "vite --force",
-    "clean": "rm -rf dist client/dist",
+    "clean": "rimraf dist client/dist",
     "start": "node ./dist/bin.js",
     "check": "tsc --noEmit",
     "test": "vitest run",
@@ -59,7 +59,8 @@
     "glob": "^11.0.3",
     "tsup": "^8.5.0",
     "tsx": "^4.20.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "rimraf": "^6.0.1"
   },
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",
