@@ -9,7 +9,7 @@ export const Route = createLazyFileRoute('/playground')({
 });
 
 function RouteComponent() {
-  const space = 'a57cd482-6dd3-4ba3-ac44-e2e8ea7a2862';
+  const space = 'a393e509-ae56-4d99-987c-bed71d9db631';
   return (
     <HypergraphSpaceProvider space={space}>
       <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">

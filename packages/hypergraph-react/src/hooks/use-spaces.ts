@@ -8,12 +8,10 @@ import { GEO_API_TESTNET_ENDPOINT } from '../internal/constants.js';
 
 const publicSpacesQueryDocument = gql`
 query Spaces($accountAddress: String!) {
-  spaces(filter: {
-      member: { is: $accountAddress }
-  }) {
+  spaces(filter: {members: {some: {address: {is: $accountAddress}}}}) {
     id
     spaceAddress
-    entity {
+    page {
       name
     }
   }
@@ -24,7 +22,7 @@ type PublicSpacesQueryResult = {
   spaces: {
     id: string;
     spaceAddress: string;
-    entity: {
+    page: {
       name: string;
     };
   }[];
@@ -41,7 +39,7 @@ export const useSpaces = (params: { mode: 'public' | 'private' }) => {
       return result?.spaces
         ? result.spaces.map((space) => ({
             id: space.id,
-            name: space.entity.name,
+            name: space.page.name,
             spaceAddress: space.spaceAddress,
           }))
         : [];

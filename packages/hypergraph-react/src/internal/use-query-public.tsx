@@ -10,13 +10,14 @@ import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocumentLevel0 = gql`
-query entities($spaceId: String!, $typeIds: [String!]!) {
-  entities(spaceId: $spaceId, filter: {
-    types: { in: $typeIds }
-  }) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!) {
+  entities(
+    filter: {
+      relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}},
+  ) {
     id
     name
-    values {
+    valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
       value
     }
@@ -25,84 +26,68 @@ query entities($spaceId: String!, $typeIds: [String!]!) {
 `;
 
 const entitiesQueryDocumentLevel1 = gql`
-query entities($spaceId: String!, $typeIds: [String!]!, $relationTypeIdsLevel1: [String!]!) {
-  entities(spaceId: $spaceId, filter: {
-    types: { in: $typeIds }
-  }) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!) {
+  entities(filter: {
+    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
     id
     name
-    values {
+    valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
       value
     }
-    relations(filter: {
-      type: { in: $relationTypeIdsLevel1 }
-    }) {
-      to {
+    relationsList(
+      filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
+    ) {
+      toEntity {
         id
         name
-        values {
+        valuesList(filter: {spaceId: {is: $spaceId}}) {
           propertyId
           value
         }
       }
-      type {
-        id
-        entity {
-          name
-        }
-      }
+      typeId
     }
   }
 }
 `;
 
 const entitiesQueryDocumentLevel2 = gql`
-query entities($spaceId: String!, $typeIds: [String!]!, $relationTypeIdsLevel1: [String!]!, $relationTypeIdsLevel2: [String!]!) {
-  entities(spaceId: $spaceId, filter: {
-    types: { in: $typeIds }
-  }) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!) {
+  entities(filter: {
+    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
     id
     name
-    values {
+    valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
       value
     }
-    relations(filter: {
-      type: { in: $relationTypeIdsLevel1 }
-    }) {
-      to {
+    relationsList(
+      filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
+    ) {
+      toEntity {
         id
         name
-        values {
+        valuesList(filter: {spaceId: {is: $spaceId}}) {
           propertyId
           value
         }
-        relations(filter: {
-          type: { in: $relationTypeIdsLevel2 }
-        }) {
-          to {
+        relationsList(
+          filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
+          # filter: {spaceId: {is: $spaceId}, toEntity: {relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $relationTypeIdsLevel2}}}}}
+        ) {
+          toEntity {
             id
             name
-            values {
+            valuesList(filter: {spaceId: {is: $spaceId}}) {
               propertyId
               value
             }
           }
-          type {
-            id
-            entity {
-              name
-            }
-          }
+          typeId
         }
       }
-      type {
-        id
-        entity {
-          name
-        }
-      }
+      typeId
     }
   }
 }
@@ -112,41 +97,31 @@ type EntityQueryResult = {
   entities: {
     id: string;
     name: string;
-    values: {
+    valuesList: {
       propertyId: string;
       value: string;
     }[];
-    relations: {
-      to: {
+    relationsList: {
+      toEntity: {
         id: string;
         name: string;
-        values: {
+        valuesList: {
           propertyId: string;
           value: string;
         }[];
-        relations: {
-          to: {
+        relationsList: {
+          toEntity: {
             id: string;
             name: string;
-            values: {
+            valuesList: {
               propertyId: string;
               value: string;
             }[];
           };
-          type: {
-            id: string;
-            entity: {
-              name: string;
-            };
-          };
+          typeId: string;
         }[];
       };
-      type: {
-        id: string;
-        entity: {
-          name: string;
-        };
-      };
+      typeId: string;
     }[];
   }[];
 };
@@ -158,18 +133,13 @@ type EntityQueryResult = {
 type RecursiveQueryEntity = {
   id: string;
   name: string;
-  values?: {
+  valuesList?: {
     propertyId: string;
     value: string;
   }[];
-  relations?: {
-    to: RecursiveQueryEntity;
-    type: {
-      id: string;
-      entity: {
-        name: string;
-      };
-    };
+  relationsList?: {
+    toEntity: RecursiveQueryEntity;
+    typeId: string;
   }[];
 };
 
@@ -205,7 +175,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
   const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {};
 
   for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
-    const properties = (queryEntity.relations ?? []).filter((a) => a.type?.id === relationId);
+    const properties = (queryEntity.relationsList ?? []).filter((a) => a.typeId === relationId);
     if (properties.length === 0) {
       rawEntity[key] = [] as unknown[];
       continue;
@@ -233,22 +203,21 @@ const convertRelations = <S extends Entity.AnyNoContext>(
     }
 
     const newRelationEntities = properties.map((propertyEntry) => {
+      // @ts-expect-error TODO: properly access the type.name
+      const type = field.value;
+
       let rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
-        id: propertyEntry.to.id,
-        name: propertyEntry.to.name,
-        type: propertyEntry.type.id,
+        id: propertyEntry.toEntity.id,
+        name: propertyEntry.toEntity.name,
         // TODO: should be determined by the actual value
         __deleted: false,
         // TODO: should be determined by the actual value
         __version: '',
       };
 
-      // @ts-expect-error TODO: properly access the type.name
-      const type = field.value;
-
       // take the mappingEntry and assign the attributes to the rawEntity
       for (const [key, value] of Object.entries(relationMappingEntry?.properties ?? {})) {
-        const property = propertyEntry.to.values?.find((a) => a.propertyId === value);
+        const property = propertyEntry.toEntity.valuesList?.find((a) => a.propertyId === value);
         if (property) {
           rawEntity[key] = convertPropertyValue(property, key, type);
         }
@@ -256,7 +225,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
 
       rawEntity = {
         ...rawEntity,
-        ...convertRelations(propertyEntry.to, type, relationMappingEntry, mapping),
+        ...convertRelations(propertyEntry.toEntity, type, relationMappingEntry, mapping),
       };
 
       return rawEntity;
@@ -293,7 +262,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 
     // take the mappingEntry and assign the attributes to the rawEntity
     for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
-      const property = queryEntity.values.find((a) => a.propertyId === value);
+      const property = queryEntity.valuesList.find((a) => a.propertyId === value);
       if (property) {
         rawEntity[key] = convertPropertyValue(property, key, type);
       }

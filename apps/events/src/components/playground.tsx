@@ -47,7 +47,7 @@ export const Playground = () => {
           const { success, cid, txResult } = await createEntity(
             {
               name: 'Test Event 42 by Nik',
-              sponsors: ['347676a1-7cef-47dc-b6a7-c94fc6237dcd'],
+              sponsors: [],
             },
             { walletClient },
           );
