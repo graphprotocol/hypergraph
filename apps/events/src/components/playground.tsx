@@ -17,6 +17,7 @@ export const Playground = () => {
         jobOffers: {},
       },
     },
+    first: 2,
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);

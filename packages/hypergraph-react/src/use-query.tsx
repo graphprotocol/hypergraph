@@ -10,6 +10,7 @@ type QueryParams<S extends Entity.AnyNoContext> = {
   // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
   space?: string;
+  first?: number;
 };
 
 // @ts-expect-error TODO: remove this function
@@ -144,8 +145,8 @@ const getDiff = <S extends Entity.AnyNoContext>(
 const preparePublishDummy = () => undefined;
 
 export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: QueryParams<S>) {
-  const { mode, filter, include, space } = params;
-  const publicResult = useQueryPublic(type, { enabled: mode === 'public', include });
+  const { mode, filter, include, space, first } = params;
+  const publicResult = useQueryPublic(type, { enabled: mode === 'public', include, first });
   const localResult = useQueryLocal(type, { enabled: mode === 'private', filter, include, space });
   // const mapping = useSelector(store, (state) => state.context.mapping);
   // const generateUpdateOps = useGenerateUpdateOps(type, mode === 'merged');
