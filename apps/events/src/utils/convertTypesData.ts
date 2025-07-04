@@ -140,6 +140,8 @@ export function convertTypesDataToSchemaAndMapping() {
     const mappingProperties: Record<string, string> = {};
     const mappingRelations: Record<string, string> = {};
 
+    console.log('type.properties', type.properties);
+
     for (const property of type.properties) {
       const propertyName = toCamelCase(property.entity.name);
 
@@ -151,8 +153,17 @@ export function convertTypesDataToSchemaAndMapping() {
           mappingRelations[propertyName] = `Id.Id('${property.id}')`;
         }
       } else {
+        console.log('property.dataType', property.dataType);
         const typeInstance = dataTypeToType(property.dataType);
-        const typeName = typeInstance.name.endsWith('$') ? typeInstance.name.slice(0, -1) : typeInstance.name;
+        let typeName = typeInstance.name.endsWith('$') ? typeInstance.name.slice(0, -1) : typeInstance.name;
+
+        // Replace String with Text and Boolean with Checkbox
+        if (typeName === 'String') {
+          typeName = 'Text';
+        } else if (typeName === 'Boolean') {
+          typeName = 'Checkbox';
+        }
+
         properties.push(`  ${propertyName}: Type.${typeName}`);
         mappingProperties[propertyName] = `Id.Id('${property.id}')`;
       }
@@ -188,47 +199,6 @@ ${schema}
 `;
 }
 
-// Function to generate the complete mapping file content
-export function generateMappingFile(): string {
-  const { mapping } = convertTypesDataToSchemaAndMapping();
-
-  const mappingEntries = Object.entries(mapping)
-    .map(([className, mappingData]) => {
-      const properties = Object.entries(mappingData.properties || {})
-        .map(([key, value]) => `    ${key}: ${value}`)
-        .join(',\n');
-
-      const relations = mappingData.relations
-        ? Object.entries(mappingData.relations)
-            .map(([key, value]) => `    ${key}: ${value}`)
-            .join(',\n')
-        : '';
-
-      return `  ${className}: {
-    typeIds: [${mappingData.typeIds.join(', ')}],
-    properties: {
-${properties}
-    },
-${
-  relations
-    ? `    relations: {
-${relations}
-    },`
-    : ''
-}
-  }`;
-    })
-    .join(',\n\n');
-
-  return `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/hypergraph';
-
-export const mapping: Mapping = {
-${mappingEntries}
-};
-`;
-}
-
 // Function to generate schema for a single type
 export function generateSchemaForType(type: TypeData): string {
   const className = createClassName(type.name);
@@ -245,9 +215,22 @@ export function generateSchemaForType(type: TypeData): string {
         properties.push(`  ${propertyName}: Type.Relation(${targetClass})`);
       }
     } else {
-      const typeInstance = dataTypeToType(property.dataType);
-      const typeName = typeInstance.name.endsWith('$') ? typeInstance.name.slice(0, -1) : typeInstance.name;
-      properties.push(`  ${propertyName}: Type.${typeName}`);
+      let typeName = '';
+      if (property.dataType === 'TEXT') {
+        typeName = 'Type.Text';
+      } else if (property.dataType === 'NUMBER') {
+        typeName = 'Type.Number';
+      } else if (property.dataType === 'CHECKBOX') {
+        typeName = 'Type.Checkbox';
+      } else if (property.dataType === 'POINT') {
+        typeName = 'Type.Point';
+      } else if (property.dataType === 'TIME') {
+        typeName = 'Type.Date';
+      } else {
+        throw new Error(`Unknown data type: ${property.dataType}`);
+      }
+
+      properties.push(`  ${propertyName}: ${typeName}`);
     }
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { convertTypesDataToSchemaAndMapping, generateMappingFile, generateSchemaFile } from './convertTypesData';
+import { convertTypesDataToSchemaAndMapping, generateSchemaFile } from './convertTypesData';
 
 describe('convertTypesData', () => {
   it('should convert typesData to schema and mapping', () => {
@@ -16,14 +16,6 @@ describe('convertTypesData', () => {
 
     expect(schema).toContain("import { Entity, Type } from '@graphprotocol/hypergraph';");
     expect(schema).toContain('export class');
-  });
-
-  it('should generate mapping file with proper imports', () => {
-    const mapping = generateMappingFile();
-
-    expect(mapping).toContain("import { Id } from '@graphprotocol/grc-20';");
-    expect(mapping).toContain("import type { Mapping } from '@graphprotocol/hypergraph';");
-    expect(mapping).toContain('export const mapping: Mapping = {');
   });
 
   it('should handle relation properties correctly', () => {
