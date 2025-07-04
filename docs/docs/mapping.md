@@ -4,7 +4,7 @@ The public knowledge graph is based on property IDs. In order to integrate with 
 
 This is done using an object called a mapping. The mapping has to be provided to the `HypergraphAppProvider` component.
 
-A mapping entry defined the type IDs, properties and relations of a type. Here an example mapping for a schema with an `Event` and a `Company`:
+A mapping entry defines the type IDs, properties and relations of a type. Here is an example mapping for a schema with an `Event` and a `Company`:
 
 ```tsx
 export const mapping: Mapping = {
