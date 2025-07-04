@@ -36,7 +36,7 @@ Data is **persisted first on the client**—not on a remote database. Users can 
 
 Every update is encrypted **on the client** using XChaCha20-Poly1305. Only members of a Space possess the symmetric key, so neither the sync server nor The Graph can read private data.
 
-* **Automatic key rotation** when members join/leave (not yet implemented).
+* **Automatic key rotation**: when members join/leave (not yet implemented).
 * **Multi-device**: each device holds its own key pair.
 
 ## Knowledge Graph SDK
