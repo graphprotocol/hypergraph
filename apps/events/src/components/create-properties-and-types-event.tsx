@@ -127,6 +127,14 @@ JobOffer: {
       >
         Create properties and types for Event, Company and JobOffer
       </Button>
+
+      <Button
+        onClick={() => {
+          alert('Not implemented');
+        }}
+      >
+        Create Schema
+      </Button>
     </div>
   );
 };
