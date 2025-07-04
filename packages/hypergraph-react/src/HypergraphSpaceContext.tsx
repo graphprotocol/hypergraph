@@ -23,7 +23,7 @@ export const HypergraphReactContext = createContext<HypergraphContext | undefine
 
 export function useHypergraphSpaceInternal() {
   const context = useContext(HypergraphReactContext);
-  return context as HypergraphContext;
+  return (context as HypergraphContext) || { space: '' };
 }
 
 export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {

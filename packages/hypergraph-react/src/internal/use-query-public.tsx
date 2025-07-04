@@ -295,8 +295,9 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 };
 
 export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
-  const { enabled = true, include, first = 100 } = params ?? {};
-  const { space } = useHypergraphSpaceInternal();
+  const { enabled = true, include, space: spaceFromParams, first = 100 } = params ?? {};
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const space = spaceFromParams ?? spaceFromContext;
   const mapping = useSelector(store, (state) => state.context.mapping);
 
   // @ts-expect-error TODO should use the actual type instead of the name in the mapping

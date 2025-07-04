@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { Event } from '../schema';
 import { Button } from './ui/button';
 
-export const Playground = () => {
+export const Playground = ({ spaceId }: { spaceId: string }) => {
   const { data, isLoading, isError } = useQuery(Event, {
     mode: 'public',
     include: {
@@ -18,12 +18,13 @@ export const Playground = () => {
       },
     },
     first: 2,
+    space: spaceId,
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { getSmartSessionClient } = useHypergraphApp();
 
-  const { name, id: spaceId } = useSpace({ mode: 'public' });
+  const { name } = useSpace({ mode: 'public', space: spaceId });
 
   const deleteEntity = _useDeleteEntityPublic(Event, { space: spaceId });
   const createEntity = _useCreateEntityPublic(Event, { space: spaceId });
