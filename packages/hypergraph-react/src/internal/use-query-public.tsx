@@ -10,10 +10,11 @@ import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocumentLevel0 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int) {
   entities(
     filter: {
       relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}},
+    first: $first
   ) {
     id
     name
@@ -26,8 +27,10 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!) {
 `;
 
 const entitiesQueryDocumentLevel1 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!) {
-  entities(filter: {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int) {
+  entities(
+    first: $first
+    filter: {
     relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
     id
     name
@@ -53,8 +56,10 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 `;
 
 const entitiesQueryDocumentLevel2 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!) {
-  entities(filter: {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int) {
+  entities(
+    first: $first
+    filter: {
     relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
     id
     name
@@ -290,7 +295,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 };
 
 export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
-  const { enabled = true, include } = params ?? {};
+  const { enabled = true, include, first = 100 } = params ?? {};
   const { space } = useHypergraphSpaceInternal();
   const mapping = useSelector(store, (state) => state.context.mapping);
 
@@ -327,6 +332,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
       mappingEntry?.typeIds,
       relationTypeIdsLevel1,
       relationTypeIdsLevel2,
+      // TODO should `first` be in here?
     ],
     queryFn: async () => {
       let queryDocument = entitiesQueryDocumentLevel0;
@@ -342,6 +348,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
         typeIds: mappingEntry?.typeIds || [],
         relationTypeIdsLevel1,
         relationTypeIdsLevel2,
+        first,
       });
       return result;
     },
