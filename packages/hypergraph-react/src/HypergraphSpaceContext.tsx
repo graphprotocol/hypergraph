@@ -146,7 +146,7 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
     getEntities: () => entitiesRef.current,
   });
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
-  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled: true });
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled });
   const handleIsReady = handle ? handle.isReady() : false;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: allow to change filter and include
