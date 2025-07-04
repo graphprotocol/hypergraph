@@ -28,12 +28,12 @@ The `useHypergraphApp` is available inside the `HypergraphAppProvider` and manag
 import { useHypergraphApp } from "@graphprotocol/hypergraph-react";
 
 const App = () => {
-  const { isConnected, logout } = useHypergraphApp();
+  const { isConnecting, logout } = useHypergraphApp();
   return <div>{isConnecting ? "Connecting..."}</div>;
 };
 ```
 
-- `isConnected` is a boolean that indicates that syncing private spaces is not yet possible. You need to wait until it's `false` to query data from private spaces.
+- `isConnecting` is a boolean that indicates that syncing private spaces is not yet possible. You need to wait until it's `false` to query data from private spaces.
 - `logout` is a function that logs out the user.
 
 There are serveral more that will be explained in the following sections.
