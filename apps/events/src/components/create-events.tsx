@@ -47,6 +47,8 @@ const createEvents = async ({
     });
     ops.push(...createCompanyTypeOps);
 
+    console.log('companyTypeId', companyTypeId);
+
     const { ops: createEventTypeOps, id: eventTypeId } = Graph.createEntity({
       name: 'My Test Event',
       types: mapping.Event.typeIds,
