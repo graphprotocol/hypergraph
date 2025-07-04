@@ -343,8 +343,6 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
         queryDocument = entitiesQueryDocumentLevel2;
       }
 
-      console.log('first', first);
-
       const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, queryDocument, {
         spaceId: space,
         typeIds: mappingEntry?.typeIds || [],

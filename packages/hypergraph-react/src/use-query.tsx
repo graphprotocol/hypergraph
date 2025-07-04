@@ -10,7 +10,7 @@ type QueryParams<S extends Entity.AnyNoContext> = {
   // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
   space?: string;
-  first?: number;
+  first?: number | undefined;
 };
 
 // @ts-expect-error TODO: remove this function
