@@ -260,26 +260,26 @@ export function generateMappingForType(type: TypeData): string {
   }
 
   const properties = Object.entries(mappingProperties)
-    .map(([key, value]) => `    ${key}: ${value}`)
+    .map(([key, value]) => `  ${key}: ${value}`)
     .join(',\n');
 
   const relations = Object.entries(mappingRelations)
-    .map(([key, value]) => `    ${key}: ${value}`)
+    .map(([key, value]) => `  ${key}: ${value}`)
     .join(',\n');
 
-  return `  ${className}: {
-    typeIds: [Id.Id('${type.id}')],
-    properties: {
+  return `${className}: {
+  typeIds: [Id.Id('${type.id}')],
+  properties: {
 ${properties}
-    },
+  },
 ${
   relations
-    ? `    relations: {
+    ? `  relations: {
 ${relations}
-    },`
+  },`
     : ''
 }
-  }`;
+}`;
 }
 
 // Function to get all types with their individual schema and mapping
