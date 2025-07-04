@@ -23,7 +23,7 @@ const { listInvitations } = useHypergraphApp();
 listInvitations();
 ```
 
-Once the functions is called the invitations are requested from and are available in the Hypergraph store.
+Once the function is called the invitations are requested from and are available in the Hypergraph store.
 
 ```tsx
 import { useSelector } from "@xstate/store/react";
