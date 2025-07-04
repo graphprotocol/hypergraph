@@ -1,3 +1,4 @@
+import { ConvertTypesData } from '@/components/ConvertTypesData';
 import { CreateEvents } from '@/components/create-events';
 import { CreatePropertiesAndTypesEvent } from '@/components/create-properties-and-types-event';
 import { Playground } from '@/components/playground';
@@ -17,6 +18,7 @@ function RouteComponent() {
         <Playground />
         <CreatePropertiesAndTypesEvent space={space} />
         <CreateEvents space={space} />
+        <ConvertTypesData />
       </div>
     </HypergraphSpaceProvider>
   );
