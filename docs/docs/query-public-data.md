@@ -28,11 +28,11 @@ For deeper relations you can use the `include` parameter multiple levels deep. C
 
 ### Querying from a specific space
 
-You can also query from a specific space by passing in the `spaceId` parameter.
+You can also query from a specific space by passing in the `space` parameter.
 
 ```ts
-const { data: spaceAData } = useQuery(Event, { mode: 'public', spaceId: 'space-a-id' });
-const { data: spaceBData } = useQuery(Event, { mode: 'public', spaceId: 'space-b-id' });
+const { data: spaceAData } = useQuery(Event, { mode: 'public', space: 'space-a-id' });
+const { data: spaceBData } = useQuery(Event, { mode: 'public', space: 'space-b-id' });
 ```
 
 ### Filtering (not yet supported)
