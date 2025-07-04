@@ -112,15 +112,20 @@ function Login() {
           <GeoLogo className="w-[1em] shrink-0" />
           <AppTitle />
         </div>
+        <div className="flex flex-col items-center justify-center gap-2 mt-4">
+          <p className="text-center text-muted-foreground max-w-72 leading-6 font-semibold">
+            Manage your private and public spaces on the decentralized web and grant access to 3rd party apps.
+          </p>
+        </div>
         <button
           type="button"
           disabled={!privyReady || privyAuthenticated}
           onClick={() => {
             privyLogin();
           }}
-          className="c-button c-button--primary sm:c-button--large mt-8 w-full sm:mt-10"
+          className="c-button c-button--primary sm:c-button--large mt-4 w-full sm:mt-10"
         >
-          Log in
+          Sign in
         </button>
       </div>
     </div>
