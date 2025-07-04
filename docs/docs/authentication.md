@@ -4,7 +4,7 @@
 
 The default and recommended way to authenticate is via Geo Connect. Geo Connect is dedicated application hosted by the GeoBrowser team. Through Geo Connect you can authenticate with your GeoBrowser account and use it to selectively delegate access to your private and public spaces.
 
-If you create you application using TypeSync or use the [hypergraph-app-template](https://github.com/graphprotocol/hypergraph-app-template) the full authentication flow is already implemented for you.
+If you create you application using TypeSync or use the [hypergraph-app-template](https://github.com/geobrowser/hypergraph-app-template) the full authentication flow is already implemented for you.
 
 In the connect app you can create spaces. In the near future you will be able to delete private spaces and you also will be able to give an app permissions to create new private and/or public spaces.
 
