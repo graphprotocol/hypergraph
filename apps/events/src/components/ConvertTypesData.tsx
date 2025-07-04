@@ -10,6 +10,7 @@ export const ConvertTypesData = () => {
 
   const handleGenerate = () => {
     const data = getTypesWithSchemaAndMapping();
+    console.log('data', JSON.stringify(data, null, 2));
     setTypesData(data);
     setIsGenerated(true);
     // Set default active tab to schema for all types
