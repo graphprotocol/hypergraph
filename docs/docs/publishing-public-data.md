@@ -2,6 +2,13 @@
 
 Once you want to share your data with the world you need to publish it. This is done by creating the necessary `Opertations` (Ops) and then publishing them.
 
+There are two functions to help you with this:
+
+- `preparePublish` - creates the necessary `Operations` to publish the data
+- `publishOps` - publishes the `Operations` to the public space
+
+You can generate the Ops for multiple entities and publish them in one go by concatenating the `ops` arrays.
+
 ## Prepare Publish
 
 Based on entity Ids, the source space and the target space this function calculates the necessary `Operations` to publish the data.
@@ -17,42 +24,32 @@ const { ops } = preparePublish({
 
 The entity can come from a `useCreateEntity` result or from a `useQuery` result e.g.
 
-```tsx
-const MyComponent = () => {
-  const { data: events } = useQuery(Event, { mode: "private" });
-
-  const createOpsForPublishing = async (event) => {
-    const { ops } = preparePublish({
-      entity: event,
-      publicSpace: "public-space-id",
-    });
-  };
-
-  return (
-    <div>
-      {events.map((event) => (
-        <button key={event.id} onClick={() => createOpsForPublishing(event)}>
-          {event.name}
-        </button>
-      ))}
-    </div>
-  );
-};
-```
-
 ## Publish
 
-The `publishOps` function is used to publish the changes to the public space. Here is a full example flow:
+The `publishOps` function is used to publish the changes to the public space.
 
 ```tsx
 import { publishOps } from "@graphprotocol/hypergraph-react";
 
-const MyComponent = () => {
-  const { getSmartSessionClient } = useHypergraphApp();
+const { result } = publishOps({
+  ops,
+  walletClient: smartSessionClient,
+  space: publicSpaceId,
+  name: "Create Event", // description which can be any string
+});
+```
 
-  const publishChanges = async () => {
+Here is a full example flow:
+
+```tsx
+import { publishOps, useHypergraphApp } from "@graphprotocol/hypergraph-react";
+
+const MyComponent = ({ publicSpaceId }: { publicSpaceId: string }) => {
+  const { getSmartSessionClient } = useHypergraphApp();
+  const { data: events } = useQuery(Event, { mode: "private" });
+
+  const publishEvent = async (entity) => {
     const smartSessionClient = await getSmartSessionClient();
-    const publicSpaceId = "public-space-id";
 
     const { ops } = preparePublish({
       entity: entity,
@@ -63,9 +60,19 @@ const MyComponent = () => {
       ops,
       walletClient: smartSessionClient,
       space: publicSpaceId,
-      name: "Create Job Offers",
+      name: "Create Event",
     });
   };
+
+  return (
+    <div>
+      {events.map((event) => (
+        <button key={event.id} onClick={() => publishEvent(event)}>
+          {event.name}
+        </button>
+      ))}
+    </div>
+  );
 };
 ```
 
