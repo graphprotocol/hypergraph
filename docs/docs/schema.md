@@ -1,6 +1,6 @@
 # Schema
 
-The Hypergraph schema allows you define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
+The Hypergraph schema allows you to define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
 
 ## Example
 
@@ -55,3 +55,7 @@ export class Company extends Entity.Class<Company>('Company')({
   location: Type.Point,
 }) {}
 ```
+
+## Schema Examples
+
+You can search for dozens of schema/mapping examples on the [Hypergraph Schema Browser](https://schema-browser.vercel.app/).

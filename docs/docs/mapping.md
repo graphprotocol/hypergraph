@@ -31,3 +31,7 @@ The entire mapping structure can be generated using the TypeSync tool.
 pnpm install -g @graphprotocol/hypergraph-cli@latest
 hg typesync --open
 ```
+
+## Mapping Examples
+
+You can search for dozens of schema/mapping examples on the [Hypergraph Schema Browser](https://schema-browser.vercel.app/).
