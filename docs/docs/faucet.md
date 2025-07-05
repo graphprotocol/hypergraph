@@ -1,6 +1,6 @@
 ---
 title: Geo Testnet Faucet
-description: Request GEO tokens for development and testing on the Geo Testnet.
+description: Request ETH tokens for development and testing on the Geo Testnet.
 ---
 
 # 🪙 Geo Testnet Faucet
