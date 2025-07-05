@@ -2,7 +2,7 @@
 
 ## Geo Connect
 
-The default and recommended way to authenticate is via Geo Connect. Geo Connect is dedicated application hosted by the GeoBrowser team. Through Geo Connect you can authenticate with your GeoBrowser account and use it to selectively delegate access to your private and public spaces.
+The default and recommended way to authenticate is via Geo Connect. Geo Connect is a dedicated application hosted by the GeoBrowser team. Through Geo Connect you can authenticate with your GeoBrowser account and use it to selectively delegate access to your private and public spaces.
 
 If you create you application using TypeSync or use the [hypergraph-app-template](https://github.com/graphprotocol/hypergraph-app-template) the full authentication flow is already implemented for you.
 

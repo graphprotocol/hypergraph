@@ -1,6 +1,6 @@
 # Schema
 
-The Hypergraph schema allows you define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
+The Hypergraph schema allows you to define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
 
 ## Example
 
