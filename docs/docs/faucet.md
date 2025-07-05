@@ -5,7 +5,7 @@ description: Request GEO tokens for development and testing on the Geo Testnet.
 
 # 🪙 Geo Testnet Faucet
 
-Need some GEO testnet tokens to start building with Hypergraph? Use our public faucet to quickly top-up your wallet.
+Need some ETH testnet tokens to start building with Hypergraph? Use our public faucet to quickly top-up your wallet.
 
 [**Open the Geo Faucet**](https://faucet.conduit.xyz/geo-test-zc16z3tcvf)
 
