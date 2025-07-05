@@ -6,13 +6,15 @@ import { Chunk, Console, Effect, Array as EffectArray, Layer, Option, Order, Sch
 
 import * as TypesyncDomain from '../domain/Domain.js';
 import * as Domain from './Domain.js';
+import { fromFileSystem } from './Utils.js';
 
 const SqlLive = SqliteClient.layer({
   filename: '.typesync.db',
 });
+
 const MigratorLive = Migrator.layer({
-  loader: Migrator.fromFileSystem(fileURLToPath(new URL('migrations', import.meta.url))),
-}).pipe(Layer.provide(SqlLive));
+  loader: fromFileSystem(fileURLToPath(new URL('migrations', import.meta.url))),
+}).pipe(Layer.provide(SqlLive))
 
 const DatabaseLive = Layer.mergeAll(SqlLive, MigratorLive).pipe(Layer.provide(NodeContext.layer));
 
