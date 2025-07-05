@@ -8,6 +8,12 @@ Spaces are owned by a single person or a group of people and not by the app. Thi
 
 Public spaces are spaces that are open to the public. They are visible to anyone who knows the space ID.
 
+### Indexer API
+
+Indexer API that indexes all the public spaces and the content in it!
+
+[Railway Graphql API](https://v2-postgraphile.up.railway.app/graphql)
+
 ## Private Spaces
 
 Private spaces are spaces that are only accessible to the people who are members of the space.
