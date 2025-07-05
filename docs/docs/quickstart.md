@@ -22,6 +22,12 @@ pnpm dev
 
 Open the browser, navigate to `http://localhost:5173` and you should see the app running.
 
+## Example Datasets
+
+A few example datasets to use when building your apps are available here:
+
+[https://testnet.geobrowser.io/space/b2565802-3118-47be-91f2-e59170735bac/0f3e0e21-1636-435a-850f-6f57d616e28e](https://testnet.geobrowser.io/space/b2565802-3118-47be-91f2-e59170735bac/0f3e0e21-1636-435a-850f-6f57d616e28e)
+
 ## Create a new app using TypeSync
 
 In case you want build an app with your own data types you can follow the guide below.
