@@ -55,3 +55,7 @@ export class Company extends Entity.Class<Company>('Company')({
   location: Type.Point,
 }) {}
 ```
+
+## Schema Examples
+
+You can search for dozens of schema/mapping examples on the [Hypergraph Schema Browser](https://schema-browser.vercel.app/).
