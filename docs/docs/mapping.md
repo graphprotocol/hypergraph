@@ -35,3 +35,7 @@ hg typesync --open
 ## Mapping Examples
 
 You can search for dozens of schema/mapping examples on the [Hypergraph Schema Browser](https://schema-browser.vercel.app/).
+
+## Creating and publishing new Properties and Types
+
+We created a script to create and publish new properties and types to the public knowledge graph. You can find it at [https://github.com/geobrowser/create-types-and-properties](https://github.com/geobrowser/create-types-and-properties).
