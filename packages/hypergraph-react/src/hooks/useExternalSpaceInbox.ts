@@ -51,8 +51,8 @@ export function useExternalSpaceInbox({
 
         let authorAccountAddress: string | null = null;
         let signaturePrivateKey: string | null = null;
-        if (identity?.address && inbox.authPolicy !== 'anonymous') {
-          authorAccountAddress = identity.address;
+        if (identity?.accountAddress && inbox.authPolicy !== 'anonymous') {
+          authorAccountAddress = identity.accountAddress;
           signaturePrivateKey = identity.signaturePrivateKey;
         } else if (inbox.authPolicy === 'requires_auth') {
           throw new Error('Cannot send message to a required auth inbox without an identity');
