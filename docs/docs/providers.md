@@ -56,7 +56,7 @@ const App = () => {
 
 ## HypergraphSpaceProvider
 
-Whenever interact with a space you need to provide the space ID. In order providing the space ID to every hook e.g. useSpace, useQuery, useCreateEntity, etc. you can use the `HypergraphSpaceProvider` to wrap a section of your app with the space ID.
+Whenever you interact with a space you need to provide the space ID. In order providing the space ID to every hook e.g. useSpace, useQuery, useCreateEntity, etc. you can use the `HypergraphSpaceProvider` to wrap a section of your app with the space ID.
 
 ```tsx
 import { HypergraphSpaceProvider } from "@graphprotocol/hypergraph-react";

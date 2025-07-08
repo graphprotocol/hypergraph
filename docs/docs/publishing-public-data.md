@@ -80,6 +80,6 @@ const MyComponent = ({ publicSpaceId }: { publicSpaceId: string }) => {
 
 In order to explore the knowledge graph you can use GeoBrowser.
 
-Visist [https://testnet.geobrowser.io/root](https://testnet.geobrowser.io/root) and explore the knowledge graph. Once you published you can find it via the search by name or by id.
+Visit [https://testnet.geobrowser.io/root](https://testnet.geobrowser.io/root) and explore the knowledge graph. Once you published you can find it via the search by name or by id.
 
 By looking up the data you also can verify that it was published correctly.

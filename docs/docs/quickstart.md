@@ -22,6 +22,15 @@ pnpm dev
 
 Open the browser, navigate to `http://localhost:5173` and you should see the app running.
 
+## Example Datasets
+
+A few example datasets to use when building your apps are available here:
+
+- [Web3 projects](https://testnet.geobrowser.io/space/b2565802-3118-47be-91f2-e59170735bac/0f3e0e21-1636-435a-850f-6f57d616e28e)
+- [Web3 VCs](https://testnet.geobrowser.io/space/b2565802-3118-47be-91f2-e59170735bac/d8ec3f57-7601-4bef-a648-a64799dfd964)
+- [Web3 DAPPs](https://testnet.geobrowser.io/space/b2565802-3118-47be-91f2-e59170735bac/09d3188c-8e20-4083-a6ad-e696cc493c7a)
+- [Token Values](https://testnet.geobrowser.io/space/2df11968-9d1c-489f-91b7-bdc88b472161/f8780a80-c238-4a2a-96cb-567d88b1aa63)
+
 ## Create a new app using TypeSync
 
 In case you want build an app with your own data types you can follow the guide below.

@@ -1,6 +1,6 @@
 # Query Private Data
 
-Based on your schema, you can query private data that your created using Hypergraph.
+Based on your schema, you can query private data that you created using Hypergraph.
 
 ## useQuery
 
