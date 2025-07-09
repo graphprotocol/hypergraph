@@ -24,10 +24,10 @@ RUN --mount=type=cache,id=workspace,target=/root/.local/share/pnpm/store pnpm in
 # Build stage for the server.
 FROM base AS build
 # TODO: Remove this when we switch to an actual database.
-ENV DATABASE_URL="file:./dev.db"
+ENV DATABASE_URL="file:/data/production.sqlite"
 RUN \
   # TODO: This initalizes the database. But we should probably remove this later.
-  pnpm --filter server prisma migrate reset --force && \
+  # pnpm --filter server prisma migrate reset --force && \
   # Build the monorepo packages
   pnpm build && \
   # Generate the prisma client
@@ -37,13 +37,19 @@ RUN \
   # Create an isolated deployment for the server.
   pnpm --filter server deploy --prod deployment --legacy && \
   # Move the runtime build artifacts into a separate directory.
-  mkdir -p deployment/out && mv deployment/dist deployment/prisma deployment/node_modules deployment/package.json deployment/out
+  mkdir -p deployment/out && mv deployment/dist deployment/node_modules deployment/package.json deployment/out && \
+  # Add prisma client in dist
+  mv deployment/prisma/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node deployment/out/dist/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node && \
+  mv deployment/prisma/generated/client/libquery_engine-linux-musl-openssl-3.0.x.so.node deployment/out/dist/libquery_engine-linux-musl-openssl-3.0.x.so.node && \
+  mv deployment/prisma deployment/out
 
 # Slim runtime image.
 FROM node:22-alpine AS server
 WORKDIR /app
 COPY --from=build /workspace/deployment/out .
 # TODO: Remove this when we switch to an actual database.
-ENV DATABASE_URL="file:./dev.db"
+ENV DATABASE_URL="file:/data/production.sqlite"
+RUN npm run prisma migrate deploy --skip-generate
 EXPOSE 3030
-CMD ["node", "dist/index.js"]
+# can't use fly.io release_command because it doesn't mount the volume containing the sqlite db file
+CMD ["sh", "-c", "npm run prisma migrate deploy && node dist/index.js"]

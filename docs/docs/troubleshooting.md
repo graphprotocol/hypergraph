@@ -11,13 +11,14 @@ Having problems? Below are quick fixes for the issues we hit most often while bu
 
 ## Table of Contents
 
-- [Quick Fixes](#quick-fixes)
-- [Common Issues](#common-issues)
-- [Provide Feedback](#provide-feedback)
-- [Contact Us](#contact-us)
-- [Further Resources](#further-resources)
+<!-- - [Quick Fixes](#quick-fixes) -->
+<!-- - [Common Issues](#common-issues) -->
+- [Provide Feedback & Report Issues](#provide-feedback--report-issues)
+- [Join the Community](#join-the-community)
+<!-- - [Contact Us](#contact-us) -->
+<!-- - [Further Resources](#further-resources) -->
 
----
+<!-- ---
 
 ## Quick Fixes
 
@@ -26,14 +27,18 @@ Having problems? Below are quick fixes for the issues we hit most often while bu
 ---
 ## Common Issues
 
-*(Content to be added here as issues are identified)*
+*(Content to be added here as issues are identified)* -->
 
 ---
-## Provide Feedback
+## Provide Feedback & Report Issues
 
-*(Details on how to provide feedback, e.g., a link to a feedback form or GitHub Discussions, will go here.)*
+Please [open an issue](https://github.com/graphprotocol/hypergraph/issues) on GitHub and let us know your ideas, feedback, or report any issues you encounter.
 
----
+## Join the Community
+
+Join the [Hypergraph Discord](https://discord.gg/graphprotocol) to connect with other developers and get help.
+
+<!-- ---
 ## Contact Us
 
 *(Contact information, such as a support email or a link to a dedicated support channel, will go here.)*
@@ -42,4 +47,4 @@ Having problems? Below are quick fixes for the issues we hit most often while bu
 ## Further Resources
 
 * Check open and closed issues on [GitHub](https://github.com/graphprotocol/hypergraph/issues).
-* Ask in the #hypergraph channel on [The Graph Discord](https://discord.gg/graphprotocol). 
+* Ask in the #hypergraph channel on [The Graph Discord](https://discord.gg/graphprotocol).  -->

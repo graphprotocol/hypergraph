@@ -1,11 +1,12 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { type Store, createStore } from '@xstate/store';
-import type { Address } from 'viem';
+import type { PrivateAppIdentity } from './connect/types.js';
+import type { DocumentContent } from './entity/types.js';
 import { mergeMessages } from './inboxes/merge-messages.js';
 import type { InboxSenderAuthPolicy } from './inboxes/types.js';
-import type { Identity } from './index.js';
 import type { Invitation, Updates } from './messages/index.js';
 import type { SpaceEvent, SpaceState } from './space-events/index.js';
+import type { Mapping } from './types.js';
 import { idToAutomergeId } from './utils/automergeId.js';
 
 export type InboxMessageStorageEntry = {
@@ -17,7 +18,7 @@ export type InboxMessageStorageEntry = {
     recovery: number;
   } | null;
   createdAt: string;
-  authorAccountId: string | null;
+  authorAccountAddress: string | null;
 };
 
 export type SpaceInboxStorageEntry = {
@@ -43,20 +44,22 @@ export type AccountInboxStorageEntry = {
 
 export type SpaceStorageEntry = {
   id: string;
+  name: string;
   events: SpaceEvent[];
   state: SpaceState | undefined;
   keys: { id: string; key: string }[];
-  automergeDocHandle: DocHandle<unknown> | undefined;
+  automergeDocHandle: DocHandle<DocumentContent>;
   inboxes: SpaceInboxStorageEntry[];
 };
 
 interface StoreContext {
   spaces: SpaceStorageEntry[];
+  spacesLoadingIsPending: boolean;
   updatesInFlight: string[];
   invitations: Invitation[];
   repo: Repo | null;
   identities: {
-    [accountId: string]: {
+    [accountAddress: string]: {
       encryptionPublicKey: string;
       signaturePublicKey: string;
       accountProof: string;
@@ -64,39 +67,39 @@ interface StoreContext {
     };
   };
   authenticated: boolean;
-  accountId: Address | null;
-  sessionToken: string | null;
-  keys: Identity.IdentityKeys | null;
+  identity: PrivateAppIdentity | null;
   lastUpdateClock: { [spaceId: string]: number };
   accountInboxes: AccountInboxStorageEntry[];
+  mapping: Mapping;
 }
 
 const initialStoreContext: StoreContext = {
   spaces: [],
+  spacesLoadingIsPending: true,
   updatesInFlight: [],
   invitations: [],
   repo: null,
   identities: {},
   authenticated: false,
-  accountId: null,
-  sessionToken: null,
-  keys: null,
+  identity: null,
   lastUpdateClock: {},
   accountInboxes: [],
+  mapping: {},
 };
 
 type StoreEvent =
   | { type: 'setInvitations'; invitations: Invitation[] }
+  | { type: 'setMapping'; mapping: Mapping }
   | { type: 'reset' }
   | { type: 'addUpdateInFlight'; updateId: string }
   | { type: 'removeUpdateInFlight'; updateId: string }
-  | { type: 'setSpaceFromList'; spaceId: string }
+  | { type: 'setSpacesList'; spaces: { id: string; name: string }[] }
   | { type: 'applyEvent'; spaceId: string; event: SpaceEvent; state: SpaceState }
   | { type: 'updateConfirmed'; spaceId: string; clock: number }
   | { type: 'applyUpdate'; spaceId: string; firstUpdateClock: number; lastUpdateClock: number }
   | {
       type: 'addVerifiedIdentity';
-      accountId: string;
+      accountAddress: string;
       encryptionPublicKey: string;
       signaturePublicKey: string;
       accountProof: string;
@@ -127,6 +130,7 @@ type StoreEvent =
   | {
       type: 'setSpace';
       spaceId: string;
+      name: string;
       updates?: Updates;
       events: SpaceEvent[];
       inboxes?: SpaceInboxStorageEntry[];
@@ -138,9 +142,7 @@ type StoreEvent =
     }
   | {
       type: 'setAuth';
-      accountId: Address;
-      sessionToken: string;
-      keys: Identity.IdentityKeys;
+      identity: PrivateAppIdentity;
     }
   | {
       type: 'resetAuth';
@@ -161,9 +163,15 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         invitations: event.invitations,
       };
     },
+    setMapping: (context, event: { mapping: Mapping }) => {
+      return {
+        ...context,
+        mapping: event.mapping,
+      };
+    },
     reset: (context) => {
       // once the repo is initialized, there is no need to reset it
-      return { ...initialStoreContext, repo: context.repo };
+      return { ...initialStoreContext, repo: context.repo, mapping: context.mapping };
     },
     addUpdateInFlight: (context, event: { updateId: string }) => {
       return {
@@ -177,56 +185,68 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         updatesInFlight: context.updatesInFlight.filter((id) => id !== event.updateId),
       };
     },
-    setSpaceFromList: (context, event: { spaceId: string }) => {
+    setSpacesList: (context, event: { spaces: { id: string; name: string }[] }) => {
       if (!context.repo) {
         return context;
       }
-      const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
-      const lastUpdateClock = context.lastUpdateClock[event.spaceId] ?? -1;
-      const result = context.repo.findWithProgress(idToAutomergeId(event.spaceId) as AnyDocumentId);
 
-      // set it to ready to interact with the document
-      result.handle.doneLoading();
+      let storeContext: StoreContext = { ...context, spacesLoadingIsPending: false };
 
-      if (existingSpace) {
-        return {
-          ...context,
-          spaces: context.spaces.map((existingSpace) => {
-            if (existingSpace.id === event.spaceId) {
-              const newSpace: SpaceStorageEntry = {
-                id: existingSpace.id,
-                events: existingSpace.events ?? [],
-                state: existingSpace.state,
-                keys: existingSpace.keys ?? [],
+      for (const space of event.spaces) {
+        const existingSpace = context.spaces.find((s) => s.id === space.id);
+        const lastUpdateClock = context.lastUpdateClock[space.id] ?? -1;
+        const result = context.repo.findWithProgress<DocumentContent>(idToAutomergeId(space.id) as AnyDocumentId);
+
+        // set it to ready to interact with the document
+        result.handle.doneLoading();
+
+        if (existingSpace) {
+          storeContext = {
+            ...storeContext,
+            spaces: storeContext.spaces.map((existingSpace) => {
+              if (existingSpace.id === space.id) {
+                const newSpace: SpaceStorageEntry = {
+                  id: existingSpace.id,
+                  name: existingSpace.name,
+                  events: existingSpace.events ?? [],
+                  state: existingSpace.state,
+                  keys: existingSpace.keys ?? [],
+                  automergeDocHandle: result.handle,
+                  inboxes: existingSpace.inboxes ?? [],
+                };
+                return newSpace;
+              }
+              return existingSpace;
+            }),
+            lastUpdateClock: {
+              ...storeContext.lastUpdateClock,
+              [space.id]: lastUpdateClock,
+            },
+          };
+        } else {
+          storeContext = {
+            ...storeContext,
+            spaces: [
+              ...storeContext.spaces,
+              {
+                id: space.id,
+                name: space.name,
+                events: [],
+                state: undefined,
+                keys: [],
+                inboxes: [],
                 automergeDocHandle: result.handle,
-                inboxes: existingSpace.inboxes ?? [],
-              };
-              return newSpace;
-            }
-            return existingSpace;
-          }),
-          lastUpdateClock: {
-            ...context.lastUpdateClock,
-            [event.spaceId]: lastUpdateClock,
-          },
-        };
+              },
+            ],
+            lastUpdateClock: {
+              ...storeContext.lastUpdateClock,
+              [space.id]: -1,
+            },
+          };
+        }
       }
-      return {
-        ...context,
-        spaces: [
-          ...context.spaces,
-          {
-            id: event.spaceId,
-            events: [],
-            state: undefined,
-            keys: [],
-            inboxes: [],
-            updates: [],
-            lastUpdateClock: -1,
-            automergeDocHandle: result.handle,
-          },
-        ],
-      };
+
+      return storeContext;
     },
     applyEvent: (context, event: { spaceId: string; event: SpaceEvent; state: SpaceState }) => {
       return {
@@ -266,7 +286,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     addVerifiedIdentity: (
       context,
       event: {
-        accountId: string;
+        accountAddress: string;
         encryptionPublicKey: string;
         signaturePublicKey: string;
         accountProof: string;
@@ -277,7 +297,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         ...context,
         identities: {
           ...context.identities,
-          [event.accountId]: {
+          [event.accountAddress]: {
             encryptionPublicKey: event.encryptionPublicKey,
             signaturePublicKey: event.signaturePublicKey,
             accountProof: event.accountProof,
@@ -405,6 +425,7 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
       context,
       event: {
         spaceId: string;
+        name: string;
         updates?: Updates;
         inboxes?: SpaceInboxStorageEntry[];
         events: SpaceEvent[];
@@ -417,11 +438,12 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
     ) => {
       const existingSpace = context.spaces.find((s) => s.id === event.spaceId);
       if (!existingSpace && context.repo) {
-        const result = context.repo.findWithProgress(idToAutomergeId(event.spaceId) as AnyDocumentId);
+        const result = context.repo.findWithProgress<DocumentContent>(idToAutomergeId(event.spaceId) as AnyDocumentId);
         // set it to ready to interact with the document
         result.handle.doneLoading();
 
         const newSpace: SpaceStorageEntry = {
+          name: event.name,
           id: event.spaceId,
           events: event.events,
           state: event.spaceState,
@@ -476,22 +498,19 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         },
       };
     },
-    setAuth: (context, event: { accountId: Address; sessionToken: string; keys: Identity.IdentityKeys }) => {
+    setAuth: (context, event: { identity: PrivateAppIdentity }) => {
       return {
         ...context,
         authenticated: true,
-        accountId: event.accountId,
-        sessionToken: event.sessionToken,
-        keys: event.keys,
+        // TODO: remove hard-coded account address and use the one from the identity
+        identity: { ...event.identity },
       };
     },
     resetAuth: (context) => {
       return {
         ...context,
+        identity: null,
         authenticated: false,
-        accountId: null,
-        sessionToken: null,
-        keys: null,
       };
     },
     setRepo: (context, event: { repo: Repo }) => {

@@ -3,16 +3,16 @@ import { prisma } from '../prisma.js';
 
 type Params = {
   spaceId: string;
-  accountId: string;
+  accountAddress: string;
 };
 
-export const getSpace = async ({ spaceId, accountId }: Params) => {
+export const getSpace = async ({ spaceId, accountAddress }: Params) => {
   const space = await prisma.space.findUniqueOrThrow({
     where: {
       id: spaceId,
       members: {
         some: {
-          id: accountId,
+          address: accountAddress,
         },
       },
     },
@@ -26,7 +26,7 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
         include: {
           keyBoxes: {
             where: {
-              accountId,
+              accountAddress,
             },
             select: {
               nonce: true,
@@ -58,13 +58,14 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
       id: key.id,
       nonce: key.keyBoxes[0].nonce,
       ciphertext: key.keyBoxes[0].ciphertext,
-      accountId,
+      accountAddress,
       authorPublicKey: key.keyBoxes[0].authorPublicKey,
     };
   });
 
   return {
     id: space.id,
+    name: space.name,
     events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
     keyBoxes,
     inboxes: space.inboxes.map((inbox) => ({
@@ -78,7 +79,7 @@ export const getSpace = async ({ spaceId, accountId }: Params) => {
       space.updates.length > 0
         ? {
             updates: space.updates.map((update) => ({
-              accountId: update.accountId,
+              accountAddress: update.accountAddress,
               update: new Uint8Array(update.content),
               signature: {
                 hex: update.signatureHex,

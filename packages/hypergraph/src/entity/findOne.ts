@@ -26,7 +26,10 @@ export const findOne = <const S extends AnyNoContext>(
     const relations = doc ? getEntityRelations(id, type, doc, include) : {};
 
     if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
-      return { ...decode({ ...entity, id, ...relations }), type: typeName };
+      const decoded = { ...decode({ ...entity, id, ...relations }), type: typeName };
+      // injecting the schema to the entity to be able to access it in the preparePublish function
+      decoded.__schema = type;
+      return decoded;
     }
 
     return undefined;

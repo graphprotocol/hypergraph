@@ -55,8 +55,8 @@ export type EntityNumberFilter = {
   is?: number;
   greaterThan?: number;
   lessThan?: number;
-  NOT?: EntityNumberFilter;
-  OR?: EntityNumberFilter[];
+  not?: EntityNumberFilter;
+  or?: EntityNumberFilter[];
 };
 
 export type EntityTextFilter = {
@@ -65,21 +65,21 @@ export type EntityTextFilter = {
   endsWith?: string;
   contains?: string;
   equals?: string;
-  NOT?: EntityTextFilter;
-  OR?: EntityTextFilter[];
+  not?: EntityTextFilter;
+  or?: EntityTextFilter[];
 };
 
 export type CrossFieldFilter<T> = {
   [K in keyof T]?: EntityFieldFilter<T[K]>;
 } & {
-  OR?: Array<CrossFieldFilter<T>>;
-  NOT?: CrossFieldFilter<T>;
+  or?: Array<CrossFieldFilter<T>>;
+  not?: CrossFieldFilter<T>;
 };
 
 export type EntityFieldFilter<T> = {
   is?: T;
-  NOT?: EntityFieldFilter<T>;
-  OR?: Array<EntityFieldFilter<T>>;
+  not?: EntityFieldFilter<T>;
+  or?: Array<EntityFieldFilter<T>>;
 } & (T extends boolean
   ? {
       is?: boolean;

@@ -30,11 +30,11 @@ export const KeysSchema = Schema.Struct({
 export type KeysSchema = Schema.Schema.Type<typeof KeysSchema>;
 
 export type Identity = IdentityKeys & {
-  accountId: string;
+  accountAddress: string;
 };
 
 export type PublicIdentity = {
-  accountId: string;
+  accountAddress: string;
   encryptionPublicKey: string;
   signaturePublicKey: string;
 };

@@ -1,67 +1,67 @@
-import { Schema } from 'effect';
-import { deserialize, serialize } from '../messages/index.js';
-import { type IdentityKeys, KeysSchema, type Storage } from './types.js';
+import type { PrivateAppIdentity } from '../connect/types.js';
+import type { Storage } from './types.js';
 
-export const getEnv = (): 'dev' | 'production' | 'local' => {
-  return 'dev';
+export const storeIdentity = (storage: Storage, identity: PrivateAppIdentity) => {
+  storage.setItem('hypergraph:app-identity-address', identity.address);
+  storage.setItem('hypergraph:app-identity-address-private-key', identity.addressPrivateKey);
+  storage.setItem('hypergraph:app-identity-account-address', identity.accountAddress);
+  storage.setItem('hypergraph:signature-public-key', identity.signaturePublicKey);
+  storage.setItem('hypergraph:signature-private-key', identity.signaturePrivateKey);
+  storage.setItem('hypergraph:encryption-public-key', identity.encryptionPublicKey);
+  storage.setItem('hypergraph:encryption-private-key', identity.encryptionPrivateKey);
+  storage.setItem('hypergraph:session-token', identity.sessionToken);
+  storage.setItem('hypergraph:session-token-expires', identity.sessionTokenExpires.toISOString());
+  storage.setItem('hypergraph:permission-id', identity.permissionId);
 };
 
-export const buildAccountIdStorageKey = () => `hypergraph:${getEnv()}:id`;
-
-export const buildKeysStorageKey = (walletAddress: string) =>
-  walletAddress ? `hypergraph:${getEnv()}:keys:${walletAddress}` : '';
-
-export const buildSessionTokenStorageKey = (walletAddress: string) =>
-  walletAddress ? `hypergraph:${getEnv()}:session-token:${walletAddress}` : '';
-
-export const loadKeys = (storage: Storage, walletAddress: string): IdentityKeys | null => {
-  const accessKey = buildKeysStorageKey(walletAddress);
-  const val = storage.getItem(accessKey);
-  if (!val) {
+export const loadIdentity = (storage: Storage): PrivateAppIdentity | null => {
+  const address = storage.getItem('hypergraph:app-identity-address');
+  const addressPrivateKey = storage.getItem('hypergraph:app-identity-address-private-key');
+  const accountAddress = storage.getItem('hypergraph:app-identity-account-address');
+  const signaturePublicKey = storage.getItem('hypergraph:signature-public-key');
+  const signaturePrivateKey = storage.getItem('hypergraph:signature-private-key');
+  const encryptionPublicKey = storage.getItem('hypergraph:encryption-public-key');
+  const encryptionPrivateKey = storage.getItem('hypergraph:encryption-private-key');
+  const sessionToken = storage.getItem('hypergraph:session-token');
+  const sessionTokenExpires = storage.getItem('hypergraph:session-token-expires');
+  const permissionId = storage.getItem('hypergraph:permission-id');
+  if (
+    !address ||
+    !addressPrivateKey ||
+    !accountAddress ||
+    !signaturePublicKey ||
+    !signaturePrivateKey ||
+    !encryptionPublicKey ||
+    !encryptionPrivateKey ||
+    !sessionToken ||
+    !sessionTokenExpires ||
+    !permissionId
+  ) {
     return null;
   }
-  const deserialized = Schema.decodeUnknownSync(KeysSchema)(deserialize(val));
   return {
-    encryptionPublicKey: deserialized.encryptionPublicKey,
-    encryptionPrivateKey: deserialized.encryptionPrivateKey,
-    signaturePublicKey: deserialized.signaturePublicKey,
-    signaturePrivateKey: deserialized.signaturePrivateKey,
+    address,
+    addressPrivateKey,
+    accountAddress,
+    signaturePublicKey,
+    signaturePrivateKey,
+    encryptionPublicKey,
+    encryptionPrivateKey,
+    sessionToken,
+    sessionTokenExpires: new Date(sessionTokenExpires),
+    permissionId,
   };
 };
 
-export const storeKeys = (storage: Storage, walletAddress: string, keys: IdentityKeys) => {
-  const keysMsg = serialize(Schema.encodeSync(KeysSchema)(keys));
-  storage.setItem(buildKeysStorageKey(walletAddress), keysMsg);
-};
-
-export const wipeKeys = (storage: Storage, walletAddress: string) => {
-  // This will clear the conversation cache + the private keys
-  storage.removeItem(buildKeysStorageKey(walletAddress));
-};
-
-export const loadSyncServerSessionToken = (storage: Storage, address: string): string | null => {
-  const key = buildSessionTokenStorageKey(address);
-  const token = storage.getItem(key);
-  return token;
-};
-
-export const storeSyncServerSessionToken = (storage: Storage, address: string, sessionToken: string) => {
-  const key = buildSessionTokenStorageKey(address);
-  storage.setItem(key, sessionToken);
-};
-
-export const wipeSyncServerSessionToken = (storage: Storage, walletAddress: string) => {
-  storage.removeItem(buildSessionTokenStorageKey(walletAddress));
-};
-
-export const loadAccountId = (storage: Storage): string | null => {
-  return storage.getItem(buildAccountIdStorageKey());
-};
-
-export const storeAccountId = (storage: Storage, accountId: string) => {
-  storage.setItem(buildAccountIdStorageKey(), accountId);
-};
-
-export const wipeAccountId = (storage: Storage) => {
-  storage.removeItem(buildAccountIdStorageKey());
+export const wipeIdentity = (storage: Storage) => {
+  storage.removeItem('hypergraph:app-identity-address');
+  storage.removeItem('hypergraph:app-identity-address-private-key');
+  storage.removeItem('hypergraph:app-identity-account-address');
+  storage.removeItem('hypergraph:signature-public-key');
+  storage.removeItem('hypergraph:signature-private-key');
+  storage.removeItem('hypergraph:encryption-public-key');
+  storage.removeItem('hypergraph:encryption-private-key');
+  storage.removeItem('hypergraph:session-token');
+  storage.removeItem('hypergraph:session-token-expires');
+  storage.removeItem('hypergraph:permission-id');
 };

@@ -15,8 +15,9 @@ function HomepageHeader() {
         <Heading as="h1" className="hero__title">
           {siteConfig.title}
         </Heading>
+        <p style={{ marginTop: '-0.5rem', marginBottom: '2rem' }}>(Developer Preview)</p>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
+        <div className={styles.buttons} style={{ marginTop: '5rem' }}>
           <Link className="button button--secondary button--lg" to="/docs/quickstart">
             Hypergraph Quickstart - 5min ⏱️
           </Link>

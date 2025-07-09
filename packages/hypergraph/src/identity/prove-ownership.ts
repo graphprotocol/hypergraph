@@ -1,42 +1,85 @@
-import { type Hex, verifyMessage } from 'viem';
+import { http, type Chain, type Hex, createPublicClient, verifyMessage } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
+import type { SmartAccountClient } from 'permissionless';
 import { publicKeyToAddress } from '../utils/index.js';
-import type { IdentityKeys, Signer } from './types.js';
+import type { IdentityKeys } from './types.js';
 
-export const getAccountProofMessage = (accountId: string, publicKey: string): string => {
-  return `This message proves I am the owner of the account ${accountId} and the public key ${publicKey}`;
+export const getAccountProofMessage = (accountAddress: string, publicKey: string): string => {
+  return `This message proves I am the owner of the account ${accountAddress} and the public key ${publicKey}`;
 };
 
-export const getKeyProofMessage = (accountId: string, publicKey: string): string => {
-  return `The public key ${publicKey} is owned by the account ${accountId}`;
+export const getKeyProofMessage = (accountAddress: string, publicKey: string): string => {
+  return `The public key ${publicKey} is owned by the account ${accountAddress}`;
+};
+
+export const accountProofDomain = {
+  name: 'Hypergraph',
+  version: '1',
 };
 
 export const proveIdentityOwnership = async (
-  signer: Signer,
-  accountId: string,
+  smartAccountClient: SmartAccountClient,
+  accountAddress: string,
   keys: IdentityKeys,
 ): Promise<{ accountProof: string; keyProof: string }> => {
+  if (!smartAccountClient.account) {
+    throw new Error('Smart account client does not have an account');
+  }
+  if (!smartAccountClient.chain) {
+    throw new Error('Smart account client does not have a chain');
+  }
   const publicKey = keys.signaturePublicKey;
-  const accountProofMessage = getAccountProofMessage(accountId, publicKey);
-  const keyProofMessage = getKeyProofMessage(accountId, publicKey);
-  const accountProof = await signer.signMessage(accountProofMessage);
+  const keyProofMessage = getKeyProofMessage(accountAddress, publicKey);
+
+  const accountProof = await smartAccountClient.account.signTypedData({
+    message: {
+      message: getAccountProofMessage(accountAddress, publicKey),
+    },
+    types: {
+      Message: [{ name: 'message', type: 'string' }],
+    },
+    domain: accountProofDomain,
+    primaryType: 'Message',
+  });
+  console.log('accountProof', accountProof);
   const account = privateKeyToAccount(keys.signaturePrivateKey as Hex);
   const keyProof = await account.signMessage({ message: keyProofMessage });
   return { accountProof, keyProof };
 };
 
 export const verifyIdentityOwnership = async (
-  accountId: string,
+  accountAddress: string,
   publicKey: string,
   accountProof: string,
   keyProof: string,
+  chain: Chain,
+  rpcUrl: string,
 ): Promise<boolean> => {
-  const accountProofMessage = getAccountProofMessage(accountId, publicKey);
-  const keyProofMessage = getKeyProofMessage(accountId, publicKey);
-  const validAccountProof = await verifyMessage({
-    address: accountId as Hex,
-    message: accountProofMessage,
+  const keyProofMessage = getKeyProofMessage(accountAddress, publicKey);
+  const publicClient = createPublicClient({
+    chain,
+    transport: http(rpcUrl),
+  });
+  // console.log('publicClient', publicClient);
+  // console.log('rpcUrl', rpcUrl);
+  // console.log('chain', chain);
+
+  // console.log('accountProof', accountProof);
+  // console.log('accountAddress', accountAddress);
+  // console.log('publicKey', publicKey);
+
+  const accountProofMessage = getAccountProofMessage(accountAddress, publicKey);
+  const validAccountProof = await publicClient.verifyTypedData({
+    address: accountAddress as Hex,
+    message: {
+      message: accountProofMessage,
+    },
+    types: {
+      Message: [{ name: 'message', type: 'string' }],
+    },
+    domain: accountProofDomain,
+    primaryType: 'Message',
     signature: accountProof as Hex,
   });
   if (!validAccountProof) {

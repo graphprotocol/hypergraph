@@ -6,7 +6,7 @@ export const getEntityRelations = <const S extends AnyNoContext>(
   entityId: string,
   type: S,
   doc: DocumentContent,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ) => {
   const relations: Record<string, Entity<AnyNoContext>> = {};
   for (const [fieldName, field] of Object.entries(type.fields)) {

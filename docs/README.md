@@ -9,7 +9,7 @@ This website is built using [Docusaurus](https://docusaurus.io/), a modern stati
 Install all dependencies from the monorepo root:
 
 ```
-$ pnpm install
+pnpm install
 ```
 
 ### Local Development
@@ -17,7 +17,7 @@ $ pnpm install
 Start the Docusaurus dev server for the docs site:
 
 ```
-$ pnpm --filter docs start
+pnpm --filter docs start
 ```
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
@@ -27,7 +27,7 @@ This command starts a local development server and opens up a browser window. Mo
 Build the static site:
 
 ```
-$ pnpm --filter docs build
+pnpm --filter docs build
 ```
 
 This command generates static content into the `build` directory and can be served using any static content hosting service.
@@ -37,13 +37,13 @@ This command generates static content into the `build` directory and can be serv
 Using SSH:
 
 ```
-$ USE_SSH=true pnpm --filter docs deploy
+USE_SSH=true pnpm --filter docs deploy
 ```
 
 Not using SSH:
 
 ```
-$ GIT_USER=<Your GitHub username> pnpm --filter docs deploy
+GIT_USER=<Your GitHub username> pnpm --filter docs deploy
 ```
 
 If you are using GitHub Pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.

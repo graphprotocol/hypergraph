@@ -3,6 +3,7 @@ import {
   useDeleteEntity,
   useQuery,
   useRemoveRelation,
+  useSpace,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useEffect, useState } from 'react';
@@ -12,8 +13,9 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const { data: todos } = useQuery(Todo, { mode: 'local', include: { assignees: {} } });
-  const { data: users } = useQuery(User, { mode: 'local' });
+  const { data: todos } = useQuery(Todo, { mode: 'private', include: { assignees: {} } });
+  const { data: users } = useQuery(User, { mode: 'private' });
+  const { ready: spaceReady } = useSpace({ mode: 'private' });
   const createEntity = useCreateEntity(Todo);
   const updateEntity = useUpdateEntity(Todo);
   const deleteEntity = useDeleteEntity();
@@ -27,6 +29,10 @@ export const Todos = () => {
       return prevFilteredAssignees.filter((assignee) => users.some((user) => user.id === assignee.value));
     });
   }, [users]);
+
+  if (!spaceReady) {
+    return <div>Loading space...</div>;
+  }
 
   const userOptions = users.map((user) => ({ value: user.id, label: user.name }));
   return (

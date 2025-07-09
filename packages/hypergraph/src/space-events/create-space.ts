@@ -13,7 +13,7 @@ export const createSpace = ({ author, spaceId }: Params): Effect.Effect<CreateSp
   const transaction = {
     type: 'create-space' as const,
     id: spaceId ?? generateId(),
-    creatorAccountId: author.accountId,
+    creatorAccountAddress: author.accountAddress,
   };
   const encodedTransaction = stringToUint8Array(canonicalize(transaction));
   const signatureResult = secp256k1.sign(encodedTransaction, hexToBytes(author.signaturePrivateKey), {
@@ -23,7 +23,7 @@ export const createSpace = ({ author, spaceId }: Params): Effect.Effect<CreateSp
   const event: CreateSpaceEvent = {
     transaction,
     author: {
-      accountId: author.accountId,
+      accountAddress: author.accountAddress,
       signature: {
         hex: signatureResult.toCompactHex(),
         recovery: signatureResult.recovery,

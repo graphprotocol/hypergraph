@@ -13,15 +13,16 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as AuthenticateSuccessImport } from './routes/authenticate-success'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
-import { Route as SettingsExportWalletImport } from './routes/settings/export-wallet'
 import { Route as FriendsAccountIdImport } from './routes/friends/$accountId'
 import { Route as AccountInboxInboxIdImport } from './routes/account-inbox/$inboxId'
 import { Route as SpaceSpaceIdIndexImport } from './routes/space/$spaceId/index'
 import { Route as SpaceSpaceIdUsersImport } from './routes/space/$spaceId/users'
 import { Route as SpaceSpaceIdPublicIntegrationImport } from './routes/space/$spaceId/public-integration'
 import { Route as SpaceSpaceIdPlaygroundImport } from './routes/space/$spaceId/playground'
+import { Route as SpaceSpaceIdEventsImport } from './routes/space/$spaceId/events'
 import { Route as SpaceSpaceIdChatImport } from './routes/space/$spaceId/chat'
 
 // Create Virtual Routes
@@ -43,6 +44,12 @@ const LoginLazyRoute = LoginLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
 
+const AuthenticateSuccessRoute = AuthenticateSuccessImport.update({
+  id: '/authenticate-success',
+  path: '/authenticate-success',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
@@ -52,12 +59,6 @@ const IndexRoute = IndexImport.update({
 const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
   id: '/space/$spaceId',
   path: '/space/$spaceId',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const SettingsExportWalletRoute = SettingsExportWalletImport.update({
-  id: '/settings/export-wallet',
-  path: '/settings/export-wallet',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -98,6 +99,12 @@ const SpaceSpaceIdPlaygroundRoute = SpaceSpaceIdPlaygroundImport.update({
   getParentRoute: () => SpaceSpaceIdRoute,
 } as any)
 
+const SpaceSpaceIdEventsRoute = SpaceSpaceIdEventsImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => SpaceSpaceIdRoute,
+} as any)
+
 const SpaceSpaceIdChatRoute = SpaceSpaceIdChatImport.update({
   id: '/chat',
   path: '/chat',
@@ -113,6 +120,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/authenticate-success': {
+      id: '/authenticate-success'
+      path: '/authenticate-success'
+      fullPath: '/authenticate-success'
+      preLoaderRoute: typeof AuthenticateSuccessImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -143,13 +157,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FriendsAccountIdImport
       parentRoute: typeof rootRoute
     }
-    '/settings/export-wallet': {
-      id: '/settings/export-wallet'
-      path: '/settings/export-wallet'
-      fullPath: '/settings/export-wallet'
-      preLoaderRoute: typeof SettingsExportWalletImport
-      parentRoute: typeof rootRoute
-    }
     '/space/$spaceId': {
       id: '/space/$spaceId'
       path: '/space/$spaceId'
@@ -162,6 +169,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/space/$spaceId/chat'
       preLoaderRoute: typeof SpaceSpaceIdChatImport
+      parentRoute: typeof SpaceSpaceIdImport
+    }
+    '/space/$spaceId/events': {
+      id: '/space/$spaceId/events'
+      path: '/events'
+      fullPath: '/space/$spaceId/events'
+      preLoaderRoute: typeof SpaceSpaceIdEventsImport
       parentRoute: typeof SpaceSpaceIdImport
     }
     '/space/$spaceId/playground': {
@@ -199,6 +213,7 @@ declare module '@tanstack/react-router' {
 
 interface SpaceSpaceIdRouteChildren {
   SpaceSpaceIdChatRoute: typeof SpaceSpaceIdChatRoute
+  SpaceSpaceIdEventsRoute: typeof SpaceSpaceIdEventsRoute
   SpaceSpaceIdPlaygroundRoute: typeof SpaceSpaceIdPlaygroundRoute
   SpaceSpaceIdPublicIntegrationRoute: typeof SpaceSpaceIdPublicIntegrationRoute
   SpaceSpaceIdUsersRoute: typeof SpaceSpaceIdUsersRoute
@@ -207,6 +222,7 @@ interface SpaceSpaceIdRouteChildren {
 
 const SpaceSpaceIdRouteChildren: SpaceSpaceIdRouteChildren = {
   SpaceSpaceIdChatRoute: SpaceSpaceIdChatRoute,
+  SpaceSpaceIdEventsRoute: SpaceSpaceIdEventsRoute,
   SpaceSpaceIdPlaygroundRoute: SpaceSpaceIdPlaygroundRoute,
   SpaceSpaceIdPublicIntegrationRoute: SpaceSpaceIdPublicIntegrationRoute,
   SpaceSpaceIdUsersRoute: SpaceSpaceIdUsersRoute,
@@ -219,13 +235,14 @@ const SpaceSpaceIdRouteWithChildren = SpaceSpaceIdRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/authenticate-success': typeof AuthenticateSuccessRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountId': typeof FriendsAccountIdRoute
-  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
+  '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
   '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
@@ -234,12 +251,13 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/authenticate-success': typeof AuthenticateSuccessRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountId': typeof FriendsAccountIdRoute
-  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
+  '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
   '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
@@ -249,13 +267,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/authenticate-success': typeof AuthenticateSuccessRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountId': typeof FriendsAccountIdRoute
-  '/settings/export-wallet': typeof SettingsExportWalletRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
+  '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
   '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
   '/space/$spaceId/public-integration': typeof SpaceSpaceIdPublicIntegrationRoute
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
@@ -266,13 +285,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/authenticate-success'
     | '/login'
     | '/playground'
     | '/account-inbox/$inboxId'
     | '/friends/$accountId'
-    | '/settings/export-wallet'
     | '/space/$spaceId'
     | '/space/$spaceId/chat'
+    | '/space/$spaceId/events'
     | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/users'
@@ -280,12 +300,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/authenticate-success'
     | '/login'
     | '/playground'
     | '/account-inbox/$inboxId'
     | '/friends/$accountId'
-    | '/settings/export-wallet'
     | '/space/$spaceId/chat'
+    | '/space/$spaceId/events'
     | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/users'
@@ -293,13 +314,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/authenticate-success'
     | '/login'
     | '/playground'
     | '/account-inbox/$inboxId'
     | '/friends/$accountId'
-    | '/settings/export-wallet'
     | '/space/$spaceId'
     | '/space/$spaceId/chat'
+    | '/space/$spaceId/events'
     | '/space/$spaceId/playground'
     | '/space/$spaceId/public-integration'
     | '/space/$spaceId/users'
@@ -309,21 +331,21 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticateSuccessRoute: typeof AuthenticateSuccessRoute
   LoginLazyRoute: typeof LoginLazyRoute
   PlaygroundLazyRoute: typeof PlaygroundLazyRoute
   AccountInboxInboxIdRoute: typeof AccountInboxInboxIdRoute
   FriendsAccountIdRoute: typeof FriendsAccountIdRoute
-  SettingsExportWalletRoute: typeof SettingsExportWalletRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticateSuccessRoute: AuthenticateSuccessRoute,
   LoginLazyRoute: LoginLazyRoute,
   PlaygroundLazyRoute: PlaygroundLazyRoute,
   AccountInboxInboxIdRoute: AccountInboxInboxIdRoute,
   FriendsAccountIdRoute: FriendsAccountIdRoute,
-  SettingsExportWalletRoute: SettingsExportWalletRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRouteWithChildren,
 }
 
@@ -338,16 +360,19 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/authenticate-success",
         "/login",
         "/playground",
         "/account-inbox/$inboxId",
         "/friends/$accountId",
-        "/settings/export-wallet",
         "/space/$spaceId"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/authenticate-success": {
+      "filePath": "authenticate-success.tsx"
     },
     "/login": {
       "filePath": "login.lazy.tsx"
@@ -361,13 +386,11 @@ export const routeTree = rootRoute
     "/friends/$accountId": {
       "filePath": "friends/$accountId.tsx"
     },
-    "/settings/export-wallet": {
-      "filePath": "settings/export-wallet.tsx"
-    },
     "/space/$spaceId": {
       "filePath": "space/$spaceId.tsx",
       "children": [
         "/space/$spaceId/chat",
+        "/space/$spaceId/events",
         "/space/$spaceId/playground",
         "/space/$spaceId/public-integration",
         "/space/$spaceId/users",
@@ -376,6 +399,10 @@ export const routeTree = rootRoute
     },
     "/space/$spaceId/chat": {
       "filePath": "space/$spaceId/chat.tsx",
+      "parent": "/space/$spaceId"
+    },
+    "/space/$spaceId/events": {
+      "filePath": "space/$spaceId/events.tsx",
       "parent": "/space/$spaceId"
     },
     "/space/$spaceId/playground": {

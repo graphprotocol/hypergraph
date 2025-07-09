@@ -53,6 +53,12 @@ export const update = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
       throw new EntityNotFoundError({ id, type });
     }
 
-    return { id, type: typeName, ...(updated as Schema.Schema.Type<S>) };
+    return {
+      id,
+      type: typeName,
+      ...(updated as Schema.Schema.Type<S>),
+      // injecting the schema to the entity to be able to access it in the preparePublish function
+      __schema: type,
+    };
   };
 };

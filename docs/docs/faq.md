@@ -11,7 +11,7 @@ tags: [faq]
 
 ### What is Hypergraph?
 
-> Hypergraph is a TypeScript-first framework for building local-first apps that sync encrypted data to a shared knowledge graph.
+> Hypergraph is a TypeScript-first framework for building local-first apps that syncs encrypted data to a shared knowledge graph.
 
 ### Does it replace my backend?
 
@@ -61,17 +61,17 @@ Find solutions in our Troubleshooting guide: [🛠 Troubleshooting](/docs/troubl
 
 ## Technical
 
-### Which database do you use under the hood?
+<!-- ### Which database do you use under the hood?
 
-None. Updates are stored as **CRDT events** on the sync server and optionally mirrored to IPFS for redundancy. Public data is published as JSON-LD on-chain.
+None. Updates are stored as **CRDT events** on the sync server and optionally mirrored to IPFS for redundancy. Public data is published as JSON-LD on-chain. -->
 
 ### Is Hypergraph open-source?
 
 100 %. Apache-2.0 license. Contributions welcome!
 
-### How big can a Space grow?
+<!-- ### How big can a Space grow?
 
-We tested 50 k events / 10 MB snapshots on consumer laptops. Planned optimizations include **document sharding** and delta compression.
+We tested 50 k events / 10 MB snapshots on consumer laptops. Planned optimizations include **document sharding** and delta compression. -->
 
 ---
 

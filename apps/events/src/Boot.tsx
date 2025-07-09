@@ -1,8 +1,6 @@
-import { RouterProvider, createRouter } from '@tanstack/react-router';
-
 import { HypergraphAppProvider } from '@graphprotocol/hypergraph-react';
-import { PrivyProvider } from '@privy-io/react-auth';
-
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { mapping } from './mapping.js';
 import { routeTree } from './routeTree.gen';
 
 // Create a new router instance
@@ -17,25 +15,8 @@ declare module '@tanstack/react-router' {
 
 export function Boot() {
   return (
-    <PrivyProvider // note: PrivyProvider is only needed for the login page and the logout button in the navigation
-      appId="cm4wx6ziv00ngrmfjf9ik36iu"
-      config={{
-        // Display email and wallet as login methods
-        loginMethods: ['email', 'wallet', 'google', 'twitter', 'github'],
-        // Customize Privy's appearance in your app
-        appearance: {
-          theme: 'light',
-          accentColor: '#676FFF',
-        },
-        // Create embedded wallets for users who don't have a wallet
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-        },
-      }}
-    >
-      <HypergraphAppProvider storage={localStorage}>
-        <RouterProvider router={router} />
-      </HypergraphAppProvider>
-    </PrivyProvider>
+    <HypergraphAppProvider syncServerUri="http://localhost:3030" mapping={mapping}>
+      <RouterProvider router={router} />
+    </HypergraphAppProvider>
   );
 }

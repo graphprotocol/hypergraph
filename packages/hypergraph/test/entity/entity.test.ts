@@ -25,7 +25,7 @@ describe('Entity', () => {
     name: Type.Text,
   }) {}
 
-  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+  const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);
 
   let repo: Repo;
@@ -57,6 +57,7 @@ describe('Entity', () => {
         name: 'Conference',
         __version: '',
         __deleted: false,
+        __schema: Event,
       });
 
       const found = Entity.findOne(handle, Event)(id);
@@ -67,6 +68,7 @@ describe('Entity', () => {
         name: 'Conference',
         __version: '',
         __deleted: false,
+        __schema: Event,
       });
     });
   });
@@ -89,6 +91,7 @@ describe('Entity', () => {
         age: 1,
         __version: '',
         __deleted: false,
+        __schema: Person,
       });
       const found = Entity.findOne(handle, Person)(id);
       expect(found).not.toBeNull();
@@ -99,6 +102,7 @@ describe('Entity', () => {
         age: 1,
         __version: '',
         __deleted: false,
+        __schema: Person,
       });
       // update the entity, validate we see the updates
       const updated = Entity.update(handle, Person)(id, { name: 'Test Updated', age: 2112 });
@@ -107,6 +111,7 @@ describe('Entity', () => {
         type: Person.name,
         name: 'Test Updated',
         age: 2112,
+        __schema: Person,
       });
 
       const updatedEntities = Entity.findMany(handle, Person, undefined, undefined);
@@ -123,6 +128,7 @@ describe('Entity', () => {
         age: 2112,
         __version: '',
         __deleted: false,
+        __schema: Person,
       });
     });
 
@@ -160,6 +166,7 @@ describe('Entity', () => {
         email: 'test.user@thegraph.com',
         __version: '',
         __deleted: false,
+        __schema: User,
       });
       const found = Entity.findOne(handle, User)(id);
       expect(found).not.toBeNull();
@@ -170,6 +177,7 @@ describe('Entity', () => {
         email: 'test.user@thegraph.com',
         __version: '',
         __deleted: false,
+        __schema: User,
       });
 
       const deleted = Entity.delete(handle)(id);

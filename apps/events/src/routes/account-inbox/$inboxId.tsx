@@ -10,7 +10,7 @@ function RouteComponent() {
   const { identity } = useHypergraphAuth();
 
   // Ensure we have an authenticated user
-  if (!identity?.accountId) {
+  if (!identity?.accountAddress) {
     return <div>Please login to view your inbox</div>;
   }
 
@@ -37,7 +37,7 @@ function RouteComponent() {
             <div className="text-lg mb-2">{message.plaintext}</div>
             <div className="space-y-1 text-sm text-muted-foreground">
               <div className="message-time">{new Date(message.createdAt).toLocaleString()}</div>
-              {message.authorAccountId && <div>From: {message.authorAccountId}</div>}
+              {message.authorAccountAddress && <div>From: {message.authorAccountAddress}</div>}
             </div>
           </div>
         ))}

@@ -1,5 +1,6 @@
 /* eslint-disable */
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -18,538 +19,342 @@ export type Scalars = {
 
 export type Account = {
   __typename?: 'Account';
-  /** Ethereum address of the account */
   address: Scalars['String']['output'];
-  /** Account ID */
-  id: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  spacesWhereEdtitor?: Maybe<Array<Maybe<Space>>>;
+  spacesWhereMember?: Maybe<Array<Maybe<Space>>>;
 };
 
-export type AccountFilter = {
-  address?: InputMaybe<Scalars['String']['input']>;
-  addressIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  addressNot?: InputMaybe<Scalars['String']['input']>;
-  addressNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  id?: InputMaybe<Scalars['String']['input']>;
-  idIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  idNot?: InputMaybe<Scalars['String']['input']>;
-  idNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
+export type AddressFilter = {
+  in?: InputMaybe<Array<Scalars['String']['input']>>;
+  is?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type AttributeFilter = {
-  valueType?: InputMaybe<ValueType>;
+export type Block = {
+  __typename?: 'Block';
+  dataSourceType?: Maybe<DataSourceType>;
+  entity?: Maybe<Entity>;
+  id: Scalars['ID']['output'];
+  type: BlockType;
+  value?: Maybe<Scalars['String']['output']>;
 };
 
-/** Entity object */
+export type BlockType =
+  | 'DATA'
+  | 'IMAGE'
+  | 'TEXT';
+
+export type CheckboxFilter = {
+  exists?: InputMaybe<Scalars['Boolean']['input']>;
+  is?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type DataSourceType =
+  | 'COLLECTION'
+  | 'GEO'
+  | 'QUERY';
+
+export type DataType =
+  | 'CHECKBOX'
+  | 'NUMBER'
+  | 'POINT'
+  | 'RELATION'
+  | 'TEXT'
+  | 'TIME';
+
 export type Entity = {
   __typename?: 'Entity';
-  /** Attributes of the entity */
-  attributes: Array<Triple>;
-  /** Entity blocks (if available) */
-  blocks: Array<Entity>;
-  /** Entity cover (if available) */
-  cover?: Maybe<Scalars['String']['output']>;
+  backlinks: Array<Maybe<Relation>>;
+  blocks: Array<Maybe<Block>>;
   createdAt: Scalars['String']['output'];
   createdAtBlock: Scalars['String']['output'];
-  /** Entity description (if available) */
   description?: Maybe<Scalars['String']['output']>;
-  /** Entity ID */
-  id: Scalars['String']['output'];
-  /** Entity name (if available) */
+  id: Scalars['ID']['output'];
   name?: Maybe<Scalars['String']['output']>;
-  /** Relations outgoing from the entity */
-  relations: Array<Relation>;
-  /** The space ID of the entity (note: the same entity can exist in multiple spaces) */
-  spaceId: Scalars['String']['output'];
-  /** Types of the entity (which are entities themselves) */
-  types: Array<Entity>;
+  relations: Array<Maybe<Relation>>;
+  spaces: Array<Maybe<Scalars['String']['output']>>;
+  types: Array<Maybe<Entity>>;
   updatedAt: Scalars['String']['output'];
   updatedAtBlock: Scalars['String']['output'];
-  /** Versions of the entity, ordered chronologically */
-  versions: Array<EntityVersion>;
+  values: Array<Maybe<Value>>;
 };
 
 
-/** Entity object */
-export type EntityAttributesArgs = {
-  filter?: InputMaybe<AttributeFilter>;
+export type EntityBacklinksArgs = {
+  filter?: InputMaybe<RelationFilter>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-/** Entity object */
 export type EntityRelationsArgs = {
-  where?: InputMaybe<EntityRelationFilter>;
+  filter?: InputMaybe<RelationFilter>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** Filter the entities by attributes and their values and value types */
-export type EntityAttributeFilter = {
-  attribute: Scalars['String']['input'];
-  value?: InputMaybe<Scalars['String']['input']>;
-  valueIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  valueNot?: InputMaybe<Scalars['String']['input']>;
-  valueNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  valueType?: InputMaybe<ValueType>;
-  valueTypeIn?: InputMaybe<Array<ValueType>>;
-  valueTypeNot?: InputMaybe<ValueType>;
-  valueTypeNotIn?: InputMaybe<Array<ValueType>>;
+
+export type EntityValuesArgs = {
+  filter?: InputMaybe<ValueFilter>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
 };
 
-/**
- * Entity filter input object
- *
- * ```graphql
- * query {
- *     entities(where: {
- *         space_id: "BJqiLPcSgfF8FRxkFr76Uy",
- *         types_contain: ["XG26vy98XAA6cR6DosTALk", "XG26vy98XAA6cR6DosTALk"],
- *         attributes_contain: [
- *             {id: "XG26vy98XAA6cR6DosTALk", value: "value", value_type: TEXT},
- *         ]
- *     })
- * }
- * ```
- */
 export type EntityFilter = {
-  attributes?: InputMaybe<Array<EntityAttributeFilter>>;
-  id?: InputMaybe<Scalars['String']['input']>;
-  idIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  idNot?: InputMaybe<Scalars['String']['input']>;
-  idNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  /** Exact match for the entity types */
-  typesContains?: InputMaybe<Array<Scalars['String']['input']>>;
-  typesNotContains?: InputMaybe<Array<Scalars['String']['input']>>;
+  backlinks?: InputMaybe<RelationFilter>;
+  id?: InputMaybe<IdFilter>;
+  not?: InputMaybe<EntityFilter>;
+  or?: InputMaybe<Array<EntityFilter>>;
+  relations?: InputMaybe<RelationFilter>;
+  types?: InputMaybe<IdFilter>;
+  value?: InputMaybe<ValueFilter>;
 };
 
-/** Filters the outgoing relations of the entity */
-export type EntityRelationFilter = {
-  id?: InputMaybe<Scalars['String']['input']>;
-  idIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  idNot?: InputMaybe<Scalars['String']['input']>;
-  idNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  relationType?: InputMaybe<Scalars['String']['input']>;
-  relationTypeIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  relationTypeNot?: InputMaybe<Scalars['String']['input']>;
-  relationTypeNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  /** Filter the relations by the entity they point to */
-  to?: InputMaybe<EntityFilter>;
-  toId?: InputMaybe<Scalars['String']['input']>;
-  toIdIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  toIdNot?: InputMaybe<Scalars['String']['input']>;
-  toIdNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
+export type IdFilter = {
+  in?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
-export type EntityVersion = {
-  __typename?: 'EntityVersion';
-  /** Attributes of the entity */
-  attributes: Array<Triple>;
-  id: Scalars['String']['output'];
+export type Membership = {
+  __typename?: 'Membership';
+  address: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  space?: Maybe<Space>;
+  spaceId: Scalars['String']['output'];
 };
 
-
-export type EntityVersionAttributesArgs = {
-  filter?: InputMaybe<AttributeFilter>;
+export type Meta = {
+  __typename?: 'Meta';
+  blockCursor?: Maybe<Scalars['String']['output']>;
+  blockNumber?: Maybe<Scalars['String']['output']>;
 };
 
-export type Options = {
-  __typename?: 'Options';
-  format?: Maybe<Scalars['String']['output']>;
-  language?: Maybe<Scalars['String']['output']>;
-  unit?: Maybe<Scalars['String']['output']>;
+export type NumberFilter = {
+  exists?: InputMaybe<Scalars['Boolean']['input']>;
+  greaterThan?: InputMaybe<Scalars['Float']['input']>;
+  greaterThanOrEqual?: InputMaybe<Scalars['Float']['input']>;
+  is?: InputMaybe<Scalars['Float']['input']>;
+  lessThan?: InputMaybe<Scalars['Float']['input']>;
+  lessThanOrEqual?: InputMaybe<Scalars['Float']['input']>;
+  not?: InputMaybe<NumberFilter>;
 };
 
-export type OrderDirection =
-  | 'ASC'
-  | 'DESC';
+export type PointFilter = {
+  exists?: InputMaybe<Scalars['Boolean']['input']>;
+  is?: InputMaybe<Array<InputMaybe<Scalars['Float']['input']>>>;
+};
 
 export type Property = {
   __typename?: 'Property';
-  /** Attributes of the entity */
-  attributes: Array<Triple>;
-  /** Entity blocks (if available) */
-  blocks: Array<Entity>;
-  /** Entity cover (if available) */
-  cover?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['String']['output'];
-  createdAtBlock: Scalars['String']['output'];
-  /** Entity description (if available) */
-  description?: Maybe<Scalars['String']['output']>;
-  /** Entity ID */
-  id: Scalars['String']['output'];
-  /** Entity name (if available) */
-  name?: Maybe<Scalars['String']['output']>;
-  /** Value type of the property */
-  relationValueType?: Maybe<Entity>;
-  /** Relations outgoing from the entity */
-  relations: Array<Relation>;
-  /** The space ID of the entity (note: the same entity can exist in multiple spaces) */
-  spaceId: Scalars['String']['output'];
-  /** Types of the entity (which are entities themselves) */
-  types: Array<Entity>;
-  updatedAt: Scalars['String']['output'];
-  updatedAtBlock: Scalars['String']['output'];
-  /** Value type of the property */
-  valueType?: Maybe<Entity>;
-  /** Versions of the entity, ordered chronologically */
-  versions: Array<EntityVersion>;
-};
-
-
-export type PropertyAttributesArgs = {
-  filter?: InputMaybe<AttributeFilter>;
-};
-
-
-export type PropertyNameArgs = {
-  strict?: Scalars['Boolean']['input'];
-};
-
-
-export type PropertyRelationsArgs = {
-  where?: InputMaybe<EntityRelationFilter>;
-};
-
-/** Relation object */
-export type Relation = {
-  __typename?: 'Relation';
-  /** Entity of the relation */
-  entity: Entity;
-  /** Entity from which the relation originates */
-  from: Entity;
-  /** Relation ID */
-  id: Scalars['String']['output'];
-  /** Relation type of the relation */
-  relationType: Entity;
-  /** Entity to which the relation points */
-  to: Entity;
-};
-
-/** Relation filter input object */
-export type RelationFilter = {
-  /** Filter the relations by their attributes */
-  attributes?: InputMaybe<Array<EntityAttributeFilter>>;
-  /** Filter the relations by the entity they point from */
-  from?: InputMaybe<EntityFilter>;
-  /** Filter the relations by their id */
-  id?: InputMaybe<Scalars['String']['input']>;
-  idIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  idNot?: InputMaybe<Scalars['String']['input']>;
-  idNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  /** Filter the relations by their relation type */
-  relationType?: InputMaybe<Scalars['String']['input']>;
-  relationTypeIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  relationTypeNot?: InputMaybe<Scalars['String']['input']>;
-  relationTypeNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  /** Filter the relations by the entity they point to */
-  to?: InputMaybe<EntityFilter>;
-};
-
-export type RootQuery = {
-  __typename?: 'RootQuery';
-  /** Returns a single account by ID */
-  account?: Maybe<Account>;
-  /** Returns a single account by address */
-  accountByAddress?: Maybe<Account>;
-  /** Returns multiple accounts according to the provided filter */
-  accounts: Array<Account>;
-  /** Returns multiple entities according to the provided space ID and filter */
-  entities: Array<Entity>;
-  /** Returns a single entity identified by its ID and space ID */
+  dataType: DataType;
   entity?: Maybe<Entity>;
-  /** Returns a single relation identified by its ID and space ID */
+  id: Scalars['ID']['output'];
+  relationValueTypes?: Maybe<Array<Maybe<Type>>>;
+  renderableType?: Maybe<Scalars['String']['output']>;
+};
+
+export type PropertyFilter = {
+  dataType?: InputMaybe<DataType>;
+  id?: InputMaybe<IdFilter>;
+};
+
+export type Query = {
+  __typename?: 'Query';
+  account?: Maybe<Account>;
+  entities: Array<Maybe<Entity>>;
+  entity?: Maybe<Entity>;
+  meta?: Maybe<Meta>;
+  properties: Array<Maybe<Property>>;
+  property?: Maybe<Property>;
   relation?: Maybe<Relation>;
-  /** Returns multiple relations according to the provided space ID and filter */
-  relations: Array<Relation>;
-  /** Returns a single space by ID */
+  relations: Array<Maybe<Relation>>;
+  search: Array<Maybe<Entity>>;
   space?: Maybe<Space>;
-  /** Returns multiple spaces according to the provided filter */
-  spaces: Array<Space>;
-  /**
-   * Returns a single triple identified by its entity ID, attribute ID, space ID and
-   * optional version ID
-   */
-  triple?: Maybe<Triple>;
+  spaces: Array<Maybe<Space>>;
+  types: Array<Maybe<Type>>;
 };
 
 
-export type RootQueryAccountArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type RootQueryAccountByAddressArgs = {
+export type QueryAccountArgs = {
   address: Scalars['String']['input'];
 };
 
 
-export type RootQueryAccountsArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-  where?: InputMaybe<AccountFilter>;
+export type QueryEntitiesArgs = {
+  filter?: InputMaybe<EntityFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type RootQueryEntitiesArgs = {
-  first?: Scalars['Int']['input'];
-  orderBy?: InputMaybe<Scalars['String']['input']>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: Scalars['Int']['input'];
-  spaceId: Scalars['String']['input'];
-  strict?: Scalars['Boolean']['input'];
-  where?: InputMaybe<EntityFilter>;
-};
-
-
-export type RootQueryEntityArgs = {
+export type QueryEntityArgs = {
   id: Scalars['String']['input'];
-  spaceId: Scalars['String']['input'];
-  strict?: Scalars['Boolean']['input'];
-  versionId?: InputMaybe<Scalars['String']['input']>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type RootQueryRelationArgs = {
+export type QueryPropertiesArgs = {
+  filter?: InputMaybe<PropertyFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryPropertyArgs = {
   id: Scalars['String']['input'];
-  spaceId: Scalars['String']['input'];
-  strict?: Scalars['Boolean']['input'];
-  versionId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type RootQueryRelationsArgs = {
-  first?: Scalars['Int']['input'];
-  orderBy?: InputMaybe<Scalars['String']['input']>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: Scalars['Int']['input'];
-  spaceId: Scalars['String']['input'];
-  strict?: Scalars['Boolean']['input'];
-  where?: InputMaybe<RelationFilter>;
-};
-
-
-export type RootQuerySpaceArgs = {
+export type QueryRelationArgs = {
   id: Scalars['String']['input'];
-  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type RootQuerySpacesArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-  version?: InputMaybe<Scalars['String']['input']>;
-  where?: InputMaybe<SpaceFilter>;
+export type QueryRelationsArgs = {
+  filter?: InputMaybe<RelationFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type RootQueryTripleArgs = {
-  attributeId: Scalars['String']['input'];
-  entityId: Scalars['String']['input'];
-  spaceId: Scalars['String']['input'];
-  strict?: Scalars['Boolean']['input'];
-  versionId?: InputMaybe<Scalars['String']['input']>;
+export type QuerySearchArgs = {
+  filter?: InputMaybe<SearchFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  query: Scalars['String']['input'];
+  spaceId?: InputMaybe<Scalars['String']['input']>;
+  threshold?: InputMaybe<Scalars['Float']['input']>;
 };
 
-/** SchemaType object */
-export type SchemaType = {
-  __typename?: 'SchemaType';
-  /** Attributes of the entity */
-  attributes: Array<Triple>;
-  /** Entity blocks (if available) */
-  blocks: Array<Entity>;
-  /** Entity cover (if available) */
-  cover?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['String']['output'];
-  createdAtBlock: Scalars['String']['output'];
-  /** Entity description (if available) */
-  description?: Maybe<Scalars['String']['output']>;
-  /** Entity ID */
-  id: Scalars['String']['output'];
-  /** Entity name (if available) */
-  name?: Maybe<Scalars['String']['output']>;
-  /** Properties of the Type */
-  properties: Array<Property>;
-  /** Relations outgoing from the entity */
-  relations: Array<Relation>;
-  /** The space ID of the entity (note: the same entity can exist in multiple spaces) */
+
+export type QuerySpaceArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QuerySpacesArgs = {
+  filter?: InputMaybe<SpaceFilter>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryTypesArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  spaceId?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type Relation = {
+  __typename?: 'Relation';
+  entityId: Scalars['ID']['output'];
+  from?: Maybe<Entity>;
+  fromId: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  position?: Maybe<Scalars['String']['output']>;
+  relationEntity?: Maybe<Entity>;
   spaceId: Scalars['String']['output'];
-  /** Types of the entity (which are entities themselves) */
-  types: Array<Entity>;
-  updatedAt: Scalars['String']['output'];
-  updatedAtBlock: Scalars['String']['output'];
-  /** Versions of the entity, ordered chronologically */
-  versions: Array<EntityVersion>;
+  to?: Maybe<Entity>;
+  toId: Scalars['String']['output'];
+  toSpaceId?: Maybe<Scalars['String']['output']>;
+  type?: Maybe<Property>;
+  typeId: Scalars['String']['output'];
+  verified?: Maybe<Scalars['Boolean']['output']>;
 };
 
-
-/** SchemaType object */
-export type SchemaTypeAttributesArgs = {
-  filter?: InputMaybe<AttributeFilter>;
+export type RelationFilter = {
+  fromEntity?: InputMaybe<EntityFilter>;
+  fromEntityId?: InputMaybe<Scalars['String']['input']>;
+  relationEntity?: InputMaybe<EntityFilter>;
+  relationEntityId?: InputMaybe<Scalars['String']['input']>;
+  toEntity?: InputMaybe<EntityFilter>;
+  toEntityId?: InputMaybe<Scalars['String']['input']>;
+  type?: InputMaybe<IdFilter>;
+  typeId?: InputMaybe<Scalars['String']['input']>;
 };
 
-
-/** SchemaType object */
-export type SchemaTypeNameArgs = {
-  strict?: Scalars['Boolean']['input'];
-};
-
-
-/** SchemaType object */
-export type SchemaTypePropertiesArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-};
-
-
-/** SchemaType object */
-export type SchemaTypeRelationsArgs = {
-  where?: InputMaybe<EntityRelationFilter>;
+export type SearchFilter = {
+  not?: InputMaybe<SearchFilter>;
+  or?: InputMaybe<Array<SearchFilter>>;
+  types?: InputMaybe<IdFilter>;
 };
 
 export type Space = {
   __typename?: 'Space';
-  /** DAO contract address of the space */
-  daoContractAddress: Scalars['String']['output'];
-  /** Editors of the space */
-  editors: Array<Account>;
-  entities: Array<Entity>;
-  /** Governance type of the space (Public or Personal) */
-  governanceType: SpaceGovernanceType;
-  /** Space ID */
-  id: Scalars['String']['output'];
-  /** Member access plugin address (if available) */
-  memberAccessPlugin?: Maybe<Scalars['String']['output']>;
-  /** Members of the space */
-  members: Array<Account>;
-  /** Network of the space */
-  network: Scalars['String']['output'];
-  /** Parent spaces of this space */
-  parentSpaces: Array<Space>;
-  /** Personal space admin plugin address (if available) */
-  personalSpaceAdminPlugin?: Maybe<Scalars['String']['output']>;
-  /** Space plugin address (if available) */
-  spacePluginAddress?: Maybe<Scalars['String']['output']>;
-  /** Subspaces of this space */
-  subspaces: Array<Space>;
-  type?: Maybe<SchemaType>;
-  types: Array<SchemaType>;
-  /** Voting plugin address (if available) */
-  votingPluginAddress?: Maybe<Scalars['String']['output']>;
-};
-
-
-export type SpaceEditorsArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-};
-
-
-export type SpaceEntitiesArgs = {
-  first?: Scalars['Int']['input'];
-  orderBy?: InputMaybe<Scalars['String']['input']>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: Scalars['Int']['input'];
-  strict?: Scalars['Boolean']['input'];
-  where?: InputMaybe<EntityFilter>;
-};
-
-
-export type SpaceMembersArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-};
-
-
-export type SpaceParentSpacesArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-};
-
-
-export type SpaceSubspacesArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-};
-
-
-export type SpaceTypeArgs = {
-  id: Scalars['String']['input'];
-  strict?: Scalars['Boolean']['input'];
-};
-
-
-export type SpaceTypesArgs = {
-  first?: Scalars['Int']['input'];
-  skip?: Scalars['Int']['input'];
-  strict?: Scalars['Boolean']['input'];
+  daoAddress: Scalars['String']['output'];
+  editors?: Maybe<Array<Membership>>;
+  entity?: Maybe<Entity>;
+  id: Scalars['ID']['output'];
+  mainVotingAddress?: Maybe<Scalars['String']['output']>;
+  members?: Maybe<Array<Membership>>;
+  membershipAddress?: Maybe<Scalars['String']['output']>;
+  personalAddress?: Maybe<Scalars['String']['output']>;
+  spaceAddress: Scalars['String']['output'];
+  type: SpaceType;
 };
 
 export type SpaceFilter = {
-  daoContractAddress?: InputMaybe<Scalars['String']['input']>;
-  daoContractAddressIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  daoContractAddressNot?: InputMaybe<Scalars['String']['input']>;
-  daoContractAddressNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  governanceType?: InputMaybe<SpaceGovernanceType>;
-  governanceTypeIn?: InputMaybe<Array<SpaceGovernanceType>>;
-  governanceTypeNot?: InputMaybe<SpaceGovernanceType>;
-  governanceTypeNotIn?: InputMaybe<Array<SpaceGovernanceType>>;
-  id?: InputMaybe<Scalars['String']['input']>;
-  idIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  idNot?: InputMaybe<Scalars['String']['input']>;
-  idNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  memberAccessPlugin?: InputMaybe<Scalars['String']['input']>;
-  memberAccessPluginIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  memberAccessPluginNot?: InputMaybe<Scalars['String']['input']>;
-  memberAccessPluginNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  network?: InputMaybe<Scalars['String']['input']>;
-  networkIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  networkNot?: InputMaybe<Scalars['String']['input']>;
-  networkNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  personalSpaceAdminPlugin?: InputMaybe<Scalars['String']['input']>;
-  personalSpaceAdminPluginIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  personalSpaceAdminPluginNot?: InputMaybe<Scalars['String']['input']>;
-  personalSpaceAdminPluginNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  spacePluginAddress?: InputMaybe<Scalars['String']['input']>;
-  spacePluginAddressIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  spacePluginAddressNot?: InputMaybe<Scalars['String']['input']>;
-  spacePluginAddressNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  votingPluginAddress?: InputMaybe<Scalars['String']['input']>;
-  votingPluginAddressIn?: InputMaybe<Array<Scalars['String']['input']>>;
-  votingPluginAddressNot?: InputMaybe<Scalars['String']['input']>;
-  votingPluginAddressNotIn?: InputMaybe<Array<Scalars['String']['input']>>;
+  editor?: InputMaybe<AddressFilter>;
+  id?: InputMaybe<IdFilter>;
+  member?: InputMaybe<AddressFilter>;
 };
 
-export type SpaceGovernanceType =
+export type SpaceType =
   | 'PERSONAL'
   | 'PUBLIC';
 
-export type Triple = {
-  __typename?: 'Triple';
-  /** Attribute ID of the triple */
-  attribute: Scalars['String']['output'];
-  /** Name of the attribute (if available) */
-  name?: Maybe<Scalars['String']['output']>;
-  /** Options of the triple (if any) */
-  options: Options;
-  /** Space ID of the triple */
-  spaceId: Scalars['String']['output'];
-  /** Value of the triple */
-  value: Scalars['String']['output'];
-  /** Value type of the triple */
-  valueType: ValueType;
+export type TextFilter = {
+  contains?: InputMaybe<Scalars['String']['input']>;
+  endsWith?: InputMaybe<Scalars['String']['input']>;
+  exists?: InputMaybe<Scalars['Boolean']['input']>;
+  is?: InputMaybe<Scalars['String']['input']>;
+  not?: InputMaybe<TextFilter>;
+  startsWith?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type ValueType =
-  | 'CHECKBOX'
-  | 'NUMBER'
-  | 'POINT'
-  | 'TEXT'
-  | 'TIME'
-  | 'URL';
+export type Type = {
+  __typename?: 'Type';
+  description?: Maybe<Scalars['String']['output']>;
+  entity?: Maybe<Entity>;
+  id: Scalars['ID']['output'];
+  name?: Maybe<Scalars['String']['output']>;
+  properties?: Maybe<Array<Maybe<Property>>>;
+};
+
+export type Value = {
+  __typename?: 'Value';
+  entity?: Maybe<Entity>;
+  entityId: Scalars['String']['output'];
+  format?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  language?: Maybe<Scalars['String']['output']>;
+  property?: Maybe<Property>;
+  propertyId: Scalars['String']['output'];
+  spaceId: Scalars['String']['output'];
+  timezone?: Maybe<Scalars['String']['output']>;
+  unit?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+export type ValueFilter = {
+  checkbox?: InputMaybe<CheckboxFilter>;
+  number?: InputMaybe<NumberFilter>;
+  point?: InputMaybe<PointFilter>;
+  property: Scalars['String']['input'];
+  text?: InputMaybe<TextFilter>;
+};
 
 export type SchemaBrowserTypesQueryVariables = Exact<{
   spaceId: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type SchemaBrowserTypesQuery = { __typename?: 'RootQuery', space?: { __typename?: 'Space', types: Array<{ __typename?: 'SchemaType', id: string, name?: string | null, properties: Array<{ __typename?: 'Property', id: string, name?: string | null, valueType?: { __typename?: 'Entity', name?: string | null } | null, relationValueType?: { __typename?: 'Entity', name?: string | null } | null }> }> } | null };
+export type SchemaBrowserTypesQuery = { __typename?: 'Query', types: Array<{ __typename?: 'Type', id: string, name?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', id: string, name?: string | null } | null, relationValueTypes?: Array<{ __typename?: 'Type', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', id: string, name?: string | null } | null } | null> | null } | null> | null } | null> | null } | null> };
+
+export type PropertiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export const SchemaBrowserTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SchemaBrowserTypes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"space"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"types"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"valueType"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"relationValueType"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
+export type PropertiesQuery = { __typename?: 'Query', properties: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', id: string, name?: string | null, description?: string | null } | null, relationValueTypes?: Array<{ __typename?: 'Type', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataType, entity?: { __typename?: 'Entity', id: string, name?: string | null } | null } | null> | null } | null> | null } | null> };
+
+
+export const SchemaBrowserTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SchemaBrowserTypes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"types"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"spaceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"spaceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
+export const PropertiesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"entity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<PropertiesQuery, PropertiesQueryVariables>;

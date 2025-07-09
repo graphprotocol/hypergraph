@@ -1,7 +1,7 @@
 import { prisma } from '../prisma.js';
 
 type Params = {
-  accountId: string;
+  accountAddress: string;
   update: Uint8Array;
   spaceId: string;
   signatureHex: string;
@@ -10,7 +10,7 @@ type Params = {
 };
 
 export const createUpdate = async ({
-  accountId,
+  accountAddress,
   update,
   spaceId,
   signatureHex,
@@ -19,7 +19,7 @@ export const createUpdate = async ({
 }: Params) => {
   // throw error if account is not a member of the space
   await prisma.space.findUniqueOrThrow({
-    where: { id: spaceId, members: { some: { id: accountId } } },
+    where: { id: spaceId, members: { some: { address: accountAddress } } },
   });
 
   let success = false;
@@ -52,7 +52,7 @@ export const createUpdate = async ({
             signatureHex,
             signatureRecovery,
             updateId,
-            account: { connect: { id: accountId } },
+            account: { connect: { address: accountAddress } },
           },
         });
       });

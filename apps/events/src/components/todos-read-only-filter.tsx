@@ -2,8 +2,11 @@ import { useQuery } from '@graphprotocol/hypergraph-react';
 import { Todo } from '../schema';
 
 export const TodosReadOnlyFilter = () => {
-  const { data: todosCompleted } = useQuery(Todo, { mode: 'local', filter: { completed: { is: true } } });
-  const { data: todosNotCompleted } = useQuery(Todo, { mode: 'local', filter: { completed: { is: false } } });
+  const { data: todosCompleted } = useQuery(Todo, { mode: 'private', filter: { completed: { is: true } } });
+  const { data: todosNotCompleted } = useQuery(Todo, {
+    mode: 'private',
+    filter: { completed: { is: false } },
+  });
 
   return (
     <>

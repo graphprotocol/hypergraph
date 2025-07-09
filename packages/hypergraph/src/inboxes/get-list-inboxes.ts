@@ -13,10 +13,10 @@ export const listPublicSpaceInboxes = async ({
 };
 
 export const listPublicAccountInboxes = async ({
-  accountId,
+  accountAddress,
   syncServerUri,
-}: Readonly<{ accountId: string; syncServerUri: string }>): Promise<readonly Messages.AccountInboxPublic[]> => {
-  const res = await fetch(new URL(`/accounts/${accountId}/inboxes`, syncServerUri), {
+}: Readonly<{ accountAddress: string; syncServerUri: string }>): Promise<readonly Messages.AccountInboxPublic[]> => {
+  const res = await fetch(new URL(`/accounts/${accountAddress}/inboxes`, syncServerUri), {
     method: 'GET',
   });
   const decoded = Schema.decodeUnknownSync(Messages.ResponseListAccountInboxesPublic)(await res.json());
@@ -36,11 +36,15 @@ export const getSpaceInbox = async ({
 };
 
 export const getAccountInbox = async ({
-  accountId,
+  accountAddress,
   inboxId,
   syncServerUri,
-}: Readonly<{ accountId: string; inboxId: string; syncServerUri: string }>): Promise<Messages.AccountInboxPublic> => {
-  const res = await fetch(new URL(`/accounts/${accountId}/inboxes/${inboxId}`, syncServerUri), {
+}: Readonly<{
+  accountAddress: string;
+  inboxId: string;
+  syncServerUri: string;
+}>): Promise<Messages.AccountInboxPublic> => {
+  const res = await fetch(new URL(`/accounts/${accountAddress}/inboxes/${inboxId}`, syncServerUri), {
     method: 'GET',
   });
   const decoded = Schema.decodeUnknownSync(Messages.ResponseAccountInboxPublic)(await res.json());

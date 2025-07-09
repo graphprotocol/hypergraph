@@ -1,16 +1,140 @@
-import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
-import * as FileSystem from '@effect/platform/FileSystem';
-import * as Path from '@effect/platform/Path';
-import * as Data from 'effect/Data';
-import * as Effect from 'effect/Effect';
+import { execSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
+import { FileSystem, Path, type Error as PlatformError } from '@effect/platform';
+import { NodeFileSystem } from '@effect/platform-node';
+import { Cause, Console, Data, Effect, String as EffectString } from 'effect';
 
-import type * as Domain from './Domain.js';
+import * as Domain from '../domain/Domain.js';
+import * as Utils from './Utils.js';
 
 export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesync/services/Generator', {
   dependencies: [NodeFileSystem.layer],
   effect: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
+
+    const tmpDirectory = path.join(process.cwd(), '.tmp');
+
+    const cleanup = fs
+      .remove(tmpDirectory, { recursive: true, force: true })
+      .pipe(Effect.tap(() => Console.log('successfully cleaned temp directory')));
+
+    /**
+     * Updates the name and description of the cloned package.json
+     */
+    function updatePackageJson(app: Pick<Domain.InsertAppSchema, 'name' | 'description'>, directory: string) {
+      return Effect.gen(function* () {
+        const packageJsonPath = path.join(directory, 'package.json');
+        const exists = yield* fs.exists(packageJsonPath);
+        if (!exists) {
+          return yield* Effect.fail(new NoPackageJsonFoundError());
+        }
+        // read the cloned package.json
+        const packageJson = yield* fs.readFileString(packageJsonPath).pipe(Effect.map(JSON.parse));
+
+        const validatedPackageName = validatePackageName(app.name);
+        const name = validatedPackageName.normalizedName;
+        // update the name and description
+        packageJson.name = name;
+        packageJson.description = app.description || '';
+
+        // rewrite file
+        yield* fs.writeFileString(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      });
+    }
+
+    const cloneTemplRepo = Effect.async<void, CloneRepoError>((resume) => {
+      try {
+        execSync(`git clone git@github.com:geobrowser/hypergraph-app-template.git ${tmpDirectory}`, {
+          stdio: 'inherit',
+          cwd: process.cwd(),
+        });
+        return resume(Effect.void);
+      } catch (err) {
+        console.error('failure cloning template repo', { err });
+        return resume(Effect.fail(new CloneRepoError({ cause: err })));
+      }
+    });
+
+    const copyTempl = (src: string, dest: string): Effect.Effect<void, PlatformError.PlatformError> =>
+      Effect.gen(function* () {
+        // create the target directory
+        yield* fs.makeDirectory(dest, { recursive: true });
+        // read the cloned directory
+        const entries = readdirSync(src, { withFileTypes: true });
+
+        for (const entry of entries) {
+          // Skip .git directory
+          if (EffectString.startsWith('.git')(entry.name)) continue;
+
+          const srcPath = path.join(src, entry.name);
+          const destPath = path.join(dest, entry.name);
+
+          if (entry.isDirectory()) {
+            yield* copyTempl(srcPath, destPath);
+          } else {
+            yield* fs.copyFile(srcPath, destPath);
+          }
+        }
+      });
+
+    /**
+     * Recursively processes all files in the src directory and replaces
+     * "Address", "address", and "addresses" with the first schema type
+     */
+    const replaceAddressTerms = (
+      directory: string,
+      firstTypeName: string,
+    ): Effect.Effect<void, PlatformError.PlatformError> =>
+      Effect.gen(function* () {
+        const srcPath = path.join(directory, 'src');
+        const srcExists = yield* fs.exists(srcPath);
+
+        if (!srcExists) {
+          return; // No src directory to process
+        }
+
+        const processDirectory = (dirPath: string): Effect.Effect<void, PlatformError.PlatformError> =>
+          Effect.gen(function* () {
+            const entries = yield* fs.readDirectory(dirPath);
+
+            for (const entry of entries) {
+              const entryPath = path.join(dirPath, entry);
+              const stat = yield* fs.stat(entryPath);
+
+              if (stat.type === 'Directory') {
+                // Recursively process subdirectories
+                yield* processDirectory(entryPath);
+              } else if (stat.type === 'File') {
+                // Process files that are likely to contain code
+                const fileExtension = path.extname(entry);
+                const codeExtensions = ['.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte'];
+
+                if (codeExtensions.includes(fileExtension)) {
+                  yield* Effect.gen(function* () {
+                    // Read file content
+                    const content = yield* fs.readFileString(entryPath);
+
+                    // Replace address-related terms with the first type name
+                    const pascalCaseName = Utils.toPascalCase(firstTypeName);
+                    const camelCaseName = Utils.toCamelCase(firstTypeName);
+                    const pluralName = `${camelCaseName}s`; // Simple pluralization
+
+                    const updatedContent = content
+                      .replace(/\bAddress\b/g, pascalCaseName)
+                      .replace(/\baddress\b/g, camelCaseName)
+                      .replace(/\baddresses\b/g, pluralName);
+
+                    // Write back the updated content
+                    yield* fs.writeFileString(entryPath, updatedContent);
+                  });
+                }
+              }
+            }
+          });
+
+        yield* processDirectory(srcPath);
+      });
 
     return {
       /**
@@ -22,12 +146,7 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
        */
       codegen(app: Domain.InsertAppSchema) {
         return Effect.gen(function* () {
-          // check directory
-          /** @todo solve directory pathing */
-          let directory = app.directory;
-          if (!directory) {
-            directory = `./${app.name}`;
-          }
+          const directory = app.directory || `./${app.name}`;
           const directoryExists = yield* fs.exists(directory);
           if (directoryExists) {
             // directory already exists, fail
@@ -36,30 +155,32 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
 
           // create the directory
           yield* fs.makeDirectory(directory, { recursive: true });
-          // generate root level files
-          yield* Effect.all([
-            fs.writeFileString(path.join(directory, 'package.json'), JSON.stringify(generatePackageJson(app), null, 2)),
-            fs.writeFileString(path.join(directory, 'tsconfig.app.json'), JSON.stringify(tsconfigAppJson, null, 2)),
-            fs.writeFileString(path.join(directory, 'tsconfig.node.json'), JSON.stringify(tsconfigNodeJson, null, 2)),
-            fs.writeFileString(path.join(directory, 'tsconfig.json'), JSON.stringify(tsconfigJson, null, 2)),
-            fs.writeFileString(path.join(directory, '.gitignore'), gitignore),
-            fs.writeFileString(path.join(directory, 'eslint.config.mjs'), eslintConfigMjs),
-            fs.writeFileString(path.join(directory, '.prettierrc'), JSON.stringify(prettierrc, null, 2)),
-            fs.writeFileString(path.join(directory, '.prettierignore'), prettierignore),
-            fs.writeFileString(path.join(directory, 'vite.config.ts'), viteConfigTs),
-            fs.writeFileString(path.join(directory, 'index.html'), indexHtml(app.name)),
-          ]);
-          // create the src directory inside
-          yield* fs.makeDirectory(path.join(directory, 'src'));
 
-          // create the src files
-          yield* Effect.all([
-            fs.writeFileString(path.join(directory, 'src', 'index.css'), indexcss),
-            fs.writeFileString(path.join(directory, 'src', 'main.tsx'), mainTsx),
-            fs.writeFileString(path.join(directory, 'src', 'App.tsx'), appTsx),
-            fs.writeFileString(path.join(directory, 'src', 'vite-env.d.ts'), vitEnvDTs),
-            fs.writeFileString(path.join(directory, 'src', 'schema.ts'), buildSchemaFile(app)),
-          ]);
+          /**
+           * 1. clone the hypergraph-app-template repo
+           * 2. copy it to the output directory from the app request
+           * 3. update the package.json
+           * 4. update the schema.ts
+           * 5. update the mapping.ts
+           * 6. replace the address terms with the first type name
+           * 7. cleanup the .tmp directory
+           */
+          yield* cloneTemplRepo.pipe(
+            Effect.tapErrorCause((cause) =>
+              Console.error('failure cloning into hypergraph-app-template repo', { cause: Cause.pretty(cause) }),
+            ),
+            Effect.andThen(() => copyTempl(tmpDirectory, directory)),
+            Effect.tapErrorCause((cause) =>
+              Console.error('failure copying the cloned template repo into the directory', {
+                cause: Cause.pretty(cause),
+              }),
+            ),
+            Effect.andThen(() => updatePackageJson(app, directory)),
+            Effect.andThen(() => fs.writeFileString(path.join(directory, 'src', 'schema.ts'), buildSchemaFile(app))),
+            Effect.andThen(() => fs.writeFileString(path.join(directory, 'src', 'mapping.ts'), buildMappingFile(app))),
+            Effect.andThen(() => replaceAddressTerms(directory, app.types[0]?.name || 'Address')),
+            Effect.andThen(() => cleanup),
+          );
 
           return { directory };
         });
@@ -69,8 +190,12 @@ export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesyn
 }) {}
 export const SchemaGeneratorLayer = SchemaGenerator.Default;
 
-export class DirectoryExistsError extends Data.TaggedError('DirectoryExistsError')<{
+export class DirectoryExistsError extends Data.TaggedError('/typesync/errors/DirectoryExistsError')<{
   readonly directory: string;
+}> {}
+export class NoPackageJsonFoundError extends Data.TaggedError('/typesync/errors/NoPackageJsonFoundError') {}
+export class CloneRepoError extends Data.TaggedError('/typesync/errors/CloneRepoError')<{
+  readonly cause: unknown;
 }> {}
 
 /**
@@ -173,340 +298,39 @@ function validatePackageName(name: string): {
     errorMessage: `Invalid package name. Suggested alternative: ${suggestedName}`,
   };
 }
-function generatePackageJson(app: Domain.InsertAppSchema) {
-  const validatedPackageName = validatePackageName(app.name);
-  const name = validatedPackageName.normalizedName;
-
-  return {
-    name,
-    description: app.description,
-    version: 'v1.0.0',
-    type: 'module',
-    scripts: {
-      build: 'tsc -b && vite build',
-      dev: 'vite --force',
-      preview: 'vite preview',
-      typecheck: 'tsc --noEmit',
-    },
-    dependencies: {
-      '@automerge/automerge': '^2.2.9',
-      '@automerge/automerge-repo': '=2.0.0-beta.5',
-      '@automerge/automerge-repo-react-hooks': '=2.0.0-beta.5',
-      '@graphprotocol/hypergraph': 'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
-      '@graphprotocol/hypergraph-react':
-        'npm:https://pkg.pr.new/graphprotocol/hypergraph/@graphprotocol/hypergraph@82b867a',
-      '@privy-io/react-auth': '^2.13.7',
-      '@tailwindcss/vite': '^4.1.8',
-      '@tanstack/react-query': '^5.79.2',
-      '@tanstack/react-query-devtools': '^5.79.2',
-      '@tanstack/react-router': '^1.120.15',
-      '@tanstack/react-router-devtools': '^1.120.15',
-      effect: '^3.16.3',
-      react: '^19.1.0',
-      'react-dom': '^19.1.0',
-      tailwindcss: '^4.1.8',
-      vite: '^6.3.5',
-    },
-    devDependencies: {
-      '@eslint/js': '^9.28.0',
-      '@tanstack/router-plugin': '^1.116.1',
-      '@types/node': '^22.14.1',
-      '@types/react': '^19.1.6',
-      '@types/react-dom': '^19.1.5',
-      '@vitejs/plugin-react': '^4.3.4',
-      eslint: '^9.28.0',
-      'eslint-plugin-react-hooks': '^5.2.0',
-      'eslint-plugin-react-refresh': '^0.4.19',
-      globals: '^16.0.0',
-      prettier: '^3.5.3',
-      typescript: '~5.8.3',
-      'typescript-eslint': '^8.29.1',
-      'vite-plugin-node-polyfills': '^0.23.0',
-      'vite-plugin-top-level-await': '^1.5.0',
-    },
-  };
-}
-
-// --------------------
-// tsconfig
-// --------------------
-const tsconfigAppJson = {
-  compilerOptions: {
-    tsBuildInfoFile: './node_modules/.tmp/tsconfig.app.tsbuildinfo',
-    target: 'ESNext',
-    useDefineForClassFields: true,
-    lib: ['ESNext', 'DOM', 'DOM.Iterable'],
-    module: 'ESNext',
-    skipLibCheck: true,
-
-    /* Bundler mode */
-    moduleResolution: 'bundler',
-    allowImportingTsExtensions: true,
-    isolatedModules: true,
-    moduleDetection: 'force',
-    noEmit: true,
-    jsx: 'react-jsx',
-
-    /* Linting */
-    strict: true,
-    strictNullChecks: true,
-    exactOptionalPropertyTypes: true,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
-    noFallthroughCasesInSwitch: true,
-    noUncheckedSideEffectImports: true,
-    composite: true,
-    downlevelIteration: true,
-    resolveJsonModule: true,
-    esModuleInterop: true,
-    declaration: true,
-    sourceMap: true,
-    declarationMap: true,
-    noImplicitReturns: false,
-    noEmitOnError: false,
-    noErrorTruncation: false,
-    allowJs: false,
-    checkJs: false,
-    forceConsistentCasingInFileNames: true,
-    noImplicitAny: true,
-    noImplicitThis: true,
-    noUncheckedIndexedAccess: false,
-
-    baseUrl: '.',
-    paths: {
-      '@/*': ['./src/*'],
-    },
-  },
-  include: ['src'],
-};
-const tsconfigNodeJson = {
-  compilerOptions: {
-    tsBuildInfoFile: './node_modules/.tmp/tsconfig.node.tsbuildinfo',
-    target: 'ESNext',
-    lib: ['ESNext'],
-    module: 'ESNext',
-    skipLibCheck: true,
-
-    /* Bundler mode */
-    moduleResolution: 'bundler',
-    allowImportingTsExtensions: true,
-    isolatedModules: true,
-    moduleDetection: 'force',
-    noEmit: true,
-
-    /* Linting */
-    strict: true,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
-    noFallthroughCasesInSwitch: true,
-    noUncheckedSideEffectImports: true,
-  },
-  include: ['vite.config.ts'],
-};
-const tsconfigJson = {
-  files: [],
-  references: [{ path: './tsconfig.app.json' }, { path: './tsconfig.node.json' }],
-};
-
-// --------------------
-// linting + prettier
-// --------------------
-const eslintConfigMjs = `import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-
-export default tseslint.config(
-  { ignores: ['dist'] },
-  {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
-    },
-  },
-)
-`;
-const prettierrc = {
-  singleQuote: true,
-  printWidth: 120,
-};
-const prettierignore = 'dist/';
-
-// --------------------
-// vite.config.ts
-// --------------------
-const viteConfigTs = `
-import path from 'node:path';
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import topLevelAwait from 'vite-plugin-top-level-await';
-
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    topLevelAwait(),
-    TanStackRouterVite(),
-    react(),
-    nodePolyfills({
-      globals: {
-        Buffer: true,
-        global: true,
-      },
-    }),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-});
-`;
-
-// --------------------
-// index.html
-// --------------------
-function indexHtml(appName: Domain.AppSchema['name']) {
-  return `<!DOCTYPE html>
-<html
-  lang="en"
-  class="h-full min-h-screen w-full p-0 m-0 dark:bg-slate-950 dark:text-white bg-white text-gray-950 font-mono"
->
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${appName}</title>
-  </head>
-  <body class="h-full w-full">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-  `;
-}
-
-// --------------------
-// .gitignore
-// --------------------
-const gitignore = `# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-`;
-
-// --------------------
-// src/
-// --------------------
-
-const indexcss = `@import "tailwindcss";`;
-
-const vitEnvDTs = `/// <reference types="vite/client" />`;
-
-const appTsx = `export default function App() {
-  return (
-    <div className="flex flex-col gap-y-8 h-full items-center justify-center py-16">
-      <h1>Vite + React + Hypergraph starter</h1>
-
-      <p>Import schema from '@/schema'</p>
-    </div>
-  )
-}
-`;
-
-const mainTsx = `import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-
-import './index.css'
-
-import App from './App.tsx'
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
-`;
 
 // --------------------
 // schema builder
 // --------------------
 function fieldToEntityString({
   name,
-  type_name,
-  nullable = false,
-  optional = false,
-  description,
+  dataType,
 }: Domain.InsertAppSchema['types'][number]['properties'][number]): string {
-  // Add JSDoc comment if description exists
-  const jsDoc = description ? `  /** ${description} */\n` : '';
-
   // Convert type to Entity type
   const entityType = (() => {
     switch (true) {
-      case type_name === 'Text':
+      case dataType === 'Text':
         return 'Type.Text';
-      case type_name === 'Number':
+      case dataType === 'Number':
         return 'Type.Number';
-      case type_name === 'Boolean':
+      case dataType === 'Boolean':
         return 'Type.Boolean';
-      case type_name === 'Date':
+      case dataType === 'Date':
         return 'Type.Date';
-      case type_name === 'Url':
+      case dataType === 'Url':
         return 'Type.Url';
-      case type_name === 'Point':
+      case dataType === 'Point':
         return 'Type.Point';
-      case type_name.startsWith('Relation'):
+      case Domain.isDataTypeRelation(dataType):
         // renders the type as `Type.Relation(Entity)`
-        return `Type.${type_name}`;
+        return `Type.${dataType}`;
       default:
         // how to handle complex types
         return 'Type.Text';
     }
   })();
-
-  let derivedEntityType = entityType;
-  if (optional) {
-    derivedEntityType = `Schema.NullishOr(${derivedEntityType})`;
-  } else if (nullable) {
-    derivedEntityType = `Schema.NullOr(${entityType})`;
-  }
-
-  return `${jsDoc}  ${name}: ${derivedEntityType}`;
+  // adds a tab before the property
+  return `  ${Utils.toCamelCase(name)}: ${entityType}`;
 }
 
 function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): string | null {
@@ -520,17 +344,74 @@ function typeDefinitionToString(type: Domain.InsertAppSchema['types'][number]): 
 
   const fieldStrings = fields.map(fieldToEntityString);
 
-  const capitalizedName = type.name.charAt(0).toUpperCase() + type.name.slice(1);
-  return `export class ${capitalizedName} extends Entity.Class<${capitalizedName}>('${capitalizedName}')({
+  const name = Utils.toPascalCase(type.name);
+  return `export class ${name} extends Entity.Class<${name}>('${name}')({
 ${fieldStrings.join(',\n')}
 }) {}`;
 }
 
 function buildSchemaFile(schema: Domain.InsertAppSchema) {
-  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';\nimport * as Schema from 'effect/Schema';`;
+  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';`;
+
   const typeDefinitions = schema.types
     .map(typeDefinitionToString)
     .filter((def) => def != null)
     .join('\n\n');
   return [importStatement, typeDefinitions].join('\n\n');
+}
+
+export function buildMappingFile(schema: Domain.InsertAppSchema) {
+  const importStatement1 = `import { Id } from '@graphprotocol/grc-20';`;
+  const importStatement2 = `import type { Mapping } from '@graphprotocol/hypergraph';`;
+
+  const typeMappings: string[] = [];
+
+  for (const type of schema.types) {
+    // Skip types without a valid knowledgeGraphId
+    if (!type.knowledgeGraphId) {
+      continue;
+    }
+
+    const properties: string[] = [];
+    const relations: string[] = [];
+
+    // Process properties and relations
+    for (const property of type.properties) {
+      // Skip properties without a valid knowledgeGraphId
+      if (!property.knowledgeGraphId) {
+        continue;
+      }
+
+      if (Domain.isDataTypeRelation(property.dataType)) {
+        // This is a relation
+        relations.push(`      ${Utils.toCamelCase(property.name)}: Id.Id('${property.knowledgeGraphId}')`);
+      } else {
+        // This is a regular property
+        properties.push(`      ${Utils.toCamelCase(property.name)}: Id.Id('${property.knowledgeGraphId}')`);
+      }
+    }
+
+    const typeName = Utils.toPascalCase(type.name);
+    const typeMapping = `  ${typeName}: {
+    typeIds: [Id.Id('${type.knowledgeGraphId}')],
+    properties: {
+${properties.join(',\n')},
+    },${
+      relations.length > 0
+        ? `
+    relations: {
+${relations.join(',\n')},
+    },`
+        : ''
+    }
+  }`;
+
+    typeMappings.push(typeMapping);
+  }
+
+  const mappingString = `export const mapping: Mapping = {
+${typeMappings.join(',\n')},
+};`;
+
+  return [importStatement1, importStatement2, '', mappingString].join('\n');
 }

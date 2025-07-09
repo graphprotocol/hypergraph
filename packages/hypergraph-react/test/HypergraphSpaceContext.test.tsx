@@ -1,6 +1,6 @@
-import { type AnyDocumentId, Repo } from '@automerge/automerge-repo';
+import { Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Entity, Type, Utils } from '@graphprotocol/hypergraph';
+import { Entity, Type, store } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 // biome-ignore lint/style/useImportType: <explanation>
@@ -34,7 +34,7 @@ describe('HypergraphSpaceContext', () => {
     name: Type.Text,
   }) {}
 
-  const spaceId = '52gTkePWSoGdXmgZF3nRU';
+  const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
 
   let repo = new Repo({});
   let wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
@@ -45,10 +45,24 @@ describe('HypergraphSpaceContext', () => {
 
   beforeEach(() => {
     repo = new Repo({});
-    const result = repo.findWithProgress(Utils.idToAutomergeId(spaceId) as AnyDocumentId);
-    const automergeDocHandle = result.handle;
-    // set it to ready to interact with the document
-    automergeDocHandle.doneLoading();
+    store.send({ type: 'setRepo', repo });
+    store.send({
+      type: 'setSpace',
+      spaceId,
+      spaceState: {
+        id: spaceId,
+        members: {},
+        invitations: {},
+        removedMembers: {},
+        inboxes: {},
+        lastEventHash: '',
+      },
+      name: 'Test Space',
+      updates: { updates: [], firstUpdateClock: 0, lastUpdateClock: 0 },
+      events: [],
+      inboxes: [],
+      keys: [],
+    });
 
     wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
       <RepoContext.Provider value={repo}>
@@ -59,6 +73,7 @@ describe('HypergraphSpaceContext', () => {
 
   describe('useCreateEntity', () => {
     it('should be able to create an entity through the useCreateEntity Hook', async () => {
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Event), { wrapper });
       const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
 
       let createdEntity: Entity.Entity<typeof Event> | null = null;
@@ -78,7 +93,8 @@ describe('HypergraphSpaceContext', () => {
         expect(queryEntityResult.current).toEqual(createdEntity);
       }
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Event), { wrapper });
+      rerender();
+
       expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
     });
   });
@@ -114,15 +130,31 @@ describe('HypergraphSpaceContext', () => {
         createdEntity = updateEntity(id, { name: 'Test User', age: 2112 });
       });
 
-      expect(createdEntity).toEqual({ id, name: 'Test User', age: 2112, type: Person.name });
+      expect(createdEntity).toEqual({
+        id,
+        name: 'Test User',
+        age: 2112,
+        type: Person.name,
+        __schema: Person,
+      });
 
       const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
-      expect(queryEntityResult.current).toEqual({ ...createdEntity, __version: '', __deleted: false });
+      expect(queryEntityResult.current).toEqual({
+        // @ts-expect-error - TODO: fix the types error
+        ...createdEntity,
+        __version: '',
+        __deleted: false,
+        __schema: Person,
+      });
 
-      const { result: queryEntitiesResult } = renderHook(() => useQueryLocal(Person), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Person), { wrapper });
+
+      rerender();
+
       expect(queryEntitiesResult.current).toEqual({
         deletedEntities: [],
-        entities: [{ ...createdEntity, __version: '', __deleted: false }],
+        // @ts-expect-error - TODO: fix the types error
+        entities: [{ ...createdEntity, __version: '', __deleted: false, __schema: Person }],
       });
     });
   });
@@ -147,6 +179,7 @@ describe('HypergraphSpaceContext', () => {
       const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryLocal(User), {
         wrapper,
       });
+      rerenderQueryEntities();
       expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
 
       const { result: deleteEntityResult } = renderHook(() => useDeleteEntity(), { wrapper });

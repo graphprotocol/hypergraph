@@ -1,12 +1,12 @@
 {
   "name": "@graphprotocol/hypergraph-react",
-  "version": "0.0.1",
+  "version": "0.0.12",
   "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
   "keywords": ["Web3", "Local-First", "Knowledge Graph", "Graph Protocol", "react"],
   "publishConfig": {
     "access": "public",
     "directory": "publish",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",
@@ -20,12 +20,12 @@
   "types": "./dist/index.d.ts",
   "sideEffects": [],
   "scripts": {
-    "build": "tsc -b tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
+    "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
     "test": "vitest"
   },
   "peerDependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
-    "react": "^19.1.0"
+    "react": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
@@ -39,12 +39,11 @@
   },
   "dependencies": {
     "@automerge/automerge": "^2.2.9",
-    "@automerge/automerge-repo": "=2.0.0-beta.5",
-    "@automerge/automerge-repo-react-hooks": "=2.0.0-beta.5",
-    "@graphprotocol/grc-20": "^0.11.5",
+    "@automerge/automerge-repo": "^2.0.6",
+    "@automerge/automerge-repo-react-hooks": "^2.0.6",
     "@noble/hashes": "^1.8.0",
     "@tanstack/react-query": "^5.75.5",
-    "effect": "^3.16.3",
+    "effect": "^3.16.12",
     "graphql-request": "^7.1.2",
     "siwe": "^3.0.0",
     "uuid": "^11.1.0",

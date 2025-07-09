@@ -1,35 +1,70 @@
-# @graphprotocol/typesync
+# @graphprotocol/hypergraph-cli
 
-CLI toolchain to view existing types, select, pick, extend to create schemas and generate a @graphprotocol/hypergraph schema.
+# Hypergraph command-line toolchain for scaffolding and working with Hypergraph applications.
 
-The `@graphprotocol/typesync` cli works by spinning up a [hono](https://hono.dev/) nodejs server that exposes a built vitejs react app. This app will let users see their created app schemas as well as search existing types to create new app schemas.
-Once the user has a schema built in the app, they can then run codegen, which will send a message to the server to codegen the built schema using the `@graphprotocol/hypergraph` framework.
+## Installing
 
-## Running Code
+```bash
+# npm
+npm i -g @graphprotocol/hypergraph-cli
 
-This template leverages [tsx](https://tsx.is) to allow execution of TypeScript files via NodeJS as if they were written in plain JavaScript.
+# yarn
+yarn global add @graphprotocol/hypergraph-cli
 
-To execute a file with `tsx`:
-
-```sh
-pnpm run dev
+# pnpm
+pnpm install -g @graphprotocol/hypergraph-cli
 ```
 
-## Operations
+## Running
 
-**Building**
-
-To build the package:
+### Setup
 
 ```sh
+pnpm install
+cd apps/server
+cp .env.example .env
+# add the PRIVY_APP_SECRET & PRIVY_APP_ID to the apps/server/.env file
+pnpm prisma migrate dev
+```
+
+### Development
+
+```sh
+pnpm build --watch
+# in another tab
+cd apps/events
+pnpm dev
+# in another tab
+cd apps/server
+pnpm dev
+# in another tab
+cd apps/typesync
 pnpm build
+# then, from anywhere in the repo, start Typesync
+hypergraph typesync
 ```
 
-**Testing**
+## Commands
 
-To test the package:
+- `typesync` -> runs the Hypergraph API and client UI application for viewing created application schemas, browsing the Knowledge Graph, and creating new application schemas.
+  - running: `hypergraph typesync`
+  - args:
+    - `port` [OPTIONAL, default = 3000] port to run the application on
+      - example: `hypergraph typesync --port 3001`
+    - `browser` [OPTION, default 'browser'] browser to open the app in, if the `--open` flag is passed
+      - example: `hypergraph typesync --open --browser firefox`
 
-```sh
-pnpm test
-```
+## Generating & running a new app
 
+1.  Start TypeSync:
+    ```bash
+    hypergraph typesync
+    ```
+2.  In the UI click **Generate App** and choose a name (e.g. `awesome-app`).  When the toast shows the path, the scaffold is ready and all dependencies are already installed.
+3.  Run it:
+    ```bash
+    cd awesome-app
+    pnpm dev
+    ```
+
+No additional `pnpm install` is necessary – the generator takes care of adding the app to the workspace and installing its dependencies for you.

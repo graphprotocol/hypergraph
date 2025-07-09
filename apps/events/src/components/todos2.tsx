@@ -1,4 +1,3 @@
-import { getSmartAccountWalletClient } from '@/lib/smart-account';
 import { cn } from '@/lib/utils';
 import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
@@ -6,8 +5,9 @@ import {
   publishOps,
   useCreateEntity,
   useDeleteEntity,
-  useHypergraphSpace,
+  useHypergraphApp,
   useQuery,
+  useSpace,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,8 +16,7 @@ import Select from 'react-select';
 import { Todo2, User } from '../schema';
 import { Spinner } from './spinner';
 import { TodosLocal } from './todo/todos-local';
-import { TodosPublicGeo } from './todo/todos-public-geo';
-import { TodosPublicKg } from './todo/todos-public-kg';
+import { TodosPublic } from './todo/todos-public';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Modal } from './ui/modal';
@@ -27,15 +26,16 @@ export const Todos2 = () => {
     data: dataTodos,
     isLoading: isLoadingTodos,
     isError: isErrorTodos,
-    preparePublish: preparePublishTodos,
-  } = useQuery(Todo2, { include: { assignees: {} } });
+    // preparePublish: preparePublishTodos,
+  } = useQuery(Todo2, { mode: 'private', include: { assignees: {} } });
   const {
     data: dataUsers,
     isLoading: isLoadingUsers,
     isError: isErrorUsers,
-    preparePublish: preparePublishUsers,
-  } = useQuery(User);
-  const space = useHypergraphSpace();
+    // preparePublish: preparePublishUsers,
+  } = useQuery(User, { mode: 'private' });
+  const { ready: spaceReady, id: spaceId } = useSpace({ mode: 'private' });
+  const { getSmartSessionClient } = useHypergraphApp();
   const createTodo = useCreateEntity(Todo2);
   const updateTodo = useUpdateEntity(Todo2);
   const createUser = useCreateEntity(User);
@@ -57,6 +57,10 @@ export const Todos2 = () => {
   }, [dataUsers]);
 
   const userOptions = dataUsers.map((user) => ({ value: user.id, label: user.name }));
+
+  if (!spaceReady) {
+    return <div>Loading space...</div>;
+  }
 
   return (
     <>
@@ -179,22 +183,22 @@ export const Todos2 = () => {
         onClick={async () => {
           try {
             setIsPreparingPublish(true);
-            const usersResult = await preparePublishUsers();
-            console.log('users ops & diff', usersResult);
-            const todosResult = await preparePublishTodos();
-            console.log('todos ops & diff', todosResult);
+            // const usersResult = await preparePublishUsers();
+            // console.log('users ops & diff', usersResult);
+            // const todosResult = await preparePublishTodos();
+            // console.log('todos ops & diff', todosResult);
 
-            if (todosResult && usersResult) {
-              setPublishData({
-                newEntities: [...todosResult.newEntities, ...usersResult.newEntities],
-                deletedEntities: [...todosResult.deletedEntities, ...usersResult.deletedEntities],
-                updatedEntities: [...todosResult.updatedEntities, ...usersResult.updatedEntities],
-              });
-              setIsPublishDiffModalOpen(true);
-            } else {
-              console.error('preparing publishing error', todosResult, usersResult);
-              throw new Error('Failed to prepare the publishing operations');
-            }
+            // if (todosResult && usersResult) {
+            //   setPublishData({
+            //     newEntities: [...todosResult.newEntities, ...usersResult.newEntities],
+            //     deletedEntities: [...todosResult.deletedEntities, ...usersResult.deletedEntities],
+            //     updatedEntities: [...todosResult.updatedEntities, ...usersResult.updatedEntities],
+            //   });
+            //   setIsPublishDiffModalOpen(true);
+            // } else {
+            //   console.error('preparing publishing error', todosResult, usersResult);
+            //   throw new Error('Failed to prepare the publishing operations');
+            // }
           } catch (error) {
             console.error('preparing publishing error', error);
             alert('Failed to prepare the publishing operations');
@@ -217,9 +221,9 @@ export const Todos2 = () => {
           <Button
             onClick={async () => {
               try {
-                const smartAccountWalletClient = await getSmartAccountWalletClient();
-                if (!smartAccountWalletClient) {
-                  throw new Error('Missing smartAccountWalletClient');
+                const smartSessionClient = await getSmartSessionClient();
+                if (!smartSessionClient) {
+                  throw new Error('Missing smartSessionClient');
                 }
                 if (publishData) {
                   setIsPublishing(true);
@@ -230,16 +234,17 @@ export const Todos2 = () => {
                   ].flat();
                   const publishOpsResult = await publishOps({
                     ops,
-                    walletClient: smartAccountWalletClient,
-                    space,
+                    walletClient: smartSessionClient,
+                    space: spaceId,
                     name: 'Update users and todos',
                   });
                   console.log('publishOpsResult', publishOpsResult);
                   setIsPublishDiffModalOpen(false);
                   setPublishData(null);
                   setTimeout(() => {
-                    queryClient.invalidateQueries({ queryKey: [`entities:${Todo2.name}`] });
-                    queryClient.invalidateQueries({ queryKey: [`entities:geo:${Todo2.name}`] });
+                    queryClient.invalidateQueries({
+                      queryKey: ['hypergraph-public-entities', Todo2.name],
+                    });
                   }, 1000);
                 }
               } catch (error) {
@@ -262,9 +267,7 @@ export const Todos2 = () => {
 
       <TodosLocal />
 
-      <TodosPublicGeo />
-
-      <TodosPublicKg />
+      <TodosPublic />
     </>
   );
 };

@@ -239,7 +239,7 @@ export function findMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?
@@ -256,13 +256,13 @@ export function findMany<const S extends AnyNoContext>(
 
   const evaluateFilter = <T>(fieldFilter: EntityFieldFilter<T>, fieldValue: T): boolean => {
     // Handle NOT operator
-    if ('NOT' in fieldFilter && fieldFilter.NOT) {
-      return !evaluateFilter(fieldFilter.NOT, fieldValue);
+    if ('not' in fieldFilter && fieldFilter.not) {
+      return !evaluateFilter(fieldFilter.not, fieldValue);
     }
 
     // Handle OR operator
-    if ('OR' in fieldFilter) {
-      const orFilters = fieldFilter.OR;
+    if ('or' in fieldFilter) {
+      const orFilters = fieldFilter.or;
       if (Array.isArray(orFilters)) {
         return orFilters.some((orFilter) => evaluateFilter(orFilter as EntityFieldFilter<T>, fieldValue));
       }
@@ -337,13 +337,13 @@ export function findMany<const S extends AnyNoContext>(
 
   const evaluateEntityFilter = (entityFilter: EntityFilter<Schema.Schema.Type<S>>, entity: Entity<S>): boolean => {
     // handle top-level NOT operator
-    if ('NOT' in entityFilter && entityFilter.NOT) {
-      return !evaluateCrossFieldFilter(entityFilter.NOT, entity);
+    if ('not' in entityFilter && entityFilter.not) {
+      return !evaluateCrossFieldFilter(entityFilter.not, entity);
     }
 
     // handle top-level OR operator
-    if ('OR' in entityFilter && Array.isArray(entityFilter.OR)) {
-      return entityFilter.OR.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
+    if ('or' in entityFilter && Array.isArray(entityFilter.or)) {
+      return entityFilter.or.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
     }
 
     // evaluate regular field filters
@@ -358,9 +358,13 @@ export function findMany<const S extends AnyNoContext>(
         const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
         if (filter) {
           if (evaluateEntityFilter(filter, decoded)) {
+            // injecting the schema to the entity to be able to access it in the preparePublish function
+            decoded.__schema = type;
             filtered.push(decoded);
           }
         } else {
+          // injecting the schema to the entity to be able to access it in the preparePublish function
+          decoded.__schema = type;
           filtered.push(decoded);
         }
       } catch (error) {
@@ -374,15 +378,17 @@ export function findMany<const S extends AnyNoContext>(
 
 const stableEmptyArray: Array<unknown> = [];
 
+export type FindManySubscription<S extends AnyNoContext> = {
+  subscribe: (callback: () => void) => () => void;
+  getEntities: () => Readonly<Array<Entity<S>>>;
+};
+
 export function subscribeToFindMany<const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } | undefined,
-): {
-  subscribe: (callback: () => void) => () => void;
-  getEntities: () => Readonly<Array<Entity<S>>>;
-} {
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
+): FindManySubscription<S> {
   const queryKey = filter ? canonicalize(filter) : 'all';
   const decode = Schema.decodeUnknownSync(type);
   // TODO: what's the right way to get the name of the type?

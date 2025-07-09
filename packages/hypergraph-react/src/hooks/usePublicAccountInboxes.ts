@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useHypergraphApp } from '../HypergraphAppContext.js';
 
-export function usePublicAccountInboxes(accountId: string) {
+export function usePublicAccountInboxes(accountAddress: string) {
   const { listPublicAccountInboxes } = useHypergraphApp();
   const [publicInboxes, setPublicInboxes] = useState<Array<{ inboxId: string }>>([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +10,7 @@ export function usePublicAccountInboxes(accountId: string) {
   useEffect(() => {
     async function loadInboxes() {
       try {
-        const inboxes = await listPublicAccountInboxes({ accountId });
+        const inboxes = await listPublicAccountInboxes({ accountAddress });
         setPublicInboxes(inboxes.map((inbox: { inboxId: string }) => ({ inboxId: inbox.inboxId })));
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to load public inboxes'));
@@ -19,7 +19,7 @@ export function usePublicAccountInboxes(accountId: string) {
       }
     }
     loadInboxes();
-  }, [accountId, listPublicAccountInboxes]);
+  }, [accountAddress, listPublicAccountInboxes]);
 
   return { publicInboxes, loading, error };
 }

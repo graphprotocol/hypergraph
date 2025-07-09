@@ -18,12 +18,36 @@ const sidebars = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   docs: [
     { type: 'doc', id: 'quickstart', label: '🚀 Quickstart' },
+    // { type: 'doc', id: 'faucet', label: '🪙 Testnet Faucet' },
     { type: 'doc', id: 'key-features', label: '🌟 Key Features' },
     { type: 'doc', id: 'core-concepts', label: '🧠 Core Concepts' },
-    { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
+    { type: 'doc', id: 'providers', label: '🔗 Providers' },
+    { type: 'doc', id: 'authentication', label: '🔗 Authentication' },
+    { type: 'doc', id: 'spaces', label: '🏠 Spaces' },
+    { type: 'doc', id: 'schema', label: '🔗 Schema' },
+    { type: 'doc', id: 'writing-private-data', label: '✍️ Writing Private Data' },
+    { type: 'doc', id: 'query-private-data', label: '🔍 Query Private Data' },
+    { type: 'doc', id: 'mapping', label: '🔗 Mapping' },
+    { type: 'doc', id: 'publishing-public-data', label: '✍️ Publishing Public Data' },
+    { type: 'doc', id: 'query-public-data', label: '🔍 Query Public Data' },
+    { type: 'doc', id: 'filtering-query-results', label: '🔍 Filtering Query Results' },
+    { type: 'doc', id: 'space-invitations', label: '🔗 Space Invitations' },
+    { type: 'doc', id: 'inboxes', label: '🔍 Inboxes' },
+    // { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
     { type: 'doc', id: 'troubleshooting', label: '🛠️ Troubleshooting' },
     { type: 'doc', id: 'faq', label: '❓ FAQ' },
-    { type: 'doc', id: 'legacy/README', label: '🗃️ Legacy Documentation' },
+    // { type: 'doc', id: 'legacy/README', label: '🗃️ Legacy Documentation' },
+    {
+      type: 'category',
+      label: 'Advanced',
+      items: [
+        {
+          type: 'doc',
+          id: 'advanced/running-connect-and-sync-server-locally',
+          label: 'Running Geo Connect and Sync Server Locally',
+        },
+      ],
+    },
   ],
 
   // But you can create a sidebar manually

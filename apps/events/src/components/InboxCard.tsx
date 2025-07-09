@@ -2,13 +2,13 @@ import { useExternalAccountInbox } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 
 interface InboxCardProps {
-  accountId: string;
+  accountAddress: string;
   inboxId: string;
 }
 
-export function InboxCard({ accountId, inboxId }: InboxCardProps) {
+export function InboxCard({ accountAddress, inboxId }: InboxCardProps) {
   const [message, setMessage] = useState('');
-  const { loading, error, sendMessage, isPublic, authPolicy } = useExternalAccountInbox(accountId, inboxId);
+  const { loading, error, sendMessage, isPublic, authPolicy } = useExternalAccountInbox(accountAddress, inboxId);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;

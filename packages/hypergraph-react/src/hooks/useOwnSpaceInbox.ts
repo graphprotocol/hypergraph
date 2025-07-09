@@ -102,10 +102,10 @@ export function useOwnSpaceInbox({
         setLoading(true);
         setError(null);
 
-        let authorAccountId: string | null = null;
+        let authorAccountAddress: string | null = null;
         let signaturePrivateKey: string | null = null;
-        if (identity?.accountId && ownInbox.authPolicy !== 'anonymous') {
-          authorAccountId = identity.accountId;
+        if (identity?.address && ownInbox.authPolicy !== 'anonymous') {
+          authorAccountAddress = identity.address;
           signaturePrivateKey = identity.signaturePrivateKey;
         } else if (ownInbox.authPolicy === 'requires_auth') {
           throw new Error('Cannot send message to a required auth inbox without an identity');
@@ -117,7 +117,7 @@ export function useOwnSpaceInbox({
           inboxId: realInboxId,
           encryptionPublicKey: ownInbox.encryptionPublicKey,
           signaturePrivateKey,
-          authorAccountId,
+          authorAccountAddress,
         });
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to send message'));

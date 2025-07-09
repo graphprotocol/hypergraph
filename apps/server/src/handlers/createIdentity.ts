@@ -1,7 +1,8 @@
 import { prisma } from '../prisma.js';
 
 type Params = {
-  accountId: string;
+  signerAddress: string;
+  accountAddress: string;
   ciphertext: string;
   nonce: string;
   signaturePublicKey: string;
@@ -11,7 +12,8 @@ type Params = {
 };
 
 export const createIdentity = async ({
-  accountId,
+  signerAddress,
+  accountAddress,
   ciphertext,
   nonce,
   signaturePublicKey,
@@ -21,24 +23,26 @@ export const createIdentity = async ({
 }: Params) => {
   // TODO: eventually we may support multiple identities
   // for the same account, for now we check there are
-  // no other identities for the same accountId
-  const existingIdentity = await prisma.identity.findFirst({
+  // no other identities for the same accountAddress
+  const existingIdentity = await prisma.account.findFirst({
     where: {
-      accountId,
+      address: accountAddress,
     },
   });
   if (existingIdentity) {
-    throw new Error(`Identity already exists for account ${accountId}`);
+    throw new Error(`Identity already exists for account ${accountAddress}`);
   }
-  return await prisma.identity.create({
+  return await prisma.account.create({
     data: {
-      accountId,
-      ciphertext,
-      nonce,
-      signaturePublicKey,
-      encryptionPublicKey,
-      accountProof,
-      keyProof,
+      connectSignerAddress: signerAddress,
+      address: accountAddress,
+      connectAccountProof: accountProof,
+      connectKeyProof: keyProof,
+      connectSignaturePublicKey: signaturePublicKey,
+      connectEncryptionPublicKey: encryptionPublicKey,
+      connectCiphertext: ciphertext,
+      connectNonce: nonce,
+      connectAddress: accountAddress,
     },
   });
 };

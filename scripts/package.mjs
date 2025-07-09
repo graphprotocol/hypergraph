@@ -19,6 +19,10 @@ if (Fs.existsSync(`${pkg}/LICENSE`)) {
 
 // TODO: Generate this a bit smarter.
 const pkgJson = JSON.parse(Fs.readFileSync(`${pkg}/package.json`, 'utf-8'));
+const peerDependencies = pkgJson.peerDependencies;
+if (peerDependencies?.['@graphprotocol/hypergraph']) {
+  peerDependencies['@graphprotocol/hypergraph'] = '*';
+}
 const publishPkgJson = {
   name: pkgJson.name,
   version: pkgJson.version,
@@ -31,12 +35,14 @@ const publishPkgJson = {
   main: pkgJson.main,
   module: pkgJson.module,
   types: pkgJson.types,
+  exports: pkgJson.exports,
   sideEffects: pkgJson.sideEffects,
   exports: pkgJson.exports,
   peerDependencies: pkgJson.peerDependencies,
   dependencies: pkgJson.dependencies,
+  ...(pkgJson.bin ? { bin: pkgJson.bin } : {}),
   publishConfig: {
-    provenance: true,
+    provenance: false,
   },
 };
 

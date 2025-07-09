@@ -1,14 +1,13 @@
 'use client';
 
-import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { GithubLogo } from '@phosphor-icons/react';
+import { RectangleGroupIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { GithubLogoIcon } from '@phosphor-icons/react';
 import type { QueryClient } from '@tanstack/react-query';
 import { Link, Outlet, createRootRouteWithContext } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import type { GraphQLClient } from 'graphql-request';
 import { useAtom } from 'jotai';
 
-import { AppSpacesNavbar } from '../Components/AppsNavbar.js';
 import { CmdPalette, cmdPaletteOpenAtom } from '../Components/CmdPalette.js';
 import { appsQueryOptions } from '../hooks/useAppQuery.js';
 import { useOSQuery } from '../hooks/useOSQuery.js';
@@ -28,25 +27,44 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function Layout() {
   const { data: os } = useOSQuery();
+
   const [, setCmdPaletteOpen] = useAtom(cmdPaletteOpenAtom);
 
   return (
     <div>
-      <div className="fixed inset-y-0 z-50 flex w-72 flex-col h-full bg-white dark:bg-slate-900">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto pb-4 h-full">
-          <Link
-            to="/"
-            className="flex h-16 shrink-0 items-center justify-center text-xl border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 cursor-pointer"
-          >
-            Hypergraph TypeSync
-          </Link>
-          <AppSpacesNavbar />
-        </div>
-      </div>
-
-      <div className="pl-72">
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-end gap-x-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-transparent shadow-sm px-4">
-          <div className="flex flex-1 items-center justify-end self-end w-fit gap-x-6 h-16">
+      <div>
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between gap-x-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm px-4">
+          <div className="flex w-fit items-center h-16">
+            <Link
+              to="/"
+              className="flex h-16 shrink-0 items-center justify-center text-xl border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 cursor-pointer"
+            >
+              Hypergraph TypeSync
+            </Link>
+          </div>
+          <nav className="flex flex-1 items-center h-16 shrink-0 space-x-3 2xl:space-x-4">
+            <Link
+              to="/"
+              activeOptions={{ exact: true }}
+              activeProps={{ className: 'bg-indigo-500 text-white' }}
+              inactiveProps={{ className: 'bg-white dark:bg-slate-950 text-gray-950 dark:text-white' }}
+              className="hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md px-3 py-2 text-sm font-medium inline-flex items-center justify-center gap-x-1"
+            >
+              <RectangleGroupIcon className="size-4 -mt-0.5" aria-hidden="true" />
+              Dashboard
+            </Link>
+            <Link
+              to="/apps/create"
+              activeOptions={{ exact: true }}
+              activeProps={{ className: 'bg-indigo-500 text-white' }}
+              inactiveProps={{ className: 'bg-white dark:bg-slate-950 text-gray-950 dark:text-white' }}
+              className="hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md px-3 py-2 text-sm font-medium inline-flex items-center justify-center gap-x-1"
+            >
+              <PlusIcon className="size-4 -mt-0.5" aria-hidden="true" />
+              New App
+            </Link>
+          </nav>
+          <div className="flex items-center justify-end self-end w-fit gap-x-6 h-16">
             <button
               type="button"
               className="min-w-fit w-72 inline-flex items-center justify-between cursor-pointer rounded-4xl text-gray-900 dark:text-gray-300 shadow-sm gap-x-2 pl-2 pr-3 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-slate-800 dark:hover:bg-slate-700"
@@ -68,7 +86,7 @@ function Layout() {
                 rel="noreferrer"
                 className="p-2 w-fit h-fit inline-flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white"
               >
-                <GithubLogo size={16} />
+                <GithubLogoIcon size={16} />
               </a>
             </div>
           </div>
@@ -81,7 +99,6 @@ function Layout() {
         </main>
       </div>
       <CmdPalette />
-      <TanStackRouterDevtools />
     </div>
   );
 }
