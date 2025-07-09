@@ -35,7 +35,6 @@ const publishPkgJson = {
   main: pkgJson.main,
   module: pkgJson.module,
   types: pkgJson.types,
-  exports: pkgJson.exports,
   sideEffects: pkgJson.sideEffects,
   exports: pkgJson.exports,
   peerDependencies: pkgJson.peerDependencies,

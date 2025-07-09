@@ -14,7 +14,7 @@ const SqlLive = SqliteClient.layer({
 
 const MigratorLive = Migrator.layer({
   loader: fromFileSystem(fileURLToPath(new URL('migrations', import.meta.url))),
-}).pipe(Layer.provide(SqlLive))
+}).pipe(Layer.provide(SqlLive));
 
 const DatabaseLive = Layer.mergeAll(SqlLive, MigratorLive).pipe(Layer.provide(NodeContext.layer));
 
