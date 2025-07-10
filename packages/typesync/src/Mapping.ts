@@ -82,7 +82,7 @@ export type SchemaDataTypeRelation = typeof SchemaDataTypeRelation.Type;
 /**
  * @since 0.0.1
  */
-export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point', 'Url');
+export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Checkbox', 'Date', 'Point', 'Url');
 /**
  * @since 0.0.1
  */
@@ -384,7 +384,7 @@ export async function generateMapping(input: Schema): Promise<Mapping> {
  */
 export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): CreatePropertyParams['dataType'] {
   switch (true) {
-    case dataType === 'Boolean': {
+    case dataType === 'Checkbox': {
       return 'CHECKBOX';
     }
     case dataType === 'Date': {
