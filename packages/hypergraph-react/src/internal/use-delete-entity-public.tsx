@@ -37,10 +37,14 @@ export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { 
 
   return async ({ id, walletClient }: { id: string; walletClient: Connect.SmartSessionClient }) => {
     try {
-      const result = await request<EntityToDeleteQueryResult>(Graph.TESTNET_API_ORIGIN, deleteEntityQueryDocument, {
-        spaceId: space,
-        entityId: id,
-      });
+      const result = await request<EntityToDeleteQueryResult>(
+        `${Graph.TESTNET_API_ORIGIN}/graphql`,
+        deleteEntityQueryDocument,
+        {
+          spaceId: space,
+          entityId: id,
+        },
+      );
       if (!result) {
         return { success: false, error: 'Entity not found' };
       }

@@ -44,7 +44,7 @@ type DeleteEntityResult = {
 };
 
 export const generateDeleteOps = async ({ id, space }: { id: string; space: string }) => {
-  const result = await request<DeleteEntityResult>(Graph.TESTNET_API_ORIGIN, deleteEntityQueryDocument, {
+  const result = await request<DeleteEntityResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, deleteEntityQueryDocument, {
     entityId: id,
   });
   if (result.entity === null) {
