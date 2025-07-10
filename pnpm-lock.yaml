@@ -21,8 +21,8 @@ importers:
         specifier: ^2.29.5
         version: 2.29.5
       '@graphprotocol/grc-20':
-        specifier: ^0.21.4
-        version: 0.21.4(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       babel-plugin-annotate-pure-calls:
         specifier: ^0.5.0
         version: 0.5.0(@babel/core@7.28.0)
@@ -2767,8 +2767,8 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@graphprotocol/grc-20@0.21.4':
-    resolution: {integrity: sha512-uc8gRqvGy+ZRm+DPvBmmEZ4hjsuTFU9VKX05oEGxU7nCRO34KFIHLm4+fShWZMiepOBV2UtDD+PMY7Sb+WH/yg==}
+  '@graphprotocol/grc-20@0.21.6':
+    resolution: {integrity: sha512-xN8kejQfRdeC5LsantOD9aajwR+/JHnsK5IUEE7rMJbbHGeRTzAhWGike8k1+nIPRKooOyrocgly24KXxChcgw==}
 
   '@graphql-codegen/add@5.0.3':
     resolution: {integrity: sha512-SxXPmramkth8XtBlAHu4H4jYcYXM/o3p01+psU+0NADQowA8jtYkK6MW5rV6T+CxkEaNZItfSmZRPgIuypcqnA==}
@@ -15288,7 +15288,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@graphprotocol/grc-20@0.21.4(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
+  '@graphprotocol/grc-20@0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
       '@changesets/cli': 2.29.5

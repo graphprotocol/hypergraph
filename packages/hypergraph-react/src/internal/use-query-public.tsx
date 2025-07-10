@@ -1,3 +1,4 @@
+import { Graph } from '@graphprotocol/grc-20';
 import { type Entity, type Mapping, type MappingEntry, Type, store } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
@@ -6,7 +7,6 @@ import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
-import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocumentLevel0 = gql`
@@ -344,7 +344,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
         queryDocument = entitiesQueryDocumentLevel2;
       }
 
-      const result = await request<EntityQueryResult>(GEO_API_TESTNET_ENDPOINT, queryDocument, {
+      const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
         spaceId: space,
         typeIds: mappingEntry?.typeIds || [],
         relationTypeIdsLevel1,

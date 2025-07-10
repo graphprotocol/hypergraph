@@ -1,6 +1,5 @@
-import type { Op } from '@graphprotocol/grc-20';
+import { Graph, type Op } from '@graphprotocol/grc-20';
 import { gql, request } from 'graphql-request';
-import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 
 const deleteEntityQueryDocument = gql`
 query entity($entityId: String!) {
@@ -45,7 +44,7 @@ type DeleteEntityResult = {
 };
 
 export const generateDeleteOps = async ({ id, space }: { id: string; space: string }) => {
-  const result = await request<DeleteEntityResult>(GEO_API_TESTNET_ENDPOINT, deleteEntityQueryDocument, {
+  const result = await request<DeleteEntityResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, deleteEntityQueryDocument, {
     entityId: id,
   });
   if (result.entity === null) {

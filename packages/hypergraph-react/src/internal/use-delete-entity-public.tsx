@@ -3,7 +3,6 @@ import type { Connect, Entity } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
 import request, { gql } from 'graphql-request';
 import { publishOps } from '../publish-ops.js';
-import { GEO_API_TESTNET_ENDPOINT } from './constants.js';
 
 type DeleteEntityPublicParams = {
   space: string;
@@ -38,10 +37,14 @@ export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { 
 
   return async ({ id, walletClient }: { id: string; walletClient: Connect.SmartSessionClient }) => {
     try {
-      const result = await request<EntityToDeleteQueryResult>(GEO_API_TESTNET_ENDPOINT, deleteEntityQueryDocument, {
-        spaceId: space,
-        entityId: id,
-      });
+      const result = await request<EntityToDeleteQueryResult>(
+        `${Graph.TESTNET_API_ORIGIN}/graphql`,
+        deleteEntityQueryDocument,
+        {
+          spaceId: space,
+          entityId: id,
+        },
+      );
       if (!result) {
         return { success: false, error: 'Entity not found' };
       }

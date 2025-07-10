@@ -9,7 +9,6 @@ import {
 import type { Entity } from '@graphprotocol/hypergraph';
 import { Type, store } from '@graphprotocol/hypergraph';
 import request, { gql } from 'graphql-request';
-import { GEO_API_TESTNET_ENDPOINT } from './internal/constants.js';
 
 export type PreparePublishParams<S extends Entity.AnyNoContext> = {
   entity: Entity.Entity<S>;
@@ -46,10 +45,14 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
   entity,
   publicSpace,
 }: PreparePublishParams<S>) => {
-  const data = await request<EntityToPublishQueryResult>(GEO_API_TESTNET_ENDPOINT, entityToPublishQueryDocument, {
-    entityId: entity.id,
-    spaceId: publicSpace,
-  });
+  const data = await request<EntityToPublishQueryResult>(
+    `${Graph.TESTNET_API_ORIGIN}/graphql`,
+    entityToPublishQueryDocument,
+    {
+      entityId: entity.id,
+      spaceId: publicSpace,
+    },
+  );
 
   const mapping = store.getSnapshot().context.mapping;
   const typeName = entity.type;

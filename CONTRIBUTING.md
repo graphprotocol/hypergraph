@@ -8,6 +8,8 @@ pnpm up --interactive --latest -r
 
 ## Publishing
 
+Update the version in the `package.json` files (hypergraph, hypergraph-react, typesync)
+
 ```sh
 pnpm build
 # publish hypergraph
