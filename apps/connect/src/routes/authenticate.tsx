@@ -3,6 +3,7 @@ import { SpacesCard } from '@/components/SpacesCard';
 import { Loading } from '@/components/ui/Loading';
 import { usePrivateSpaces } from '@/hooks/use-private-spaces';
 import { usePublicSpaces } from '@/hooks/use-public-spaces';
+import { Graph } from '@graphprotocol/grc-20';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
@@ -145,7 +146,7 @@ function AuthenticateComponent() {
     isPending: publicSpacesPending,
     error: publicSpacesError,
     data: publicSpacesData,
-  } = usePublicSpaces(import.meta.env.VITE_HYPERGRAPH_API_URL);
+  } = usePublicSpaces(`${Graph.TESTNET_API_ORIGIN}/graphql`);
 
   const selectedPrivateSpaces = new Set<string>();
   const selectedPublicSpaces = new Set<string>();

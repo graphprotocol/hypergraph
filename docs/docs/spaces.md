@@ -12,7 +12,7 @@ Public spaces are spaces that are open to the public. They are visible to anyone
 
 Indexer API that indexes all the public spaces and the content in it!
 
-[Railway Graphql API](https://v2-postgraphile.up.railway.app/graphql)
+[Railway Graphql API](https://api-testnet.geobrowser.io/graphql)
 
 ## Private Spaces
 
