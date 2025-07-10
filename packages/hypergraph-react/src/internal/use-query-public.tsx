@@ -344,7 +344,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
         queryDocument = entitiesQueryDocumentLevel2;
       }
 
-      const result = await request<EntityQueryResult>(Graph.TESTNET_API_ORIGIN, queryDocument, {
+      const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
         spaceId: space,
         typeIds: mappingEntry?.typeIds || [],
         relationTypeIdsLevel1,

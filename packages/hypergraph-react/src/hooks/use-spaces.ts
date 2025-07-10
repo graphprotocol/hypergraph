@@ -33,9 +33,13 @@ export const useSpaces = (params: { mode: 'public' | 'private' }) => {
   const publicResult = useQuery({
     queryKey: ['hypergraph-spaces', params.mode],
     queryFn: async () => {
-      const result = await request<PublicSpacesQueryResult>(Graph.TESTNET_API_ORIGIN, publicSpacesQueryDocument, {
-        accountAddress,
-      });
+      const result = await request<PublicSpacesQueryResult>(
+        `${Graph.TESTNET_API_ORIGIN}/graphql`,
+        publicSpacesQueryDocument,
+        {
+          accountAddress,
+        },
+      );
       return result?.spaces
         ? result.spaces.map((space) => ({
             id: space.id,

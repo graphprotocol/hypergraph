@@ -45,10 +45,14 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
   entity,
   publicSpace,
 }: PreparePublishParams<S>) => {
-  const data = await request<EntityToPublishQueryResult>(Graph.TESTNET_API_ORIGIN, entityToPublishQueryDocument, {
-    entityId: entity.id,
-    spaceId: publicSpace,
-  });
+  const data = await request<EntityToPublishQueryResult>(
+    `${Graph.TESTNET_API_ORIGIN}/graphql`,
+    entityToPublishQueryDocument,
+    {
+      entityId: entity.id,
+      spaceId: publicSpace,
+    },
+  );
 
   const mapping = store.getSnapshot().context.mapping;
   const typeName = entity.type;
