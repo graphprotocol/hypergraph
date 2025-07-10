@@ -21,8 +21,8 @@ importers:
         specifier: ^2.29.3
         version: 2.29.3
       '@graphprotocol/grc-20':
-        specifier: ^0.21.3
-        version: 0.21.3(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       babel-plugin-annotate-pure-calls:
         specifier: ^0.5.0
         version: 0.5.0(@babel/core@7.27.1)
@@ -45,8 +45,8 @@ importers:
         specifier: 1.0.0-beta.0
         version: 1.0.0-beta.0(@types/react@19.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@graphprotocol/grc-20':
-        specifier: ^0.21.2
-        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph':
         specifier: workspace:*
         version: link:../../packages/hypergraph/publish
@@ -136,8 +136,8 @@ importers:
   apps/events:
     dependencies:
       '@graphprotocol/grc-20':
-        specifier: ^0.21.2
-        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph':
         specifier: workspace:*
         version: link:../../packages/hypergraph/publish
@@ -251,8 +251,8 @@ importers:
   apps/next-example:
     dependencies:
       '@graphprotocol/grc-20':
-        specifier: ^0.21.2
-        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph':
         specifier: workspace:*
         version: link:../../packages/hypergraph/publish
@@ -446,8 +446,8 @@ importers:
         specifier: ^0.23.10
         version: 0.23.10(effect@3.16.10)(vitest@3.1.3(@types/debug@4.1.12)(@types/node@24.0.8)(jiti@2.4.2)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.20.3)(yaml@2.7.0))
       '@graphprotocol/grc-20':
-        specifier: ^0.21.3
-        version: 0.21.3(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphql-codegen/cli':
         specifier: ^5.0.7
         version: 5.0.7(@babel/core@7.27.7)(@parcel/watcher@2.5.1)(@types/node@24.0.8)(bufferutil@4.0.9)(encoding@0.1.13)(enquirer@2.4.1)(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -604,8 +604,8 @@ importers:
         specifier: ^0.51.1
         version: 0.51.1(@effect/platform@0.87.1(effect@3.16.10))(effect@3.16.10)
       '@graphprotocol/grc-20':
-        specifier: ^0.21.2
-        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/ciphers':
         specifier: ^1.3.0
         version: 1.3.0
@@ -663,8 +663,8 @@ importers:
         specifier: ^2.0.6
         version: 2.0.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@graphprotocol/grc-20':
-        specifier: ^0.21.2
-        version: 0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.21.6
+        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/hashes':
         specifier: ^1.8.0
         version: 1.8.0
@@ -2776,11 +2776,8 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@graphprotocol/grc-20@0.21.2':
-    resolution: {integrity: sha512-o5MDRZTKn9txLJowVS7lW5rhc+hLtMbBuAyPnLVw40q7WMQjiMn84WoGNTx17+qGfHk2v2ITbvNX/C8qoV2HQg==}
-
-  '@graphprotocol/grc-20@0.21.3':
-    resolution: {integrity: sha512-g9N25MRtJEher3OClvF2DV2OcnxaPmd0AhxhML6R++GMB7IjcSKX+At6flWCFRBbSphYN8VQsYlHDBzFoXA8zA==}
+  '@graphprotocol/grc-20@0.21.6':
+    resolution: {integrity: sha512-xN8kejQfRdeC5LsantOD9aajwR+/JHnsK5IUEE7rMJbbHGeRTzAhWGike8k1+nIPRKooOyrocgly24KXxChcgw==}
 
   '@graphql-codegen/add@5.0.3':
     resolution: {integrity: sha512-SxXPmramkth8XtBlAHu4H4jYcYXM/o3p01+psU+0NADQowA8jtYkK6MW5rV6T+CxkEaNZItfSmZRPgIuypcqnA==}
@@ -15377,28 +15374,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@graphprotocol/grc-20@0.21.2(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
-    dependencies:
-      '@bufbuild/protobuf': 1.10.1
-      '@changesets/cli': 2.29.3
-      effect: 3.16.10
-      ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      fflate: 0.8.2
-      fractional-indexing-jittered: 1.0.0
-      graphql-request: 7.2.0(graphql@16.11.0)
-      image-size: 2.0.2
-      permissionless: 0.2.47(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(viem@2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))
-      uuid: 11.1.0
-      viem: 2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
-    transitivePeerDependencies:
-      - bufferutil
-      - graphql
-      - ox
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@graphprotocol/grc-20@0.21.3(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
+  '@graphprotocol/grc-20@0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
       '@changesets/cli': 2.29.3

@@ -1,6 +1,6 @@
+import { Graph } from '@graphprotocol/grc-20';
 import { useQuery } from '@tanstack/react-query';
 import { gql, request } from 'graphql-request';
-import { GEO_API_TESTNET_ENDPOINT } from '../internal/constants.js';
 
 const spaceQueryDocument = gql`
 query Space($spaceId: UUID!) {
@@ -24,7 +24,7 @@ export const usePublicSpace = ({ spaceId, enabled }: { spaceId: string; enabled:
   const result = useQuery({
     queryKey: ['hypergraph-public-space', spaceId],
     queryFn: async () => {
-      const result = await request<SpaceQueryResult>(GEO_API_TESTNET_ENDPOINT, spaceQueryDocument, {
+      const result = await request<SpaceQueryResult>(Graph.TESTNET_API_ORIGIN, spaceQueryDocument, {
         spaceId,
       });
       return result?.space?.page
