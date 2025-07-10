@@ -130,11 +130,11 @@ export class InvalidInputError extends Data.TaggedError('/typesync/errors/Invali
 /*  Windows-safe migration loader                                      */
 /* ------------------------------------------------------------------ */
 
-import { pathToFileURL } from "node:url"
-import { FileSystem } from "@effect/platform/FileSystem"
-import * as Effect from "effect/Effect"
-import type { Loader, ResolvedMigration } from "@effect/sql/Migrator"
-import { MigrationError } from "@effect/sql/Migrator"
+import { pathToFileURL } from 'node:url';
+import { FileSystem } from '@effect/platform/FileSystem';
+import type { Loader, ResolvedMigration } from '@effect/sql/Migrator';
+import { MigrationError } from '@effect/sql/Migrator';
+import * as Effect from 'effect/Effect';
 
 /**
  * Patched version of
@@ -143,36 +143,29 @@ import { MigrationError } from "@effect/sql/Migrator"
  * The only difference is that the dynamic `import()` receives a proper
  * `file://` URL, so it works on Windows as well as on Linux / macOS.
  */
-export const fromFileSystem = (
-  dir: string,
-): Loader<FileSystem> =>
+export const fromFileSystem = (dir: string): Loader<FileSystem> =>
   FileSystem.pipe(
     /* read directory ----------------------------------------------------- */
     Effect.flatMap((FS) => FS.readDirectory(dir)),
-    Effect.mapError(
-      (e) => new MigrationError({ reason: "failed", message: e.message }),
-    ),
+    Effect.mapError((e) => new MigrationError({ reason: 'failed', message: e.message })),
     /* build migration list ---------------------------------------------- */
-    Effect.map((files): ReadonlyArray<ResolvedMigration> =>
-      files
-        .flatMap((file) => {
-          const m =
-            file.match(/^(?:.*[\\/])?(\d+)_([^.]+)\.(js|ts)$/) // win/posix
-          if (!m) return []
-          const [basename, id, name] = m
-          return [
-            [
-              Number(id),
-              name,
-              Effect.promise(() =>
-                import(
-                  /* @vite-ignore */ /* webpackIgnore: true */
-                  pathToFileURL(`${dir}/${basename}`).href,
+    Effect.map(
+      (files): ReadonlyArray<ResolvedMigration> =>
+        files
+          .flatMap((file) => {
+            const m = file.match(/^(?:.*[\\/])?(\d+)_([^.]+)\.(js|ts)$/); // win/posix
+            if (!m) return [];
+            const [basename, id, name] = m;
+            return [
+              [
+                Number(id),
+                name,
+                Effect.promise(
+                  () => import(/* @vite-ignore */ /* webpackIgnore: true */ pathToFileURL(`${dir}/${basename}`).href),
                 ),
-              ),
-            ],
-          ] as const
-        })
-        .sort(([a], [b]) => a - b),
+              ],
+            ] as const;
+          })
+          .sort(([a], [b]) => a - b),
     ),
-  )
+  );
