@@ -57,8 +57,8 @@ describe('Mapping', () => {
   });
 
   describe('generateMapping', () => {
-    it('should be able to map the input schema to a resulting Mapping definition', async () => {
-      const actual = await generateMapping({
+    it('should be able to map the input schema to a resulting Mapping definition', () => {
+      const [mapping] = generateMapping({
         types: [
           {
             name: 'Account',
@@ -118,10 +118,10 @@ describe('Mapping', () => {
         },
       };
 
-      expect(actual).toEqual(expected);
+      expect(mapping).toEqual(expected);
     });
-    it('should use the existing KG ids if provided', async () => {
-      const actual = await generateMapping({
+    it('should use the existing KG ids if provided', () => {
+      const [mapping] = generateMapping({
         types: [
           {
             name: 'Account',
@@ -181,11 +181,194 @@ describe('Mapping', () => {
         },
       };
 
-      expect(actual).toEqual(expected);
+      expect(mapping).toEqual(expected);
+    });
+    it('should handle relation properties where the related type has a knowledgeGraphId', () => {
+      const [mapping] = generateMapping({
+        types: [
+          {
+            name: 'Account',
+            knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+            properties: [
+              {
+                name: 'username',
+                dataType: 'Text',
+                knowledgeGraphId: null,
+              },
+            ],
+          },
+          {
+            name: 'Event',
+            knowledgeGraphId: null,
+            properties: [
+              {
+                name: 'name',
+                dataType: 'Text',
+                knowledgeGraphId: null,
+              },
+              {
+                name: 'organizer',
+                dataType: 'Relation(Account)',
+                relationType: 'Account',
+                knowledgeGraphId: null,
+              },
+            ],
+          },
+        ],
+      });
+      const expected: Mapping = {
+        Account: {
+          typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          properties: {
+            username: expect.any(String),
+          },
+        },
+        Event: {
+          typeIds: [expect.any(String)],
+          properties: {
+            name: expect.any(String),
+            organizer: expect.any(String),
+          },
+        },
+      };
+
+      expect(mapping).toEqual(expected);
+    });
+    it('should handle relation properties where the related type does NOT have a knowledgeGraphId (second pass)', () => {
+      const [mapping] = generateMapping({
+        types: [
+          {
+            name: 'Account',
+            knowledgeGraphId: null,
+            properties: [
+              {
+                name: 'username',
+                dataType: 'Text',
+                knowledgeGraphId: null,
+              },
+            ],
+          },
+          {
+            name: 'Event',
+            knowledgeGraphId: null,
+            properties: [
+              {
+                name: 'name',
+                dataType: 'Text',
+                knowledgeGraphId: null,
+              },
+              {
+                name: 'organizer',
+                dataType: 'Relation(Account)',
+                relationType: 'Account',
+                knowledgeGraphId: null,
+              },
+            ],
+          },
+        ],
+      });
+      const expected: Mapping = {
+        Account: {
+          typeIds: [expect.any(String)],
+          properties: {
+            username: expect.any(String),
+          },
+        },
+        Event: {
+          typeIds: [expect.any(String)],
+          properties: {
+            name: expect.any(String),
+            organizer: expect.any(String),
+          },
+        },
+      };
+
+      expect(mapping).toEqual(expected);
+    });
+    it('should handle mixed scenarios with some relation types having knowledgeGraphId and others not', () => {
+      const [mapping] = generateMapping({
+        types: [
+          {
+            name: 'Account',
+            knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+            properties: [
+              {
+                name: 'username',
+                dataType: 'Text',
+                knowledgeGraphId: '994edcff-6996-4a77-9797-a13e5e3efad8',
+              },
+            ],
+          },
+          {
+            name: 'Venue',
+            knowledgeGraphId: null,
+            properties: [
+              {
+                name: 'name',
+                dataType: 'Text',
+                knowledgeGraphId: null,
+              },
+              {
+                name: 'location',
+                dataType: 'Point',
+                knowledgeGraphId: null,
+              },
+            ],
+          },
+          {
+            name: 'Event',
+            knowledgeGraphId: null,
+            properties: [
+              {
+                name: 'title',
+                dataType: 'Text',
+                knowledgeGraphId: null,
+              },
+              {
+                name: 'speaker',
+                dataType: 'Relation(Account)',
+                relationType: 'Account',
+                knowledgeGraphId: null,
+              },
+              {
+                name: 'venue',
+                dataType: 'Relation(Venue)',
+                relationType: 'Venue',
+                knowledgeGraphId: null,
+              },
+            ],
+          },
+        ],
+      });
+      const expected: Mapping = {
+        Account: {
+          typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          properties: {
+            username: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+          },
+        },
+        Venue: {
+          typeIds: [expect.any(String)],
+          properties: {
+            name: expect.any(String),
+            location: expect.any(String),
+          },
+        },
+        Event: {
+          typeIds: [expect.any(String)],
+          properties: {
+            title: expect.any(String),
+            speaker: expect.any(String),
+            venue: expect.any(String),
+          },
+        },
+      };
+
+      expect(mapping).toEqual(expected);
     });
     describe('schema validation failures', () => {
-      it('should throw an error if the Schema does not pass validation: type names are not unique', async () => {
-        await expect(() =>
+      it('should throw an error if the Schema does not pass validation: type names are not unique', () => {
+        expect(() =>
           generateMapping({
             types: [
               {
@@ -200,10 +383,10 @@ describe('Mapping', () => {
               },
             ],
           }),
-        ).rejects.toThrowError();
+        ).toThrowError();
       });
-      it('should throw an error if the Schema does not pass validation: type property names are not unique', async () => {
-        await expect(() =>
+      it('should throw an error if the Schema does not pass validation: type property names are not unique', () => {
+        expect(() =>
           generateMapping({
             types: [
               {
@@ -216,10 +399,10 @@ describe('Mapping', () => {
               },
             ],
           }),
-        ).rejects.toThrowError();
+        ).toThrowError();
       });
-      it('should throw an error if the Schema does not pass validation: referenced relation property does not have matching type in schema', async () => {
-        await expect(() =>
+      it('should throw an error if the Schema does not pass validation: referenced relation property does not have matching type in schema', () => {
+        expect(() =>
           generateMapping({
             types: [
               {
@@ -231,7 +414,7 @@ describe('Mapping', () => {
               },
             ],
           }),
-        ).rejects.toThrowError();
+        ).toThrowError();
       });
     });
   });

@@ -1,5 +1,5 @@
 import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@graphprotocol/grc-20';
-import { Array as EffectArray, Schema as EffectSchema, pipe } from 'effect';
+import { Data, Array as EffectArray, Schema as EffectSchema, Option, pipe } from 'effect';
 
 import { namesAreUnique, toCamelCase, toPascalCase } from './Utils.js';
 
@@ -282,99 +282,390 @@ export function allRelationPropertyTypesExist(types: ReadonlyArray<SchemaType>):
   );
 }
 
+export type GenerateMappingResult = [mapping: Mapping, ops: Array<Op>];
+
+// Helper types for internal processing
+type PropertyIdMapping = { propName: string; id: Grc20Id.Id };
+type TypeIdMapping = Map<string, Grc20Id.Id | null>;
+type ProcessedProperty =
+  | { type: 'resolved'; mapping: PropertyIdMapping; ops: Array<Op> }
+  | { type: 'deferred'; property: SchemaTypePropertyRelation };
+
+type ProcessedType =
+  | { type: 'complete'; entry: MappingEntry & { typeName: string }; ops: Array<Op> }
+  | { type: 'deferred'; schemaType: SchemaType; properties: Array<PropertyIdMapping> };
+
+// Helper function to build property map from PropertyIdMappings
+function buildPropertyMap(properties: Array<PropertyIdMapping>): MappingEntry['properties'] {
+  return pipe(
+    properties,
+    EffectArray.reduce({} as NonNullable<MappingEntry['properties']>, (props, { propName, id }) => {
+      props[toCamelCase(propName)] = id;
+      return props;
+    }),
+  );
+}
+
+// Helper function to create a property and return the result
+function createPropertyWithOps(
+  property: SchemaTypePropertyPrimitive | SchemaTypePropertyRelation,
+  typeIdMap: TypeIdMapping,
+): ProcessedProperty {
+  if (property.knowledgeGraphId) {
+    return {
+      type: 'resolved',
+      mapping: { propName: property.name, id: Grc20Id.Id(property.knowledgeGraphId) },
+      ops: [],
+    };
+  }
+
+  if (propertyIsRelation(property)) {
+    const relationTypeId = typeIdMap.get(property.relationType);
+    if (relationTypeId == null) {
+      return { type: 'deferred', property };
+    }
+
+    const { id, ops } = Graph.createProperty({
+      name: property.name,
+      dataType: 'RELATION',
+      relationValueTypes: [relationTypeId],
+    });
+    return {
+      type: 'resolved',
+      mapping: { propName: property.name, id },
+      ops,
+    };
+  }
+
+  const { id, ops } = Graph.createProperty({
+    name: property.name,
+    dataType: mapSchemaDataTypeToGRC20PropDataType(property.dataType),
+  });
+  return {
+    type: 'resolved',
+    mapping: { propName: property.name, id },
+    ops,
+  };
+}
+
+// Helper function to process a single type
+function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType {
+  const processedProperties = pipe(
+    type.properties,
+    EffectArray.map((prop) => createPropertyWithOps(prop, typeIdMap)),
+  );
+
+  const resolvedProperties = pipe(
+    processedProperties,
+    EffectArray.filterMap((p) => (p.type === 'resolved' ? Option.some(p) : Option.none())),
+  );
+
+  const deferredProperties = pipe(
+    processedProperties,
+    EffectArray.filterMap((p) => (p.type === 'deferred' ? Option.some(p.property) : Option.none())),
+  );
+
+  const propertyMappings = pipe(
+    resolvedProperties,
+    EffectArray.map((p) => p.mapping),
+  );
+
+  const propertyOps = pipe(
+    resolvedProperties,
+    EffectArray.flatMap((p) => p.ops),
+  );
+
+  // If type exists in knowledge graph, return complete entry
+  if (type.knowledgeGraphId) {
+    return {
+      type: 'complete',
+      entry: {
+        typeName: toPascalCase(type.name),
+        typeIds: [Grc20Id.Id(type.knowledgeGraphId)],
+        properties: buildPropertyMap(propertyMappings),
+      },
+      ops: propertyOps,
+    };
+  }
+
+  // If there are deferred properties, defer type creation
+  if (EffectArray.isNonEmptyArray(deferredProperties)) {
+    return {
+      type: 'deferred',
+      schemaType: type,
+      properties: propertyMappings,
+    };
+  }
+
+  // Create the type with all resolved properties
+  const { id, ops: typeOps } = Graph.createType({
+    name: type.name,
+    properties: pipe(
+      propertyMappings,
+      EffectArray.map((p) => p.id),
+    ),
+  });
+
+  typeIdMap.set(type.name, id);
+
+  return {
+    type: 'complete',
+    entry: {
+      typeName: toPascalCase(type.name),
+      typeIds: [id],
+      properties: buildPropertyMap(propertyMappings),
+    },
+    ops: [...propertyOps, ...typeOps],
+  };
+}
+
 /**
- * Takes the user-submitted schema, validates it, and build the `Mapping` definition for the schema.
+ * Takes the user-submitted schema, validates it, and build the `Mapping` definition for the schema as well as the GRC-20 Ops needed to publish the schema/schema changes to the Knowledge Graph.
+ *
+ * @example
+ * ```ts
+ * import { Id } from "@graphprotocol/grc-20"
+ * import { generateMapping } from "@graphprotocol/typesync"
+ *
+ * const schema: Schema = {
+ *   types: [
+ *     {
+ *       name: "Account",
+ *       knowledgeGraphId: "a5fd07b1-120f-46c6-b46f-387ef98396a6",
+ *       properties: [
+ *         {
+ *           name: "username",
+ *           dataType: "Text",
+ *           knowledgeGraphId: "994edcff-6996-4a77-9797-a13e5e3efad8"
+ *         },
+ *         {
+ *           name: "createdAt",
+ *           dataType: "Date",
+ *           knowledgeGraphId: null
+ *         }
+ *       ]
+ *     },
+ *     {
+ *       name: "Event",
+ *       knowledgeGraphId: null,
+ *       properties: [
+ *         {
+ *           name: "name",
+ *           dataType: "Text",
+ *           knowledgeGraphId: "3808e060-fb4a-4d08-8069-35b8c8a1902b"
+ *         },
+ *         {
+ *           name: "description",
+ *           dataType: "Text",
+ *           knowledgeGraphId: null
+ *         },
+ *         {
+ *           name: "speaker",
+ *           dataType: "Relation(Account)",
+ *           relationType: "Account",
+ *           knowledgeGraphId: null
+ *         }
+ *       ]
+ *     }
+ *   ],
+ * }
+ * const [mapping, ops] = generateMapping(schema)
+ *
+ * expect(mapping).toEqual({
+ *   Account: {
+ *     typeIds: [Id.Id("a5fd07b1-120f-46c6-b46f-387ef98396a6")], // comes from input schema
+ *     properties: {
+ *       username: Id.Id("994edcff-6996-4a77-9797-a13e5e3efad8"), // comes from input schema
+ *       createdAt: Id.Id("8cd7d9ac-a878-4287-8000-e71e6f853117"), // generated from Graph.createProperty Op
+ *     }
+ *   },
+ *   Event: {
+ *     typeIds: [Id.Id("20b3fe39-8e62-41a0-b9cb-92743fd760da")], // generated from Graph.createType Op
+ *     properties: {
+ *       name: Id.Id("3808e060-fb4a-4d08-8069-35b8c8a1902b"), // comes from input schema
+ *       description: Id.Id("8fc4e17c-7581-4d6c-a712-943385afc7b5"), // generated from Graph.createProperty Op
+ *       speaker: Id.Id("651ce59f-643b-4931-bf7a-5dc0ca0f5a47"), // generated from Graph.createProperty Op
+ *     }
+ *   }
+ * })
+ * expect(ops).toEqual([
+ *   // Graph.createProperty Op for Account.createdAt property
+ *   {
+ *     type: "CREATE_PROPERTY",
+ *     property: {
+ *       id: Id.Id("8cd7d9ac-a878-4287-8000-e71e6f853117"),
+ *       dataType: "TEXT"
+ *     }
+ *   },
+ *   // Graph.createProperty Op for Event.description property
+ *   {
+ *     type: "CREATE_PROPERTY",
+ *     property: {
+ *       id: Id.Id("8fc4e17c-7581-4d6c-a712-943385afc7b5"),
+ *       dataType: "TEXT"
+ *     }
+ *   },
+ *   // Graph.createProperty Op for Event.speaker property
+ *   {
+ *     type: "CREATE_PROPERTY",
+ *     property: {
+ *       id: Id.Id("651ce59f-643b-4931-bf7a-5dc0ca0f5a47"),
+ *       dataType: "RELATION"
+ *     }
+ *   },
+ *   // Graph.createType Op for Event type
+ *   {
+ *     type: "CREATE_PROPERTY",
+ *     property: {
+ *       id: Id.Id("651ce59f-643b-4931-bf7a-5dc0ca0f5a47"),
+ *       dataType: "RELATION"
+ *     }
+ *   },
+ * ])
+ * ```
  *
  * @since 0.0.1
  *
  * @param input user-built and submitted schema
- * @returns the generated [Mapping] definition from the submitted schema
+ * @returns the generated [Mapping] definition from the submitted schema as well as the GRC-20 Ops required to publish the schema to the Knowledge Graph
  */
-export async function generateMapping(input: Schema): Promise<Mapping> {
-  // validate the schema since the input is the type, but the schema has additional filters against it to validate as well
+export function generateMapping(input: Schema): GenerateMappingResult {
+  // Validate the schema
   const schema = SchemaKnownDecoder(input);
 
-  const entries: Array<MappingEntry & { typeName: string }> = [];
-  const ops: Array<Op> = [];
+  // Build initial type ID map
+  const typeIdMap: TypeIdMapping = pipe(
+    schema.types,
+    EffectArray.reduce(new Map<string, Grc20Id.Id | null>(), (map, type) =>
+      map.set(type.name, type.knowledgeGraphId != null ? Grc20Id.Id(type.knowledgeGraphId) : null),
+    ),
+  );
 
-  for (const type of schema.types) {
-    const typePropertyIds: Array<{ propName: string; id: Grc20Id.Id }> = [];
-    for (const property of type.properties) {
-      if (property.knowledgeGraphId) {
-        typePropertyIds.push({ propName: property.name, id: Grc20Id.Id(property.knowledgeGraphId) });
+  // First pass: process all types
+  const processedTypes = pipe(
+    schema.types,
+    EffectArray.map((type) => processType(type, typeIdMap)),
+  );
 
-        continue;
-      }
-      // create op for creating type property
-      const dataType = mapSchemaDataTypeToGRC20PropDataType(property.dataType);
-      if (dataType === 'RELATION') {
-        const { id, ops: createTypePropOp } = Graph.createProperty({
-          name: property.name,
-          dataType: 'RELATION',
-          /**
-           * @todo fill in the relationValueTypes and properties for creating a relation property
-           */
-          relationValueTypes: [],
-          properties: [],
+  // Separate complete and deferred types
+  const [deferredTypes, completeTypes] = pipe(
+    processedTypes,
+    EffectArray.partition(
+      (result): result is Extract<ProcessedType, { type: 'complete' }> => result.type === 'complete',
+    ),
+  );
+
+  // Collect all operations from first pass
+  const firstPassOps = pipe(
+    completeTypes,
+    EffectArray.flatMap((t) => t.ops),
+  );
+
+  // Second pass: resolve deferred relation properties and create deferred types
+  const { entries: deferredEntries, ops: secondPassOps } = pipe(
+    deferredTypes,
+    EffectArray.reduce(
+      { entries: [] as Array<MappingEntry & { typeName: string }>, ops: [] as Array<Op> },
+      (acc, deferred) => {
+        // Resolve all deferred relation properties for this type
+        const resolvedRelations = pipe(
+          deferred.schemaType.properties,
+          EffectArray.filterMap((prop) => {
+            if (!propertyIsRelation(prop) || prop.knowledgeGraphId != null) {
+              return Option.none();
+            }
+
+            const relationTypeId = typeIdMap.get(prop.relationType);
+            if (relationTypeId == null) {
+              throw new RelationValueTypeDoesNotExistError({
+                message: `Failed to resolve type ID for relation type: ${prop.relationType}`,
+                property: prop.name,
+                relatedType: prop.relationType,
+              });
+            }
+
+            const { id, ops } = Graph.createProperty({
+              name: prop.name,
+              dataType: 'RELATION',
+              relationValueTypes: [relationTypeId],
+            });
+
+            return Option.some({ mapping: { propName: prop.name, id }, ops });
+          }),
+        );
+
+        // Combine all properties for this type
+        const allProperties = [
+          ...deferred.properties,
+          ...pipe(
+            resolvedRelations,
+            EffectArray.map((r) => r.mapping),
+          ),
+        ];
+
+        // Create the type with all properties
+        const { id, ops: typeOps } = Graph.createType({
+          name: deferred.schemaType.name,
+          properties: pipe(
+            allProperties,
+            EffectArray.map((p) => p.id),
+          ),
         });
-        typePropertyIds.push({ propName: property.name, id });
-        ops.push(...createTypePropOp);
 
-        continue;
-      }
-      const { id, ops: createTypePropOp } = Graph.createProperty({
-        name: property.name,
-        dataType,
-      });
-      typePropertyIds.push({ propName: property.name, id });
-      ops.push(...createTypePropOp);
-    }
+        typeIdMap.set(deferred.schemaType.name, id);
 
-    const properties: MappingEntry['properties'] = pipe(
-      typePropertyIds,
-      EffectArray.reduce({} as NonNullable<MappingEntry['properties']>, (props, { propName, id }) => {
-        props[toCamelCase(propName)] = id;
+        // Collect all operations
+        const allOps = [
+          ...pipe(
+            resolvedRelations,
+            EffectArray.flatMap((r) => r.ops),
+          ),
+          ...typeOps,
+        ];
 
-        return props;
-      }),
-    );
+        return {
+          entries: [
+            ...acc.entries,
+            {
+              typeName: toPascalCase(deferred.schemaType.name),
+              typeIds: [id],
+              properties: buildPropertyMap(allProperties),
+            },
+          ],
+          ops: [...acc.ops, ...allOps],
+        };
+      },
+    ),
+  );
 
-    if (type.knowledgeGraphId) {
-      entries.push({
-        typeName: toPascalCase(type.name),
-        typeIds: [Grc20Id.Id(type.knowledgeGraphId)],
-        properties,
-      });
-      continue;
-    }
-    // create the type op, with its properties
-    const { id, ops: createTypeOp } = Graph.createType({
-      name: type.name,
-      properties: EffectArray.map(typePropertyIds, ({ id }) => id),
-    });
-    ops.push(...createTypeOp);
+  // Combine all entries and build final mapping
+  const allEntries = [
+    ...pipe(
+      completeTypes,
+      EffectArray.map((t) => t.entry),
+    ),
+    ...deferredEntries,
+  ];
 
-    entries.push({
-      typeName: toPascalCase(type.name),
-      typeIds: [id],
-      properties,
-    });
-  }
-
-  /**
-   * @todo publish the schema onchain to the Knowledge Graph with hypergraph connect app to the application space
-   */
-
-  return pipe(
-    entries,
+  const mapping = pipe(
+    allEntries,
     EffectArray.reduce({} as Mapping, (mapping, entry) => {
       const { typeName, ...rest } = entry;
       mapping[typeName] = rest;
-
       return mapping;
     }),
   );
+
+  return [mapping, [...firstPassOps, ...secondPassOps]] as const;
 }
+
+export class RelationValueTypeDoesNotExistError extends Data.TaggedError(
+  '/typesync/errors/RelationValueTypeDoesNotExistError',
+)<{
+  readonly message: string;
+  readonly property: string;
+  readonly relatedType: string;
+}> {}
 
 /**
  * @since 0.0.1
