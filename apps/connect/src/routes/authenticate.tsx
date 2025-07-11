@@ -11,7 +11,7 @@ import { createStore } from '@xstate/store';
 import { useSelector } from '@xstate/store/react';
 import { Effect, Schema } from 'effect';
 import { TriangleAlert } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createWalletClient, custom } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
@@ -140,6 +140,7 @@ function AuthenticateComponent() {
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy') || wallets[0];
 
   const state = useSelector(componentStore, (state) => state.context);
+  const [selectedPrivateSpaces, setSelectedPrivateSpaces] = useState<Set<string>>(new Set());
 
   const { isPending: privateSpacesPending, error: privateSpacesError, data: privateSpacesData } = usePrivateSpaces();
   const {
@@ -147,25 +148,6 @@ function AuthenticateComponent() {
     error: publicSpacesError,
     data: publicSpacesData,
   } = usePublicSpaces(`${Graph.TESTNET_API_ORIGIN}/graphql`);
-
-  const selectedPrivateSpaces = new Set<string>();
-  const selectedPublicSpaces = new Set<string>();
-
-  const handlePrivateSpaceToggle = (spaceId: string, checked: boolean) => {
-    if (checked) {
-      selectedPrivateSpaces.add(spaceId);
-    } else {
-      selectedPrivateSpaces.delete(spaceId);
-    }
-  };
-
-  const handlePublicSpaceToggle = (spaceId: string, checked: boolean) => {
-    if (checked) {
-      selectedPublicSpaces.add(spaceId);
-    } else {
-      selectedPublicSpaces.delete(spaceId);
-    }
-  };
 
   useEffect(() => {
     const run = async () => {
@@ -247,7 +229,7 @@ function AuthenticateComponent() {
 
     const privateSpacesInput = privateSpacesData
       ? privateSpacesData
-          // .filter((space) => selectedPrivateSpaces.has(space.id))
+          .filter((space) => selectedPrivateSpaces.has(space.id))
           .map((space) => {
             // TODO: currently without checking we assume all keyboxes exists and we don't create any - we should check if the keyboxes exist and create them if they don't
             if (space.appIdentities.some((spaceAppIdentity) => spaceAppIdentity.address === appIdentity.address))
@@ -518,6 +500,18 @@ function AuthenticateComponent() {
     });
   };
 
+  const handleSpaceSelection = (spaceId: string, selected: boolean) => {
+    setSelectedPrivateSpaces((prev) => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(spaceId);
+      } else {
+        newSet.delete(spaceId);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <div className="flex grow flex-col items-center justify-center">
       {(() => {
@@ -587,6 +581,9 @@ function AuthenticateComponent() {
                           ? { error: privateSpacesError.message }
                           : undefined
                     }
+                    selected={selectedPrivateSpaces}
+                    onSelected={handleSpaceSelection}
+                    currentAppId={state.appInfo?.appId}
                     className="lg:absolute lg:inset-0"
                   />
                 </div>
