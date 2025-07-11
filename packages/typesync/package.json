@@ -38,6 +38,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@graphprotocol/grc-20": "^0.21.6",
     "effect": "^3.16.12"
   }
 }
