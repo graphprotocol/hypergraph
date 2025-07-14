@@ -5,8 +5,14 @@ import { sha256 } from '@noble/hashes/sha256';
 import type { Hex } from 'viem';
 import { verifyMessage } from 'viem';
 
+import { cryptoBoxSeal, cryptoBoxSealOpen } from '@serenity-kit/noble-sodium';
 import { bytesToHex, canonicalize, hexToBytes } from '../utils/index.js';
 import type { IdentityKeys, PrivateAppIdentity, Signer } from './types.js';
+
+export type AppIdentityForEncryption = Omit<
+  PrivateAppIdentity,
+  'sessionToken' | 'sessionTokenExpires' | 'accountAddress'
+>;
 
 // Adapted from the XMTP approach to encrypt keys
 // See: https://github.com/xmtp/xmtp-js/blob/8d6e5a65813902926baac8150a648587acbaad92/sdks/js-sdk/src/keystore/providers/NetworkKeyManager.ts#L79-L116
@@ -134,86 +140,45 @@ export const decryptIdentity = async (signer: Signer, ciphertext: string, nonce:
 };
 
 export const encryptAppIdentity = async (
-  signer: Signer,
-  appIdentityAddress: string,
-  appIdentityAddressPrivateKey: string,
-  permissionId: string,
+  appIdentity: AppIdentityForEncryption,
   keys: IdentityKeys,
-): Promise<{ ciphertext: string; nonce: string }> => {
-  const nonce = randomBytes(32);
-  const message = signatureMessage(nonce);
-  const signature = (await signer.signMessage(message)) as Hex;
-
-  // Check that the signature is valid
-  const valid = await verifyMessage({
-    address: (await signer.getAddress()) as Hex,
-    message,
-    signature,
-  });
-  if (!valid) {
-    throw new Error('Invalid signature');
-  }
-  const secretKey = hexToBytes(signature);
+): Promise<{ ciphertext: string }> => {
   // We use a simple plaintext encoding:
   // Hex keys separated by newlines
   const keysTxt = [
-    keys.encryptionPublicKey,
-    keys.encryptionPrivateKey,
-    keys.signaturePublicKey,
-    keys.signaturePrivateKey,
-    appIdentityAddress,
-    appIdentityAddressPrivateKey,
-    permissionId,
+    appIdentity.encryptionPublicKey,
+    appIdentity.encryptionPrivateKey,
+    appIdentity.signaturePublicKey,
+    appIdentity.signaturePrivateKey,
+    appIdentity.address,
+    appIdentity.addressPrivateKey,
+    appIdentity.permissionId,
   ].join('\n');
   const keysMsg = new TextEncoder().encode(keysTxt);
-  const ciphertext = encrypt(keysMsg, secretKey);
-  return { ciphertext, nonce: bytesToHex(nonce) };
+  const ciphertext = bytesToHex(
+    cryptoBoxSeal({
+      message: keysMsg,
+      publicKey: hexToBytes(keys.encryptionPublicKey),
+    }),
+  );
+  return { ciphertext };
 };
 
-export const decryptAppIdentity = async (
-  signer: Signer,
-  ciphertext: string,
-  nonce: string,
-): Promise<Omit<PrivateAppIdentity, 'sessionToken' | 'sessionTokenExpires' | 'accountAddress'>> => {
-  const message = signatureMessage(hexToBytes(nonce));
-  const signature = (await signer.signMessage(message)) as Hex;
-
-  // Check that the signature is valid
-  const valid = await verifyMessage({
-    address: (await signer.getAddress()) as Hex,
-    message,
-    signature,
+export const decryptAppIdentity = async (ciphertext: string, keys: IdentityKeys): Promise<AppIdentityForEncryption> => {
+  const ciphertextBytes = hexToBytes(ciphertext);
+  const keysMsg = cryptoBoxSealOpen({
+    ciphertext: ciphertextBytes,
+    privateKey: hexToBytes(keys.encryptionPrivateKey),
+    publicKey: hexToBytes(keys.encryptionPublicKey),
   });
-  if (!valid) {
-    throw new Error('Invalid signature');
-  }
-  const secretKey = hexToBytes(signature);
-  let keysMsg: Uint8Array;
-  try {
-    keysMsg = await decrypt(ciphertext, secretKey);
-  } catch (e) {
-    // See https://github.com/xmtp/xmtp-js/blob/8d6e5a65813902926baac8150a648587acbaad92/sdks/js-sdk/src/keystore/providers/NetworkKeyManager.ts#L142-L146
-    if (secretKey.length !== 65) {
-      throw new Error('Expected 65 bytes before trying a different recovery byte');
-    }
-    // Try the other version of recovery byte, either +27 or -27
-    const lastByte = secretKey[secretKey.length - 1];
-    let newSecret = secretKey.slice(0, secretKey.length - 1);
-    if (lastByte < 27) {
-      newSecret = new Uint8Array([...newSecret, lastByte + 27]);
-    } else {
-      newSecret = new Uint8Array([...newSecret, lastByte - 27]);
-    }
-    keysMsg = await decrypt(ciphertext, newSecret);
-  }
   const keysTxt = new TextDecoder().decode(keysMsg);
   const [
     encryptionPublicKey,
     encryptionPrivateKey,
     signaturePublicKey,
     signaturePrivateKey,
-    appIdentityAddress,
-    appIdentityAddressPrivateKey,
+    address,
+    addressPrivateKey,
     permissionId,
   ] = keysTxt.split('\n');
   return {
@@ -221,8 +186,8 @@ export const decryptAppIdentity = async (
     encryptionPrivateKey,
     signaturePublicKey,
     signaturePrivateKey,
-    address: appIdentityAddress,
-    addressPrivateKey: appIdentityAddressPrivateKey,
+    address,
+    addressPrivateKey,
     permissionId,
   };
 };
