@@ -19,7 +19,7 @@ import {
 import type { IdentityKeys, Signer, Storage } from './types.js';
 
 export async function identityExists(accountAddress: string, syncServerUri: string) {
-  const res = await fetch(new URL(`/identity?accountAddress=${accountAddress}`, syncServerUri), {
+  const res = await fetch(new URL(`/connect/identity?accountAddress=${accountAddress}`, syncServerUri), {
     method: 'GET',
   });
   return res.status === 200;

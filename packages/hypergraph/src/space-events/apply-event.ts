@@ -18,7 +18,10 @@ import {
 type Params = {
   state: SpaceState | undefined;
   event: SpaceEvent;
-  getVerifiedIdentity: (accountAddress: string) => Effect.Effect<PublicIdentity, InvalidIdentityError>;
+  getVerifiedIdentity: (
+    accountAddress: string,
+    publicKey: string,
+  ) => Effect.Effect<PublicIdentity, InvalidIdentityError>;
 };
 
 const decodeSpaceEvent = Schema.decodeUnknownEither(SpaceEvent);
@@ -50,7 +53,7 @@ export const applyEvent = ({
   const authorPublicKey = `0x${signatureInstance.recoverPublicKey(sha256(encodedTransaction)).toHex()}`;
 
   return Effect.gen(function* () {
-    const identity = yield* getVerifiedIdentity(event.author.accountAddress);
+    const identity = yield* getVerifiedIdentity(event.author.accountAddress, authorPublicKey);
     if (authorPublicKey !== identity.signaturePublicKey) {
       yield* Effect.fail(new VerifySignatureError());
     }
