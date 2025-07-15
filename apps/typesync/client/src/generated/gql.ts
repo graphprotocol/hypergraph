@@ -1,7 +1,6 @@
 /* eslint-disable */
-import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
-
 import * as types from './graphql';
+import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 
 /**
  * Map of all GraphQL operations in the project.
@@ -15,12 +14,12 @@ import * as types from './graphql';
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  query SchemaBrowserTypes($spaceId: String!, $limit: Int) {\n    types(spaceId: $spaceId, limit: $limit) {\n      id\n      name\n      properties {\n        id\n        dataType\n        entity {\n          id\n          name\n        }\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            dataType\n            entity {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n": typeof types.SchemaBrowserTypesDocument,
-    "\n  query Properties {\n    properties {\n      id\n      dataType    \n      entity {\n        id\n        name\n        description\n      }\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          entity {\n            id\n            name\n          }\n        }\n      }\n    }\n  }\n": typeof types.PropertiesDocument,
+    "\n  query SchemaBrowserTypes($first: Int) {\n    typesList(first: $first) {\n      id\n      name\n      description\n      properties {\n        id\n        name\n        dataType\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            name\n            dataType\n          }\n        }\n      }\n    }\n  }\n": typeof types.SchemaBrowserTypesDocument,
+    "\n  query Properties($first: Int) {\n    properties(first: $first) {\n      id\n      name\n      description\n      dataType\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          name\n        }\n      }\n    }\n  }\n": typeof types.PropertiesDocument,
 };
 const documents: Documents = {
-    "\n  query SchemaBrowserTypes($spaceId: String!, $limit: Int) {\n    types(spaceId: $spaceId, limit: $limit) {\n      id\n      name\n      properties {\n        id\n        dataType\n        entity {\n          id\n          name\n        }\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            dataType\n            entity {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n": types.SchemaBrowserTypesDocument,
-    "\n  query Properties {\n    properties {\n      id\n      dataType    \n      entity {\n        id\n        name\n        description\n      }\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          entity {\n            id\n            name\n          }\n        }\n      }\n    }\n  }\n": types.PropertiesDocument,
+    "\n  query SchemaBrowserTypes($first: Int) {\n    typesList(first: $first) {\n      id\n      name\n      description\n      properties {\n        id\n        name\n        dataType\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            name\n            dataType\n          }\n        }\n      }\n    }\n  }\n": types.SchemaBrowserTypesDocument,
+    "\n  query Properties($first: Int) {\n    properties(first: $first) {\n      id\n      name\n      description\n      dataType\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          name\n        }\n      }\n    }\n  }\n": types.PropertiesDocument,
 };
 
 /**
@@ -40,11 +39,11 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query SchemaBrowserTypes($spaceId: String!, $limit: Int) {\n    types(spaceId: $spaceId, limit: $limit) {\n      id\n      name\n      properties {\n        id\n        dataType\n        entity {\n          id\n          name\n        }\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            dataType\n            entity {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query SchemaBrowserTypes($spaceId: String!, $limit: Int) {\n    types(spaceId: $spaceId, limit: $limit) {\n      id\n      name\n      properties {\n        id\n        dataType\n        entity {\n          id\n          name\n        }\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            dataType\n            entity {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query SchemaBrowserTypes($first: Int) {\n    typesList(first: $first) {\n      id\n      name\n      description\n      properties {\n        id\n        name\n        dataType\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            name\n            dataType\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query SchemaBrowserTypes($first: Int) {\n    typesList(first: $first) {\n      id\n      name\n      description\n      properties {\n        id\n        name\n        dataType\n        relationValueTypes {\n          id\n          name\n          description\n          properties {\n            id\n            name\n            dataType\n          }\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Properties {\n    properties {\n      id\n      dataType    \n      entity {\n        id\n        name\n        description\n      }\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          entity {\n            id\n            name\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query Properties {\n    properties {\n      id\n      dataType    \n      entity {\n        id\n        name\n        description\n      }\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          entity {\n            id\n            name\n          }\n        }\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query Properties($first: Int) {\n    properties(first: $first) {\n      id\n      name\n      description\n      dataType\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          name\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query Properties($first: Int) {\n    properties(first: $first) {\n      id\n      name\n      description\n      dataType\n      relationValueTypes {\n        id\n        name\n        description\n        properties {\n          id\n          dataType\n          name\n        }\n      }\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
