@@ -2,9 +2,11 @@ import { execSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { FileSystem, Path, type Error as PlatformError } from '@effect/platform';
 import { NodeFileSystem } from '@effect/platform-node';
-import { Cause, Console, Data, Effect, String as EffectString } from 'effect';
+import { Doc } from '@effect/printer';
+import { Mapping } from '@graphprotocol/typesync';
+import { Cause, Console, Data, Effect, Array as EffectArray, String as EffectString } from 'effect';
 
-import * as Domain from '../domain/Domain.js';
+import type * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';
 
 export class SchemaGenerator extends Effect.Service<SchemaGenerator>()('/typesync/services/Generator', {
@@ -313,15 +315,15 @@ function fieldToEntityString({
         return 'Type.Text';
       case dataType === 'Number':
         return 'Type.Number';
-      case dataType === 'Boolean':
-        return 'Type.Boolean';
+      case dataType === 'Checkbox':
+        return 'Type.Checkbox';
       case dataType === 'Date':
         return 'Type.Date';
       case dataType === 'Url':
         return 'Type.Url';
       case dataType === 'Point':
         return 'Type.Point';
-      case Domain.isDataTypeRelation(dataType):
+      case Mapping.isDataTypeRelation(dataType):
         // renders the type as `Type.Relation(Entity)`
         return `Type.${dataType}`;
       default:
@@ -361,57 +363,59 @@ function buildSchemaFile(schema: Domain.InsertAppSchema) {
 }
 
 export function buildMappingFile(schema: Domain.InsertAppSchema) {
-  const importStatement1 = `import { Id } from '@graphprotocol/grc-20';`;
-  const importStatement2 = `import type { Mapping } from '@graphprotocol/hypergraph';`;
+  const [mapping] = Mapping.generateMapping({
+    types: schema.types,
+  });
 
-  const typeMappings: string[] = [];
+  // Import statements
+  const imports = Doc.vsep([
+    Doc.text("import { Id } from '@graphprotocol/grc-20';"),
+    Doc.text("import type { Mapping } from '@graphprotocol/typesync/Mapping';"),
+  ]);
 
-  for (const type of schema.types) {
-    // Skip types without a valid knowledgeGraphId
-    if (!type.knowledgeGraphId) {
-      continue;
+  // Generate the mapping object - build it line by line for exact formatting
+  const mappingLines = [Doc.text('export const mapping: Mapping = {')];
+
+  for (const [typeName, typeData] of Object.entries(mapping)) {
+    mappingLines.push(Doc.text(`  ${typeName}: {`));
+
+    // Type IDs
+    const typeIdsList = typeData.typeIds.map((id: string) => `Id.Id("${id}")`).join(', ');
+    mappingLines.push(Doc.text(`    typeIds: [${typeIdsList}],`));
+
+    // Properties
+    const properties = Object.entries(typeData.properties ?? {});
+    if (EffectArray.isNonEmptyArray(properties)) {
+      mappingLines.push(Doc.text('    properties: {'));
+      properties.forEach(([propName, propId], index, entries) => {
+        const isLast = index === entries.length - 1;
+        const comma = isLast ? '' : ',';
+        mappingLines.push(Doc.text(`      ${propName}: Id.Id("${propId}")${comma}`));
+      });
+      mappingLines.push(Doc.text('    },'));
     }
 
-    const properties: string[] = [];
-    const relations: string[] = [];
-
-    // Process properties and relations
-    for (const property of type.properties) {
-      // Skip properties without a valid knowledgeGraphId
-      if (!property.knowledgeGraphId) {
-        continue;
-      }
-
-      if (Domain.isDataTypeRelation(property.dataType)) {
-        // This is a relation
-        relations.push(`      ${Utils.toCamelCase(property.name)}: Id.Id('${property.knowledgeGraphId}')`);
-      } else {
-        // This is a regular property
-        properties.push(`      ${Utils.toCamelCase(property.name)}: Id.Id('${property.knowledgeGraphId}')`);
-      }
+    // Relations
+    const relations = Object.entries(typeData.relations ?? {});
+    if (EffectArray.isNonEmptyArray(relations)) {
+      mappingLines.push(Doc.text('    relations: {'));
+      relations.forEach(([relationName, relationId], index, entries) => {
+        const isLast = index === entries.length - 1;
+        const comma = isLast ? '' : ',';
+        mappingLines.push(Doc.text(`      ${relationName}: Id.Id("${relationId}")${comma}`));
+      });
+      mappingLines.push(Doc.text('    },'));
     }
 
-    const typeName = Utils.toPascalCase(type.name);
-    const typeMapping = `  ${typeName}: {
-    typeIds: [Id.Id('${type.knowledgeGraphId}')],
-    properties: {
-${properties.join(',\n')},
-    },${
-      relations.length > 0
-        ? `
-    relations: {
-${relations.join(',\n')},
-    },`
-        : ''
-    }
-  }`;
-
-    typeMappings.push(typeMapping);
+    mappingLines.push(Doc.text('  }'));
   }
 
-  const mappingString = `export const mapping: Mapping = {
-${typeMappings.join(',\n')},
-};`;
+  mappingLines.push(Doc.text('}'));
 
-  return [importStatement1, importStatement2, '', mappingString].join('\n');
+  const compiled = Doc.vcat([imports, Doc.empty, ...mappingLines]);
+
+  return Doc.render(compiled, {
+    style: 'pretty',
+    options: { lineWidth: 120 },
+  });
 }

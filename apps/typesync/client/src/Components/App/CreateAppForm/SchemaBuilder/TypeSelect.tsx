@@ -19,7 +19,7 @@ class RelationTypeOption extends Schema.Class<RelationTypeOption>('/hypergraph/t
 const typeOptions: Array<TypeOption> = [
   TypeOption.make({ id: 'DefaultEntityText', name: 'Text' }),
   TypeOption.make({ id: 'DefaultEntityNumber', name: 'Number' }),
-  TypeOption.make({ id: 'DefaultEntityBoolean', name: 'Boolean' }),
+  TypeOption.make({ id: 'DefaultEntityCheckbox', name: 'Checkbox' }),
   TypeOption.make({ id: 'DefaultEntityDate', name: 'Date' }),
   TypeOption.make({ id: 'DefaultEntityUrl', name: 'Url' }),
   TypeOption.make({ id: 'DefaultEntityPoint', name: 'Point' }),

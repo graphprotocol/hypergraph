@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { NodeContext } from '@effect/platform-node';
 import { SqlClient, SqlError, SqlResolver, SqlSchema } from '@effect/sql';
 import { SqliteMigrator as Migrator, SqliteClient } from '@effect/sql-sqlite-node';
+import { propertyIsRelation } from '@graphprotocol/typesync/Mapping';
 import { Chunk, Console, Effect, Array as EffectArray, Layer, Option, Order, Schema, Stream } from 'effect';
 
 import * as TypesyncDomain from '../domain/Domain.js';
@@ -234,9 +235,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()('/typesyn
                             app_schema_type_id: createdType.id,
                             name: property.name,
                             type_name: property.dataType,
-                            relation_type_name: TypesyncDomain.propertyIsRelation(property)
-                              ? property.relationType
-                              : null,
+                            relation_type_name: propertyIsRelation(property) ? property.relationType : null,
                             description: null,
                             nullable: null,
                             optional: null,

@@ -26,6 +26,16 @@ export type MappingEntry = {
         [key: string]: Grc20Id.Id;
       }
     | undefined;
+  /**
+   * Record of relation properties to the `Id.Id` of the type in the Knowledge Graph
+   *
+   * @since 0.0.1
+   */
+  relations?:
+    | {
+        [key: string]: Grc20Id.Id;
+      }
+    | undefined;
 };
 
 /**
@@ -47,8 +57,10 @@ export type MappingEntry = {
  *     properties: {
  *       name: Id.Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
  *       description: Id.Id('1f0d9007-8da2-4b28-ab9f-3bc0709f4837'),
- *       speaker: Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
  *     },
+ *     relations: {
+ *       speaker: Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
+ *     }
  *   }
  * }
  * ```
@@ -282,7 +294,7 @@ export function allRelationPropertyTypesExist(types: ReadonlyArray<SchemaType>):
   );
 }
 
-export type GenerateMappingResult = [mapping: Mapping, ops: Array<Op>];
+export type GenerateMappingResult = [mapping: Mapping, ops: ReadonlyArray<Op>];
 
 // Helper types for internal processing
 type PropertyIdMapping = { propName: string; id: Grc20Id.Id };
@@ -293,7 +305,7 @@ type ProcessedProperty =
 
 type ProcessedType =
   | { type: 'complete'; entry: MappingEntry & { typeName: string }; ops: Array<Op> }
-  | { type: 'deferred'; schemaType: SchemaType; properties: Array<PropertyIdMapping> };
+  | { type: 'deferred'; schemaType: SchemaType; properties: Array<PropertyIdMapping>; relations: Array<PropertyIdMapping> };
 
 // Helper function to build property map from PropertyIdMappings
 function buildPropertyMap(properties: Array<PropertyIdMapping>): MappingEntry['properties'] {
@@ -302,6 +314,17 @@ function buildPropertyMap(properties: Array<PropertyIdMapping>): MappingEntry['p
     EffectArray.reduce({} as NonNullable<MappingEntry['properties']>, (props, { propName, id }) => {
       props[toCamelCase(propName)] = id;
       return props;
+    }),
+  );
+}
+
+// Helper function to build relation map from PropertyIdMappings
+function buildRelationMap(relations: Array<PropertyIdMapping>): MappingEntry['relations'] {
+  return pipe(
+    relations,
+    EffectArray.reduce({} as NonNullable<MappingEntry['relations']>, (rels, { propName, id }) => {
+      rels[toCamelCase(propName)] = id;
+      return rels;
     }),
   );
 }
@@ -365,8 +388,22 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
     EffectArray.filterMap((p) => (p.type === 'deferred' ? Option.some(p.property) : Option.none())),
   );
 
-  const propertyMappings = pipe(
+  // Separate resolved properties into primitive properties and relations
+  const primitiveProperties = pipe(
     resolvedProperties,
+    EffectArray.filter((p) => {
+      const originalProp = type.properties.find(prop => prop.name === p.mapping.propName);
+      return originalProp ? !propertyIsRelation(originalProp) : false;
+    }),
+    EffectArray.map((p) => p.mapping),
+  );
+
+  const relationProperties = pipe(
+    resolvedProperties,
+    EffectArray.filter((p) => {
+      const originalProp = type.properties.find(prop => prop.name === p.mapping.propName);
+      return originalProp ? propertyIsRelation(originalProp) : false;
+    }),
     EffectArray.map((p) => p.mapping),
   );
 
@@ -377,13 +414,22 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
 
   // If type exists in knowledge graph, return complete entry
   if (type.knowledgeGraphId) {
+    const entry: MappingEntry & { typeName: string } = {
+      typeName: toPascalCase(type.name),
+      typeIds: [Grc20Id.Id(type.knowledgeGraphId)],
+    };
+    
+    if (EffectArray.isNonEmptyArray(primitiveProperties)) {
+      entry.properties = buildPropertyMap(primitiveProperties);
+    }
+    
+    if (EffectArray.isNonEmptyArray(relationProperties)) {
+      entry.relations = buildRelationMap(relationProperties);
+    }
+    
     return {
       type: 'complete',
-      entry: {
-        typeName: toPascalCase(type.name),
-        typeIds: [Grc20Id.Id(type.knowledgeGraphId)],
-        properties: buildPropertyMap(propertyMappings),
-      },
+      entry,
       ops: propertyOps,
     };
   }
@@ -393,28 +439,39 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
     return {
       type: 'deferred',
       schemaType: type,
-      properties: propertyMappings,
+      properties: primitiveProperties,
+      relations: relationProperties,
     };
   }
 
-  // Create the type with all resolved properties
+  // Create the type with all resolved properties (both primitive and relations)
+  const allPropertyIds = [...primitiveProperties, ...relationProperties];
   const { id, ops: typeOps } = Graph.createType({
     name: type.name,
     properties: pipe(
-      propertyMappings,
+      allPropertyIds,
       EffectArray.map((p) => p.id),
     ),
   });
 
   typeIdMap.set(type.name, id);
 
+  const entry: MappingEntry & { typeName: string } = {
+    typeName: toPascalCase(type.name),
+    typeIds: [id],
+  };
+  
+  if (EffectArray.isNonEmptyArray(primitiveProperties)) {
+    entry.properties = buildPropertyMap(primitiveProperties);
+  }
+  
+  if (EffectArray.isNonEmptyArray(relationProperties)) {
+    entry.relations = buildRelationMap(relationProperties);
+  }
+
   return {
     type: 'complete',
-    entry: {
-      typeName: toPascalCase(type.name),
-      typeIds: [id],
-      properties: buildPropertyMap(propertyMappings),
-    },
+    entry,
     ops: [...propertyOps, ...typeOps],
   };
 }
@@ -484,6 +541,8 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *     properties: {
  *       name: Id.Id("3808e060-fb4a-4d08-8069-35b8c8a1902b"), // comes from input schema
  *       description: Id.Id("8fc4e17c-7581-4d6c-a712-943385afc7b5"), // generated from Graph.createProperty Op
+ *     },
+ *     relations: {
  *       speaker: Id.Id("651ce59f-643b-4931-bf7a-5dc0ca0f5a47"), // generated from Graph.createProperty Op
  *     }
  *   }
@@ -594,20 +653,23 @@ export function generateMapping(input: Schema): GenerateMappingResult {
           }),
         );
 
-        // Combine all properties for this type
-        const allProperties = [
-          ...deferred.properties,
+        // Combine resolved relations with existing relations
+        const allRelations = [
+          ...deferred.relations,
           ...pipe(
             resolvedRelations,
             EffectArray.map((r) => r.mapping),
           ),
         ];
 
+        // Combine all property IDs for type creation
+        const allPropertyIds = [...deferred.properties, ...allRelations];
+
         // Create the type with all properties
         const { id, ops: typeOps } = Graph.createType({
           name: deferred.schemaType.name,
           properties: pipe(
-            allProperties,
+            allPropertyIds,
             EffectArray.map((p) => p.id),
           ),
         });
@@ -623,14 +685,24 @@ export function generateMapping(input: Schema): GenerateMappingResult {
           ...typeOps,
         ];
 
+        // Build the entry with properties and relations separated
+        const entry: MappingEntry & { typeName: string } = {
+          typeName: toPascalCase(deferred.schemaType.name),
+          typeIds: [id],
+        };
+        
+        if (EffectArray.isNonEmptyArray(deferred.properties)) {
+          entry.properties = buildPropertyMap(deferred.properties);
+        }
+        
+        if (EffectArray.isNonEmptyArray(allRelations)) {
+          entry.relations = buildRelationMap(allRelations);
+        }
+
         return {
           entries: [
             ...acc.entries,
-            {
-              typeName: toPascalCase(deferred.schemaType.name),
-              typeIds: [id],
-              properties: buildPropertyMap(allProperties),
-            },
+            entry,
           ],
           ops: [...acc.ops, ...allOps],
         };
