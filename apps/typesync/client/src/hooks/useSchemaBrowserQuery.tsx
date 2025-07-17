@@ -4,34 +4,27 @@ import { type UseQueryOptions, type UseQueryResult, queryOptions, useQuery } fro
 import { Array as EffectArray, Order, Schema, pipe } from 'effect';
 
 import { graphqlClient } from '../clients/graphql.js';
-import { ROOT_SPACE_ID } from '../constants.js';
 import { graphql } from '../generated/gql.js';
 import type { PropertiesQuery, SchemaBrowserTypesQuery } from '../generated/graphql.js';
-import { typesData } from '../typesData.js';
 
 const SchemaBrowser = graphql(`
-  query SchemaBrowserTypes($spaceId: String!, $limit: Int) {
-    types(spaceId: $spaceId, limit: $limit) {
+  query SchemaBrowserTypes($first: Int) {
+    typesList(first: $first) {
       id
       name
+      description
       properties {
         id
+        name
         dataType
-        entity {
-          id
-          name
-        }
         relationValueTypes {
           id
           name
           description
           properties {
             id
+            name
             dataType
-            entity {
-              id
-              name
-            }
           }
         }
       }
@@ -39,9 +32,9 @@ const SchemaBrowser = graphql(`
   }
 `);
 
-export async function fetchSchemaTypes(spaceId = ROOT_SPACE_ID, limit = 1000) {
+export async function fetchSchemaTypes(first = 100) {
   try {
-    return await graphqlClient.request(SchemaBrowser, { spaceId, limit });
+    return await graphqlClient.request(SchemaBrowser, { first });
   } catch (err) {
     console.error('failure fetching schema types');
     return { __typename: 'Query', types: [] } as SchemaBrowserTypesQuery;
@@ -51,15 +44,12 @@ export async function fetchSchemaTypes(spaceId = ROOT_SPACE_ID, limit = 1000) {
 const Property = Schema.Struct({
   id: Schema.UUID,
   dataType: Schema.Literal('TEXT', 'NUMBER', 'CHECKBOX', 'TIME', 'POINT', 'RELATION'),
-  entity: Schema.Struct({
-    id: Schema.UUID,
-    name: Schema.String,
-  }),
+  name: Schema.String,
 });
 export const RelationValueType = Schema.Struct({
   id: Schema.UUID,
   name: Schema.String,
-  descrtipion: Schema.NullOr(Schema.String),
+  description: Schema.NullOr(Schema.String),
   properties: Schema.NullOr(Schema.Array(Property)),
 });
 export type RelationValueType = typeof RelationValueType.Type;
@@ -89,77 +79,57 @@ function slugifyKnowlegeGraphType(type: KnowledgeGraphType): string {
   const slugifiedProps = pipe(
     type.properties ?? [],
     EffectArray.filter((prop) => prop != null),
-    EffectArray.reduce('', (slug, curr) => `${slug}${curr.entity?.name || ''}`),
+    EffectArray.reduce('', (slug, curr) => `${slug}${curr.name}`),
   );
   return `${type.name || ''}${slugifiedProps}`.toLowerCase();
 }
 async function fetchAndTransformSchemaTypes(): Promise<Array<ExtendedSchemaBrowserType>> {
-  const data = typesData;
-  const types = data.types ?? [];
+  const data = await fetchSchemaTypes();
+  const types = data.typesList ?? [];
 
   return pipe(
     types,
     EffectArray.filter((type) => type != null && type.name != null),
     EffectArray.map((type) => {
-      // biome-ignore lint/style/noNonNullAssertion: null types filtered out above
-      const _type = type!;
       const properties = pipe(
-        _type.properties ?? [],
-        EffectArray.filter((prop) => prop != null && prop.entity?.name != null),
-        EffectArray.map((prop) => {
-          // biome-ignore lint/style/noNonNullAssertion: null properties filtered out
-          const _prop = prop!;
-          // biome-ignore lint/style/noNonNullAssertion: null properties filtered out
-          const _entity = _prop.entity!;
-
-          return {
-            id: _prop.id,
-            dataType: _prop.dataType,
-            entity: {
-              id: _entity.id,
-              // biome-ignore lint/style/noNonNullAssertion: null properties filtered out
-              name: _entity.name!,
-            },
-            relationValueTypes: pipe(
-              _prop.relationValueTypes ?? [],
-              EffectArray.filter((t) => t != null && t.name != null),
-              EffectArray.map((t) => {
-                // biome-ignore lint/style/noNonNullAssertion: null filtered out above
-                const _t = t!;
-                return {
-                  id: _t.id,
-                  // biome-ignore lint/style/noNonNullAssertion: null t.name filtered out above
-                  name: _t.name!,
-                  descrtipion: _t.description || null,
-                  properties: pipe(
-                    _t.properties ?? [],
-                    EffectArray.filter(
-                      (relationValueTypeProp) =>
-                        relationValueTypeProp != null && relationValueTypeProp.entity?.name != null,
+        type.properties ?? [],
+        EffectArray.filter((prop) => prop != null && prop.name != null),
+        EffectArray.map(
+          (prop) =>
+            ({
+              id: prop.id,
+              dataType: prop.dataType,
+              // biome-ignore lint/style/noNonNullAssertion: null prop.name filtered out above
+              name: prop.name!,
+              relationValueTypes: pipe(
+                prop.relationValueTypes ?? [],
+                EffectArray.filter((t) => t != null && t.name != null),
+                EffectArray.map((t) => {
+                  return {
+                    id: t.id,
+                    // biome-ignore lint/style/noNonNullAssertion: null t.name filtered out above
+                    name: t.name!,
+                    description: t.description || null,
+                    properties: pipe(
+                      t.properties ?? [],
+                      EffectArray.filter((relationValueTypeProp) => relationValueTypeProp.name != null),
+                      EffectArray.map((relationValueTypeProp) => ({
+                        id: relationValueTypeProp.id,
+                        dataType: relationValueTypeProp.dataType,
+                        // biome-ignore lint/style/noNonNullAssertion: null name filtered out above
+                        name: relationValueTypeProp.name!,
+                      })),
                     ),
-                    EffectArray.map((relationValueTypeProp) => ({
-                      // biome-ignore lint/style/noNonNullAssertion: null filtered out
-                      id: relationValueTypeProp!.id,
-                      // biome-ignore lint/style/noNonNullAssertion: null filtered out
-                      dataType: relationValueTypeProp!.dataType,
-                      entity: {
-                        // biome-ignore lint/style/noNonNullAssertion: null filtered out
-                        id: relationValueTypeProp!.entity!.id,
-                        // biome-ignore lint/style/noNonNullAssertion: null filtered out
-                        name: relationValueTypeProp!.entity!.name!,
-                      },
-                    })),
-                  ),
-                };
-              }),
-            ),
-          } as const satisfies KnowledgeGraphTypeProperty;
-        }),
+                  };
+                }),
+              ),
+            }) as const satisfies KnowledgeGraphTypeProperty,
+        ),
       );
       const mapped: KnowledgeGraphType = {
-        id: _type.id,
+        id: type.id,
         // biome-ignore lint/style/noNonNullAssertion: null type name filtered out above
-        name: _type.name!,
+        name: type.name!,
         properties,
       };
       const slug = slugifyKnowlegeGraphType(mapped);
@@ -173,7 +143,7 @@ async function fetchAndTransformSchemaTypes(): Promise<Array<ExtendedSchemaBrows
 }
 
 export const schemaBrowserQueryOptions = queryOptions({
-  queryKey: ['SchemaBrowser', 'types', ROOT_SPACE_ID] as const,
+  queryKey: ['SchemaBrowser', 'types'] as const,
   async queryFn() {
     return await fetchAndTransformSchemaTypes();
   },
@@ -185,7 +155,7 @@ export function useSchemaBrowserQuery(
       Array<ExtendedSchemaBrowserType>,
       Error,
       Array<ExtendedSchemaBrowserType>,
-      readonly ['SchemaBrowser', 'types', typeof ROOT_SPACE_ID]
+      readonly ['SchemaBrowser', 'types']
     >,
     'queryKey' | 'queryFn'
   > = {},
@@ -197,15 +167,12 @@ export function useSchemaBrowserQuery(
 }
 
 const PropertyBrowser = graphql(`
-  query Properties {
-    properties {
+  query Properties($first: Int) {
+    properties(first: $first) {
       id
-      dataType    
-      entity {
-        id
-        name
-        description
-      }
+      name
+      description
+      dataType
       relationValueTypes {
         id
         name
@@ -213,32 +180,32 @@ const PropertyBrowser = graphql(`
         properties {
           id
           dataType
-          entity {
-            id
-            name
-          }
+          name
         }
       }
     }
   }
 `);
-export async function fetchProperties() {
+export async function fetchProperties(first = 100) {
   try {
-    return await graphqlClient.request(PropertyBrowser);
+    return await graphqlClient.request(PropertyBrowser, { first });
   } catch (err) {
     console.error('failure fetching schema types');
     return { __typename: 'Query', properties: [] } as PropertiesQuery;
   }
 }
 
-type KGProperty = NonNullable<PropertiesQuery['properties'][number]>;
-export type ExtendedProperty = Omit<KGProperty, 'entity' | 'relationValueTypes'> & {
-  entity: NonNullable<KGProperty['entity']>;
-  relationValueTypes: NonNullable<KGProperty['relationValueTypes']>;
-  slug: string;
-};
+export const ExtendedProperty = KnowledgeGraphTypeProperty.pipe(
+  Schema.extend(
+    Schema.Struct({
+      description: Schema.NullOr(Schema.NonEmptyTrimmedString),
+      slug: Schema.Lowercase,
+    }),
+  ),
+);
+export type ExtendedProperty = typeof ExtendedProperty.Type;
 
-const PropertyNameOrder = Order.mapInput(Order.string, (prop: ExtendedProperty) => prop.entity.name || prop.id);
+const PropertyNameOrder = Order.mapInput(Order.string, (prop: ExtendedProperty) => prop.name || prop.id);
 
 export const propertiesQueryOptions = queryOptions({
   queryKey: ['SchemaBrowser', 'properties'] as const,
@@ -248,21 +215,41 @@ export const propertiesQueryOptions = queryOptions({
 
     return pipe(
       properties,
-      EffectArray.filter((prop) => prop != null && prop.entity?.name != null && prop.dataType != null),
+      EffectArray.filter((prop) => prop.name != null),
       EffectArray.map((prop) => {
-        // biome-ignore lint/style/noNonNullAssertion: null properties are filtered out above
-        const _prop = prop!;
-        // biome-ignore lint/style/noNonNullAssertion: null properties are filtered out above
-        const _entity = _prop.entity!;
-        const slug = `${_prop.dataType}${_entity.name || ''}${_prop.id}`.toLowerCase();
+        const slug = `${prop.dataType}${prop.name || ''}${prop.id}`.toLowerCase();
 
-        return {
-          id: _prop.id,
-          dataType: _prop.dataType,
-          entity: _entity,
-          relationValueTypes: _prop.relationValueTypes ?? [],
+        const property: ExtendedProperty = {
+          id: prop.id,
+          dataType: prop.dataType,
+          // biome-ignore lint/style/noNonNullAssertion: null prop.name filtered out above
+          name: prop.name!,
+          description: prop.description || null,
+          relationValueTypes: pipe(
+            prop.relationValueTypes ?? [],
+            EffectArray.filter((t) => t != null && t.name != null),
+            EffectArray.map((t) => {
+              return {
+                id: t.id,
+                // biome-ignore lint/style/noNonNullAssertion: null t.name filtered out above
+                name: t.name!,
+                description: t.description || null,
+                properties: pipe(
+                  t.properties ?? [],
+                  EffectArray.filter((relationValueTypeProp) => relationValueTypeProp.name != null),
+                  EffectArray.map((relationValueTypeProp) => ({
+                    id: relationValueTypeProp.id,
+                    dataType: relationValueTypeProp.dataType,
+                    // biome-ignore lint/style/noNonNullAssertion: null name filtered out above
+                    name: relationValueTypeProp.name!,
+                  })),
+                ),
+              };
+            }),
+          ),
           slug,
-        } as const satisfies ExtendedProperty;
+        };
+        return property;
       }),
       EffectArray.sort(PropertyNameOrder),
     );

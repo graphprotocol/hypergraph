@@ -59,7 +59,7 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
           field.handleChange(val);
           return;
         }
-        field.handleChange(val.entity.name || val.id);
+        field.handleChange(val.name || val.id);
         propertySelected(val);
       }}
       onClose={() => setPropsFilter('')}
@@ -92,23 +92,21 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
               <ComboboxOption
                 key={_prop.id}
                 value={_prop}
-                data-selected={value === _prop.entity.name || value === _prop.id ? true : undefined}
+                data-selected={value === _prop.name || value === _prop.id ? true : undefined}
                 className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 dark:text-white select-none data-focus:bg-indigo-600 data-focus:text-white data-focus:outline-hidden"
               >
                 <div className="flex-auto flex flex-col gap-y-1">
                   <div className="flex items-center justify-between gap-x-2">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-100 group-data-focus:text-gray-900 dark:group-data-focus:text-white flex items-center gap-x-1.5">
-                      {_prop.entity.name || _prop.id}
-                      <InlineCode>
-                        {mapKGDataTypeToPrimitiveType(_prop.dataType, _prop.entity.name || _prop.id)}
-                      </InlineCode>
+                      {_prop.name || _prop.id}
+                      <InlineCode>{mapKGDataTypeToPrimitiveType(_prop.dataType, _prop.name || _prop.id)}</InlineCode>
                     </p>
                     <p className="w-fit">
                       <InlineCode>{_prop.id}</InlineCode>
                     </p>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-300 group-data-focus:text-gray-700 dark:group-data-focus:text-gray-50">
-                    {_prop.entity.description}
+                    {_prop.description}
                   </p>
                 </div>
 

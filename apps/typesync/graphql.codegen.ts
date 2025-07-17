@@ -1,3 +1,4 @@
+import { Graph } from '@graphprotocol/grc-20';
 import type { CodegenConfig } from '@graphql-codegen/cli';
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations';
@@ -8,13 +9,16 @@ const pluginConfig = {
   arrayInputCoercion: false,
   enumsAsTypes: true,
   dedupeFragments: true,
+  scalars: {
+    UUID: 'string',
+  },
 } satisfies PluginConfig;
 
 const config = {
   overwrite: true,
   generates: {
     './client/src/generated/': {
-      schema: 'https://hypergraph-v2-testnet.up.railway.app/graphql',
+      schema: `${Graph.TESTNET_API_ORIGIN}/graphql`,
       documents: ['./client/src/**/*.{ts,tsx}'],
       preset: 'client',
       config: pluginConfig,
