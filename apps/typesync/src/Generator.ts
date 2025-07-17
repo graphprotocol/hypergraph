@@ -407,10 +407,10 @@ export function buildMappingFile(schema: Domain.InsertAppSchema) {
       mappingLines.push(Doc.text('    },'));
     }
 
-    mappingLines.push(Doc.text('  }'));
+    mappingLines.push(Doc.text('  },'));
   }
 
-  mappingLines.push(Doc.text('}'));
+  mappingLines.push(Doc.rbrace);
 
   const compiled = Doc.vcat([imports, Doc.empty, ...mappingLines]);
 
