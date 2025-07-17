@@ -1,5 +1,6 @@
 'use client';
 
+import { isDataTypeRelation } from '@graphprotocol/typesync/Mapping';
 import {
   ArrowUturnLeftIcon,
   CheckCircleIcon,
@@ -14,7 +15,7 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, Schema, pipe } from 'effect';
 import { useState } from 'react';
 
-import { InsertAppSchema, isDataTypeRelation } from '../../../../domain/Domain.js';
+import { InsertAppSchema } from '../../../../domain/Domain.js';
 
 import { SchemaBrowser } from '../../Components/App/CreateAppForm/SchemaBuilder/SchemaBrowser.js';
 import { useAppForm } from '../../Components/App/CreateAppForm/useCreateAppForm.js';
@@ -98,7 +99,8 @@ function CreateAppPage() {
     defaultValues,
     validators: {
       onChangeAsyncDebounceMs: 100,
-      onChange: Schema.standardSchemaV1(InsertAppSchema),
+      // biome-ignore lint/suspicious/noExplicitAny: fixes an issue with the prop.dataType type-string of `Relation(${name})`
+      onChange: Schema.standardSchemaV1(InsertAppSchema) as any,
     },
     async onSubmit({ formApi, value }) {
       await mutateAsync(value).then(() => formApi.reset(undefined, { keepDefaultValues: true }));
@@ -794,7 +796,7 @@ function CreateAppPage() {
           </div>
         </TabsPrimitive.Content>
 
-        <TabsPrimitive.List className="mt-6 flex items-center justify-end gap-x-6 fixed bottom-4 right-4 bg-white dark:bg-black p-4 rounded-lg">
+        <TabsPrimitive.List className="mt-6 flex items-center justify-end gap-x-6 fixed bottom-4 right-4 bg-white dark:bg-inherit p-4 rounded-lg">
           <Link to="/" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
             Cancel
           </Link>

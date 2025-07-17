@@ -9,11 +9,16 @@ This package exposes a function: `generateMapping` that takes the schema with an
 ## Mapping definition
 
 ```ts
+import { Id } from '@graphprotocol/grc-20';
+
 export type MappingEntry = {
-  typeIds: Array<Grc20Id.Id>;
+  typeIds: Array<Id.Id>;
   properties?: {
-    [key: string]: Grc20Id.Id;
+    [key: string]: Id.Id;
   };
+  relations?: {
+    [key: string]: Id.Id
+  }
 };
 
 export type Mapping = {
@@ -36,7 +41,7 @@ export class Account extends Entity.Class<Account>('Account')({
 export class Event extends Entity.Class<Event>('Event')({
   name: Type.Text,
   description: Type.Text,
-  account: Type.Relation(Account)
+  speaker: Type.Relation(Account)
 }) {}
 ```
 
@@ -59,8 +64,10 @@ export const mapping: Mapping = {
     properties: {
       name: Id.Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
       description: Id.Id('1f0d9007-8da2-4b28-ab9f-3bc0709f4837'),
-      account: Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
     },
+    relations: {
+      speaker: Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
+    }
   }
 }
 ```

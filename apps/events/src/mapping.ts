@@ -1,5 +1,5 @@
 import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/hypergraph';
+import type { Mapping } from '@graphprotocol/typesync/Mapping';
 
 export const mapping: Mapping = {
   Event: {

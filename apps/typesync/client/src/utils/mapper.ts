@@ -1,11 +1,11 @@
-import type { SchemaDataType } from '../../../domain/Domain';
+import type { SchemaDataType } from '@graphprotocol/typesync/Mapping';
 
-import type { DataType } from '../generated/graphql';
+import type { DataTypes } from '../generated/graphql';
 
-export function mapKGDataTypeToPrimitiveType(dataType: DataType, entity: string): SchemaDataType {
+export function mapKGDataTypeToPrimitiveType(dataType: DataTypes, entity: string): SchemaDataType {
   switch (dataType) {
     case 'CHECKBOX': {
-      return 'Boolean';
+      return 'Checkbox';
     }
     case 'NUMBER': {
       return 'Number';

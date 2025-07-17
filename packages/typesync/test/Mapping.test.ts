@@ -113,6 +113,8 @@ describe('Mapping', () => {
           properties: {
             name: expect.any(String),
             description: expect.any(String),
+          },
+          relations: {
             speaker: expect.any(String),
           },
         },
@@ -176,6 +178,8 @@ describe('Mapping', () => {
           properties: {
             name: Id.Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
             description: expect.any(String),
+          },
+          relations: {
             speaker: expect.any(String),
           },
         },
@@ -227,6 +231,8 @@ describe('Mapping', () => {
           typeIds: [expect.any(String)],
           properties: {
             name: expect.any(String),
+          },
+          relations: {
             organizer: expect.any(String),
           },
         },
@@ -278,6 +284,8 @@ describe('Mapping', () => {
           typeIds: [expect.any(String)],
           properties: {
             name: expect.any(String),
+          },
+          relations: {
             organizer: expect.any(String),
           },
         },
@@ -358,6 +366,8 @@ describe('Mapping', () => {
           typeIds: [expect.any(String)],
           properties: {
             title: expect.any(String),
+          },
+          relations: {
             speaker: expect.any(String),
             venue: expect.any(String),
           },

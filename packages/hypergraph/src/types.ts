@@ -1,4 +1,3 @@
-import type { Id as Grc20Id } from '@graphprotocol/grc-20';
 import * as Data from 'effect/Data';
 import * as Schema from 'effect/Schema';
 
@@ -49,17 +48,3 @@ export class FailedToParseConnectAuthUrl extends Data.TaggedError('FailedToParse
 export class FailedToParseAuthCallbackUrl extends Data.TaggedError('FailedToParseAuthCallbackUrl')<{
   message: string;
 }> {}
-
-export type MappingEntry = {
-  typeIds: Grc20Id.Id[];
-  properties?: {
-    [key: string]: Grc20Id.Id;
-  };
-  relations?: {
-    [key: string]: Grc20Id.Id;
-  };
-};
-
-export type Mapping = {
-  [key: string]: MappingEntry;
-};

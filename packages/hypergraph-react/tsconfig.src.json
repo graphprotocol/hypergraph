@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "include": ["src"],
   "references": [
-    { "path": "../hypergraph/tsconfig.src.json" }
+    { "path": "../hypergraph/tsconfig.src.json" },
+    { "path": "../typesync/tsconfig.src.json" }
   ],
   "compilerOptions": {
     "tsBuildInfoFile": ".tsbuildinfo/src.tsbuildinfo",
