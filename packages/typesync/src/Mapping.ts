@@ -305,7 +305,12 @@ type ProcessedProperty =
 
 type ProcessedType =
   | { type: 'complete'; entry: MappingEntry & { typeName: string }; ops: Array<Op> }
-  | { type: 'deferred'; schemaType: SchemaType; properties: Array<PropertyIdMapping>; relations: Array<PropertyIdMapping> };
+  | {
+      type: 'deferred';
+      schemaType: SchemaType;
+      properties: Array<PropertyIdMapping>;
+      relations: Array<PropertyIdMapping>;
+    };
 
 // Helper function to build property map from PropertyIdMappings
 function buildPropertyMap(properties: Array<PropertyIdMapping>): MappingEntry['properties'] {
@@ -392,7 +397,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
   const primitiveProperties = pipe(
     resolvedProperties,
     EffectArray.filter((p) => {
-      const originalProp = type.properties.find(prop => prop.name === p.mapping.propName);
+      const originalProp = type.properties.find((prop) => prop.name === p.mapping.propName);
       return originalProp ? !propertyIsRelation(originalProp) : false;
     }),
     EffectArray.map((p) => p.mapping),
@@ -401,7 +406,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
   const relationProperties = pipe(
     resolvedProperties,
     EffectArray.filter((p) => {
-      const originalProp = type.properties.find(prop => prop.name === p.mapping.propName);
+      const originalProp = type.properties.find((prop) => prop.name === p.mapping.propName);
       return originalProp ? propertyIsRelation(originalProp) : false;
     }),
     EffectArray.map((p) => p.mapping),
@@ -418,15 +423,15 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
       typeName: toPascalCase(type.name),
       typeIds: [Grc20Id.Id(type.knowledgeGraphId)],
     };
-    
+
     if (EffectArray.isNonEmptyArray(primitiveProperties)) {
       entry.properties = buildPropertyMap(primitiveProperties);
     }
-    
+
     if (EffectArray.isNonEmptyArray(relationProperties)) {
       entry.relations = buildRelationMap(relationProperties);
     }
-    
+
     return {
       type: 'complete',
       entry,
@@ -460,11 +465,11 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
     typeName: toPascalCase(type.name),
     typeIds: [id],
   };
-  
+
   if (EffectArray.isNonEmptyArray(primitiveProperties)) {
     entry.properties = buildPropertyMap(primitiveProperties);
   }
-  
+
   if (EffectArray.isNonEmptyArray(relationProperties)) {
     entry.relations = buildRelationMap(relationProperties);
   }
@@ -690,20 +695,17 @@ export function generateMapping(input: Schema): GenerateMappingResult {
           typeName: toPascalCase(deferred.schemaType.name),
           typeIds: [id],
         };
-        
+
         if (EffectArray.isNonEmptyArray(deferred.properties)) {
           entry.properties = buildPropertyMap(deferred.properties);
         }
-        
+
         if (EffectArray.isNonEmptyArray(allRelations)) {
           entry.relations = buildRelationMap(allRelations);
         }
 
         return {
-          entries: [
-            ...acc.entries,
-            entry,
-          ],
+          entries: [...acc.entries, entry],
           ops: [...acc.ops, ...allOps],
         };
       },
