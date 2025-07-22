@@ -18,7 +18,7 @@ const App = () => {
 
 It has one mandatory prop: `mapping`. This is the mapping of your schema to the public Knowledge Graph schema. You can find more information about the mapping in the [Mapping](/docs/mapping) section later.
 
-Further it has an optional prop: `syncServerUri`. This is the URL of the sync server. By default it is set to `https://hypergraph.fly.dev`.
+Further it has an optional prop: `syncServerUri`. This is the URL of the sync server. By default it is set to `https://hypergraph-sync.up.railway.app`.
 
 ## useHypergraphApp
 
