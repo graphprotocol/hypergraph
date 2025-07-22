@@ -755,7 +755,7 @@ describe('inboxes', () => {
 
     it('should reject unsigned messages for RequiresAuth inboxes', async () => {
       const accountAddress = '0x1234567890123456789012345678901234567890';
-      const inboxId = generateId();
+      const _inboxId = generateId();
 
       const message = {
         ciphertext: '0x123',
@@ -856,7 +856,7 @@ describe('inboxes', () => {
 
     it('should accept unsigned messages for Anonymous inboxes', async () => {
       const accountAddress = '0x1234567890123456789012345678901234567890';
-      const inboxId = generateId();
+      const _inboxId = generateId();
 
       const message = {
         ciphertext: '0x123',

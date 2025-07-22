@@ -12,7 +12,11 @@
     "url": "https://github.com/graphprotocol/hypergraph.git",
     "directory": "packages/typesync"
   },
-  "keywords": ["The Graph", "GRC-20", "hypergraph"],
+  "keywords": [
+    "The Graph",
+    "GRC-20",
+    "hypergraph"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",

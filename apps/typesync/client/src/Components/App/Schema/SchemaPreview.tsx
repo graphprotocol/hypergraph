@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { CSSProperties } from 'react';
-import { type ThemedToken, codeToTokens } from 'shiki';
+import { codeToTokens, type ThemedToken } from 'shiki';
 
 import type { AppSchema } from '../../../schema.js';
 import { classnames } from '../../../utils/classnames.js';

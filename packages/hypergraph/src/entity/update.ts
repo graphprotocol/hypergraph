@@ -19,7 +19,7 @@ export const update = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
     validate(data);
 
     // apply changes to the repo -> updates the existing entity to the repo entities document
-    let updated: Schema.Schema.Type<S> | undefined = undefined;
+    let updated: Schema.Schema.Type<S> | undefined;
     handle.change((doc) => {
       if (doc.entities === undefined) {
         return;

@@ -78,7 +78,7 @@ export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { 
       });
 
       return { success: true, cid, txResult };
-    } catch (error) {
+    } catch (_error) {
       return { success: false, error: 'Failed to delete entity' };
     }
   };

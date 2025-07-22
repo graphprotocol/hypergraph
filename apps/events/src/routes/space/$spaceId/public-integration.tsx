@@ -1,7 +1,7 @@
-import { CreatePropertiesAndTypesTodos } from '@/components/create-properties-and-types-todos';
-import { Todos2 } from '@/components/todos2';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { CreatePropertiesAndTypesTodos } from '@/components/create-properties-and-types-todos';
+import { Todos2 } from '@/components/todos2';
 
 export const Route = createFileRoute('/space/$spaceId/public-integration')({
   component: PublicIntegration,

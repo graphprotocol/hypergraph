@@ -32,7 +32,7 @@ export const createUpdate = async ({
         clock: number;
         content: Buffer;
       }
-    | undefined = undefined;
+    | undefined;
 
   while (!success && retries < maxRetries) {
     try {

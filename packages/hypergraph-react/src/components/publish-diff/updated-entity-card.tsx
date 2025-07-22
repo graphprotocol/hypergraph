@@ -21,6 +21,8 @@ export const UpdatedEntityCard = ({ entity }: UpdatedEntityCardProps) => {
 
   return (
     <div className="border rounded-sm border-gray-200 overflow-hidden text-xs">
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: UpdatedEntityCard has keyboard support via Enter key */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: UpdatedEntityCard has keyboard support via Enter key */}
       <div
         className="p-3 flex justify-between items-center cursor-pointer bg-gray-50"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -113,19 +115,17 @@ export const UpdatedEntityCard = ({ entity }: UpdatedEntityCardProps) => {
                     </td>
                     <td className="py-1.5 ">
                       {!hasChanged ? (
-                        <>
-                          {Array.isArray(currentValue) ? (
-                            <ul>
-                              {currentValue.map(({ id, name }) => (
-                                <li key={id}>
-                                  {name} <span className="text-gray-500">- {id}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <span>{String(currentValue)}</span>
-                          )}
-                        </>
+                        Array.isArray(currentValue) ? (
+                          <ul>
+                            {currentValue.map(({ id, name }) => (
+                              <li key={id}>
+                                {name} <span className="text-gray-500">- {id}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span>{String(currentValue)}</span>
+                        )
                       ) : Array.isArray(newValue) ? (
                         <ul>
                           {newValue.map(({ id, name }) => (

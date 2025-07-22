@@ -1,11 +1,11 @@
+import { StoreConnect } from '@graphprotocol/hypergraph';
+import { usePrivy } from '@privy-io/react-auth';
+import { createRootRoute, Outlet, useLayoutEffect, useRouter } from '@tanstack/react-router';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { useSelector } from '@xstate/store/react';
 import GeoLogo from '@/assets/images/geo-logo-branded.svg?react';
 import { LogoutButton } from '@/components/LogoutButton';
 import { AppTitle } from '@/components/ui/AppTitle';
-import { StoreConnect } from '@graphprotocol/hypergraph';
-import { usePrivy } from '@privy-io/react-auth';
-import { Outlet, createRootRoute, useLayoutEffect, useRouter } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-import { useSelector } from '@xstate/store/react';
 
 export const Route = createRootRoute({
   component: () => {

@@ -15,7 +15,7 @@ export class App extends Schema.Class<App>('App')({
   id: AppIdentifier,
   name: Schema.NonEmptyTrimmedString,
   description: Schema.NullOr(Schema.String),
-  directory: Schema.NullOr(Schema.String.pipe(Schema.pattern(/^(\.\/|~\/|\/|[a-zA-Z]:\/)[\w\-\.\s\/]*[\w\-\.]$/))),
+  directory: Schema.NullOr(Schema.String.pipe(Schema.pattern(/^(\.\/|~\/|\/|[a-zA-Z]:\/)[\w\-.\s/]*[\w\-.]$/))),
   status: Schema.Literal('draft', 'generated', 'published', 'change_detected'),
   created_at: Schema.NonEmptyTrimmedString,
   updated_at: Schema.NonEmptyTrimmedString,

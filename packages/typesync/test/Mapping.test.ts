@@ -2,11 +2,11 @@ import { Id } from '@graphprotocol/grc-20';
 import { describe, expect, it } from 'vitest';
 
 import {
-  type Mapping,
-  type Schema,
   allRelationPropertyTypesExist,
   generateMapping,
+  type Mapping,
   mapSchemaDataTypeToGRC20PropDataType,
+  type Schema,
 } from '../src/Mapping.js';
 
 describe('Mapping', () => {

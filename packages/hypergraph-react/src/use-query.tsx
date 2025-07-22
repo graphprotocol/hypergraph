@@ -14,7 +14,7 @@ type QueryParams<S extends Entity.AnyNoContext> = {
 };
 
 // @ts-expect-error TODO: remove this function
-const mergeEntities = <S extends Entity.AnyNoContext>(
+const _mergeEntities = <S extends Entity.AnyNoContext>(
   publicEntities: Entity.Entity<S>[],
   localEntities: Entity.Entity<S>[],
   localDeletedEntities: Entity.Entity<S>[],
@@ -46,7 +46,7 @@ const mergeEntities = <S extends Entity.AnyNoContext>(
 };
 
 // @ts-expect-error TODO: remove this function
-const getDiff = <S extends Entity.AnyNoContext>(
+const _getDiff = <S extends Entity.AnyNoContext>(
   type: S,
   publicEntities: Entity.Entity<S>[],
   localEntities: Entity.Entity<S>[],

@@ -3,7 +3,7 @@
 import { RouterProvider } from '@tanstack/react-router';
 import { Provider } from 'jotai';
 
-import { type TypeSyncAppRouter, createTypeSyncAppRouter } from './clients/router.js';
+import { createTypeSyncAppRouter, type TypeSyncAppRouter } from './clients/router.js';
 
 const router = createTypeSyncAppRouter();
 

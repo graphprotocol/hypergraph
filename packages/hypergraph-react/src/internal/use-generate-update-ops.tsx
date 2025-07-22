@@ -6,6 +6,7 @@ import type { DiffEntry } from '../types.js';
 export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: S, enabled = true) {
   const mapping = useSelector(store, (state) => state.context.mapping);
 
+  // biome-ignore lint/correctness/noUnusedFunctionParameters: temporary
   return ({ id, diff }: { id: string; diff: DiffEntry }) => {
     // @ts-expect-error TODO should use the actual type instead of the name in the mapping
     const typeName = type.name;

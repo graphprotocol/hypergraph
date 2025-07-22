@@ -1,7 +1,7 @@
-import { UsersMerged } from '@/components/users/users-merged';
-import { UsersPublic } from '@/components/users/users-public';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { UsersMerged } from '@/components/users/users-merged';
+import { UsersPublic } from '@/components/users/users-public';
 import { UsersLocal } from '../../../components/users/users-local';
 export const Route = createFileRoute('/space/$spaceId/users')({
   component: UsersRouteComponent,

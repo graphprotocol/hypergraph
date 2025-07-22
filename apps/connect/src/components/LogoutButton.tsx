@@ -1,8 +1,8 @@
-import { Loading } from '@/components/ui/Loading';
 import { Connect } from '@graphprotocol/hypergraph';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
+import { Loading } from '@/components/ui/Loading';
 
 export function LogoutButton() {
   const { logout: privyLogout, ready, authenticated } = usePrivy();

@@ -1,6 +1,6 @@
-import { Events } from '@/components/events/events';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { Events } from '@/components/events/events';
 export const Route = createFileRoute('/space/$spaceId/events')({
   component: RouteComponent,
 });

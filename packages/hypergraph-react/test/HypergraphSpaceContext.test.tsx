@@ -1,10 +1,9 @@
 import { Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Entity, Type, store } from '@graphprotocol/hypergraph';
+import { Entity, store, Type } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
-// biome-ignore lint/style/useImportType: <explanation>
-import React from 'react';
+import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   HypergraphSpaceProvider,
@@ -186,7 +185,7 @@ describe('HypergraphSpaceContext', () => {
 
       let deleted = false;
       act(() => {
-        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        // biome-ignore lint/style/noNonNullAssertion: fine for testing
         deleted = deleteEntityResult.current(createdEntity!.id);
       });
 

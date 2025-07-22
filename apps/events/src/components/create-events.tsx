@@ -7,7 +7,10 @@ import { Button } from './ui/button';
 const createEvents = async ({
   smartSessionClient,
   space,
-}: { smartSessionClient: Connect.SmartSessionClient; space: string }) => {
+}: {
+  smartSessionClient: Connect.SmartSessionClient;
+  space: string;
+}) => {
   try {
     const ops: Array<Op> = [];
 

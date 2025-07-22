@@ -119,7 +119,7 @@ export const decryptIdentity = async (
   let keysMsg: Uint8Array;
   try {
     keysMsg = await decrypt(ciphertext, secretKey);
-  } catch (e) {
+  } catch (_e) {
     // See https://github.com/xmtp/xmtp-js/blob/8d6e5a65813902926baac8150a648587acbaad92/sdks/js-sdk/src/keystore/providers/NetworkKeyManager.ts#L142-L146
     if (secretKey.length !== 65) {
       throw new Error('Expected 65 bytes before trying a different recovery byte');

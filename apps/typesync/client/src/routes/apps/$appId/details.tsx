@@ -10,7 +10,7 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/solid';
 import { useSuspenseQueries } from '@tanstack/react-query';
-import { Link, type NotFoundRouteProps, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link, type NotFoundRouteProps } from '@tanstack/react-router';
 import { format } from 'date-fns/format';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import * as Schema from 'effect/Schema';

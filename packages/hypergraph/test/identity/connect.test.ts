@@ -1,9 +1,8 @@
 import { randomBytes } from '@noble/ciphers/webcrypto';
 import { secp256k1 } from '@noble/curves/secp256k1';
+import type { Hex } from 'viem';
 import { type PrivateKeyAccount, privateKeyToAccount } from 'viem/accounts';
 import { describe, expect, it } from 'vitest';
-
-import type { Hex } from 'viem';
 
 import { createIdentityKeys } from '../../src/connect/create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from '../../src/identity/identity-encryption.js';

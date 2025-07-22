@@ -1,10 +1,6 @@
 import { MAINNET, TESTNET } from '@graphprotocol/grc-20/contracts';
 import { randomBytes } from '@noble/hashes/utils';
 import {
-  OWNABLE_VALIDATOR_ADDRESS,
-  RHINESTONE_ATTESTER_ADDRESS,
-  type Session,
-  SmartSessionMode,
   encodeSmartSessionSignature,
   encodeValidationData,
   encodeValidatorNonce,
@@ -20,37 +16,41 @@ import {
   getUniversalActionPolicy,
   getUsageLimitPolicy,
   getValueLimitPolicy,
+  OWNABLE_VALIDATOR_ADDRESS,
+  RHINESTONE_ATTESTER_ADDRESS,
+  type Session,
+  SmartSessionMode,
 } from '@rhinestone/module-sdk';
-import { type SmartAccountClient, createSmartAccountClient, encodeInstallModule } from 'permissionless';
+import { createSmartAccountClient, encodeInstallModule, type SmartAccountClient } from 'permissionless';
 import { type ToSafeSmartAccountParameters, toSafeSmartAccount } from 'permissionless/accounts';
 import { getAccountNonce } from 'permissionless/actions';
 import { erc7579Actions } from 'permissionless/actions/erc7579';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
 import {
-  http,
   type AbiFunction,
   type Account,
   type Address,
   type Calls,
   type Chain,
   ContractFunctionExecutionError,
-  type Hex,
-  type Narrow,
-  type PrivateKeyAccount,
-  type SignableMessage,
-  type WalletClient,
   createPublicClient,
   encodeFunctionData,
   getAbiItem,
+  type Hex,
+  http,
+  type Narrow,
+  type PrivateKeyAccount,
+  type SignableMessage,
   toBytes,
   toFunctionSelector,
   toHex,
+  type WalletClient,
 } from 'viem';
 import {
-  type UserOperation,
-  type WaitForUserOperationReceiptReturnType,
   entryPoint07Address,
   getUserOperationHash,
+  type UserOperation,
+  type WaitForUserOperationReceiptReturnType,
 } from 'viem/account-abstraction';
 import { privateKeyToAccount } from 'viem/accounts';
 import { bytesToHex } from '../utils/hexBytesAddressUtils.js';

@@ -1,5 +1,5 @@
 import { HypergraphAppProvider } from '@graphprotocol/hypergraph-react';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { mapping } from './mapping.js';
 import { routeTree } from './routeTree.gen';
 

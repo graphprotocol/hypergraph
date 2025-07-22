@@ -1,8 +1,6 @@
-import { Effect, Exit } from 'effect';
-
 import type { Messages } from '@graphprotocol/hypergraph';
-
 import { Identity, SpaceEvents } from '@graphprotocol/hypergraph';
+import { Effect, Exit } from 'effect';
 
 import { prisma } from '../prisma.js';
 import { getAppOrConnectIdentity } from './getAppOrConnectIdentity.js';

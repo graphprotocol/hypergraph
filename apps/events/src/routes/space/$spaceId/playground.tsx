@@ -1,6 +1,6 @@
-import { TodosPublic } from '@/components/todo/todos-public';
 import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { TodosPublic } from '@/components/todo/todos-public';
 
 export const Route = createFileRoute('/space/$spaceId/playground')({
   component: PlaygroundRouteComponent,

@@ -29,12 +29,11 @@ describe('Entity', () => {
   const automergeDocId = idToAutomergeId(spaceId);
 
   let repo: Repo;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  let handle: DocHandle<any>;
+  let handle: DocHandle<Entity.DocumentContent>;
 
   beforeEach(() => {
     repo = new Repo({}); // reset to new Repo instance to clear created entities in tests
-    const result = repo.findWithProgress(automergeDocId as AnyDocumentId);
+    const result = repo.findWithProgress<Entity.DocumentContent>(automergeDocId as AnyDocumentId);
     handle = result.handle;
     // set it to ready to interact with the document
     handle.doneLoading();

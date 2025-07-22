@@ -1,12 +1,12 @@
+import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 import { DevTool } from '@/components/dev-tool';
 import { Todos } from '@/components/todos';
 import { TodosReadOnly } from '@/components/todos-read-only';
 import { TodosReadOnlyFilter } from '@/components/todos-read-only-filter';
 import { Button } from '@/components/ui/button';
 import { Users } from '@/components/users';
-import { HypergraphSpaceProvider, useHypergraphApp } from '@graphprotocol/hypergraph-react';
-import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
 
 export const Route = createFileRoute('/space/$spaceId/')({
   component: Space,
