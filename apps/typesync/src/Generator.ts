@@ -319,8 +319,6 @@ function fieldToEntityString({
         return 'Type.Checkbox';
       case dataType === 'Date':
         return 'Type.Date';
-      case dataType === 'Url':
-        return 'Type.Url';
       case dataType === 'Point':
         return 'Type.Point';
       case Mapping.isDataTypeRelation(dataType):

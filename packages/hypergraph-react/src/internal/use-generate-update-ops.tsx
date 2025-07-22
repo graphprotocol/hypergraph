@@ -43,12 +43,6 @@ export function useGenerateUpdateOps<const S extends Entity.AnyNoContext>(type: 
     //       // @ts-expect-error: must be an array of numbers
     //       value: rawValue.join(','),
     //     };
-    //   } else if (type.fields[key] === Type.Url) {
-    //     value = {
-    //       type: 'URL',
-    //       // @ts-expect-error: must be a URL
-    //       value: rawValue.toString(),
-    //     };
     //   } else if (type.fields[key] === Type.Date) {
     //     value = {
     //       type: 'TIME',

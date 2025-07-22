@@ -99,14 +99,6 @@ const _getDiff = <S extends Entity.AnyNoContext>(
                 new: localEntity[key],
               };
             }
-          } else if (field === Type.Url) {
-            if (entity[key].toString() !== localEntity[key].toString()) {
-              diff[key] = {
-                type: 'property',
-                current: entity[key],
-                new: localEntity[key],
-              };
-            }
           } else if (field === Type.Point) {
             if (entity[key].join(',') !== localEntity[key].join(',')) {
               diff[key] = {

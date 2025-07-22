@@ -21,8 +21,6 @@ function fieldToEntityString({
         return 'Type.Boolean';
       case type_name === 'Date':
         return 'Type.Date';
-      case type_name === 'Url':
-        return 'Type.Url';
       case type_name === 'Point':
         return 'Type.Point';
       case type_name.startsWith('Relation'):
