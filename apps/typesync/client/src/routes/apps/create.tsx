@@ -192,14 +192,14 @@ function CreateAppPage() {
     const relationProperties = pipe(
       selected.properties,
       EffectArray.filter((prop) => prop.dataType === 'RELATION'),
-      EffectArray.filter((prop) => !alreadyAddedToSchema({ name: prop.entity.name })),
+      EffectArray.filter((prop) => !alreadyAddedToSchema({ name: prop.name })),
     );
 
     for (const relationProp of relationProperties) {
       if (EffectArray.isEmptyReadonlyArray(relationProp.relationValueTypes)) {
         // inform the user they need to create a type for the relation
         relationSchemaTypes.push({
-          name: relationProp.entity.name,
+          name: relationProp.name,
           knowledgeGraphId: null,
           properties: [],
         });
@@ -216,18 +216,18 @@ function CreateAppPage() {
         name: relationValueType.name,
         knowledgeGraphId: relationValueType.id,
         properties: EffectArray.map(relationValueType.properties ?? [], (prop) => {
-          const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity.name);
+          const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.name);
           if (isDataTypeRelation(dataType)) {
             // need to recursively build type for property
             return {
-              name: prop.entity.name,
+              name: prop.name,
               knowledgeGraphId: prop.id,
               dataType,
-              relationType: prop.entity.name,
+              relationType: prop.name,
             };
           }
           return {
-            name: prop.entity.name,
+            name: prop.name,
             knowledgeGraphId: prop.id,
             dataType,
           };
@@ -296,16 +296,12 @@ function CreateAppPage() {
       }
       const properties = pipe(
         relationValueType.properties ?? [],
-        EffectArray.filter((prop) => prop?.entity?.name != null),
+        EffectArray.filter((prop) => prop.name != null),
         EffectArray.map((prop) => {
           // biome-ignore lint/style/noNonNullAssertion: filtered out above
-          const _prop = prop!;
-          // biome-ignore lint/style/noNonNullAssertion: filtered out above
-          const _entity = _prop.entity!;
-          // biome-ignore lint/style/noNonNullAssertion: filtered out above
-          const name = _entity.name!;
+          const name = prop.name!;
 
-          const dataType = mapKGDataTypeToPrimitiveType(_prop.dataType, name);
+          const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, name);
           if (isDataTypeRelation(dataType)) {
             // relation type as a type to the schema if not existing
             // @todo, this should recursively find those types, with properties
@@ -319,14 +315,14 @@ function CreateAppPage() {
 
             return {
               name,
-              knowledgeGraphId: _prop.id,
+              knowledgeGraphId: prop.id,
               dataType,
               relationType: name,
             };
           }
           return {
             name,
-            knowledgeGraphId: _prop.id,
+            knowledgeGraphId: prop.id,
             dataType,
           };
         }),
@@ -420,17 +416,17 @@ function CreateAppPage() {
                         properties: (selected.properties ?? [])
                           .filter((prop) => prop != null)
                           .map((prop) => {
-                            const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id);
+                            const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.name || prop.id);
                             if (isDataTypeRelation(dataType)) {
                               return {
-                                name: prop.entity?.name || prop.id,
+                                name: prop.name || prop.id,
                                 knowledgeGraphId: prop.id,
                                 dataType,
-                                relationType: prop.entity.name || prop.id,
+                                relationType: prop.name || prop.id,
                               };
                             }
                             return {
-                              name: prop.entity?.name || prop.id,
+                              name: prop.name || prop.id,
                               knowledgeGraphId: prop.id,
                               dataType,
                             };
@@ -524,18 +520,18 @@ function CreateAppPage() {
                                           .map((prop) => {
                                             const dataType = mapKGDataTypeToPrimitiveType(
                                               prop.dataType,
-                                              prop.entity?.name || prop.id,
+                                              prop.name || prop.id,
                                             );
                                             if (isDataTypeRelation(dataType)) {
                                               return {
-                                                name: prop.entity?.name || prop.id,
+                                                name: prop.name || prop.id,
                                                 knowledgeGraphId: prop.id,
                                                 dataType,
-                                                relationType: prop.entity?.name || prop.id,
+                                                relationType: prop.name || prop.id,
                                               };
                                             }
                                             return {
-                                              name: prop.entity?.name || prop.id,
+                                              name: prop.name || prop.id,
                                               knowledgeGraphId: prop.id,
                                               dataType,
                                             };
@@ -593,14 +589,14 @@ function CreateAppPage() {
                                                 propertySelected={(prop) => {
                                                   const dataType = mapKGDataTypeToPrimitiveType(
                                                     prop.dataType,
-                                                    prop.entity.name || prop.id,
+                                                    prop.name || prop.id,
                                                   );
                                                   const selectedProp = {
-                                                    name: prop.entity.name || prop.id,
+                                                    name: prop.name || prop.id,
                                                     knowledgeGraphId: prop.id,
                                                     dataType,
                                                     ...(isDataTypeRelation(dataType)
-                                                      ? { relationType: prop.entity.name || prop.id }
+                                                      ? { relationType: prop.name || prop.id }
                                                       : {}),
                                                   } as never;
                                                   if (prop.dataType === 'RELATION') {

@@ -385,8 +385,8 @@ function AuthenticateComponent() {
         appId: state.appInfo.appId,
         address: newAppIdentity.address,
         accountAddress,
-        signaturePublicKey: newAppIdentity.signaturePublicKey,
-        encryptionPublicKey: newAppIdentity.encryptionPublicKey,
+        signaturePublicKey: keys.signaturePublicKey,
+        encryptionPublicKey: keys.encryptionPublicKey,
         ciphertext,
         accountProof,
         keyProof,
@@ -401,6 +401,8 @@ function AuthenticateComponent() {
         body: JSON.stringify(message),
       });
       const appIdentityResponse = await response.json();
+      // TODO: All apps are essentially using the same keys, we should change to using
+      // the newly created app identity keys, but that requires changing a lot of the verification logic in the server and HypergraphAppContext
       await encryptSpacesAndRedirect({
         accountAddress,
         appIdentity: {
