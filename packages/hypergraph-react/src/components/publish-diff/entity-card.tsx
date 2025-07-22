@@ -17,7 +17,6 @@ export const EntityCard = ({ entity, type }: EntityCardProps) => {
   return (
     <div className={`border rounded-sm ${borderColor} overflow-hidden text-xs`}>
       {/* biome-ignore lint/a11y/noStaticElementInteractions: EntityCard has keyboard support via Enter key */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: EntityCard has keyboard support via Enter key */}
       <div
         className={`p-3 flex justify-between items-center cursor-pointer ${headerBgColor}`}
         onClick={() => setIsExpanded(!isExpanded)}
