@@ -1,11 +1,11 @@
 {
   "name": "@graphprotocol/typesync",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Package for generating the mappings used within the hypergraph ecosystem that is used to query for entities on the Knowledge Graph by the grc-20 id's.",
   "publishConfig": {
     "access": "public",
     "directory": "publish",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",

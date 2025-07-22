@@ -38,7 +38,11 @@
     "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
     "test": "vitest"
   },
+  "peerDependencies": {
+    "@graphprotocol/typesync": "workspace:*"
+  },
   "devDependencies": {
+    "@graphprotocol/typesync": "workspace:*",
     "@types/uuid": "^10.0.0"
   },
   "dependencies": {

@@ -11,6 +11,7 @@
     "@graphprotocol/grc-20": "^0.21.6",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
+    "@graphprotocol/typesync": "workspace:*",
     "@noble/hashes": "^1.8.0",
     "@radix-ui/react-avatar": "^1.1.9",
     "@radix-ui/react-icons": "^1.3.2",
