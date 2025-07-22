@@ -3,8 +3,8 @@ import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Command, Prompt } from '@effect/cli';
 import { FileSystem, Path } from '@effect/platform';
-import { NodeFileSystem } from '@effect/platform-node';
 import type { PlatformError } from '@effect/platform/Error';
+import { NodeFileSystem } from '@effect/platform-node';
 import { Cause, Console, Data, Effect, Array as EffectArray, String as EffectString, Schema } from 'effect';
 import type { NonEmptyReadonlyArray } from 'effect/Array';
 
