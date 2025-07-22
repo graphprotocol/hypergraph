@@ -8,7 +8,10 @@ import { Card, CardContent } from './ui/card';
 const createPropertiesAndTypesEvent = async ({
   smartSessionClient,
   space,
-}: { smartSessionClient: Connect.SmartSessionClient; space: string }) => {
+}: {
+  smartSessionClient: Connect.SmartSessionClient;
+  space: string;
+}) => {
   const ops: Array<Op> = [];
   const { id: salaryPropertyId, ops: createSalaryPropertyOps } = Graph.createProperty({
     dataType: 'NUMBER',

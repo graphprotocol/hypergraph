@@ -2,7 +2,7 @@
 
 import { ClockIcon, FolderOpenIcon } from '@heroicons/react/24/outline';
 import { ChevronRightIcon, PlusIcon } from '@heroicons/react/24/solid';
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 
 import { AppStatusBadge } from '../Components/App/StatusBadge.js';

@@ -8,7 +8,7 @@ import { Schema } from 'effect';
 export const InsertAppSchema = Schema.Struct({
   name: Schema.NonEmptyTrimmedString,
   description: Schema.NullOr(Schema.String),
-  directory: Schema.NullOr(Schema.String.pipe(Schema.pattern(/^(\.\/|~\/|\/|[a-zA-Z]:\/)[\w\-\.\s\/]*[\w\-\.]$/))),
+  directory: Schema.NullOr(Schema.String.pipe(Schema.pattern(/^(\.\/|~\/|\/|[a-zA-Z]:\/)[\w\-.\s/]*[\w\-.]$/))),
   template: Schema.Literal('vite_react'),
   types: Schema.Array(Mapping.SchemaType).pipe(
     Schema.minItems(1),

@@ -9,10 +9,10 @@ import { loadAccountAddress, storeAccountAddress, storeKeys } from './auth-stora
 import { createIdentityKeys } from './create-identity-keys.js';
 import { decryptIdentity, encryptIdentity } from './identity-encryption.js';
 import {
-  type SmartAccountParams,
   addSmartAccountOwner,
   getSmartAccountWalletClient,
   isSmartAccountDeployed,
+  type SmartAccountParams,
   smartAccountNeedsUpdate,
   updateLegacySmartAccount,
 } from './smart-account.js';
@@ -27,7 +27,7 @@ export async function identityExists(accountAddress: string, syncServerUri: stri
 
 export async function signup(
   signer: Signer,
-  walletClient: WalletClient,
+  _walletClient: WalletClient,
   smartAccountClient: SmartAccountClient,
   accountAddress: Address,
   syncServerUri: string,

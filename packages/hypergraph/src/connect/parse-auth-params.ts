@@ -31,7 +31,7 @@ export const parseAuthParams = (
     }
 
     return Effect.succeed({ payload: result.right, redirect, nonce });
-  } catch (error) {
+  } catch (_error) {
     return Effect.fail(new FailedToParseConnectAuthUrl({ message: 'Failed to parse connect auth payload' }));
   }
 };

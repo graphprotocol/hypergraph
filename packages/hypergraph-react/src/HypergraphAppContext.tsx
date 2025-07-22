@@ -1,25 +1,25 @@
 'use client';
 
-import type { DocHandle } from '@automerge/automerge-repo';
-import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Repo } from '@automerge/automerge-repo/slim';
 // @ts-expect-error not properly typed and exported in the automerge package
 import { automergeWasmBase64 } from '@automerge/automerge/automerge.wasm.base64.js';
 import * as automerge from '@automerge/automerge/slim';
 import { uuid } from '@automerge/automerge/slim';
+import type { DocHandle } from '@automerge/automerge-repo';
+import { Repo } from '@automerge/automerge-repo/slim';
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Graph } from '@graphprotocol/grc-20';
 import {
   Connect,
   type ConnectCallbackResult,
   Identity,
-  type InboxMessageStorageEntry,
   Inboxes,
+  type InboxMessageStorageEntry,
   Key,
   Messages,
   SpaceEvents,
   type SpaceStorageEntry,
-  Utils,
   store,
+  Utils,
 } from '@graphprotocol/hypergraph';
 import type { Mapping } from '@graphprotocol/typesync/Mapping';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -27,8 +27,8 @@ import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
 import * as Schema from 'effect/Schema';
 import {
-  type ReactNode,
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -116,11 +116,7 @@ export type HypergraphAppCtx = {
     connectUrl: string;
     redirectFn: (url: URL) => void;
   }): void;
-  processConnectAuthSuccess(params: {
-    storage: Identity.Storage;
-    ciphertext: string;
-    nonce: string;
-  }): void;
+  processConnectAuthSuccess(params: { storage: Identity.Storage; ciphertext: string; nonce: string }): void;
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
@@ -193,7 +189,7 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
   async ensureSpaceInbox() {
     throw new Error('ensureSpaceInbox is missing');
   },
-  redirectToConnect(params: {
+  redirectToConnect(_params: {
     storage: Identity.Storage;
     successUrl: string;
     appId: string;
@@ -446,7 +442,7 @@ export function HypergraphAppProvider({
             break;
           }
           case 'space': {
-            let state: SpaceEvents.SpaceState | undefined = undefined;
+            let state: SpaceEvents.SpaceState | undefined;
 
             for (const event of response.events) {
               // Not sure why but type inference doesn't work here
@@ -798,7 +794,7 @@ export function HypergraphAppProvider({
             );
             let lastMessageClock = new Date(0);
             const messages = response.messages
-              .filter((message, index) => validSignatures[index])
+              .filter((_message, index) => validSignatures[index])
               .map((message) => {
                 try {
                   const decryptedMessage = Inboxes.decryptInboxMessage({
@@ -857,7 +853,7 @@ export function HypergraphAppProvider({
               ),
             );
             const messages = response.messages
-              .filter((message, index) => validSignatures[index])
+              .filter((_message, index) => validSignatures[index])
               .map((message) => {
                 try {
                   const decryptedMessage = Inboxes.decryptInboxMessage({
@@ -1414,12 +1410,7 @@ export function HypergraphAppProvider({
   );
 
   const redirectToConnectForContext = useCallback(
-    (params: {
-      storage: Identity.Storage;
-      successUrl: string;
-      connectUrl: string;
-      redirectFn: (url: URL) => void;
-    }) => {
+    (params: { storage: Identity.Storage; successUrl: string; connectUrl: string; redirectFn: (url: URL) => void }) => {
       const { storage, successUrl, redirectFn, connectUrl } = params;
       const { url, nonce, expiry, secretKey, publicKey } = Connect.createAuthUrl({
         connectUrl: `${connectUrl}/authenticate`,

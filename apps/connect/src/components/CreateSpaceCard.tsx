@@ -1,5 +1,3 @@
-import { Loading } from '@/components/ui/Loading';
-import { cn } from '@/lib/utils';
 import { Graph } from '@graphprotocol/grc-20';
 import { Key, type Messages, SpaceEvents, SpaceInfo, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { useIdentityToken } from '@privy-io/react-auth';
@@ -7,6 +5,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import { Effect } from 'effect';
 import { useState } from 'react';
+import { Loading } from '@/components/ui/Loading';
+import { cn } from '@/lib/utils';
 
 interface CreateSpaceCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {}
 

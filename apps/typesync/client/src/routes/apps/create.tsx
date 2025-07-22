@@ -11,8 +11,8 @@ import {
 import { TrashIcon } from '@heroicons/react/24/outline';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { useStore } from '@tanstack/react-form';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { Array as EffectArray, String as EffectString, Option, Schema, pipe } from 'effect';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { Array as EffectArray, String as EffectString, Option, pipe, Schema } from 'effect';
 import { useState } from 'react';
 
 import { InsertAppSchema } from '../../../../domain/Domain.js';
@@ -47,7 +47,7 @@ function isCreateAppFormTab(value: unknown): value is CreateAppFormTab {
   try {
     Schema.decodeUnknownSync(CreateAppFormTab)(value);
     return true;
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 }

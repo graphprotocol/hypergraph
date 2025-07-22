@@ -29,6 +29,7 @@ export function Modal({ isOpen, onOpenChange, children }: ModalProps) {
 
   return (
     <div className="fixed inset-0 z-50">
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: Modal has keyboard support via Escape key */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal has keyboard support via Escape key */}
       <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
       <div className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] max-h-[90vh] w-[90vw] max-w-2xl">

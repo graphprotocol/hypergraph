@@ -1,4 +1,4 @@
-import { http, type Account, type Chain, type WalletClient, createWalletClient as viemCreateWalletClient } from 'viem';
+import { type Account, type Chain, http, createWalletClient as viemCreateWalletClient, type WalletClient } from 'viem';
 
 const DEFAULT_RPC_URL = 'https://rpc-geo-genesis-h0q2s21xx8.t.conduit.xyz';
 

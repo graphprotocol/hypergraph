@@ -1,7 +1,6 @@
-import { http, type Chain, type Hex, createPublicClient, verifyMessage } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-
 import type { SmartAccountClient } from 'permissionless';
+import { type Chain, createPublicClient, type Hex, http, verifyMessage } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import { publicKeyToAddress } from '../utils/index.js';
 import type { IdentityKeys } from './types.js';
 

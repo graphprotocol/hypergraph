@@ -2,7 +2,7 @@
 
 import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions, type ListboxProps } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/16/solid';
-import { Array as EffectArray, String as EffectString, Schema, pipe } from 'effect';
+import { Array as EffectArray, String as EffectString, pipe, Schema } from 'effect';
 
 import { useFieldContext } from '../../../../context/form.js';
 import { classnames } from '../../../../utils/classnames.js';

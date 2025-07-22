@@ -2,10 +2,9 @@ import { gcm } from '@noble/ciphers/aes';
 import { randomBytes } from '@noble/ciphers/webcrypto';
 import { hkdf } from '@noble/hashes/hkdf';
 import { sha256 } from '@noble/hashes/sha256';
+import { cryptoBoxSeal, cryptoBoxSealOpen } from '@serenity-kit/noble-sodium';
 import type { Hex } from 'viem';
 import { verifyMessage } from 'viem';
-
-import { cryptoBoxSeal, cryptoBoxSealOpen } from '@serenity-kit/noble-sodium';
 import { bytesToHex, canonicalize, hexToBytes } from '../utils/index.js';
 import type { IdentityKeys, PrivateAppIdentity, Signer } from './types.js';
 
@@ -119,7 +118,7 @@ export const decryptIdentity = async (signer: Signer, ciphertext: string, nonce:
   let keysMsg: Uint8Array;
   try {
     keysMsg = await decrypt(ciphertext, secretKey);
-  } catch (e) {
+  } catch (_e) {
     // See https://github.com/xmtp/xmtp-js/blob/8d6e5a65813902926baac8150a648587acbaad92/sdks/js-sdk/src/keystore/providers/NetworkKeyManager.ts#L142-L146
     if (secretKey.length !== 65) {
       throw new Error('Expected 65 bytes before trying a different recovery byte');

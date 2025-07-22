@@ -1,16 +1,16 @@
 import {
-  QueryClient,
-  QueryClientProvider,
   defaultShouldDehydrateQuery,
   dehydrate,
   hydrate,
+  QueryClient,
+  QueryClientProvider,
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createRouter } from '@tanstack/react-router';
 
 import type { ReactNode } from 'react';
-import { routeTree } from '../routeTree.gen.js';
 import type { RouterContext } from '../routes/__root.js';
+import { routeTree } from '../routeTree.gen.js';
 import { graphqlClient } from './graphql.js';
 
 export function createTypeSyncAppRouter() {

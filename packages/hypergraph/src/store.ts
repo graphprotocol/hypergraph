@@ -1,6 +1,6 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import type { Mapping } from '@graphprotocol/typesync/Mapping';
-import { type Store, createStore } from '@xstate/store';
+import { createStore, type Store } from '@xstate/store';
 import type { PrivateAppIdentity } from './connect/types.js';
 import type { DocumentContent } from './entity/types.js';
 import { mergeMessages } from './inboxes/merge-messages.js';

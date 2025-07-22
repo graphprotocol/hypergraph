@@ -1,7 +1,7 @@
 import { Connect, StoreConnect } from '@graphprotocol/hypergraph';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { useLayoutEffect, useRef } from 'react';
 import { getAddress } from 'viem';
 import { routeTree } from './routeTree.gen';

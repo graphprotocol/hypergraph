@@ -1,11 +1,11 @@
+import { Graph } from '@graphprotocol/grc-20';
+import { useIdentityToken } from '@privy-io/react-auth';
+import { createFileRoute } from '@tanstack/react-router';
 import { CreateSpaceCard } from '@/components/CreateSpaceCard';
 import { SpacesCard } from '@/components/SpacesCard';
 import { Loading } from '@/components/ui/Loading';
 import { usePrivateSpaces } from '@/hooks/use-private-spaces';
 import { usePublicSpaces } from '@/hooks/use-public-spaces';
-import { Graph } from '@graphprotocol/grc-20';
-import { useIdentityToken } from '@privy-io/react-auth';
-import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   component: Index,

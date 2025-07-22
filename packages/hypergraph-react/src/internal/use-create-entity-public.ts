@@ -1,7 +1,6 @@
 import { Graph, Id, type PropertiesParam, type RelationsParam } from '@graphprotocol/grc-20';
-import type { Connect } from '@graphprotocol/hypergraph';
-import type { Entity } from '@graphprotocol/hypergraph';
-import { Type, store } from '@graphprotocol/hypergraph';
+import type { Connect, Entity } from '@graphprotocol/hypergraph';
+import { store, Type } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import type * as Schema from 'effect/Schema';

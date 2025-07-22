@@ -4,7 +4,7 @@ import { HypergraphAppProvider } from '@graphprotocol/hypergraph-react';
 
 // recommended by https://docs.privy.io/basics/troubleshooting/react-frameworks#next-js
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const storage = typeof window !== 'undefined' ? window.localStorage : (undefined as unknown as Storage);
+  const _storage = typeof window !== 'undefined' ? window.localStorage : (undefined as unknown as Storage);
 
   return (
     <HypergraphAppProvider

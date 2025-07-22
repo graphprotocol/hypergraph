@@ -1,6 +1,5 @@
-import { Schema } from 'effect';
-
 import { SpaceEvents } from '@graphprotocol/hypergraph';
+import { Schema } from 'effect';
 
 import { prisma } from '../prisma.js';
 

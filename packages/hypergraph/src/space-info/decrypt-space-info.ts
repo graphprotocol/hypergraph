@@ -6,13 +6,7 @@ import { SpaceInfoContent } from './types.js';
 
 const decodeSpaceInfoContent = Schema.decodeSync(SpaceInfoContent);
 
-export const decryptSpaceInfo = ({
-  spaceInfo,
-  secretKey,
-}: {
-  spaceInfo: Uint8Array;
-  secretKey: string;
-}) => {
+export const decryptSpaceInfo = ({ spaceInfo, secretKey }: { spaceInfo: Uint8Array; secretKey: string }) => {
   const decrypted = decryptMessage({
     nonceAndCiphertext: spaceInfo,
     secretKey: hexToBytes(secretKey),
