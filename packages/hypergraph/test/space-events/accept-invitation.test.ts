@@ -1,6 +1,7 @@
 import { Effect } from 'effect';
 import { expect, it } from 'vitest';
 
+import { InvalidIdentityError, type PublicIdentity } from '../../src/identity/types.js';
 import { acceptInvitation } from '../../src/space-events/accept-invitation.js';
 import { applyEvent } from '../../src/space-events/apply-event.js';
 import { createInvitation } from '../../src/space-events/create-invitation.js';
@@ -20,11 +21,14 @@ const invitee = {
   encryptionPublicKey: 'encryption',
 };
 
-const getVerifiedIdentity = (accountAddress: string) => {
-  if (accountAddress === author.accountAddress) {
-    return Effect.succeed(author);
+const getVerifiedIdentity = (accountAddress: string, publicKey: string) => {
+  if (accountAddress === author.accountAddress && publicKey === author.signaturePublicKey) {
+    return Effect.succeed(author as PublicIdentity);
   }
-  return Effect.succeed(invitee);
+  if (accountAddress === invitee.accountAddress && publicKey === invitee.signaturePublicKey) {
+    return Effect.succeed(invitee as PublicIdentity);
+  }
+  return Effect.fail(new InvalidIdentityError());
 };
 
 it('should accept an invitation', async () => {

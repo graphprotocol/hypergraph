@@ -8,7 +8,7 @@ export async function getAccountInbox({ accountAddress, inboxId }: { accountAddr
       id: true,
       account: {
         select: {
-          id: true,
+          address: true,
         },
       },
       isPublic: true,
@@ -24,7 +24,7 @@ export async function getAccountInbox({ accountAddress, inboxId }: { accountAddr
 
   return {
     inboxId: inbox.id,
-    accountAddress: inbox.account.id,
+    accountAddress: inbox.account.address,
     isPublic: inbox.isPublic,
     authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
     encryptionPublicKey: inbox.encryptionPublicKey,
