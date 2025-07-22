@@ -19,6 +19,9 @@ export const getVerifiedIdentity = async (
   if (signaturePublicKey && appId) {
     throw new Error('Cannot specify both signaturePublicKey and appId');
   }
+  if (!signaturePublicKey && !appId) {
+    throw new Error('Must specify either signaturePublicKey or appId');
+  }
   const storeState = store.getSnapshot();
   const identity = storeState.context.identities[accountAddress]?.find((identity) => {
     if (signaturePublicKey) {
