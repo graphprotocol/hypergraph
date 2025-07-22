@@ -1,0 +1,30 @@
+{
+  "name": "@graphprotocol/create-hypergraph-app",
+  "version": "0.0.1",
+  "description": "CLI toolchain to scaffold a hypergraph-enabled application with a given template.",
+  "type": "module",
+  "bin": {
+    "create-hypergraph-app": "dist/bin.js",
+    "cha": "dist/bin.js"
+  },
+  "files": ["dist", "template-*"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphprotocol/hypergraph.git",
+    "directory": "apps/create-hypergraph-app"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist",
+    "linkDirectory": false
+  },
+  "keywords": ["The Graph", "Web3", "Knowledge Graph", "Hypergraph", "TypeSyncs"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "bugs": {
+    "url": "https://github.com/graphprotocol/hypergraph/issues"
+  },
+  "homepage": "https://github.com/graphprotocol/hypergraph/tree/main/apps/create-hypergraph-app#readme"
+}

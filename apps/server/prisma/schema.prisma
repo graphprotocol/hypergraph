@@ -115,7 +115,6 @@ model Account {
 model AppIdentity {
   address             String        @id
   ciphertext          String
-  nonce               String
   signaturePublicKey  String
   encryptionPublicKey String
   accountProof        String
@@ -129,7 +128,6 @@ model AppIdentity {
   sessionTokenExpires DateTime
 
   @@unique([accountAddress, appId])
-  @@unique([accountAddress, nonce])
   @@index([sessionToken])
 }
 

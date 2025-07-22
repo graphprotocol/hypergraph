@@ -17,6 +17,7 @@ import { createUpdate } from './handlers/createUpdate.js';
 import { findAppIdentity } from './handlers/find-app-identity.js';
 import { getAppIdentityBySessionToken } from './handlers/get-app-identity-by-session-token.js';
 import { getAccountInbox } from './handlers/getAccountInbox.js';
+import { getAppOrConnectIdentity } from './handlers/getAppOrConnectIdentity.js';
 import { type GetIdentityResult, getConnectIdentity } from './handlers/getConnectIdentity.js';
 import { getLatestAccountInboxMessages } from './handlers/getLatestAccountInboxMessages.js';
 import { getLatestSpaceInboxMessages } from './handlers/getLatestSpaceInboxMessages.js';
@@ -169,7 +170,7 @@ app.post('/connect/add-app-identity-to-spaces', async (req, res) => {
     });
     res.status(200).json({ space });
   } catch (error) {
-    console.error('Error creating space:', error);
+    console.error('Error adding identity to spaces:', error);
     if (error instanceof Error && error.message === 'No Privy ID token provided') {
       res.status(401).json({ message: 'Unauthorized' });
     } else if (error instanceof Error && error.message === 'Missing Privy configuration') {
@@ -318,6 +319,20 @@ app.post('/connect/app-identity', async (req, res) => {
       res.status(401).send('Unauthorized');
       return;
     }
+    if (
+      !Identity.verifyIdentityOwnership(
+        accountAddress,
+        message.signaturePublicKey,
+        message.accountProof,
+        message.keyProof,
+        CHAIN,
+        RPC_URL,
+      )
+    ) {
+      console.log('Ownership proof is invalid');
+      res.status(401).send('Unauthorized');
+      return;
+    }
     const sessionToken = bytesToHex(randomBytes(32));
     const sessionTokenExpires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
     const appIdentity = await createAppIdentity({
@@ -325,7 +340,6 @@ app.post('/connect/app-identity', async (req, res) => {
       appId: message.appId,
       address: message.address,
       ciphertext: message.ciphertext,
-      nonce: message.nonce,
       signaturePublicKey: message.signaturePublicKey,
       encryptionPublicKey: message.encryptionPublicKey,
       accountProof: message.accountProof,
@@ -366,8 +380,8 @@ app.get('/whoami', async (req, res) => {
   }
 });
 
-app.get('/identity', async (req, res) => {
-  console.log('GET identity');
+app.get('/connect/identity', async (req, res) => {
+  console.log('GET connect/identity');
   const accountAddress = req.query.accountAddress as string;
   if (!accountAddress) {
     res.status(400).send('No accountAddress');
@@ -381,6 +395,39 @@ app.get('/identity', async (req, res) => {
       encryptionPublicKey: identity.encryptionPublicKey,
       accountProof: identity.accountProof,
       keyProof: identity.keyProof,
+    };
+    res.status(200).send(outgoingMessage);
+  } catch (error) {
+    const outgoingMessage: Messages.ResponseIdentityNotFoundError = {
+      accountAddress,
+    };
+    res.status(404).send(outgoingMessage);
+  }
+});
+
+app.get('/identity', async (req, res) => {
+  console.log('GET identity');
+  const accountAddress = req.query.accountAddress as string;
+  const signaturePublicKey = req.query.signaturePublicKey as string;
+  const appId = req.query.appId as string;
+  if (!accountAddress) {
+    res.status(400).send('No accountAddress');
+    return;
+  }
+  if (!signaturePublicKey && !appId) {
+    res.status(400).send('No signaturePublicKey or appId');
+    return;
+  }
+  try {
+    const params = signaturePublicKey ? { accountAddress, signaturePublicKey } : { accountAddress, appId };
+    const identity = await getAppOrConnectIdentity(params);
+    const outgoingMessage: Messages.ResponseIdentity = {
+      accountAddress,
+      signaturePublicKey: identity.signaturePublicKey,
+      encryptionPublicKey: identity.encryptionPublicKey,
+      accountProof: identity.accountProof,
+      keyProof: identity.keyProof,
+      appId: identity.appId ?? undefined,
     };
     res.status(200).send(outgoingMessage);
   } catch (error) {
@@ -471,7 +518,10 @@ app.post('/spaces/:spaceId/inboxes/:inboxId/messages', async (req, res) => {
       // Check if this public key corresponds to a user's identity
       let authorIdentity: GetIdentityResult;
       try {
-        authorIdentity = await getConnectIdentity({ connectSignaturePublicKey: authorPublicKey });
+        authorIdentity = await getAppOrConnectIdentity({
+          accountAddress: message.authorAccountAddress,
+          signaturePublicKey: authorPublicKey,
+        });
       } catch (error) {
         res.status(403).send({ error: 'Not authorized to post to this inbox' });
         return;
@@ -569,7 +619,10 @@ app.post('/accounts/:accountAddress/inboxes/:inboxId/messages', async (req, res)
       // Check if this public key corresponds to a user's identity
       let authorIdentity: GetIdentityResult;
       try {
-        authorIdentity = await getConnectIdentity({ connectSignaturePublicKey: authorPublicKey });
+        authorIdentity = await getAppOrConnectIdentity({
+          accountAddress: message.authorAccountAddress,
+          signaturePublicKey: authorPublicKey,
+        });
       } catch (error) {
         res.status(403).send({ error: 'Not authorized to post to this inbox' });
         return;
@@ -735,7 +788,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
         const data = result.right;
         switch (data.type) {
           case 'subscribe-space': {
-            const space = await getSpace({ accountAddress, spaceId: data.id });
+            const space = await getSpace({ accountAddress, spaceId: data.id, appIdentityAddress });
             const outgoingMessage: Messages.ResponseSpace = {
               ...space,
               type: 'space',
@@ -760,19 +813,15 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             break;
           }
           case 'create-space-event': {
-            const getVerifiedIdentity = (accountAddressToFetch: string) => {
-              console.log(
-                'TODO getVerifiedIdentity should work for app identities',
-                accountAddressToFetch,
-                accountAddress,
-              );
+            const getVerifiedIdentity = (accountAddressToFetch: string, publicKey: string) => {
               if (accountAddressToFetch !== accountAddress) {
                 return Effect.fail(new Identity.InvalidIdentityError());
               }
 
               return Effect.gen(function* () {
                 const identity = yield* Effect.tryPromise({
-                  try: () => getConnectIdentity({ accountAddress: accountAddressToFetch }),
+                  try: () =>
+                    getAppOrConnectIdentity({ accountAddress: accountAddressToFetch, signaturePublicKey: publicKey }),
                   catch: () => new Identity.InvalidIdentityError(),
                 });
                 return identity;
@@ -796,7 +845,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
                 infoSignatureRecovery: 0,
                 name: data.name,
               });
-              const spaceWithEvents = await getSpace({ accountAddress, spaceId: space.id });
+              const spaceWithEvents = await getSpace({ accountAddress, spaceId: space.id, appIdentityAddress });
               const outgoingMessage: Messages.ResponseSpace = {
                 ...spaceWithEvents,
                 type: 'space',
@@ -816,8 +865,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               event: data.event,
               keyBoxes: data.keyBoxes.map((keyBox) => keyBox),
             });
-            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
-            // TODO send back confirmation instead of the entire space
+            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId, appIdentityAddress });
             const outgoingMessage: Messages.ResponseSpace = {
               ...spaceWithEvents,
               type: 'space',
@@ -843,7 +891,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           }
           case 'accept-invitation-event': {
             await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
-            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
+            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId, appIdentityAddress });
             const outgoingMessage: Messages.ResponseSpace = {
               ...spaceWithEvents,
               type: 'space',
@@ -854,7 +902,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           }
           case 'create-space-inbox-event': {
             await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
-            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId });
+            const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId, appIdentityAddress });
             // TODO send back confirmation instead of the entire space
             const outgoingMessage: Messages.ResponseSpace = {
               ...spaceWithEvents,
@@ -871,7 +919,10 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
                 throw new Error('Invalid accountAddress');
               }
               const signer = Inboxes.recoverAccountInboxCreatorKey(data);
-              const signerAccount = await getConnectIdentity({ connectSignaturePublicKey: signer });
+              const signerAccount = await getAppOrConnectIdentity({
+                accountAddress: data.accountAddress,
+                signaturePublicKey: signer,
+              });
               if (signerAccount.accountAddress !== accountAddress) {
                 throw new Error('Invalid signature');
               }
@@ -888,7 +939,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
           case 'get-latest-space-inbox-messages': {
             try {
               // Check that the user has access to this space
-              await getSpace({ accountAddress, spaceId: data.spaceId });
+              await getSpace({ accountAddress, spaceId: data.spaceId, appIdentityAddress });
               const messages = await getLatestSpaceInboxMessages({
                 inboxId: data.inboxId,
                 since: data.since,
@@ -941,7 +992,10 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               // Check that the update was signed by a valid identity
               // belonging to this accountAddress
               const signer = Messages.recoverUpdateMessageSigner(data);
-              const identity = await getConnectIdentity({ connectSignaturePublicKey: signer });
+              const identity = await getAppOrConnectIdentity({
+                accountAddress: data.accountAddress,
+                signaturePublicKey: signer,
+              });
               if (identity.accountAddress !== accountAddress) {
                 throw new Error('Invalid signature');
               }

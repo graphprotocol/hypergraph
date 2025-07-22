@@ -23,6 +23,25 @@ cd apps/typesync
 pnpm publish --tag latest
 ```
 
+## Deploying your own SyncServer to Railway
+
+Setup a service and attach a volume under `/data` to it.
+
+Since cache-mounts on Railway need to prefixed with the service ID and BuildKit doesn’t expand variables there. You must give it a literal value for the mount ID.
+
+To do so you can fill in the service ID below and run the command before your `railway up` command.
+More info here: https://docs.railway.com/guides/dockerfiles#cache-mounts
+Get the service ID by using CMD/CTRL+K and search for `Copy Service ID`.
+
+```sh
+sed -i '' \
+  's|\(--mount=type=cache,id=\)workspace|\1s/<service-id>-pnpm-store|' \
+  Dockerfile
+railway up
+```
+
+Note: By default horizontal scaling is disabled because of the attached volume.
+
 ## Deploying your own SyncServer to Fly.io (single instance)
 
 ```sh

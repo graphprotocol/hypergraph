@@ -10,6 +10,7 @@ import { uuid } from '@automerge/automerge/slim';
 import { Graph } from '@graphprotocol/grc-20';
 import {
   Connect,
+  type ConnectCallbackResult,
   Identity,
   type InboxMessageStorageEntry,
   Inboxes,
@@ -92,7 +93,11 @@ export type HypergraphAppCtx = {
   acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
   subscribeToSpace(params: Readonly<{ spaceId: string }>): void;
   inviteToSpace(params: Readonly<{ space: SpaceStorageEntry; invitee: { accountAddress: Address } }>): Promise<unknown>;
-  getVerifiedIdentity(accountAddress: string): Promise<{
+  getVerifiedIdentity(
+    accountAddress: string,
+    publicKey: string | null,
+    appId: string | null,
+  ): Promise<{
     accountAddress: string;
     encryptionPublicKey: string;
     signaturePublicKey: string;
@@ -108,7 +113,6 @@ export type HypergraphAppCtx = {
   redirectToConnect(params: {
     storage: Identity.Storage;
     successUrl: string;
-    appId: string;
     connectUrl: string;
     redirectFn: (url: URL) => void;
   }): void;
@@ -220,6 +224,7 @@ export type HypergraphAppProviderProps = Readonly<{
   chainId?: number;
   children: ReactNode;
   mapping: Mapping;
+  appId: string;
 }>;
 
 const mockStorage = {
@@ -239,6 +244,7 @@ export function HypergraphAppProvider({
   storage = typeof window !== 'undefined' ? localStorage : mockStorage,
   syncServerUri = 'https://hypergraph.fly.dev',
   chainId = Connect.GEO_TESTNET.id,
+  appId,
   children,
   mapping,
 }: HypergraphAppProviderProps) {
@@ -376,6 +382,8 @@ export function HypergraphAppProvider({
           });
           const authorIdentity = await Identity.getVerifiedIdentity(
             update.accountAddress,
+            signer,
+            null,
             syncServerUri,
             CHAIN,
             RPC_URL,
@@ -411,10 +419,10 @@ export function HypergraphAppProvider({
       });
     };
 
-    const getVerifiedIdentity = (accountAddress: string) => {
+    const getVerifiedIdentityForEvent = (accountAddress: string, publicKey: string) => {
       return Effect.gen(function* () {
         const identity = yield* Effect.tryPromise({
-          try: () => Identity.getVerifiedIdentity(accountAddress, syncServerUri, CHAIN, RPC_URL),
+          try: () => Identity.getVerifiedIdentity(accountAddress, publicKey, null, syncServerUri, CHAIN, RPC_URL),
           catch: () => new Identity.InvalidIdentityError(),
         });
         return identity;
@@ -443,7 +451,9 @@ export function HypergraphAppProvider({
             for (const event of response.events) {
               // Not sure why but type inference doesn't work here
               const applyEventResult: Exit.Exit<SpaceEvents.SpaceState, SpaceEvents.ApplyError> =
-                await Effect.runPromiseExit(SpaceEvents.applyEvent({ state, event, getVerifiedIdentity }));
+                await Effect.runPromiseExit(
+                  SpaceEvents.applyEvent({ state, event, getVerifiedIdentity: getVerifiedIdentityForEvent }),
+                );
               if (Exit.isSuccess(applyEventResult)) {
                 state = applyEventResult.value;
               } else {
@@ -518,7 +528,7 @@ export function HypergraphAppProvider({
                 const updateId = uuid();
 
                 const messageToSend = Messages.signedUpdateMessage({
-                  accountAddress: identity.address,
+                  accountAddress: identity.accountAddress,
                   updateId,
                   spaceId: space.id,
                   message: lastLocalChange,
@@ -549,7 +559,11 @@ export function HypergraphAppProvider({
             }
 
             const applyEventResult = await Effect.runPromiseExit(
-              SpaceEvents.applyEvent({ event: response.event, state: space.state, getVerifiedIdentity }),
+              SpaceEvents.applyEvent({
+                event: response.event,
+                state: space.state,
+                getVerifiedIdentity: getVerifiedIdentityForEvent,
+              }),
             );
             if (Exit.isSuccess(applyEventResult)) {
               store.send({
@@ -627,7 +641,7 @@ export function HypergraphAppProvider({
             }
             const inboxCreator = Inboxes.recoverAccountInboxCreatorKey(response.inbox);
             if (inboxCreator !== identity.signaturePublicKey) {
-              console.error('Invalid inbox creator', response.inbox);
+              console.error('Invalid inbox creator', response.inbox, inboxCreator, identity.signaturePublicKey);
               return;
             }
 
@@ -704,7 +718,7 @@ export function HypergraphAppProvider({
             const isValid = await Inboxes.validateAccountInboxMessage(
               response.message,
               inbox,
-              identity.address,
+              identity.accountAddress,
               syncServerUri,
               CHAIN,
               RPC_URL,
@@ -774,7 +788,7 @@ export function HypergraphAppProvider({
                   return Inboxes.validateAccountInboxMessage(
                     message,
                     inbox,
-                    identity.address,
+                    identity.accountAddress,
                     syncServerUri,
                     CHAIN,
                     RPC_URL,
@@ -930,7 +944,7 @@ export function HypergraphAppProvider({
       const spaceEvent = await Effect.runPromise(
         SpaceEvents.createSpace({
           author: {
-            accountAddress: identity.address,
+            accountAddress: identity.accountAddress,
             encryptionPublicKey,
             signaturePrivateKey,
             signaturePublicKey,
@@ -948,7 +962,7 @@ export function HypergraphAppProvider({
         event: spaceEvent,
         spaceId: spaceEvent.transaction.id,
         keyBox: {
-          accountAddress: identity.address,
+          accountAddress: identity.accountAddress,
           ciphertext: Utils.bytesToHex(result.keyBoxCiphertext),
           nonce: Utils.bytesToHex(result.keyBoxNonce),
           authorPublicKey: encryptionPublicKey,
@@ -1019,7 +1033,7 @@ export function HypergraphAppProvider({
       }
       const message = await Inboxes.createSpaceInboxCreationMessage({
         author: {
-          accountAddress: identity.address,
+          accountAddress: identity.accountAddress,
           signaturePublicKey,
           encryptionPublicKey,
           signaturePrivateKey,
@@ -1118,7 +1132,7 @@ export function HypergraphAppProvider({
         throw new Error('Missing keys');
       }
       const message = await Inboxes.createAccountInboxCreationMessage({
-        accountAddress: identity.address,
+        accountAddress: identity.accountAddress,
         isPublic,
         authPolicy,
         encryptionPublicKey,
@@ -1223,7 +1237,7 @@ export function HypergraphAppProvider({
       const spaceEvent = await Effect.runPromiseExit(
         SpaceEvents.acceptInvitation({
           author: {
-            accountAddress: identity.address,
+            accountAddress: identity.accountAddress,
             signaturePublicKey,
             encryptionPublicKey,
             signaturePrivateKey,
@@ -1290,11 +1304,18 @@ export function HypergraphAppProvider({
         console.error('No state found for space');
         return;
       }
-      const inviteeWithKeys = await Identity.getVerifiedIdentity(invitee.accountAddress, syncServerUri, CHAIN, RPC_URL);
+      const inviteeWithKeys = await Identity.getVerifiedIdentity(
+        invitee.accountAddress,
+        null,
+        appId,
+        syncServerUri,
+        CHAIN,
+        RPC_URL,
+      );
       const spaceEvent = await Effect.runPromiseExit(
         SpaceEvents.createInvitation({
           author: {
-            accountAddress: identity.address,
+            accountAddress: identity.accountAddress,
             signaturePublicKey,
             encryptionPublicKey,
             signaturePrivateKey,
@@ -1331,14 +1352,15 @@ export function HypergraphAppProvider({
       };
       websocketConnection?.send(Messages.serialize(message));
     },
-    [identity, websocketConnection, syncServerUri],
+    [identity, websocketConnection, syncServerUri, appId],
   );
 
-  const getVerifiedIdentity = useCallback(
-    (accountAddress: string) => {
-      return Identity.getVerifiedIdentity(accountAddress, syncServerUri, CHAIN, RPC_URL);
+  const getVerifiedIdentityForContext = useCallback(
+    (accountAddress: string, publicKey: string | null, inputAppId: string | null) => {
+      const appIdToUse = inputAppId ?? (publicKey ? null : appId);
+      return Identity.getVerifiedIdentity(accountAddress, publicKey, appIdToUse, syncServerUri, CHAIN, RPC_URL);
     },
-    [syncServerUri],
+    [syncServerUri, appId],
   );
 
   const ensureSpaceInboxForContext = useCallback(
@@ -1395,11 +1417,10 @@ export function HypergraphAppProvider({
     (params: {
       storage: Identity.Storage;
       successUrl: string;
-      appId: string;
       connectUrl: string;
       redirectFn: (url: URL) => void;
     }) => {
-      const { storage, successUrl, redirectFn, appId, connectUrl } = params;
+      const { storage, successUrl, redirectFn, connectUrl } = params;
       const { url, nonce, expiry, secretKey, publicKey } = Connect.createAuthUrl({
         connectUrl: `${connectUrl}/authenticate`,
         redirectUrl: successUrl,
@@ -1411,7 +1432,7 @@ export function HypergraphAppProvider({
       storage.setItem('geo-connect-auth-public-key', publicKey);
       redirectFn(url);
     },
-    [],
+    [appId],
   );
 
   const processConnectAuthSuccessForContext = useCallback(
@@ -1427,7 +1448,7 @@ export function HypergraphAppProvider({
       }
 
       try {
-        const parsedAuthParams = Effect.runSync(
+        const parsedAuthParams: ConnectCallbackResult = Effect.runSync(
           Connect.parseCallbackParams({
             ciphertext,
             nonce,
@@ -1499,7 +1520,7 @@ export function HypergraphAppProvider({
         listInvitations,
         acceptInvitation: acceptInvitationForContext,
         subscribeToSpace,
-        getVerifiedIdentity,
+        getVerifiedIdentity: getVerifiedIdentityForContext,
         inviteToSpace,
         isConnecting,
         isLoadingSpaces,

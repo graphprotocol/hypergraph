@@ -5,7 +5,7 @@ import { expect, it } from 'vitest';
 import { canonicalize } from '../../src/utils/jsc.js';
 import { stringToUint8Array } from '../../src/utils/stringToUint8Array.js';
 
-import { InvalidIdentityError } from '../../src/identity/types.js';
+import { InvalidIdentityError, type PublicIdentity } from '../../src/identity/types.js';
 import { applyEvent } from '../../src/space-events/apply-event.js';
 import { createInvitation } from '../../src/space-events/create-invitation.js';
 import { createSpace } from '../../src/space-events/create-space.js';
@@ -25,12 +25,12 @@ const invitee = {
   encryptionPublicKey: 'encryption',
 };
 
-const getVerifiedIdentity = (accountAddress: string) => {
-  if (accountAddress === author.accountAddress) {
-    return Effect.succeed(author);
+const getVerifiedIdentity = (accountAddress: string, publicKey: string) => {
+  if (accountAddress === author.accountAddress && publicKey === author.signaturePublicKey) {
+    return Effect.succeed(author as PublicIdentity);
   }
-  if (accountAddress === invitee.accountAddress) {
-    return Effect.succeed(invitee);
+  if (accountAddress === invitee.accountAddress && publicKey === invitee.signaturePublicKey) {
+    return Effect.succeed(invitee as PublicIdentity);
   }
   return Effect.fail(new InvalidIdentityError());
 };
