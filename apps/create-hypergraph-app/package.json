@@ -41,7 +41,7 @@
     "@effect/platform-node": "^0.92.0",
     "@effect/printer-ansi": "^0.45.0",
     "@effect/vitest": "^0.25.0",
-    "@types/node": "^24.0.15",
+    "@types/node": "^24.1.0",
     "effect": "^3.17.0",
     "tsdown": "^0.12.9"
   }
