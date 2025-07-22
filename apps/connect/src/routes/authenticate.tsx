@@ -261,7 +261,7 @@ function AuthenticateComponent() {
                 id: keyData.id,
                 ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
                 nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
-                authorPublicKey: appIdentity.encryptionPublicKey,
+                authorPublicKey: keys.encryptionPublicKey,
                 accountAddress: accountAddress,
               };
             });
@@ -388,19 +388,25 @@ function AuthenticateComponent() {
         rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
       });
 
+      const appIdentityKeys = {
+        encryptionPrivateKey: newAppIdentity.encryptionPrivateKey,
+        encryptionPublicKey: newAppIdentity.encryptionPublicKey,
+        signaturePrivateKey: newAppIdentity.signaturePrivateKey,
+        signaturePublicKey: newAppIdentity.signaturePublicKey,
+      };
       console.log('encrypting app identity');
       const { ciphertext, nonce } = await Connect.encryptAppIdentity(
         signer,
         newAppIdentity.address,
         newAppIdentity.addressPrivateKey,
         permissionId,
-        keys,
+        appIdentityKeys,
       );
       console.log('proving ownership');
       const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
         smartAccountClient,
         accountAddress,
-        keys,
+        appIdentityKeys,
       );
 
       const message: Messages.RequestConnectCreateAppIdentity = {
@@ -432,10 +438,10 @@ function AuthenticateComponent() {
           address: newAppIdentity.address,
           addressPrivateKey: newAppIdentity.addressPrivateKey,
           accountAddress,
-          encryptionPrivateKey: keys.encryptionPrivateKey,
-          signaturePrivateKey: keys.signaturePrivateKey,
-          encryptionPublicKey: keys.encryptionPublicKey,
-          signaturePublicKey: keys.signaturePublicKey,
+          encryptionPrivateKey: newAppIdentity.encryptionPrivateKey,
+          signaturePrivateKey: newAppIdentity.signaturePrivateKey,
+          encryptionPublicKey: newAppIdentity.encryptionPublicKey,
+          signaturePublicKey: newAppIdentity.signaturePublicKey,
           sessionToken: appIdentityResponse.appIdentity.sessionToken,
           sessionTokenExpires: new Date(appIdentityResponse.appIdentity.sessionTokenExpires),
           permissionId,
