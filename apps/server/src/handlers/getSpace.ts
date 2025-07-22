@@ -4,9 +4,10 @@ import { prisma } from '../prisma.js';
 type Params = {
   spaceId: string;
   accountAddress: string;
+  appIdentityAddress: string;
 };
 
-export const getSpace = async ({ spaceId, accountAddress }: Params) => {
+export const getSpace = async ({ spaceId, accountAddress, appIdentityAddress }: Params) => {
   const space = await prisma.space.findUniqueOrThrow({
     where: {
       id: spaceId,
@@ -27,6 +28,7 @@ export const getSpace = async ({ spaceId, accountAddress }: Params) => {
           keyBoxes: {
             where: {
               accountAddress,
+              appIdentityAddress,
             },
             select: {
               nonce: true,

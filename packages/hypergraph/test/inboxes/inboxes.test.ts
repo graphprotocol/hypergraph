@@ -351,11 +351,13 @@ describe('inboxes', () => {
       vi.clearAllMocks();
     });
 
-    vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountAddress: string) => ({
-      accountAddress,
-      signaturePublicKey: bytesToHex(signaturePublicKey),
-      encryptionPublicKey: bytesToHex(encryptionPublicKey),
-    }));
+    vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(
+      async (accountAddress: string, publicKey: string | null) => ({
+        accountAddress,
+        signaturePublicKey: publicKey ?? '',
+        encryptionPublicKey: bytesToHex(encryptionPublicKey),
+      }),
+    );
 
     it.skip('should validate a properly signed space inbox message', async () => {
       const spaceId = generateId();
@@ -382,7 +384,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateSpaceInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         spaceId,
         'https://sync.example.com',
@@ -391,7 +397,11 @@ describe('inboxes', () => {
       );
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(
+        testParams.accountAddress,
+        bytesToHex(signaturePublicKey),
+        'https://sync.example.com',
+      );
     });
 
     it('should reject unsigned messages for RequiresAuth inboxes', async () => {
@@ -411,7 +421,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateSpaceInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         generateId(),
         'https://sync.example.com',
@@ -477,7 +491,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateSpaceInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         spaceId,
         'https://sync.example.com',
@@ -517,7 +535,18 @@ describe('inboxes', () => {
       };
 
       await expect(
-        validateSpaceInboxMessage(message, inbox, spaceId, 'https://sync.example.com', CHAIN, RPC_URL),
+        validateSpaceInboxMessage(
+          {
+            ...message,
+            id: generateId(),
+            createdAt: new Date(),
+          },
+          inbox,
+          spaceId,
+          'https://sync.example.com',
+          CHAIN,
+          RPC_URL,
+        ),
       ).rejects.toThrow('Failed to verify identity');
     });
 
@@ -546,7 +575,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateSpaceInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         spaceId,
         'https://sync.example.com',
@@ -555,7 +588,11 @@ describe('inboxes', () => {
       );
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(
+        testParams.accountAddress,
+        bytesToHex(signaturePublicKey),
+        'https://sync.example.com',
+      );
     });
 
     it('should accept unsigned messages on inboxes with optional auth', async () => {
@@ -575,7 +612,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateSpaceInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         generateId(),
         'https://sync.example.com',
@@ -634,7 +675,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateSpaceInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         spaceId,
         'https://sync.example.com',
@@ -643,7 +688,11 @@ describe('inboxes', () => {
       );
 
       expect(isValid).toBe(false);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(
+        testParams.accountAddress,
+        bytesToHex(signaturePublicKey),
+        'https://sync.example.com',
+      );
     });
   });
 
@@ -651,11 +700,13 @@ describe('inboxes', () => {
     beforeEach(() => {
       vi.clearAllMocks();
 
-      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(async (accountAddress: string) => ({
-        accountAddress,
-        signaturePublicKey: bytesToHex(signaturePublicKey),
-        encryptionPublicKey: bytesToHex(encryptionPublicKey),
-      }));
+      vi.spyOn(Identity, 'getVerifiedIdentity').mockImplementation(
+        async (accountAddress: string, publicKey: string | null) => ({
+          accountAddress,
+          signaturePublicKey: publicKey ?? '',
+          encryptionPublicKey: bytesToHex(encryptionPublicKey),
+        }),
+      );
     });
 
     it.skip('should validate a properly signed account inbox message', async () => {
@@ -682,7 +733,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateAccountInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         accountAddress,
         'https://sync.example.com',
@@ -691,7 +746,11 @@ describe('inboxes', () => {
       );
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(
+        testParams.accountAddress,
+        bytesToHex(signaturePublicKey),
+        'https://sync.example.com',
+      );
     });
 
     it('should reject unsigned messages for RequiresAuth inboxes', async () => {
@@ -713,7 +772,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateAccountInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         accountAddress,
         'https://sync.example.com',
@@ -771,7 +834,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateAccountInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         accountAddress,
         'https://sync.example.com',
@@ -780,7 +847,11 @@ describe('inboxes', () => {
       );
 
       expect(isValid).toBe(false);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(
+        testParams.accountAddress,
+        bytesToHex(signaturePublicKey),
+        'https://sync.example.com',
+      );
     });
 
     it('should accept unsigned messages for Anonymous inboxes', async () => {
@@ -802,7 +873,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateAccountInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         accountAddress,
         'https://sync.example.com',
@@ -838,7 +913,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateAccountInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         accountAddress,
         'https://sync.example.com',
@@ -874,7 +953,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateAccountInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         accountAddress,
         'https://sync.example.com',
@@ -883,7 +966,11 @@ describe('inboxes', () => {
       );
 
       expect(isValid).toBe(true);
-      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(testParams.accountAddress, 'https://sync.example.com');
+      expect(Identity.getVerifiedIdentity).toHaveBeenCalledWith(
+        testParams.accountAddress,
+        bytesToHex(signaturePublicKey),
+        'https://sync.example.com',
+      );
     });
 
     it('should accept unsigned messages on inboxes with optional auth', async () => {
@@ -904,7 +991,11 @@ describe('inboxes', () => {
       };
 
       const isValid = await validateAccountInboxMessage(
-        message,
+        {
+          ...message,
+          id: generateId(),
+          createdAt: new Date(),
+        },
         inbox,
         accountAddress,
         'https://sync.example.com',

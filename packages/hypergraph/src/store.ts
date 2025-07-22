@@ -64,7 +64,8 @@ interface StoreContext {
       signaturePublicKey: string;
       accountProof: string;
       keyProof: string;
-    };
+      appId: string | null;
+    }[];
   };
   authenticated: boolean;
   identity: PrivateAppIdentity | null;
@@ -104,6 +105,7 @@ type StoreEvent =
       signaturePublicKey: string;
       accountProof: string;
       keyProof: string;
+      appId: string | null;
     }
   | {
       type: 'setSpaceInbox';
@@ -291,18 +293,46 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         signaturePublicKey: string;
         accountProof: string;
         keyProof: string;
+        appId: string | null;
       },
     ) => {
+      const existingIdentity = context.identities[event.accountAddress]?.find(
+        (identity) => identity.signaturePublicKey === event.signaturePublicKey,
+      );
+      if (existingIdentity) {
+        return context;
+      }
+      if (context.identities[event.accountAddress]) {
+        return {
+          ...context,
+          identities: {
+            ...context.identities,
+            [event.accountAddress]: [
+              ...context.identities[event.accountAddress],
+              {
+                encryptionPublicKey: event.encryptionPublicKey,
+                signaturePublicKey: event.signaturePublicKey,
+                accountProof: event.accountProof,
+                keyProof: event.keyProof,
+                appId: event.appId,
+              },
+            ],
+          },
+        };
+      }
       return {
         ...context,
         identities: {
           ...context.identities,
-          [event.accountAddress]: {
-            encryptionPublicKey: event.encryptionPublicKey,
-            signaturePublicKey: event.signaturePublicKey,
-            accountProof: event.accountProof,
-            keyProof: event.keyProof,
-          },
+          [event.accountAddress]: [
+            {
+              encryptionPublicKey: event.encryptionPublicKey,
+              signaturePublicKey: event.signaturePublicKey,
+              accountProof: event.accountProof,
+              keyProof: event.keyProof,
+              appId: event.appId,
+            },
+          ],
         },
       };
     },

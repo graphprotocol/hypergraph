@@ -245,7 +245,6 @@ export const RequestConnectCreateAppIdentity = Schema.Struct({
   address: Schema.String,
   accountAddress: Schema.String,
   ciphertext: Schema.String,
-  nonce: Schema.String,
   signaturePublicKey: Schema.String,
   encryptionPublicKey: Schema.String,
   accountProof: Schema.String,
@@ -450,6 +449,7 @@ export const ResponseIdentity = Schema.Struct({
   encryptionPublicKey: Schema.String,
   accountProof: Schema.String,
   keyProof: Schema.String,
+  appId: Schema.optional(Schema.String),
 });
 
 export type ResponseIdentity = Schema.Schema.Type<typeof ResponseIdentity>;
