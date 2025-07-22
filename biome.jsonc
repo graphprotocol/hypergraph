@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,17 +7,18 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": [
-      "node_modules/",
-      "**/node_modules",
-      "**/dist",
-      "routeTree.gen.ts",
-      "tsconfig.json",
-      "tsconfig.*.json",
-      "**/variant-schema.ts",
-      "apps/typesync/client/src/generated",
-      "apps/create-hypergraph-app/template-*/**",
-      "*.css"
+    "includes": [
+      "**",
+      "!**/node_modules/",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/routeTree.gen.ts",
+      "!**/tsconfig.json",
+      "!**/tsconfig.*.json",
+      "!**/variant-schema.ts",
+      "!**/apps/typesync/client/src/generated",
+      "!**/apps/create-hypergraph-app/template-*/**",
+      "!**/*.css"
     ]
   },
   "formatter": {
@@ -26,13 +27,23 @@
     "indentWidth": 2,
     "lineWidth": 120
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
+      }
     }
   },
   "javascript": {

@@ -8,7 +8,10 @@ import { Card, CardContent } from './ui/card';
 const createPropertiesAndTypesTodos = async ({
   smartSessionClient,
   space,
-}: { smartSessionClient: Connect.SmartSessionClient; space: string }) => {
+}: {
+  smartSessionClient: Connect.SmartSessionClient;
+  space: string;
+}) => {
   const ops: Array<Op> = [];
   const { id: checkedPropertyId, ops: createCheckedPropertyOps } = Graph.createProperty({
     dataType: 'CHECKBOX',

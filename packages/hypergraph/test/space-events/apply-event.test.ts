@@ -1,15 +1,13 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { Cause, Effect, Exit } from 'effect';
 import { expect, it } from 'vitest';
-
-import { canonicalize } from '../../src/utils/jsc.js';
-import { stringToUint8Array } from '../../src/utils/stringToUint8Array.js';
-
 import { InvalidIdentityError, type PublicIdentity } from '../../src/identity/types.js';
 import { applyEvent } from '../../src/space-events/apply-event.js';
 import { createInvitation } from '../../src/space-events/create-invitation.js';
 import { createSpace } from '../../src/space-events/create-space.js';
 import { InvalidEventError, VerifySignatureError } from '../../src/space-events/types.js';
+import { canonicalize } from '../../src/utils/jsc.js';
+import { stringToUint8Array } from '../../src/utils/stringToUint8Array.js';
 
 const author = {
   accountAddress: '0x12345678',

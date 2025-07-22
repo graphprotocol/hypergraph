@@ -7,7 +7,10 @@
     "create-hypergraph-app": "dist/bin.js",
     "cha": "dist/bin.js"
   },
-  "files": ["dist", "template-*"],
+  "files": [
+    "dist",
+    "template-*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/graphprotocol/hypergraph.git",
@@ -25,7 +28,13 @@
     "check": "tsc --noEmit",
     "start": "node ./dist/bin.js"
   },
-  "keywords": ["The Graph", "Web3", "Knowledge Graph", "Hypergraph", "TypeSyncs"],
+  "keywords": [
+    "The Graph",
+    "Web3",
+    "Knowledge Graph",
+    "Hypergraph",
+    "TypeSyncs"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=20"

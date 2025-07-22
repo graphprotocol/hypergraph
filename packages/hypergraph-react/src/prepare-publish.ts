@@ -7,7 +7,7 @@ import {
   type RelationsParam,
 } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
-import { Type, store } from '@graphprotocol/hypergraph';
+import { store, Type } from '@graphprotocol/hypergraph';
 import request, { gql } from 'graphql-request';
 
 export type PreparePublishParams<S extends Entity.AnyNoContext> = {

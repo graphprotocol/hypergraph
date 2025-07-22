@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { type UserConfigExport, mergeConfig } from 'vitest/config';
+import { mergeConfig, type UserConfigExport } from 'vitest/config';
 
 import shared from '../../vitest.shared.js';
 

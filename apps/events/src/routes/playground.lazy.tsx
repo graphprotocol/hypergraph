@@ -1,8 +1,8 @@
+import { HypergraphSpaceProvider } from '@graphprotocol/hypergraph-react';
+import { createLazyFileRoute } from '@tanstack/react-router';
 import { CreateEvents } from '@/components/create-events';
 import { CreatePropertiesAndTypesEvent } from '@/components/create-properties-and-types-event';
 import { Playground } from '@/components/playground';
-import { HypergraphSpaceProvider } from '@graphprotocol/hypergraph-react';
-import { createLazyFileRoute } from '@tanstack/react-router';
 
 export const Route = createLazyFileRoute('/playground')({
   component: RouteComponent,

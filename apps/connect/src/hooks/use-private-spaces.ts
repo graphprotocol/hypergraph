@@ -1,7 +1,7 @@
-import { getAppInfoByIds } from '@/lib/get-app-info-by-ids';
 import { Connect } from '@graphprotocol/hypergraph';
 import { useIdentityToken } from '@privy-io/react-auth';
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
+import { getAppInfoByIds } from '@/lib/get-app-info-by-ids';
 
 export type PrivateSpaceData = {
   id: string;

@@ -1,11 +1,11 @@
+import { store } from '@graphprotocol/hypergraph';
+import { useHypergraphApp, useSpaces } from '@graphprotocol/hypergraph-react';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useSelector } from '@xstate/store/react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp, useSpaces } from '@graphprotocol/hypergraph-react';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { useSelector } from '@xstate/store/react';
-import { useEffect, useState } from 'react';
 
 export const Route = createFileRoute('/')({
   component: Index,

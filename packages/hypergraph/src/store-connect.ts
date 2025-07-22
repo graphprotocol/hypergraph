@@ -1,5 +1,5 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
-import { type Store, createStore } from '@xstate/store';
+import { createStore, type Store } from '@xstate/store';
 import type { Address } from 'viem';
 import { mergeMessages } from './inboxes/merge-messages.js';
 import type { InboxSenderAuthPolicy } from './inboxes/types.js';

@@ -4,8 +4,8 @@ import { Entity, store } from '@graphprotocol/hypergraph';
 import { useSelector } from '@xstate/store/react';
 import * as Schema from 'effect/Schema';
 import {
-  type ReactNode,
   createContext,
+  type ReactNode,
   useContext,
   useEffect,
   useLayoutEffect,

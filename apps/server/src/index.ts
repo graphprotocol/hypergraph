@@ -48,7 +48,7 @@ const RPC_URL = process.env.HYPERGRAPH_RPC_URL ?? CHAIN.rpcUrls.default.http[0];
 
 type AuthenticatedRequest = Request & { accountAddress?: string };
 
-async function verifyAuth(req: AuthenticatedRequest, res: Response, next: (err?: Error) => void) {
+async function _verifyAuth(req: AuthenticatedRequest, res: Response, next: (err?: Error) => void) {
   const auth = req.headers.authorization;
   if (!auth) {
     res.status(401).send('Unauthorized');
@@ -59,7 +59,7 @@ async function verifyAuth(req: AuthenticatedRequest, res: Response, next: (err?:
     const { accountAddress } = await getAppIdentityBySessionToken({ sessionToken });
     req.accountAddress = accountAddress;
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(401).send('Unauthorized');
     return;
   }
@@ -371,7 +371,7 @@ app.get('/whoami', async (req, res) => {
     try {
       const { accountAddress } = await getAppIdentityBySessionToken({ sessionToken });
       res.status(200).send(accountAddress);
-    } catch (error) {
+    } catch (_error) {
       res.status(401).send('Unauthorized');
     }
   } catch (error) {
@@ -397,7 +397,7 @@ app.get('/connect/identity', async (req, res) => {
       keyProof: identity.keyProof,
     };
     res.status(200).send(outgoingMessage);
-  } catch (error) {
+  } catch (_error) {
     const outgoingMessage: Messages.ResponseIdentityNotFoundError = {
       accountAddress,
     };
@@ -430,7 +430,7 @@ app.get('/identity', async (req, res) => {
       appId: identity.appId ?? undefined,
     };
     res.status(200).send(outgoingMessage);
-  } catch (error) {
+  } catch (_error) {
     const outgoingMessage: Messages.ResponseIdentityNotFoundError = {
       accountAddress,
     };
@@ -478,7 +478,7 @@ app.post('/spaces/:spaceId/inboxes/:inboxId/messages', async (req, res) => {
     let spaceInbox: Messages.SpaceInboxPublic;
     try {
       spaceInbox = await getSpaceInbox({ spaceId, inboxId });
-    } catch (error) {
+    } catch (_error) {
       res.status(404).send({ error: 'Inbox not found' });
       return;
     }
@@ -522,7 +522,7 @@ app.post('/spaces/:spaceId/inboxes/:inboxId/messages', async (req, res) => {
           accountAddress: message.authorAccountAddress,
           signaturePublicKey: authorPublicKey,
         });
-      } catch (error) {
+      } catch (_error) {
         res.status(403).send({ error: 'Not authorized to post to this inbox' });
         return;
       }
@@ -580,7 +580,7 @@ app.post('/accounts/:accountAddress/inboxes/:inboxId/messages', async (req, res)
     let accountInbox: Messages.AccountInboxPublic;
     try {
       accountInbox = await getAccountInbox({ accountAddress, inboxId });
-    } catch (error) {
+    } catch (_error) {
       res.status(404).send({ error: 'Inbox not found' });
       return;
     }
@@ -623,7 +623,7 @@ app.post('/accounts/:accountAddress/inboxes/:inboxId/messages', async (req, res)
           accountAddress: message.authorAccountAddress,
           signaturePublicKey: authorPublicKey,
         });
-      } catch (error) {
+      } catch (_error) {
         res.status(403).send({ error: 'Not authorized to post to this inbox' });
         return;
       }
@@ -649,7 +649,11 @@ function broadcastSpaceEvents({
   spaceId,
   event,
   currentClient,
-}: { spaceId: string; event: SpaceEvents.SpaceEvent; currentClient: CustomWebSocket }) {
+}: {
+  spaceId: string;
+  event: SpaceEvents.SpaceEvent;
+  currentClient: CustomWebSocket;
+}) {
   try {
     for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
       if (currentClient === client) continue;
@@ -672,7 +676,11 @@ function broadcastUpdates({
   spaceId,
   updates,
   currentClient,
-}: { spaceId: string; updates: Messages.Updates; currentClient: CustomWebSocket }) {
+}: {
+  spaceId: string;
+  updates: Messages.Updates;
+  currentClient: CustomWebSocket;
+}) {
   try {
     for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
       if (currentClient === client) continue;
@@ -695,7 +703,11 @@ function broadcastSpaceInboxMessage({
   spaceId,
   inboxId,
   message,
-}: { spaceId: string; inboxId: string; message: Messages.InboxMessage }) {
+}: {
+  spaceId: string;
+  inboxId: string;
+  message: Messages.InboxMessage;
+}) {
   try {
     const outgoingMessage: Messages.ResponseSpaceInboxMessage = {
       type: 'space-inbox-message',
@@ -733,7 +745,11 @@ function broadcastAccountInboxMessage({
   accountAddress,
   inboxId,
   message,
-}: { accountAddress: string; inboxId: string; message: Messages.InboxMessage }) {
+}: {
+  accountAddress: string;
+  inboxId: string;
+  message: Messages.InboxMessage;
+}) {
   try {
     const outgoingMessage: Messages.ResponseAccountInboxMessage = {
       type: 'account-inbox-message',
@@ -767,7 +783,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
     webSocket.accountAddress = result.accountAddress;
     appIdentityAddress = result.address;
     webSocket.appIdentityAddress = result.address;
-  } catch (error) {
+  } catch (_error) {
     console.log('Invalid token');
     webSocket.close();
     return;

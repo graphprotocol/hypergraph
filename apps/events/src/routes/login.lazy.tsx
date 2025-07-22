@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
 import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
 
 export const Route = createLazyFileRoute('/login')({
   component: () => <Login />,

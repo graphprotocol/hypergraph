@@ -1,8 +1,8 @@
+import { Popover } from '@base-ui-components/react/popover';
 import { Loading } from '@/components/ui/Loading';
 import type { PrivateSpaceData } from '@/hooks/use-private-spaces';
 import type { PublicSpaceData } from '@/hooks/use-public-spaces';
 import { cn } from '@/lib/utils';
-import { Popover } from '@base-ui-components/react/popover';
 
 interface SpacesCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   spaces: (PublicSpaceData | PrivateSpaceData)[];

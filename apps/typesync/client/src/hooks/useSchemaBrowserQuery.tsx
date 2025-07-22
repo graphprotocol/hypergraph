@@ -1,7 +1,7 @@
 'use client';
 
-import { type UseQueryOptions, type UseQueryResult, queryOptions, useQuery } from '@tanstack/react-query';
-import { Array as EffectArray, Order, Schema, pipe } from 'effect';
+import { queryOptions, type UseQueryOptions, type UseQueryResult, useQuery } from '@tanstack/react-query';
+import { Array as EffectArray, Order, pipe, Schema } from 'effect';
 
 import { graphqlClient } from '../clients/graphql.js';
 import { graphql } from '../generated/gql.js';
@@ -35,7 +35,7 @@ const SchemaBrowser = graphql(`
 export async function fetchSchemaTypes(first = 100) {
   try {
     return await graphqlClient.request(SchemaBrowser, { first });
-  } catch (err) {
+  } catch (_err) {
     console.error('failure fetching schema types');
     return { __typename: 'Query', types: [] } as SchemaBrowserTypesQuery;
   }
@@ -189,7 +189,7 @@ const PropertyBrowser = graphql(`
 export async function fetchProperties(first = 100) {
   try {
     return await graphqlClient.request(PropertyBrowser, { first });
-  } catch (err) {
+  } catch (_err) {
     console.error('failure fetching schema types');
     return { __typename: 'Query', properties: [] } as PropertiesQuery;
   }

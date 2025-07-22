@@ -1,6 +1,6 @@
-import { SpaceChat } from '@/components/SpaceChat';
 import { useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { SpaceChat } from '@/components/SpaceChat';
 
 export const Route = createFileRoute('/space/$spaceId/chat')({
   component: RouteComponent,

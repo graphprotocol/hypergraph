@@ -6,13 +6,7 @@ import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js'
  * Hook for interacting with external space inboxes
  * Provides limited capabilities for sending messages to other spaces' inboxes
  */
-export function useExternalSpaceInbox({
-  spaceId,
-  inboxId,
-}: {
-  spaceId: string;
-  inboxId: string;
-}) {
+export function useExternalSpaceInbox({ spaceId, inboxId }: { spaceId: string; inboxId: string }) {
   const { sendSpaceInboxMessage, getSpaceInbox } = useHypergraphApp();
   const { identity } = useHypergraphAuth();
 

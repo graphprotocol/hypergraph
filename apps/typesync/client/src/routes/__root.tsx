@@ -4,7 +4,7 @@ import { RectangleGroupIcon } from '@heroicons/react/24/outline';
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { GithubLogoIcon } from '@phosphor-icons/react';
 import type { QueryClient } from '@tanstack/react-query';
-import { Link, Outlet, createRootRouteWithContext } from '@tanstack/react-router';
+import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import type { GraphQLClient } from 'graphql-request';
 import { useAtom } from 'jotai';
 

@@ -3,7 +3,7 @@ import * as Schema from 'effect/Schema';
 import { deepMerge } from '../utils/internal/deep-merge.js';
 import { isRelationField } from '../utils/isRelationField.js';
 import { canonicalize } from '../utils/jsc.js';
-import { type DecodedEntitiesCacheEntry, type QueryEntry, decodedEntitiesCache } from './decodedEntitiesCache.js';
+import { type DecodedEntitiesCacheEntry, decodedEntitiesCache, type QueryEntry } from './decodedEntitiesCache.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
@@ -367,7 +367,7 @@ export function findMany<const S extends AnyNoContext>(
           decoded.__schema = type;
           filtered.push(decoded);
         }
-      } catch (error) {
+      } catch (_error) {
         corruptEntityIds.push(id);
       }
     }

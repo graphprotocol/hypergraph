@@ -17,7 +17,7 @@
   "devDependencies": {
     "@babel/cli": "^7.28.0",
     "@babel/core": "^7.28.0",
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "^2.1.2",
     "@changesets/cli": "^2.29.5",
     "@graphprotocol/grc-20": "^0.21.6",
     "babel-plugin-annotate-pure-calls": "^0.5.0",

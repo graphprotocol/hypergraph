@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup, renderHook } from '@testing-library/react';
-// biome-ignore lint/style/useImportType: <explanation>
-import React from 'react';
+import type React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { HypergraphAppProvider, useHypergraphAuth } from '../src/HypergraphAppContext.js';
@@ -26,7 +25,7 @@ const storageMock = {
 describe('HypergraphAppContext', () => {
   it('should render the HypergraphAppProvider and be initially unauthenticated', async () => {
     const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-      <HypergraphAppProvider storage={storageMock} syncServerUri="http://localhost:3030" mapping={{}}>
+      <HypergraphAppProvider storage={storageMock} syncServerUri="http://localhost:3030" mapping={{}} appId="test">
         {children}
       </HypergraphAppProvider>
     );
