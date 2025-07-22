@@ -65,7 +65,7 @@
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",
     "@graphprotocol/grc-20": "^0.21.6",
-    "@graphprotocol/typesync": "workspace:*",
+    "@graphprotocol/typesync": "^0.0.3",
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
     "@phosphor-icons/react": "^2.1.10",

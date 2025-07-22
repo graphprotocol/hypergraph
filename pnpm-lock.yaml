@@ -470,8 +470,8 @@ importers:
         specifier: ^0.21.6
         version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/typesync':
-        specifier: workspace:*
-        version: link:../../packages/typesync/publish
+        specifier: ^0.0.3
+        version: 0.0.3(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphql-typed-document-node/core':
         specifier: ^3.2.0
         version: 3.2.0(graphql@16.11.0)
