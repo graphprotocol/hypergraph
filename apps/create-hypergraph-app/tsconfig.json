@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [],
+  "references": [
+    { "path": "./tsconfig.src.json" },
+    { "path": "tsconfig.scripts.json" },
+    // templates
+    { "path": "./template-vite-react/tsconfig.json"}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["tsdown.config.ts"],
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuildinfo/scripts.tsbuildinfo",
+    "types": [
+      "node"
+    ],
+    "rootDir": ".",
+    "noEmit": true
+  }
+}

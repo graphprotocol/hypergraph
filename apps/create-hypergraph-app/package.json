@@ -18,6 +18,13 @@
     "directory": "dist",
     "linkDirectory": false
   },
+  "scripts": {
+    "test": "vitest run",
+    "dev": "pnpx tsx ./src/bin.ts",
+    "build": "tsdown",
+    "check": "tsc --noEmit",
+    "start": "node ./dist/bin.js"
+  },
   "keywords": ["The Graph", "Web3", "Knowledge Graph", "Hypergraph", "TypeSyncs"],
   "license": "MIT",
   "engines": {
@@ -26,5 +33,16 @@
   "bugs": {
     "url": "https://github.com/graphprotocol/hypergraph/issues"
   },
-  "homepage": "https://github.com/graphprotocol/hypergraph/tree/main/apps/create-hypergraph-app#readme"
+  "homepage": "https://github.com/graphprotocol/hypergraph/tree/main/apps/create-hypergraph-app#readme",
+  "devDependencies": {
+    "@effect/cli": "^0.68.0",
+    "@effect/language-service": "^0.28.0",
+    "@effect/platform": "^0.89.0",
+    "@effect/platform-node": "^0.92.0",
+    "@effect/printer-ansi": "^0.45.0",
+    "@effect/vitest": "^0.25.0",
+    "@types/node": "^24.0.15",
+    "effect": "^3.17.0",
+    "tsdown": "^0.12.9"
+  }
 }
