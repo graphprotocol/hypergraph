@@ -627,7 +627,7 @@ export function HypergraphAppProvider({
             }
             const inboxCreator = Inboxes.recoverAccountInboxCreatorKey(response.inbox);
             if (inboxCreator !== identity.signaturePublicKey) {
-              console.error('Invalid inbox creator', response.inbox);
+              console.error('Invalid inbox creator', response.inbox, inboxCreator, identity.signaturePublicKey);
               return;
             }
 
@@ -1019,7 +1019,7 @@ export function HypergraphAppProvider({
       }
       const message = await Inboxes.createSpaceInboxCreationMessage({
         author: {
-          accountAddress: identity.address,
+          accountAddress: identity.accountAddress,
           signaturePublicKey,
           encryptionPublicKey,
           signaturePrivateKey,
@@ -1118,7 +1118,7 @@ export function HypergraphAppProvider({
         throw new Error('Missing keys');
       }
       const message = await Inboxes.createAccountInboxCreationMessage({
-        accountAddress: identity.address,
+        accountAddress: identity.accountAddress,
         isPublic,
         authPolicy,
         encryptionPublicKey,
