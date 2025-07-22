@@ -18,12 +18,6 @@
     "directory": "dist",
     "linkDirectory": false
   },
-  "scripts": {
-    "test": "vitest run",
-    "dev": "pnpx tsx ./src/bin.ts",
-    "build": "tsup",
-    "check": "tsc --noEmit"
-  },
   "keywords": ["The Graph", "Web3", "Knowledge Graph", "Hypergraph", "TypeSyncs"],
   "license": "MIT",
   "engines": {
