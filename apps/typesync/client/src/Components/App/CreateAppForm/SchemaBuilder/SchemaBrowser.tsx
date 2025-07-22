@@ -95,11 +95,9 @@ export function SchemaBrowser({ typeSelected }: SchemaBrowserProps) {
                   <ul className="w-full pl-6 pr-3 divide-y divide-gray-300 dark:divide-gray-800">
                     {properties.map((prop) => (
                       <li key={prop.id} className="w-full text-xs py-1.5 flex items-center gap-x-2 list-disc">
-                        {prop.entity?.name || prop.id}
+                        {prop.name || prop.id}
                         {prop.dataType != null ? (
-                          <InlineCode>
-                            {mapKGDataTypeToPrimitiveType(prop.dataType, prop.entity?.name || prop.id)}
-                          </InlineCode>
+                          <InlineCode>{mapKGDataTypeToPrimitiveType(prop.dataType, prop.name || prop.id)}</InlineCode>
                         ) : null}
                       </li>
                     ))}

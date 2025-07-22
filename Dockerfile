@@ -49,7 +49,6 @@ WORKDIR /app
 COPY --from=build /workspace/deployment/out .
 # TODO: Remove this when we switch to an actual database.
 ENV DATABASE_URL="file:/data/production.sqlite"
-RUN npm run prisma migrate deploy --skip-generate
 EXPOSE 3030
 # can't use fly.io release_command because it doesn't mount the volume containing the sqlite db file
 CMD ["sh", "-c", "npm run prisma migrate deploy && node dist/index.js"]
