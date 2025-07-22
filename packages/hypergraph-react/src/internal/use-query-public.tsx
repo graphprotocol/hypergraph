@@ -1,5 +1,6 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, type Mapping, type MappingEntry, Type, store } from '@graphprotocol/hypergraph';
+import { type Entity, Type, store } from '@graphprotocol/hypergraph';
+import type { Mapping, MappingEntry } from '@graphprotocol/typesync/Mapping';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import * as Either from 'effect/Either';

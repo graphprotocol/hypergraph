@@ -15,13 +15,13 @@ import {
   type InboxMessageStorageEntry,
   Inboxes,
   Key,
-  type Mapping,
   Messages,
   SpaceEvents,
   type SpaceStorageEntry,
   Utils,
   store,
 } from '@graphprotocol/hypergraph';
+import type { Mapping } from '@graphprotocol/typesync/Mapping';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
