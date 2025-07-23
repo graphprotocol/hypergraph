@@ -1,3 +1,4 @@
+import * as HelpDoc from '@effect/cli/HelpDoc';
 import { describe, it } from '@effect/vitest';
 import * as Effect from 'effect/Effect';
 import * as Exit from 'effect/Exit';
@@ -264,7 +265,7 @@ describe('Utils', () => {
       it.effect('should reject empty names', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName(''));
-          expect(result).toStrictEqual(Exit.fail('Project name must be a non-empty string'));
+          expect(result).toStrictEqual(Exit.fail(HelpDoc.p('Project name must be a non-empty string')));
         }),
       );
 
@@ -272,42 +273,46 @@ describe('Utils', () => {
         Effect.gen(function* () {
           const longName = 'a'.repeat(215);
           const result = yield* Effect.exit(Utils.validateProjectName(longName));
-          expect(result).toStrictEqual(Exit.fail('Project name must not contain more than 214 characters'));
+          expect(result).toStrictEqual(Exit.fail(HelpDoc.p('Project name must not contain more than 214 characters')));
         }),
       );
 
       it.effect('should reject names with uppercase letters', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName('MyProject'));
-          expect(result).toStrictEqual(Exit.fail('Project name must not contain capital letters'));
+          expect(result).toStrictEqual(Exit.fail(HelpDoc.p('Project name must not contain capital letters')));
         }),
       );
 
       it.effect('should reject names with leading whitespace', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName(' myproject'));
-          expect(result).toStrictEqual(Exit.fail('Project name must not contain leading or trailing whitespace'));
+          expect(result).toStrictEqual(
+            Exit.fail(HelpDoc.p('Project name must not contain leading or trailing whitespace')),
+          );
         }),
       );
 
       it.effect('should reject names with trailing whitespace', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName('myproject '));
-          expect(result).toStrictEqual(Exit.fail('Project name must not contain leading or trailing whitespace'));
+          expect(result).toStrictEqual(
+            Exit.fail(HelpDoc.p('Project name must not contain leading or trailing whitespace')),
+          );
         }),
       );
 
       it.effect('should reject names starting with a period', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName('.myproject'));
-          expect(result).toStrictEqual(Exit.fail('Project name must not start with a period'));
+          expect(result).toStrictEqual(Exit.fail(HelpDoc.p('Project name must not start with a period')));
         }),
       );
 
       it.effect('should reject names starting with an underscore', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName('_myproject'));
-          expect(result).toStrictEqual(Exit.fail('Project name must not start with an underscore'));
+          expect(result).toStrictEqual(Exit.fail(HelpDoc.p('Project name must not start with an underscore')));
         }),
       );
 
@@ -316,7 +321,9 @@ describe('Utils', () => {
           const specialChars = ['~', "'", '!', '(', ')', '*'];
           for (const char of specialChars) {
             const result = yield* Effect.exit(Utils.validateProjectName(`my${char}project`));
-            expect(result).toStrictEqual(Exit.fail("Project name must not contain the special scharacters ~'!()*"));
+            expect(result).toStrictEqual(
+              Exit.fail(HelpDoc.p("Project name must not contain the special scharacters ~'!()*")),
+            );
           }
         }),
       );
@@ -326,7 +333,9 @@ describe('Utils', () => {
           const builtins = ['fs', 'path', 'http', 'crypto', 'buffer'];
           for (const builtin of builtins) {
             const result = yield* Effect.exit(Utils.validateProjectName(builtin));
-            expect(result).toStrictEqual(Exit.fail('Project name must not be a NodeJS built-in module name'));
+            expect(result).toStrictEqual(
+              Exit.fail(HelpDoc.p('Project name must not be a NodeJS built-in module name')),
+            );
           }
         }),
       );
@@ -336,7 +345,7 @@ describe('Utils', () => {
           const blockedNames = ['node_modules', 'favicon.ico'];
           for (const blocked of blockedNames) {
             const result = yield* Effect.exit(Utils.validateProjectName(blocked));
-            expect(result).toStrictEqual(Exit.fail(`Project name '${blocked}' is blocked from use`));
+            expect(result).toStrictEqual(Exit.fail(HelpDoc.p(`Project name '${blocked}' is blocked from use`)));
           }
         }),
       );
@@ -344,14 +353,14 @@ describe('Utils', () => {
       it.effect('should reject names with non-URL-friendly characters', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName('my<project>'));
-          expect(result).toStrictEqual(Exit.fail('Project name must only contain URL-friendly characters'));
+          expect(result).toStrictEqual(Exit.fail(HelpDoc.p('Project name must only contain URL-friendly characters')));
         }),
       );
 
       it.effect('should reject scoped packages with non-URL-friendly characters', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName('@my<org>/my<project>'));
-          expect(result).toStrictEqual(Exit.fail('Project name must only contain URL-friendly characters'));
+          expect(result).toStrictEqual(Exit.fail(HelpDoc.p('Project name must only contain URL-friendly characters')));
         }),
       );
     });
@@ -367,7 +376,9 @@ describe('Utils', () => {
       it.effect('should handle scoped packages with special characters in last segment', ({ expect }) =>
         Effect.gen(function* () {
           const result = yield* Effect.exit(Utils.validateProjectName('@myorg/my!project'));
-          expect(result).toStrictEqual(Exit.fail("Project name must not contain the special scharacters ~'!()*"));
+          expect(result).toStrictEqual(
+            Exit.fail(HelpDoc.p("Project name must not contain the special scharacters ~'!()*")),
+          );
         }),
       );
 

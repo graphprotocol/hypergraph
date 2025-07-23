@@ -16,6 +16,10 @@ const runnable = Effect.suspend(() => run(process.argv)).pipe(
 );
 
 runnable.pipe(
+  Effect.catchTags({
+    QuitException: () =>
+      Effect.logError(AnsiDoc.cat(AnsiDoc.hardLine, AnsiDoc.text('Exiting...').pipe(AnsiDoc.annotate(Ansi.red)))),
+  }),
   Effect.catchAllDefect((defect) =>
     Effect.gen(function* () {
       if (defect && typeof defect === 'object' && 'name' in defect && defect.name === 'QuitException') {

@@ -1,6 +1,5 @@
+import * as HelpDoc from '@effect/cli/HelpDoc';
 import * as Effect from 'effect/Effect';
-
-export const ALWAYS_SKIP_DIRECTORIES = ['node_modules', '.git'];
 
 const SCOPED_PACKAGE_REGEX = /^(?:@([^/]+?)[/])?([^/]+?)$/;
 
@@ -78,9 +77,9 @@ const nodeBuiltins = [
   'zlib',
 ];
 
-const invalid = (message: string) => Effect.fail(message);
+const invalid = (message: string) => Effect.fail(HelpDoc.p(message));
 
-export function validateProjectName(name: string): Effect.Effect<string, string> {
+export function validateProjectName(name: string): Effect.Effect<string, HelpDoc.HelpDoc> {
   if (name.length === 0) {
     return invalid('Project name must be a non-empty string');
   }

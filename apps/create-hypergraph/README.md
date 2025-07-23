@@ -32,21 +32,34 @@ bun create hypergraph
 
 Then follow the given prompts.
 
+### Args
+
+- `app-name` -> if provided, used as the name of the app, as well as the directory the app is scaffolded in to
+
+### Params
+
+- `--template` -> if provided, uses the provided template
+  - options:
+    - vite-react
+- `--package-manager` -> if provided, uses the provided package manager
+  - options:
+    - pnpm
+    - bun
+    - npm
+    - yarn
+- `--skip-install-deps` -> if flag provided, the deps will not be install in the scaffolded app
+  - default: false
+- `--skip-initialize-git` -> if flag provided, git will not be initialized in the scaffolded app
+  - default: false
+
+```bash
+# fully configured
+pnpm create hypergraph@latest --template vite-react --package-manager pnpm my-hypergraph-app
+```
+
 ### Currently Supported Templates
 
 - vite + react
-
-## Example: scaffolding a vite + react app, initializing the git repo and installing deps with pnpm
-
-```bash
-✔ What is your app named? … my-hypergraph-app
-✔ Choose your template …  Vite + React
-✔ What package manager do you want to use? …  pnpm
-✔ Do you want us to install deps? … Yes / No
-✔ Initialize a git repository? … Yes / No
-Scaffolding vite-react hypergraph app in /my-hypergraph-app...
-Initialized empty Git repository
-```
 
 ## References
 
