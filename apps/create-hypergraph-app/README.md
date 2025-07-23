@@ -36,6 +36,18 @@ Then follow the given prompts.
 
 - vite + react
 
+## Example: scaffolding a vite + react app, initializing the git repo and installing deps with pnpm
+
+```bash
+✔ What is your app named? … my-hypergraph-app
+✔ Choose your template …  Vite + React
+✔ What package manager do you want to use? …  pnpm
+✔ Do you want us to install deps? … Yes / No
+✔ Initialize a git repository? … Yes / No
+Scaffolding vite-react hypergraph app in /my-hypergraph-app...
+Initialized empty Git repository
+```
+
 ## References
 
 - [create vite app](https://github.com/vitejs/vite/tree/main/packages/create-vite)

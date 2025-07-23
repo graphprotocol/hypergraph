@@ -5,7 +5,8 @@ import { Command, Prompt } from '@effect/cli';
 import { FileSystem, Path } from '@effect/platform';
 import type { PlatformError } from '@effect/platform/Error';
 import { NodeFileSystem } from '@effect/platform-node';
-import { Cause, Console, Data, Effect, Array as EffectArray, String as EffectString, Schema } from 'effect';
+import { Ansi, AnsiDoc } from '@effect/printer-ansi';
+import { Cause, Data, Effect, Array as EffectArray, String as EffectString, Schema } from 'effect';
 import type { NonEmptyReadonlyArray } from 'effect/Array';
 
 import * as Utils from './Utils.js';
@@ -13,6 +14,9 @@ import * as Utils from './Utils.js';
 const appNamePrompt = Prompt.text({
   message: 'What is your app named?',
   default: 'my-hypergraph-app',
+  validate(value) {
+    return Utils.validateProjectName(value);
+  },
 });
 
 const AvailableFrameworkKey = Schema.Union(Schema.Literal('vite-react'));
@@ -22,6 +26,7 @@ const Framework = Schema.Record({
   key: AvailableFrameworkKey,
   value: Schema.Struct({
     directory: Schema.NonEmptyTrimmedString,
+    skipDirectories: Schema.Set(Schema.NonEmptyTrimmedString),
   }),
 });
 type Framework = typeof Framework.Type;
@@ -29,6 +34,7 @@ type Framework = typeof Framework.Type;
 const availableFrameworks = {
   'vite-react': {
     directory: 'template-vite-react',
+    skipDirectories: new Set([...Utils.ALWAYS_SKIP_DIRECTORIES, '.tanstack', 'dist']),
   },
 } as const satisfies Framework;
 const templatePrompt = Prompt.select({
@@ -62,7 +68,7 @@ const installDepsPropmpt = Prompt.toggle({
 
 const initializeGitRepoPrompt = Prompt.toggle({
   message: 'Initialize a git repository?',
-  active: 'Tes',
+  active: 'Yes',
   inactive: 'No',
   initial: true,
 });
@@ -91,20 +97,34 @@ const createHypergraphApp = Command.prompt(
       if (exists) {
         const targetDirRead = yield* fs.readDirectory(targetDirectory, { recursive: true });
         if (EffectArray.isNonEmptyArray(targetDirRead)) {
-          return yield* Console.error('The selected directory is not empty');
+          return yield* Effect.logError(
+            AnsiDoc.vsep([
+              AnsiDoc.text('The selected directory is not empty.').pipe(AnsiDoc.annotate(Ansi.red)),
+              AnsiDoc.text(`Please choose an empty directory, or clean ${targetDirectory}`),
+            ]),
+          );
         }
       } else {
         // create the target directory
         yield* fs.makeDirectory(targetDirectory, { recursive: true });
       }
 
-      yield* Console.log(`Scaffolding ${template} hypergraph app in ${targetDirectory}...`);
+      yield* Effect.logInfo(AnsiDoc.text(`Scaffolding Hypergraph app ${appName} with template ${template}`));
 
       // retrieve template directory based on selected template
-      const templateDir = path.resolve(fileURLToPath(import.meta.url), '..', '..', framework.directory);
+      const __filename = import.meta.filename;
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+      const templateDir = EffectString.endsWith('Cli.ts')(__filename)
+        ? // running locally
+          path.resolve(__dirname, '..', '..', framework.directory)
+        : // running the published version
+          path.resolve(__dirname, framework.directory);
       const templatDirExists = yield* fs.exists(templateDir);
       if (!templatDirExists) {
-        return yield* Console.error('Selected template does not exist');
+        return yield* Effect.logError(
+          AnsiDoc.text(`Selected template ${template} does not exist`).pipe(AnsiDoc.annotate(Ansi.red)),
+        );
       }
 
       /**
@@ -128,16 +148,12 @@ const createHypergraphApp = Command.prompt(
 
       function copyTemplate(src: string, dest: string): Effect.Effect<void, PlatformError> {
         return Effect.gen(function* () {
-          const skipDir = new Set(['node_modules', '.tanstack', 'dist']);
-
           yield* fs.makeDirectory(dest, { recursive: true });
           const entries = readdirSync(src, { withFileTypes: true });
 
           for (const entry of entries) {
-            // Skip .git directory
-            if (EffectString.startsWith('.git')(entry.name)) continue;
-            // Skip the node_modules, .tanstack and dist directories
-            if (entry.isDirectory() && skipDir.has(entry.name)) continue;
+            // Skip the node_modules, .tanstack, dist, and .git directories
+            if (entry.isDirectory() && framework.skipDirectories.has(entry.name)) continue;
 
             const srcPath = path.join(src, entry.name);
             const destPath = path.join(dest, entry.name);
@@ -166,7 +182,7 @@ const createHypergraphApp = Command.prompt(
       const initializeGit = Effect.gen(function* () {
         yield* Effect.try({
           try: () => {
-            execSync('git init', {
+            execSync('git init -q', {
               stdio: 'inherit',
               cwd: targetDirectory,
             });
@@ -186,7 +202,7 @@ const createHypergraphApp = Command.prompt(
 
         yield* Effect.try({
           try: () => {
-            execSync('git commit -m "Initial commit - Scaffold Hypergraph app"', {
+            execSync('git commit -q -m "Initial commit - Scaffold Hypergraph app"', {
               stdio: 'inherit',
               cwd: targetDirectory,
             });
@@ -197,28 +213,33 @@ const createHypergraphApp = Command.prompt(
 
       return yield* copyTemplate(templateDir, targetDirectory).pipe(
         Effect.tapErrorCause((cause) =>
-          Console.error('Failure copying the template directory files into your target directory', Cause.pretty(cause)),
+          Effect.logError(
+            'Failure copying the template directory files into your target directory',
+            Cause.pretty(cause),
+          ),
         ),
         Effect.andThen(() => updatePackageJson(targetDirectory)),
         // Initialize the git repo if user selected to
         Effect.andThen(() => Effect.when(initializeGit, () => initializeGitRepo)),
-        Effect.tapErrorCause((cause) => Console.error('Failure initializing the git repository', Cause.pretty(cause))),
+        Effect.tapErrorCause((cause) =>
+          Effect.logError('Failure initializing the git repository', Cause.pretty(cause)),
+        ),
         // Install the deps with the selected package manager if user selected to
         Effect.andThen(() => Effect.when(installDepsInScaffoldedApp, () => installDeps)),
         Effect.tapErrorCause((cause) =>
-          Console.error(`Failure installing deps with ${pkgMananger}`, Cause.pretty(cause)),
+          Effect.logError(`Failure installing deps with ${pkgMananger}`, Cause.pretty(cause)),
         ),
         // success. inform user
         Effect.andThen(() =>
-          Console.log(
-            `🎉 Successfully scaffolded your hypergraph enabled app ${appName}!`,
+          Effect.logInfo(
+            AnsiDoc.text(`🎉 Successfully scaffolded your hypergraph enabled app ${appName}!`),
+            '\r\n\r\n',
+            AnsiDoc.text('To start the app, run:'),
+            '\r\n\r\n',
+            AnsiDoc.text(`cd ${appName}`),
+            installDeps ? '\r\n' : AnsiDoc.text(`${pkgMananger} install`),
             '\r\n',
-            'To start the app, run:',
-            '\r\n',
-            `cd ${appName}`,
-            installDeps ? '\r\n' : `\r\n${pkgMananger} install`,
-            '\r\n',
-            `${pkgMananger} run dev`,
+            AnsiDoc.text(`${pkgMananger} run dev`),
           ),
         ),
       );
@@ -230,7 +251,7 @@ const createHypergraphApp = Command.prompt(
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.0.1',
+  version: '0.0.0-alpha.10',
 });
 
 class InitializeGitRepoError extends Data.TaggedError(

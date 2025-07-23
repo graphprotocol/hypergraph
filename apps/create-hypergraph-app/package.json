@@ -1,15 +1,15 @@
 {
   "name": "@graphprotocol/create-hypergraph-app",
-  "version": "0.0.1",
+  "version": "0.0.0-alpha.10",
   "description": "CLI toolchain to scaffold a hypergraph-enabled application with a given template.",
   "type": "module",
   "bin": {
-    "create-hypergraph-app": "dist/bin.js",
-    "cha": "dist/bin.js"
+    "create-hypergraph-app": "./dist/bin.js",
+    "cha": "./dist/bin.js"
   },
   "files": [
-    "dist",
-    "template-*"
+    "template-*",
+    "dist"
   ],
   "repository": {
     "type": "git",
@@ -24,7 +24,10 @@
   "scripts": {
     "test": "vitest run",
     "dev": "pnpx tsx ./src/bin.ts",
-    "build": "tsdown",
+    "build": "tsdown && tsx scripts/copy-package-json.ts && pnpm run copy-all",
+    "copy-templates": "cp -r template-* dist/",
+    "copy-readme": "cp README.md dist/README.md",
+    "copy-all": "pnpm run copy-templates && pnpm run copy-readme",
     "check": "tsc --noEmit",
     "start": "node ./dist/bin.js",
     "lint": "biome check",
@@ -54,6 +57,7 @@
     "@effect/vitest": "^0.25.0",
     "@types/node": "^24.1.0",
     "effect": "^3.17.0",
-    "tsdown": "^0.12.9"
+    "tsdown": "^0.13.0",
+    "tsx": "^4.20.3"
   }
 }
