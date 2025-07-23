@@ -233,12 +233,12 @@ const createHypergraphApp = Command.prompt(
         Effect.andThen(() =>
           Effect.logInfo(
             AnsiDoc.text(`🎉 Successfully scaffolded your hypergraph enabled app ${appName}!`),
-            '\r\n\r\n',
+            AnsiDoc.hardLine,
             AnsiDoc.text('To start the app, run:'),
-            '\r\n\r\n',
+            AnsiDoc.hardLine,
             AnsiDoc.text(`cd ${appName}`),
-            installDeps ? '\r\n' : AnsiDoc.text(`${pkgMananger} install`),
-            '\r\n',
+            installDeps ? AnsiDoc.hardLine : AnsiDoc.text(`${pkgMananger} install`),
+            AnsiDoc.hardLine,
             AnsiDoc.text(`${pkgMananger} run dev`),
           ),
         ),
@@ -251,7 +251,7 @@ const createHypergraphApp = Command.prompt(
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.0.0-alpha.10',
+  version: '0.0.0-alpha.11',
 });
 
 class InitializeGitRepoError extends Data.TaggedError(

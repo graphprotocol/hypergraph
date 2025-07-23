@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/create-hypergraph-app",
-  "version": "0.0.0-alpha.10",
+  "version": "0.0.0-alpha.11",
   "description": "CLI toolchain to scaffold a hypergraph-enabled application with a given template.",
   "type": "module",
   "bin": {
