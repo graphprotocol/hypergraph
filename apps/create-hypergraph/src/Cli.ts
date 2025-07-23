@@ -251,7 +251,7 @@ const createHypergraphApp = Command.prompt(
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.0.0-alpha.2',
+  version: '0.0.0-alpha.3',
 });
 
 class InitializeGitRepoError extends Data.TaggedError(
