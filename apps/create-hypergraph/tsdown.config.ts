@@ -10,4 +10,7 @@ export default defineConfig(() => ({
   outDir: 'dist',
   clean: true,
   external: ['@parcel/watcher'],
+  env: {
+    NODE_ENV: 'production',
+  },
 }));

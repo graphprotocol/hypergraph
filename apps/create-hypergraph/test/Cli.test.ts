@@ -15,7 +15,7 @@ const testDir = join(tmpdir(), 'create-hypergraph-test-');
 const run = (args: Array<string>, cwd?: string) => {
   return Effect.sync(() => {
     const fullCommand = `pnpx tsx ${CLI_PATH} ${args.join(' ')}`;
-    const result = execaCommandSync(fullCommand, { cwd });
+    const result = execaCommandSync(fullCommand, { cwd, env: { ...process.env, NODE_ENV: 'development' } });
     return result.stdout;
   });
 };
@@ -24,7 +24,7 @@ const runExpectError = (args: Array<string>, cwd?: string) => {
   return Effect.sync(() => {
     const fullCommand = `pnpx tsx ${CLI_PATH} ${args.join(' ')}`;
     try {
-      const result = execaCommandSync(fullCommand, { cwd, reject: false });
+      const result = execaCommandSync(fullCommand, { cwd, reject: false, env: { ...process.env, NODE_ENV: 'development' } });
       return { stdout: result.stdout, stderr: result.stderr, exitCode: result.exitCode };
       // biome-ignore lint/suspicious/noExplicitAny: error
     } catch (error: any) {

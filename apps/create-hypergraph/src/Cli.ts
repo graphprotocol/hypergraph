@@ -6,7 +6,7 @@ import { FileSystem, Path } from '@effect/platform';
 import type { PlatformError } from '@effect/platform/Error';
 import { NodeFileSystem } from '@effect/platform-node';
 import { Ansi, AnsiDoc } from '@effect/printer-ansi';
-import { Cause, Data, Effect, Array as EffectArray, String as EffectString, Option } from 'effect';
+import { Cause, Data, Effect, Array as EffectArray, Option } from 'effect';
 
 import * as Domain from './Domain.js';
 import * as Utils from './Utils.js';
@@ -75,7 +75,7 @@ const createHypergraphApp = Command.make('create-hypergraph-app', {
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.0.1',
+  version: '0.0.2',
 });
 
 // ========================
@@ -97,10 +97,11 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
 
+    const appname = path.basename(config.appName);
     const framework = Domain.availableFrameworks[config.template];
 
     // check if directory already exists, if exists, and is not empty, throw an error
-    const targetDirectory = path.resolve('.', config.appName);
+    const targetDirectory = config.appName;
     const exists = yield* fs.exists(targetDirectory);
     if (exists) {
       const targetDirRead = yield* fs.readDirectory(targetDirectory, { recursive: true });
@@ -118,18 +119,16 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
     }
 
     yield* Effect.logInfo(
-      AnsiDoc.text(`Scaffolding Hypergraph app ${config.appName} with template ${config.template}`),
+      AnsiDoc.text(`Scaffolding Hypergraph app ${path.basename(config.appName)} with template ${config.template}`),
     );
 
     // retrieve template directory based on selected template
-    const __filename = import.meta.filename;
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-    const templateDir = EffectString.endsWith('Cli.ts')(__filename)
-      ? // running locally
-        path.resolve(__dirname, '..', framework.directory)
-      : // running the published version
-        path.resolve(__dirname, framework.directory);
+    const isDev = process.env.NODE_ENV === 'development' || __dirname.includes('/src/');
+    const templateDir = isDev
+      ? path.resolve(__dirname, '..', framework.directory)
+      : path.resolve(__dirname, framework.directory);
     const templatDirExists = yield* fs.exists(templateDir);
     if (!templatDirExists) {
       return yield* Effect.logError(
@@ -146,7 +145,7 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
         // read the cloned package.json
         const packageJson = yield* fs.readFileString(packageJsonPath).pipe(Effect.map(JSON.parse));
 
-        const validatedPackageName = Utils.validatePackageName(config.appName);
+        const validatedPackageName = Utils.validatePackageName(appname);
         const name = validatedPackageName.normalizedName;
         // update the name and description
         packageJson.name = name;
@@ -237,10 +236,10 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
       // success. inform user
       Effect.andThen(() =>
         Effect.logInfo(
-          AnsiDoc.text(`🎉 Successfully scaffolded your hypergraph enabled app ${config.appName}!`),
+          AnsiDoc.text(`🎉 Successfully scaffolded your hypergraph enabled app ${appname}!`),
           AnsiDoc.hardLine,
           AnsiDoc.text('To start the app, run:'),
-          AnsiDoc.text(`cd ${config.appName}`),
+          AnsiDoc.text(`cd ${appname}`),
           config.skipInstallDeps ? AnsiDoc.text(`${config.packageManager} install`) : AnsiDoc.hardLine,
           AnsiDoc.text(`${config.packageManager} run dev`),
         ),

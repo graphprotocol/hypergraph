@@ -1,6 +1,6 @@
 {
   "name": "create-hypergraph",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CLI toolchain to scaffold a Hypergraph-enabled application with a given template.",
   "type": "module",
   "bin": {
@@ -24,7 +24,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "dev": "pnpx tsx ./src/bin.ts",
+    "dev": "NODE_ENV=development pnpx tsx ./src/bin.ts",
     "build": "tsdown && tsx scripts/copy-package-json.ts && pnpm run copy-all",
     "copy-templates": "cp -r template-* dist/",
     "copy-readme": "cp README.md dist/README.md",
