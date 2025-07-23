@@ -160,9 +160,6 @@ const convertPropertyValue = (
   if (type.fields[key] === Type.Point) {
     return property.value;
   }
-  if (type.fields[key] === Type.Url) {
-    return property.value;
-  }
   if (type.fields[key] === Type.Date) {
     return property.value;
   }
@@ -178,7 +175,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
   mappingEntry: MappingEntry,
   mapping: Mapping,
 ) => {
-  const rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {};
+  const rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {};
 
   for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
     const properties = (queryEntity.relationsList ?? []).filter((a) => a.typeId === relationId);
@@ -212,7 +209,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
       // @ts-expect-error TODO: properly access the type.name
       const type = field.value;
 
-      let rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
+      let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
         id: propertyEntry.toEntity.id,
         name: propertyEntry.toEntity.name,
         // TODO: should be determined by the actual value
@@ -262,7 +259,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   const invalidEntities: Record<string, unknown>[] = [];
 
   for (const queryEntity of queryData.entities) {
-    let rawEntity: Record<string, string | boolean | number | unknown[] | URL | Date> = {
+    let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
       id: queryEntity.id,
     };
 

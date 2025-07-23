@@ -8,7 +8,6 @@ export const Number = Schema.Number;
 export const Checkbox = Schema.Boolean;
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const Date = Schema.Date;
-export const Url = Schema.URL;
 export const Point = Schema.transform(Schema.String, Schema.Array(Number), {
   strict: true,
   decode: (str: string) => {

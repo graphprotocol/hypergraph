@@ -94,7 +94,7 @@ export type SchemaDataTypeRelation = typeof SchemaDataTypeRelation.Type;
 /**
  * @since 0.0.1
  */
-export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Checkbox', 'Date', 'Point', 'Url');
+export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Checkbox', 'Date', 'Point');
 /**
  * @since 0.0.1
  */
@@ -760,9 +760,6 @@ export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): 
     }
     case dataType === 'Point': {
       return 'POINT';
-    }
-    case dataType === 'Url': {
-      return 'TEXT';
     }
     case isDataTypeRelation(dataType): {
       return 'RELATION';
