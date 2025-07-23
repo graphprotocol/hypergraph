@@ -9,25 +9,25 @@ Inspiration takes from the `vite`, `nextjs`, and `effect` create app command too
 With NPM:
 
 ```bash
-npm create hypergraph-app@latest
+npm create hypergraph@latest
 ```
 
 With Yarn:
 
 ```bash
-yarn create hypergraph-app
+yarn create hypergraph
 ```
 
 With PNPM:
 
 ```bash
-pnpm create hypergraph-app@latest
+pnpm create hypergraph@latest
 ```
 
 With Bun:
 
 ```bash
-bun create hypergraph-app
+bun create hypergraph
 ```
 
 Then follow the given prompts.

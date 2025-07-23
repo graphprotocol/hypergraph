@@ -9,6 +9,6 @@
     { "path": "apps/connect" },
     { "path": "apps/events" },
     { "path": "apps/typesync" },
-    { "path": "apps/create-hypergraph-app" }
+    { "path": "apps/create-hypergraph" }
   ]
 }

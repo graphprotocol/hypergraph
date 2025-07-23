@@ -17,7 +17,7 @@
       "!**/tsconfig.*.json",
       "!**/variant-schema.ts",
       "!**/apps/typesync/client/src/generated",
-      "!**/apps/create-hypergraph-app/template-*/**",
+      "!**/apps/create-hypergraph/template-*/**",
       "!**/*.css"
     ]
   },

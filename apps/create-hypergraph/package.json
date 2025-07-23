@@ -1,7 +1,7 @@
 {
-  "name": "@graphprotocol/create-hypergraph-app",
-  "version": "0.0.0-alpha.11",
-  "description": "CLI toolchain to scaffold a hypergraph-enabled application with a given template.",
+  "name": "create-hypergraph",
+  "version": "0.0.0-alpha.1",
+  "description": "CLI toolchain to scaffold a Hypergraph-enabled application with a given template.",
   "type": "module",
   "bin": {
     "create-hypergraph-app": "./dist/bin.js",
@@ -14,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/graphprotocol/hypergraph.git",
-    "directory": "apps/create-hypergraph-app"
+    "directory": "apps/create-hypergraph"
   },
   "publishConfig": {
     "access": "public",
