@@ -1,6 +1,6 @@
 {
   "name": "create-hypergraph",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "CLI toolchain to scaffold a Hypergraph-enabled application with a given template.",
   "type": "module",
   "bin": {
@@ -10,7 +10,8 @@
   "files": [
     "template-*",
     "dist",
-    "llms.txt"
+    "llms.txt",
+    "CHANGELOG.md"
   ],
   "repository": {
     "type": "git",
@@ -28,8 +29,9 @@
     "build": "tsdown && tsx scripts/copy-package-json.ts && pnpm run copy-all",
     "copy-templates": "cp -r template-* dist/",
     "copy-readme": "cp README.md dist/README.md",
+    "copy-changelog": "cp CHANGELOG.md dist/CHANGELOG.md",
     "copy-llms": "cp llms.txt dist/llms.txt",
-    "copy-all": "pnpm run copy-templates && pnpm run copy-readme && pnpm run copy-llms",
+    "copy-all": "pnpm run copy-templates && pnpm run copy-readme && pnpm run copy-changelog && pnpm run copy-llms",
     "check": "tsc --noEmit",
     "start": "node ./dist/bin.js",
     "lint": "biome check",

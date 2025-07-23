@@ -24,7 +24,11 @@ const runExpectError = (args: Array<string>, cwd?: string) => {
   return Effect.sync(() => {
     const fullCommand = `pnpx tsx ${CLI_PATH} ${args.join(' ')}`;
     try {
-      const result = execaCommandSync(fullCommand, { cwd, reject: false, env: { ...process.env, NODE_ENV: 'development' } });
+      const result = execaCommandSync(fullCommand, {
+        cwd,
+        reject: false,
+        env: { ...process.env, NODE_ENV: 'development' },
+      });
       return { stdout: result.stdout, stderr: result.stderr, exitCode: result.exitCode };
       // biome-ignore lint/suspicious/noExplicitAny: error
     } catch (error: any) {
