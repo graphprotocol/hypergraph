@@ -12,8 +12,8 @@ const read = pipe(
     version: json.version,
     description: json.description,
     bin: {
-      'create-hypergraph-app': 'bin.js',
-      cha: 'bin.js',
+      'create-hypergraph': 'bin.js',
+      ch: 'bin.js',
     },
     engines: json.engines,
     repository: json.repository,

@@ -1,11 +1,11 @@
 {
   "name": "create-hypergraph",
-  "version": "0.0.0-alpha.1",
+  "version": "0.0.0-alpha.2",
   "description": "CLI toolchain to scaffold a Hypergraph-enabled application with a given template.",
   "type": "module",
   "bin": {
-    "create-hypergraph-app": "./dist/bin.js",
-    "cha": "./dist/bin.js"
+    "create-hypergraph": "./dist/bin.js",
+    "ch": "./dist/bin.js"
   },
   "files": [
     "template-*",
