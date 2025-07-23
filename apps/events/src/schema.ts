@@ -17,7 +17,7 @@ export class Todo2 extends Entity.Class<Todo2>('Todo2')({
   due: Type.Date,
   amount: Type.Number,
   point: Type.Point,
-  website: Type.Url,
+  website: Type.Text,
 }) {}
 
 export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
