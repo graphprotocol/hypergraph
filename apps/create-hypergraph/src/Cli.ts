@@ -75,7 +75,7 @@ const createHypergraphApp = Command.make('create-hypergraph-app', {
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.0.0-alpha.4',
+  version: '0.0.0-alpha.5',
 });
 
 // ========================
@@ -240,10 +240,8 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
           AnsiDoc.text(`🎉 Successfully scaffolded your hypergraph enabled app ${config.appName}!`),
           AnsiDoc.hardLine,
           AnsiDoc.text('To start the app, run:'),
-          AnsiDoc.hardLine,
           AnsiDoc.text(`cd ${config.appName}`),
           config.skipInstallDeps ? AnsiDoc.text(`${config.packageManager} install`) : AnsiDoc.hardLine,
-          AnsiDoc.hardLine,
           AnsiDoc.text(`${config.packageManager} run dev`),
         ),
       ),
