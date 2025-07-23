@@ -1,5 +1,79 @@
 # Contributing
 
+## Setup
+
+```sh
+pnpm install
+cd apps/server
+cp .env.example .env
+# add the PRIVY_APP_SECRET & PRIVY_APP_ID to the apps/server/.env file
+pnpm prisma migrate dev
+```
+
+## Development
+
+```sh
+pnpm build --watch
+# in another tab
+cd apps/events
+pnpm dev
+# in another tab
+cd apps/server
+pnpm dev
+```
+
+Any time you make changes to the schema, you will need to run the following commands:
+
+```sh
+cd apps/server
+pnpm prisma migrate dev # this will also generate the Prisma client
+```
+
+To develop the Typesync CLI, you can run:
+
+```sh
+cd apps/typesync
+pnpm dev
+```
+
+To develop the Typesync frontend run:
+
+```sh
+# open the vite.config.ts and comment out the server object that specifies the port to be 3000
+cd apps/typesync
+pnpm run dev:cli
+# in another tab
+cd apps/typesync
+pnpm dev:client
+```
+
+You can run the Next example app with:
+
+```sh
+# Notes:
+# - You need to build the packages first and every time you make changes to the packages
+cd apps/next-example
+pnpm dev
+```
+
+To run the docs locally, you can run:
+
+```sh
+cd docs
+pnpm start
+```
+
+## Changesets
+
+Changesets are used to create a changelog and publish a new version of the package. In order to document your changes, you can run the following command:
+
+```sh
+pnpm changeset
+```
+
+It will open a prompt to ask you which packages are affected and the type of change you are making.
+
+
 ## Upgrading Dependencies
 
 ```sh
@@ -11,6 +85,8 @@ pnpm up --interactive --latest -r
 Update the version in the `package.json` files (hypergraph, hypergraph-react, typesync)
 
 ```sh
+pnpm changeset version
+
 pnpm build
 # publish hypergraph
 cd packages/hypergraph/publish
