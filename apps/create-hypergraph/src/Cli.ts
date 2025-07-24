@@ -289,6 +289,11 @@ function resolveTemplate(config: Readonly<RawConfig>) {
             value: 'vite-react',
             description: 'Scaffolds a vite + react app using @tanstack/react-router',
           },
+          {
+            title: 'Nextjs',
+            value: 'nextjs',
+            description: 'Scaffolds a nextjs app',
+          },
         ],
       }).pipe(Effect.map((selected) => selected));
     },
