@@ -238,7 +238,7 @@ const mockStorage = {
 //      (and store it in the sync server)
 export function HypergraphAppProvider({
   storage = typeof window !== 'undefined' ? localStorage : mockStorage,
-  syncServerUri = 'https://hypergraph.fly.dev',
+  syncServerUri = 'https://hypergraph-sync.up.railway.app',
   chainId = Connect.GEO_TESTNET.id,
   appId,
   children,
