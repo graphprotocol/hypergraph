@@ -24,6 +24,10 @@ jobs:
         run: pnpm build
       - name: Generate Prisma Types
         run: cd apps/server && pnpm prisma generate
+      - name: Configure Git for tests
+        run: |
+          git config --global user.email "test@example.com"
+          git config --global user.name "Test User"
       - name: Typecheck
         run: pnpm check
       - name: Linting & Formatting

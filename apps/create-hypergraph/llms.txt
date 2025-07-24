@@ -1,0 +1,131 @@
+# create-hypergraph
+
+A command-line tool for scaffolding Hypergraph-enabled applications.
+
+## What is Hypergraph?
+
+Hypergraph is a local-first framework for building web3 consumer applications. It enables developers to build performant, privacy-preserving apps where:
+
+- Data is stored locally on the user's device with zero network latency
+- All private data is end-to-end encrypted
+- Changes sync automatically across devices when online
+- Users own their data and can take it between apps
+- No traditional backend infrastructure is needed
+
+## When to Use Hypergraph
+
+Use Hypergraph when building:
+- **Collaborative Applications**: Real-time document editing, shared workspaces, team tools
+- **Social Applications**: Messaging apps, social networks, community platforms  
+- **Knowledge Management**: Note-taking apps, personal wikis, research tools
+- **Privacy-First Apps**: Any application requiring end-to-end encryption
+- **Offline-First Apps**: Applications that must work without internet connectivity
+
+Hypergraph is ideal when you need:
+- Instant UI updates without loading spinners
+- Real-time collaboration features
+- User-owned, portable data
+- Privacy through encryption
+- To avoid managing servers and databases
+
+## Installation and Usage
+
+This tool is published to npm and can be run using:
+```bash
+pnpm create hypergraph
+# or
+npm create hypergraph
+# or
+yarn create hypergraph
+# or
+bun create hypergraph
+```
+
+Alternatively, you can use the shorthand:
+```bash
+pnpx ch
+```
+
+## Purpose
+
+create-hypergraph is a CLI tool that scaffolds new Hypergraph-enabled applications with pre-configured templates. It streamlines the process of setting up a new project with The Graph Protocol's Hypergraph framework.
+
+## Command-Line Options
+
+### Positional Arguments
+
+- `app-name` (optional): The name of your application. This will also be the folder name where your app is scaffolded. If not provided, the tool will prompt for it interactively.
+
+### Options
+
+- `--template, -t` (optional): Template to scaffold
+  - Available values: `vite-react`
+  - Default: prompts user to select
+  - Currently only supports `vite-react` which scaffolds a Vite + React app using @tanstack/react-router
+
+- `--package-manager, -p` (optional): The package manager to use for installing dependencies
+  - Available values: `pnpm`, `bun`, `yarn`, `npm`
+  - Default: prompts user to select
+
+- `--skip-install-deps`: Skip installing dependencies after scaffolding
+  - Default: false (dependencies will be installed)
+
+- `--skip-initialize-git`: Skip initializing a git repository in the scaffolded app
+  - Default: false (git repository will be initialized with an initial commit)
+
+## Examples
+
+### Interactive Mode (Recommended)
+```bash
+pnpm create hypergraph
+```
+This will prompt you for all necessary information.
+
+### Fully Specified
+```bash
+pnpm create hypergraph my-app --template vite-react --package-manager pnpm
+```
+
+### Skip Optional Steps
+```bash
+pnpm create hypergraph my-app --skip-install-deps --skip-initialize-git
+```
+
+## Workflow
+
+1. **Validates app name**: Ensures the provided name is a valid project name
+2. **Checks target directory**: Verifies the directory doesn't exist or is empty
+3. **Copies template files**: Scaffolds the selected template into the target directory
+4. **Updates package.json**: Sets the correct package name in the scaffolded app
+5. **Initializes git** (optional): Creates a git repository with initial commit
+6. **Installs dependencies** (optional): Runs the package manager install command
+
+## Template Details
+
+### vite-react
+- Modern React application using Vite as the build tool
+- Configured with @tanstack/react-router for routing
+- Hypergraph integration pre-configured
+- TypeScript enabled
+- Development server with HMR
+
+## Error Handling
+
+The tool will fail gracefully if:
+- The target directory exists and is not empty
+- The selected template doesn't exist
+- Git initialization fails
+- Dependency installation fails
+
+## Requirements
+
+- Node.js >= 20
+- One of the supported package managers (pnpm, npm, yarn, or bun)
+
+## Post-Scaffolding
+
+After successful scaffolding, navigate to your app directory and start development:
+```bash
+cd <app-name>
+pnpm run dev  # or npm/yarn/bun run dev
+```

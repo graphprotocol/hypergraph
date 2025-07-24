@@ -1,0 +1,68 @@
+{
+  "name": "create-hypergraph",
+  "version": "0.0.3",
+  "description": "CLI toolchain to scaffold a Hypergraph-enabled application with a given template.",
+  "type": "module",
+  "bin": {
+    "create-hypergraph": "./dist/bin.js",
+    "ch": "./dist/bin.js"
+  },
+  "files": [
+    "template-*",
+    "dist",
+    "llms.txt",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphprotocol/hypergraph.git",
+    "directory": "apps/create-hypergraph"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist",
+    "linkDirectory": false
+  },
+  "scripts": {
+    "test": "vitest run",
+    "dev": "NODE_ENV=development pnpx tsx ./src/bin.ts",
+    "build": "tsdown && tsx scripts/copy-package-json.ts && pnpm run copy-all",
+    "copy-templates": "cp -r template-* dist/",
+    "copy-readme": "cp README.md dist/README.md",
+    "copy-changelog": "cp CHANGELOG.md dist/CHANGELOG.md",
+    "copy-llms": "cp llms.txt dist/llms.txt",
+    "copy-all": "pnpm run copy-templates && pnpm run copy-readme && pnpm run copy-changelog && pnpm run copy-llms",
+    "check": "tsc --noEmit",
+    "start": "node ./dist/bin.js",
+    "lint": "biome check",
+    "lint:fix": "biome check --write --unsafe"
+  },
+  "keywords": [
+    "The Graph",
+    "Web3",
+    "Knowledge Graph",
+    "Hypergraph",
+    "TypeSyncs"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "bugs": {
+    "url": "https://github.com/graphprotocol/hypergraph/issues"
+  },
+  "homepage": "https://github.com/graphprotocol/hypergraph/tree/main/apps/create-hypergraph-app#readme",
+  "devDependencies": {
+    "@effect/cli": "^0.68.0",
+    "@effect/language-service": "^0.28.0",
+    "@effect/platform": "^0.89.0",
+    "@effect/platform-node": "^0.92.0",
+    "@effect/printer-ansi": "^0.45.0",
+    "@effect/vitest": "^0.25.0",
+    "@types/node": "^24.1.0",
+    "effect": "^3.17.0",
+    "execa": "^9.6.0",
+    "tsdown": "^0.13.0",
+    "tsx": "^4.20.3"
+  }
+}

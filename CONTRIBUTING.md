@@ -47,6 +47,13 @@ cd apps/typesync
 pnpm dev:client
 ```
 
+To develop the create-hypergraph, run:
+
+```sh
+cd apps/create-hypergraph
+pnpm run dev
+```
+
 You can run the Next example app with:
 
 ```sh
