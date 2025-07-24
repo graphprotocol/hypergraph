@@ -93,17 +93,8 @@ Update the version in the `package.json` files (hypergraph, hypergraph-react, ty
 
 ```sh
 pnpm changeset version
-
 pnpm build
-# publish hypergraph
-cd packages/hypergraph/publish
-pnpm publish
-# publish hypergraph-react
-cd packages/hypergraph-react/publish
-pnpm publish
-# publish typesync
-cd apps/typesync
-pnpm publish --tag latest
+pnpm changeset publish
 ```
 
 ## Deploying your own SyncServer to Railway
