@@ -137,6 +137,12 @@ const config = {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
       },
+      algolia: {
+        appId: 'E46M8TLYZ1',
+        apiKey: '7bc604aed2cae4aa59febf78339ffc14',
+        indexName: 'Documentation Website',
+        contextualSearch: true,
+      },
     }),
 };
 

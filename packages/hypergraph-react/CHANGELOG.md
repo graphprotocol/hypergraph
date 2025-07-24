@@ -6,6 +6,7 @@
 - dd4746a: remove unsupported dataType Url
 - fd0a13f: extract Mapping to @graphprotocol/typesync
 - 114d743: breaking changes of the authentication flow to improve security and fix invitations
+- Update the default syncServerUri to https://hypergraph-sync.up.railway.app
 - Updated dependencies [dd4746a]
 - Updated dependencies [fd0a13f]
 - Updated dependencies [114d743]
