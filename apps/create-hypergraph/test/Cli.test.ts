@@ -97,6 +97,7 @@ describe('create-hypergraph CLI', () => {
           'tsconfig.json',
           'vite.config.ts',
           'index.html',
+          '.gitignore',
           'src/main.tsx',
           'src/index.css',
           'src/schema.ts',
