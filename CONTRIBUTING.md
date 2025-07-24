@@ -125,6 +125,14 @@ railway up
 
 Note: By default horizontal scaling is disabled because of the attached volume.
 
+In the UI setup the following variables for the service:
+- set the `DATABASE_URL` to `file:/data/production.sqlite`
+- set the `PRIVY_APP_SECRET` to your Privy app secret
+- set the `PRIVY_APP_ID` to your Privy app id
+- set the `HYPERGRAPH_CHAIN` to your Hypergraph chain
+
+Then restart the service in the UI.
+
 ## Deploying your own SyncServer to Fly.io (single instance)
 
 ```sh
