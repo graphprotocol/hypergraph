@@ -97,6 +97,14 @@ pnpm build
 pnpm changeset publish
 ```
 
+## Build and run the Docker image locally
+
+```sh
+docker build . -t hypergraph
+docker run -it --rm --name=hypergraph hypergraph:latest
+```
+
+
 ## Deploying your own SyncServer to Railway
 
 Setup a service and attach a volume under `/data` to it.
