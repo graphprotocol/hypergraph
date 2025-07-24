@@ -22,7 +22,6 @@ export function Navbar() {
       storage: localStorage,
       connectUrl: 'https://hypergraph-connect.vercel.app/',
       successUrl: `${window.location.origin}/authenticate-success`,
-      appId: '93bb8907-085a-4a0e-83dd-62b0dc98e793',
       redirectFn: (url: URL) => {
         window.location.href = url.toString();
       },

@@ -181,14 +181,14 @@ importers:
         specifier: ^0.21.6
         version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph':
-        specifier: 0.0.14
-        version: 0.0.14(@effect/platform@0.89.0(effect@3.17.0))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: 0.1.0
+        version: 0.1.0(@effect/platform@0.89.0(effect@3.17.0))(@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph-react':
-        specifier: 0.0.14
-        version: 0.0.14(@graphprotocol/hypergraph@0.0.14(@effect/platform@0.89.0(effect@3.17.0))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: 0.1.0
+        version: 0.1.0(@graphprotocol/hypergraph@0.1.0(@effect/platform@0.89.0(effect@3.17.0))(@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/typesync':
-        specifier: ^0.0.3
-        version: 0.0.3(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.1.0
+        version: 0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@radix-ui/react-navigation-menu':
         specifier: ^1.2.13
         version: 1.2.13(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -3030,17 +3030,23 @@ packages:
   '@graphprotocol/grc-20@0.21.6':
     resolution: {integrity: sha512-xN8kejQfRdeC5LsantOD9aajwR+/JHnsK5IUEE7rMJbbHGeRTzAhWGike8k1+nIPRKooOyrocgly24KXxChcgw==}
 
-  '@graphprotocol/hypergraph-react@0.0.14':
-    resolution: {integrity: sha512-Hr7x45xFO+MFAeuaWs+1+EgX0JNxftclpP9ClfisuQs01bgHwJpy9jYZ+oeJ02ODSaDd82st12XQ/1kfEsn9aw==}
+  '@graphprotocol/hypergraph-react@0.1.0':
+    resolution: {integrity: sha512-6B6gyU+IUuCcZFOYJGVUBwE2gIlbSCRG+tRDa8GZoc3YW+TERGyqTskJG0BnXl/mvjBgu+McOF01XD+d9iFoBg==}
     peerDependencies:
       '@graphprotocol/hypergraph': '*'
+      '@graphprotocol/typesync': 0.1.0
       react: ^18.0.0 || ^19.0.0
 
-  '@graphprotocol/hypergraph@0.0.14':
-    resolution: {integrity: sha512-kr1Vhl7G/uYSamnZJzTtOuHaPklUtcWyTl6oMNbd2NWaAjBNNqD3A2hvelQJ8XAQHpbjbh2xgRjLzZ6M422vyg==}
+  '@graphprotocol/hypergraph@0.1.0':
+    resolution: {integrity: sha512-tbeSiW+D9zusH9Vw2IwaEIiFasJcfHIoy3J+e73k+95agX919s0LUKeozctnFiu3vY1PIfBajvdn9+cx5IP24w==}
+    peerDependencies:
+      '@graphprotocol/typesync': 0.1.0
 
   '@graphprotocol/typesync@0.0.3':
     resolution: {integrity: sha512-8+agAOyyftY7itiQgXHkcKZy+n98xvzpcf6AfygUb4FY7GSpmRl8BX/gTn2Wu8gIigr7AZyL6NFnSpBrSr7OPQ==}
+
+  '@graphprotocol/typesync@0.1.0':
+    resolution: {integrity: sha512-/9+PYTJfXEace6Oc4JiQPDLeWWQUhhw3u73UpcdzVD1i9UzlU234LJDIDi/mXZ/KVmPEgCKhhqYdgRXJIXT73Q==}
 
   '@graphql-codegen/add@5.0.3':
     resolution: {integrity: sha512-SxXPmramkth8XtBlAHu4H4jYcYXM/o3p01+psU+0NADQowA8jtYkK6MW5rV6T+CxkEaNZItfSmZRPgIuypcqnA==}
@@ -16320,13 +16326,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@graphprotocol/hypergraph-react@0.0.14(@graphprotocol/hypergraph@0.0.14(@effect/platform@0.89.0(effect@3.17.0))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
+  '@graphprotocol/hypergraph-react@0.1.0(@graphprotocol/hypergraph@0.1.0(@effect/platform@0.89.0(effect@3.17.0))(@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@automerge/automerge': 2.2.9
       '@automerge/automerge-repo': 2.0.6
       '@automerge/automerge-repo-react-hooks': 2.0.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@graphprotocol/grc-20': 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
-      '@graphprotocol/hypergraph': 0.0.14(@effect/platform@0.89.0(effect@3.17.0))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+      '@graphprotocol/hypergraph': 0.1.0(@effect/platform@0.89.0(effect@3.17.0))(@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+      '@graphprotocol/typesync': 0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/hashes': 1.8.0
       '@tanstack/react-query': 5.83.0(react@19.1.0)
       effect: 3.17.0
@@ -16346,12 +16353,13 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@graphprotocol/hypergraph@0.0.14(@effect/platform@0.89.0(effect@3.17.0))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
+  '@graphprotocol/hypergraph@0.1.0(@effect/platform@0.89.0(effect@3.17.0))(@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.0)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@automerge/automerge': 2.2.9
       '@automerge/automerge-repo': 2.0.6
       '@effect/experimental': 0.51.1(@effect/platform@0.89.0(effect@3.17.0))(effect@3.17.0)
       '@graphprotocol/grc-20': 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+      '@graphprotocol/typesync': 0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/ciphers': 1.3.0
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
@@ -16381,6 +16389,18 @@ snapshots:
       - zod
 
   '@graphprotocol/typesync@0.0.3(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
+    dependencies:
+      '@graphprotocol/grc-20': 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+      effect: 3.17.0
+    transitivePeerDependencies:
+      - bufferutil
+      - graphql
+      - ox
+      - typescript
+      - utf-8-validate
+      - zod
+
+  '@graphprotocol/typesync@0.1.0(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@graphprotocol/grc-20': 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       effect: 3.17.0

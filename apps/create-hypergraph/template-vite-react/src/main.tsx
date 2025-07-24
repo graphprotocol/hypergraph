@@ -23,7 +23,7 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     // <React.StrictMode>
-    <HypergraphAppProvider mapping={mapping}>
+    <HypergraphAppProvider mapping={mapping} appId="93bb8907-085a-4a0e-83dd-62b0dc98e793">
       <RouterProvider router={router} />
     </HypergraphAppProvider>,
     // </React.StrictMode>,
