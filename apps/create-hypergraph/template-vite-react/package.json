@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@graphprotocol/grc-20": "^0.21.6",
-    "@graphprotocol/hypergraph": "0.0.14",
-    "@graphprotocol/hypergraph-react": "0.0.14",
-    "@graphprotocol/typesync": "^0.0.3",
+    "@graphprotocol/hypergraph": "0.1.0",
+    "@graphprotocol/hypergraph-react": "0.1.0",
+    "@graphprotocol/typesync": "^0.1.0",
     "@radix-ui/react-navigation-menu": "^1.2.13",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.7",
