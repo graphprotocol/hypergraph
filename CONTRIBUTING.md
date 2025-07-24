@@ -93,18 +93,17 @@ Update the version in the `package.json` files (hypergraph, hypergraph-react, ty
 
 ```sh
 pnpm changeset version
-
 pnpm build
-# publish hypergraph
-cd packages/hypergraph/publish
-pnpm publish
-# publish hypergraph-react
-cd packages/hypergraph-react/publish
-pnpm publish
-# publish typesync
-cd apps/typesync
-pnpm publish --tag latest
+pnpm changeset publish
 ```
+
+## Build and run the Docker image locally
+
+```sh
+docker build . -t hypergraph
+docker run -it --rm --name=hypergraph hypergraph:latest
+```
+
 
 ## Deploying your own SyncServer to Railway
 
