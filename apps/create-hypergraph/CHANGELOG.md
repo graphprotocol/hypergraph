@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.2.0
+### Minor Changes
+
+- 3204607: Use workspace deps for create-hypergraph templates and replace with current version on copy into dist directory
+
 ## 0.1.0
 ### Patch Changes
 
