@@ -16,6 +16,8 @@ export const Point = Schema.transform(Schema.String, Schema.Array(Number), {
   encode: (points: readonly number[]) => points.join(','),
 });
 
+export const optional = Schema.optional;
+
 export const Relation = <S extends AnyNoContext>(schema: S) => {
   const relationSchema = Field({
     select: Schema.Array(schema) as unknown as Schema.Schema<ReadonlyArray<EntityWithRelation<S>>>,
