@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.3.2
+### Patch Changes
+
+- 91eb4fb: Update llms.txt to include nextjs template for visibility to AI agents
+
 ## 0.3.1
 ### Patch Changes
 
