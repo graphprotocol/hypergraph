@@ -1,5 +1,5 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, type Mapping, store, Type } from '@graphprotocol/hypergraph';
+import { type Entity, type Mapping, store, TypeUtils } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import * as Either from 'effect/Either';
@@ -153,16 +153,16 @@ const convertPropertyValue = (
   key: string,
   type: Entity.AnyNoContext,
 ) => {
-  if (type.fields[key] === Type.Checkbox) {
+  if (TypeUtils.isCheckboxOrOptionalCheckboxType(type.fields[key]) && property.value !== undefined) {
     return Boolean(property.value);
   }
-  if (type.fields[key] === Type.Point) {
+  if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.value !== undefined) {
     return property.value;
   }
-  if (type.fields[key] === Type.Date) {
+  if (TypeUtils.isDateOrOptionalDateType(type.fields[key]) && property.value !== undefined) {
     return property.value;
   }
-  if (type.fields[key] === Type.Number) {
+  if (TypeUtils.isNumberOrOptionalNumberType(type.fields[key]) && property.value !== undefined) {
     return Number(property.value);
   }
   return property.value;

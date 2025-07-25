@@ -2,6 +2,8 @@
 
 The Hypergraph schema allows you to define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
 
+TODO update this doc
+
 ## Example
 
 Here is an example of a schema for an Event app with the properties `name` and `description`.
