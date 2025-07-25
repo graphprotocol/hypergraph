@@ -75,7 +75,7 @@ const createHypergraphApp = Command.make('create-hypergraph-app', {
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.2.0',
+  version: '0.3.1',
 });
 
 // ========================

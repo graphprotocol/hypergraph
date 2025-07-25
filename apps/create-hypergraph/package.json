@@ -1,6 +1,6 @@
 {
   "name": "create-hypergraph",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "CLI toolchain to scaffold a Hypergraph-enabled application with a given template.",
   "type": "module",
   "bin": {

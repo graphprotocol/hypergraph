@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.3.1
+### Patch Changes
+
+- 862688a: Update available create hypergraph templates in README to include nextjs for better visibility
+
 ## 0.3.0
 ### Minor Changes
 
