@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.3.3
+### Patch Changes
+
+- c5822d5: Remove localhost syncServerUri from HypergraphAppProvider. uses default instead
+
 ## 0.3.2
 ### Patch Changes
 
