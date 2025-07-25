@@ -75,7 +75,7 @@ const createHypergraphApp = Command.make('create-hypergraph-app', {
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.1.0',
+  version: '0.2.0',
 });
 
 // ========================
@@ -165,7 +165,12 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
           if (entry.isDirectory() && framework.skipDirectories.has(entry.name)) continue;
 
           const srcPath = path.join(src, entry.name);
-          const destPath = path.join(dest, entry.name);
+
+          // Check if the file needs to be renamed (it has an entry in the Utils.renameFileDict)
+          const maybeRename = Utils.renameFileDict[entry.name];
+          const entryname = entry.isFile() && maybeRename != null ? maybeRename : entry.name;
+
+          const destPath = path.join(dest, entryname);
 
           if (entry.isDirectory()) {
             yield* copyTemplate(srcPath, destPath);

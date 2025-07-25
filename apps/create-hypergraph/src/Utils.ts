@@ -1,6 +1,14 @@
 import * as HelpDoc from '@effect/cli/HelpDoc';
 import * as Effect from 'effect/Effect';
 
+/**
+ * When copying from the template, if the file name in the template has an entry in this map, rename to the value.
+ * For example, `.gitignore`. In the template-* directories, the gitignore is named `_gitignore` because `.gitignore` files do _not_ get published to npm.
+ */
+export const renameFileDict: Record<string, string | undefined> = {
+  _gitignore: '.gitignore',
+};
+
 const SCOPED_PACKAGE_REGEX = /^(?:@([^/]+?)[/])?([^/]+?)$/;
 
 const blockList = ['node_modules', 'favicon.ico'];

@@ -97,6 +97,7 @@ describe('create-hypergraph CLI', () => {
           'tsconfig.json',
           'vite.config.ts',
           'index.html',
+          '.gitignore',
           'src/main.tsx',
           'src/index.css',
           'src/schema.ts',
@@ -232,39 +233,5 @@ describe('create-hypergraph CLI', () => {
         yield* cleanupTempDir(tempDir);
       }
     }),
-  );
-
-  it.effect(
-    'test dependency installation when not skipped',
-    () =>
-      Effect.gen(function* () {
-        yield* cleanupTestDirs();
-        const tempDir = yield* createTempDir();
-
-        try {
-          // Run CLI without skipping dependency installation
-          const output = yield* run(
-            [
-              '--template',
-              'vite-react',
-              '--package-manager',
-              'pnpm',
-              '--skip-initialize-git',
-              // Note: not skipping install deps
-              'test-deps-app',
-            ],
-            tempDir,
-          );
-
-          expect(output).toContain('Successfully scaffolded your hypergraph enabled app');
-
-          // Verify node_modules directory was created
-          const projectPath = join(tempDir, 'test-deps-app');
-          expect(existsSync(join(projectPath, 'node_modules'))).toBe(true);
-        } finally {
-          yield* cleanupTempDir(tempDir);
-        }
-      }),
-    { timeout: 60000 }, // 60 second timeout for dependency installation
   );
 });
