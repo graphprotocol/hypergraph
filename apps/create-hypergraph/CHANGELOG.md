@@ -1,5 +1,16 @@
 # create-hypergraph
 
+## 0.3.0
+### Minor Changes
+
+- fadccd2: Include a nextjs template for selection with the create-hypergraph command.
+  
+  Example usage:
+  
+  ```bash
+  pnpm create hypergraph@latest --template nextjs
+  ```
+
 ## 0.2.0
 ### Minor Changes
 
