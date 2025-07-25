@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { Layout } from '@/Components/Layout';
 import Providers from './Providers';
 import './globals.css';
 
@@ -25,9 +26,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="w-screen h-full min-h-screen">
-      <body className={`${geistSans.variable} ${geistMono.variable} w-screen h-full m-0 p-0`}>
-        <Providers>{children}</Providers>
+    <html lang="en" className="h-full">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
+        <Providers>
+          <Layout>{children}</Layout>
+        </Providers>
       </body>
     </html>
   );

@@ -16,13 +16,21 @@
   "type": "module",
   "dependencies": {
     "@graphprotocol/grc-20": "^0.21.6",
-    "@graphprotocol/hypergraph": "^0.0.14",
-    "@graphprotocol/hypergraph-react": "^0.0.14",
+    "@graphprotocol/hypergraph": "workspace:*",
+    "@graphprotocol/hypergraph-react": "workspace:*",
+    "@graphprotocol/typesync": "workspace:*",
+    "@radix-ui/react-navigation-menu": "^1.2.13",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.7",
     "@tailwindcss/postcss": "^4.1.11",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.525.0",
     "next": "15.4.3",
     "postcss": "^8.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
@@ -33,6 +41,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.3",
     "prettier": "^3.6.2",
+    "tw-animate-css": "^1.3.5",
     "typescript": "^5"
   }
 }

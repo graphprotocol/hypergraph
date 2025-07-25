@@ -11,14 +11,12 @@ export function LoginForm() {
         <p className="text-muted-foreground text-lg">Sign in to access your spaces and start building.</p>
         <button
           type="button"
-          className="px-8 py-4 rounded-md bg-indigo-600 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="px-8 py-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-base cursor-pointer"
           onClick={() => {
             redirectToConnect({
               storage: localStorage,
               connectUrl: 'https://hypergraph-connect.vercel.app/',
               successUrl: `${window.location.origin}/authenticate-success`,
-              // hardcoded appId for testing
-              appId: '93bb8907-085a-4a0e-83dd-62b0dc98e793',
               redirectFn: (url: URL) => {
                 window.location.href = url.toString();
               },

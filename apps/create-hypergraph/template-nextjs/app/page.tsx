@@ -1,10 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { LoginButton } from '../Components/Login/LoginButton';
+
+import { LoginButton } from '@/Components/Login/LoginButton';
+import { Button } from '@/Components/ui/button';
 
 export default function HomePage() {
   return (
-    <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center">
+    <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-12">
         <Image src="/hypergraph.svg" alt="Hypergraph Logo" width={96} height={96} className="w-24 h-24 mx-auto mb-4" />
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -36,7 +38,11 @@ export default function HomePage() {
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Discover and explore the vast network of knowledge already available in the public Knowledge Graph.
             </p>
-            <Link href="/explore-public-knowledge" className="underline">Start Exploring</Link>
+            <Link href="/explore-public-knowledge">
+              <Button variant="outline" className="w-full">
+                Start Exploring
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -95,7 +101,9 @@ export default function HomePage() {
               rel="noopener noreferrer"
               className="inline-block w-full"
             >
-              Read Documentation
+              <Button variant="outline" className="w-full">
+                Read Documentation
+              </Button>
             </a>
           </div>
         </div>
