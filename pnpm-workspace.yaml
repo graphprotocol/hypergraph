@@ -3,6 +3,7 @@ packages:
   - apps/*/*
   - packages/*
   - docs
+
 onlyBuiltDependencies:
   - '@biomejs/biome'
   - '@parcel/watcher'
@@ -20,4 +21,5 @@ onlyBuiltDependencies:
   - msgpackr-extract
   - prisma
   - sharp
+  - unrs-resolver
   - utf-8-validate

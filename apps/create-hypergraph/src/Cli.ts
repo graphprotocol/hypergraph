@@ -75,7 +75,7 @@ const createHypergraphApp = Command.make('create-hypergraph-app', {
 
 export const run = Command.run(createHypergraphApp, {
   name: 'create-hypergraph-app',
-  version: '0.2.0',
+  version: '0.3.3',
 });
 
 // ========================
@@ -293,6 +293,11 @@ function resolveTemplate(config: Readonly<RawConfig>) {
             title: 'Vite + React',
             value: 'vite-react',
             description: 'Scaffolds a vite + react app using @tanstack/react-router',
+          },
+          {
+            title: 'Nextjs',
+            value: 'nextjs',
+            description: 'Scaffolds a nextjs app',
           },
         ],
       }).pipe(Effect.map((selected) => selected));

@@ -1,0 +1,13 @@
+# Include .gitignore files in templates
+!template-*/.gitignore
+!dist/template-*/.gitignore
+
+# Exclude source files
+src/
+scripts/
+test/
+*.ts
+!*.d.ts
+tsconfig*.json
+vitest.config.ts
+tsdown.config.ts

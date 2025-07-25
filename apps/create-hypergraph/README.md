@@ -41,6 +41,7 @@ Then follow the given prompts.
 - `--template` -> if provided, uses the provided template
   - options:
     - vite-react
+    - nextjs
 - `--package-manager` -> if provided, uses the provided package manager
   - options:
     - pnpm
@@ -59,7 +60,8 @@ pnpm create hypergraph@latest --template vite-react --package-manager pnpm my-hy
 
 ### Currently Supported Templates
 
-- vite + react
+- [vite + react](./template-vite-react/README.md)
+- [nextjs](./template-nextjs/README.md)
 
 ## References
 

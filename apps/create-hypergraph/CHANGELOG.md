@@ -1,5 +1,31 @@
 # create-hypergraph
 
+## 0.3.3
+### Patch Changes
+
+- c5822d5: Remove localhost syncServerUri from HypergraphAppProvider. uses default instead
+
+## 0.3.2
+### Patch Changes
+
+- 91eb4fb: Update llms.txt to include nextjs template for visibility to AI agents
+
+## 0.3.1
+### Patch Changes
+
+- 862688a: Update available create hypergraph templates in README to include nextjs for better visibility
+
+## 0.3.0
+### Minor Changes
+
+- fadccd2: Include a nextjs template for selection with the create-hypergraph command.
+  
+  Example usage:
+  
+  ```bash
+  pnpm create hypergraph@latest --template nextjs
+  ```
+
 ## 0.2.0
 ### Minor Changes
 
