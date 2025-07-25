@@ -32,6 +32,7 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
 
       const fields = type.fields;
       const values: PropertiesParam = [];
+      // TODO
       for (const [key, value] of Object.entries(mappingEntry.properties || {})) {
         let serializedValue: string = data[key];
         if (fields[key] === Type.Checkbox) {
