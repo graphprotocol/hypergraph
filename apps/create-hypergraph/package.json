@@ -43,7 +43,7 @@
     "Web3",
     "Knowledge Graph",
     "Hypergraph",
-    "TypeSyncs"
+    "TypeSync"
   ],
   "license": "MIT",
   "engines": {
