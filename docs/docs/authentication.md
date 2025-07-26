@@ -26,44 +26,65 @@ function RouteComponent() {
 ### Signup coming from an App (without an existing Geo account)
 
 1. User is opening App (Running App)
+![Opening App](../static/img/authentication/main_app.png)
 2. Clicks on "Sign in/Sign up with Geo"
    - Redirect to Connect
+![Sign in/Sign up with Geo](../static/img/authentication/signup_geo.png)
 3. Sign up for Connect -> Email + One-time Code
+![Email](../static/img/authentication/login_email.png)
+![One time code](../static/img/authentication/login_otp.png)
+![Sign message](../static/img/authentication/login_sign_message.png)
 4. Connect: "Do you authorize this app (App ID, redirect URL)"
    - Select spaces
    - Click "Authorize" -> Redirect to App
+![Authorize](../static/img/authentication/authorize_app.png)
 5. You are logged into the app with your account
 
 ### Signup coming from an App (with an existing Geo account)
 
 1. User is opening App (Running App)
+![Opening App](../static/img/authentication/main_app.png)
 2. Clicks on "Sign in/Sign up with Geo"
    - Redirect to Connect
+![Sign in/Sign up with Geo](../static/img/authentication/signup_geo.png)
 3. Login in the connect App -> Email + One-time Code
+![Email](../static/img/authentication/login_email.png)
+![One time code](../static/img/authentication/login_otp.png)
+![Sign message](../static/img/authentication/login_sign_message.png)
 4. Connect: "Do you authorize this app (App ID, redirect URL)"
    - Select spaces
    - Click "Authorize" -> Redirect to App
+![Authorize](../static/img/authentication/authorize_app.png)
 5. You are logged into the app with your account
 
 ### Login coming from an App (user is logged out from app and connect)
 
 1. User is opening App (Running App)
+![Opening App](../static/img/authentication/main_app.png)
 2. Clicks on "Sign in/Sign up with Geo"
    - Redirect to Connect
+![Sign in/Sign up with Geo](../static/img/authentication/signup_geo.png)
 3. Login in the connect App -> Email + One-time Code
+![Email](../static/img/authentication/login_email.png)
+![One time code](../static/img/authentication/login_otp.png)
+![Sign message](../static/img/authentication/login_sign_message.png)
 4. Do you want to login with this app? (App ID, redirect URL)
    - Select spaces (optional)
    - Click "Authorize" -> Redirect to App
+![Authorize](../static/img/authentication/authorize_app.png)
 5. You are logged into the app with your account
 
 ### Login coming from an App (user is logged out from app and logged in to connect)
 
 1. User is opening App (Running App)
+![Opening App](../static/img/authentication/main_app.png)
 2. Clicks on "Sign in/Sign up with Geo"
    - Redirect to Connect
+![Sign in/Sign up with Geo](../static/img/authentication/signup_geo.png)
 3. Do you want to login with this app? (App ID, redirect URL)
    - Select spaces (optional)
    - Click "Authorize" -> Redirect to App
+![Authorize](../static/img/authentication/authorize_app.png)
 4. You are logged into the app with your account
 
 ## Geo Connect API
