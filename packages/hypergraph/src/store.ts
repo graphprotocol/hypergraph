@@ -1,10 +1,10 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
 import { createStore, type Store } from '@xstate/store';
 import type { PrivateAppIdentity } from './connect/types.js';
 import type { DocumentContent } from './entity/types.js';
 import { mergeMessages } from './inboxes/merge-messages.js';
 import type { InboxSenderAuthPolicy } from './inboxes/types.js';
+import type { Mapping } from './mapping/Mapping.js';
 import type { Invitation, Updates } from './messages/index.js';
 import type { SpaceEvent, SpaceState } from './space-events/index.js';
 import { idToAutomergeId } from './utils/automergeId.js';

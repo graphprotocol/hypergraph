@@ -15,13 +15,13 @@ import {
   Inboxes,
   type InboxMessageStorageEntry,
   Key,
+  type Mapping,
   Messages,
   SpaceEvents,
   type SpaceStorageEntry,
   store,
   Utils,
 } from '@graphprotocol/hypergraph';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { Effect, Exit } from 'effect';
@@ -219,7 +219,7 @@ export type HypergraphAppProviderProps = Readonly<{
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
-  mapping: Mapping;
+  mapping: Mapping.Mapping;
   appId: string;
 }>;
 
