@@ -13,11 +13,8 @@ const workspaceDepsToReplace = {
   '@graphprotocol/hypergraph-react': {
     packageJson: 'packages/hypergraph-react/package.json',
   },
-  '@graphprotocol/typesync': {
-    packageJson: 'packages/typesync/package.json',
-  },
 } as const satisfies Record<
-  '@graphprotocol/hypergraph' | '@graphprotocol/hypergraph-react' | '@graphprotocol/typesync',
+  '@graphprotocol/hypergraph' | '@graphprotocol/hypergraph-react',
   { packageJson: `packages/${string}/package.json` }
 >;
 const ignore = new Set(['.git', 'node_modules', '.tanstack', 'dist', 'publish', 'build', '.next']);
