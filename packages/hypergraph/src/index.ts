@@ -3,6 +3,7 @@ export * as Entity from './entity/index.js';
 export * as Identity from './identity/index.js';
 export * as Inboxes from './inboxes/index.js';
 export * as Key from './key/index.js';
+export * as Mapping from './mapping/index.js';
 export * as Messages from './messages/index.js';
 export * as SpaceEvents from './space-events/index.js';
 export * as SpaceInfo from './space-info/index.js';

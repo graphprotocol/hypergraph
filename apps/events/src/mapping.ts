@@ -1,7 +1,7 @@
 import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+import type { Mapping } from '@graphprotocol/hypergraph';
 
-export const mapping: Mapping = {
+export const mapping: Mapping.Mapping = {
   Event: {
     typeIds: [Id.Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
     properties: {

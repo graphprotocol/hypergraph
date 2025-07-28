@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph-react",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
   "keywords": [
     "Web3",
@@ -31,12 +31,10 @@
   },
   "peerDependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
-    "@graphprotocol/typesync": "workspace:*",
     "react": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
-    "@graphprotocol/typesync": "workspace:*",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.3",

@@ -1,6 +1,5 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, store, Type } from '@graphprotocol/hypergraph';
-import type { Mapping, MappingEntry } from '@graphprotocol/typesync/Mapping';
+import { type Entity, type Mapping, store, Type } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import * as Either from 'effect/Either';
@@ -172,8 +171,8 @@ const convertPropertyValue = (
 const convertRelations = <S extends Entity.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   type: S,
-  mappingEntry: MappingEntry,
-  mapping: Mapping,
+  mappingEntry: Mapping.MappingEntry,
+  mapping: Mapping.Mapping,
 ) => {
   const rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {};
 
@@ -251,8 +250,8 @@ const convertRelations = <S extends Entity.AnyNoContext>(
 export const parseResult = <S extends Entity.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
-  mappingEntry: MappingEntry,
-  mapping: Mapping,
+  mappingEntry: Mapping.MappingEntry,
+  mapping: Mapping.Mapping,
 ) => {
   const decode = Schema.decodeUnknownEither(type);
   const data: Entity.Entity<S>[] = [];

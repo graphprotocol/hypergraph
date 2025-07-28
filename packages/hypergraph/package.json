@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
   "publishConfig": {
     "access": "public",
@@ -26,6 +26,7 @@
     "./identity": "./dist/identity/index.js",
     "./inboxes": "./dist/inboxes/index.js",
     "./key": "./dist/key/index.js",
+    "./mapping": "./dist/mapping/index.js",
     "./messages": "./dist/messages/index.js",
     "./space-events": "./dist/space-events/index.js",
     "./space-info": "./dist/space-info/index.js",
@@ -38,11 +39,7 @@
     "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
     "test": "vitest"
   },
-  "peerDependencies": {
-    "@graphprotocol/typesync": "workspace:*"
-  },
   "devDependencies": {
-    "@graphprotocol/typesync": "workspace:*",
     "@types/uuid": "^10.0.0"
   },
   "dependencies": {
