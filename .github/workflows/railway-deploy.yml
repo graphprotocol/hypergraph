@@ -2,7 +2,7 @@ name: Railway Deploy
 on:
   push:
     branches:
-      - ng/setup-railway-deploy
+      - main
 jobs:
   deploy:
     name: Deploy Sync Server
