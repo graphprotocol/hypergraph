@@ -173,6 +173,8 @@ importers:
         version: 4.20.3
     publishDirectory: dist
 
+  apps/create-hypergraph/dist: {}
+
   apps/create-hypergraph/template-nextjs:
     dependencies:
       '@graphprotocol/grc-20':
@@ -184,9 +186,6 @@ importers:
       '@graphprotocol/hypergraph-react':
         specifier: workspace:*
         version: link:../../../packages/hypergraph-react/publish
-      '@graphprotocol/typesync':
-        specifier: workspace:*
-        version: link:../../../packages/typesync/publish
       '@radix-ui/react-navigation-menu':
         specifier: ^1.2.13
         version: 1.2.13(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -266,9 +265,6 @@ importers:
       '@graphprotocol/hypergraph-react':
         specifier: workspace:*
         version: link:../../../packages/hypergraph-react/publish
-      '@graphprotocol/typesync':
-        specifier: workspace:*
-        version: link:../../../packages/typesync/publish
       '@radix-ui/react-navigation-menu':
         specifier: ^1.2.13
         version: 1.2.13(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)

@@ -1,7 +1,7 @@
 import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+import type { Mapping } from '@graphprotocol/hypergraph';
 
-export const mapping: Mapping = {
+export const mapping: Mapping.Mapping = {
   Address: {
     typeIds: [Id.Id('5c6e72fb-8340-47c0-8281-8be159ecd495')],
     properties: {
