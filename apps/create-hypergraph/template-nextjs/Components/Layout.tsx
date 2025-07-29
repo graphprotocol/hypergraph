@@ -23,7 +23,7 @@ export function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   const { redirectToConnect, logout } = useHypergraphApp();
 
   useLayoutEffect(() => {
-    if (pathname.startsWith('/login') || pathname.startsWith('/authenticate-success') || pathname === '/') {
+    if (pathname.startsWith('/login') || pathname.startsWith('/authenticate-success') || pathname === '/' ||  pathname === '/explore-public-knowledge') {
       return;
     }
 
