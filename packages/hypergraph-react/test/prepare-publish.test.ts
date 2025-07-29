@@ -155,7 +155,7 @@ describe('preparePublish', () => {
     });
 
     it('should throw error when required field is undefined', async () => {
-      const entity = {
+      const entity: Entity.Entity<typeof Person> = {
         id: '7f8c9d2e-4b5a-6c7d-8e9f-0a1b2c3d4e5f',
         type: 'Person',
         age: 25,
@@ -164,7 +164,7 @@ describe('preparePublish', () => {
         location: [0, 0],
         __schema: Person,
         // name is required but undefined
-      } as any;
+      };
 
       // Manually set name to undefined to test error case
       entity.name = undefined;
@@ -200,13 +200,13 @@ describe('preparePublish', () => {
         __schema: Person,
       } as Entity.Entity<typeof Person>;
 
-      const company = {
+      const company: Entity.Entity<typeof Company> = {
         id: 'd2033169-590f-4b88-bf18-4719949ea953',
         type: 'Company',
         name: 'Test Company',
         employees: [{ ...employee1 }, { ...employee2 }],
         __schema: Company,
-      } as any;
+      };
 
       const params: PreparePublishParams<typeof Company> = {
         entity: company,
