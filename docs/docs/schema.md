@@ -2,8 +2,6 @@
 
 The Hypergraph schema allows you to define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
 
-TODO update this doc
-
 ## Example
 
 Here is an example of a schema for an Event app with the properties `name` and `description`.
@@ -55,6 +53,20 @@ export class Company extends Entity.Class<Company>('Company')({
   founded: Type.Date,
   active: Type.Checkbox,
   location: Type.Point,
+}) {}
+```
+
+## Optional Fields
+
+You can make a field optional by wrapping it in `Type.optional`.
+
+```ts
+import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class Company extends Entity.Class<Company>('Company')({
+  name: Type.Text,
+  description: Type.optional(Type.Text),
+  founded: Type.optional(Type.Date),
 }) {}
 ```
 
