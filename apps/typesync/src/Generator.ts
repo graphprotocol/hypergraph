@@ -1,10 +1,10 @@
-import { execSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
 import { FileSystem, Path, type Error as PlatformError } from '@effect/platform';
 import { NodeFileSystem } from '@effect/platform-node';
 import { Doc } from '@effect/printer';
 import { Mapping } from '@graphprotocol/typesync';
 import { Cause, Console, Data, Effect, Array as EffectArray, String as EffectString } from 'effect';
+import { execSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 
 import type * as Domain from '../domain/Domain.js';
 import * as Utils from './Utils.js';
@@ -301,7 +301,6 @@ function validatePackageName(name: string): {
   };
 }
 
-// TODO
 // --------------------
 // schema builder
 // --------------------

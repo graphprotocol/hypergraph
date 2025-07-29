@@ -1,6 +1,5 @@
 import type { AppSchema } from '../../../schema.js';
 
-// TODO
 function fieldToEntityString({
   name,
   type_name,
