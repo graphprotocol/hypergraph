@@ -2,7 +2,7 @@ name: Railway Deploy
 on:
   push:
     branches:
-      - main
+      - ng/debug-deploy
 jobs:
   deploy:
     name: Deploy Sync Server
@@ -16,4 +16,5 @@ jobs:
       - uses: actions/checkout@v4
       # Update the cache mount ID in the Dockerfile to include the service-specific pnpm store
       - run: sed -i 's|\(--mount=type=cache,id=\)workspace|\1${{ env.SVC_ID }}-pnpm-store|' Dockerfile
+      - run: cat Dockerfile
       - run: railway up --service=${{ env.SVC_ID }}
