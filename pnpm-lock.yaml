@@ -173,8 +173,6 @@ importers:
         version: 4.20.3
     publishDirectory: dist
 
-  apps/create-hypergraph/dist: {}
-
   apps/create-hypergraph/template-nextjs:
     dependencies:
       '@graphprotocol/grc-20':
