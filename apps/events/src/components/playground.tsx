@@ -17,7 +17,7 @@ export const Playground = ({ spaceId }: { spaceId: string }) => {
         jobOffers: {},
       },
     },
-    first: 2,
+    first: 10,
     space: spaceId,
   });
   const [isDeleting, setIsDeleting] = useState(false);
