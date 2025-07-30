@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
@@ -20,7 +20,7 @@ export function Navbar() {
   const handleSignIn = () => {
     redirectToConnect({
       storage: localStorage,
-      connectUrl: 'https://hypergraph-connect.vercel.app/',
+      connectUrl: 'https://connect.geobrowser.io/',
       successUrl: `${window.location.origin}/authenticate-success`,
       redirectFn: (url: URL) => {
         window.location.href = url.toString();
