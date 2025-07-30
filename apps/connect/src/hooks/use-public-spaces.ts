@@ -23,7 +23,7 @@ type SpaceQueryResult = {
   personalAddress: string;
   page: {
     name: string;
-  };
+  } | null;
 };
 
 type PublicSpacesQueryResult = {
@@ -35,7 +35,7 @@ export type PublicSpaceData = {
   type: string;
   mainVotingAddress: string;
   personalAddress: string;
-  name: string;
+  name: string | undefined;
 };
 
 export const usePublicSpaces = (url: string): UseQueryResult<PublicSpaceData[], Error> => {
@@ -50,7 +50,7 @@ export const usePublicSpaces = (url: string): UseQueryResult<PublicSpaceData[], 
       return result?.spaces
         ? result.spaces.map((space: SpaceQueryResult) => ({
             id: space.id,
-            name: space.page.name,
+            name: space.page?.name ?? undefined,
             type: space.type,
             mainVotingAddress: space.mainVotingAddress,
             personalAddress: space.personalAddress,
