@@ -56,6 +56,20 @@ export class Company extends Entity.Class<Company>('Company')({
 }) {}
 ```
 
+## Optional Fields
+
+You can make a field optional by wrapping it in `Type.optional`.
+
+```ts
+import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class Company extends Entity.Class<Company>('Company')({
+  name: Type.Text,
+  description: Type.optional(Type.Text),
+  founded: Type.optional(Type.Date),
+}) {}
+```
+
 ## Schema Examples
 
 You can search for dozens of schema/mapping examples on the [Hypergraph Schema Browser](https://schema-browser.vercel.app/).

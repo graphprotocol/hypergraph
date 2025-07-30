@@ -10,5 +10,6 @@ export * as SpaceInfo from './space-info/index.js';
 export * from './store.js';
 export * as StoreConnect from './store-connect.js';
 export * as Type from './type/type.js';
+export * as TypeUtils from './type-utils/type-utils.js';
 export * from './types.js';
 export * as Utils from './utils/index.js';

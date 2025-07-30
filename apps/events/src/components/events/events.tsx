@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Event } from '../../schema';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 export const Events = () => {
   const { data: eventsLocalData } = useQuery(Event, { mode: 'private' });
@@ -43,6 +44,7 @@ export const Events = () => {
       {eventsLocalData.map((event) => (
         <div key={event.id} className="flex flex-row items-center gap-2">
           <h2>{event.name}</h2>
+          <p>{event.description}</p>
           <div className="text-xs">{event.id}</div>
           <select
             value={selectedSpace}
@@ -66,10 +68,22 @@ export const Events = () => {
           e.preventDefault();
           const formData = new FormData(e.target as HTMLFormElement);
           const name = formData.get('name') as string;
-          createEvent({ name });
+          const description = formData.get('description') as string;
+          if (!name) {
+            alert('Name is required');
+            return;
+          }
+          if (description) {
+            createEvent({ name, description });
+          } else {
+            createEvent({ name });
+          }
         }}
       >
-        <Input type="text" name="name" />
+        <Label htmlFor="name">Name</Label>
+        <Input type="text" name="name" required />
+        <Label htmlFor="description">Description</Label>
+        <Input type="text" name="description" />
         <Button type="submit">Create Event</Button>
       </form>
     </>

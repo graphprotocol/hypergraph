@@ -7,7 +7,7 @@ import {
   type RelationsParam,
 } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
-import { store, Type } from '@graphprotocol/hypergraph';
+import { store, TypeUtils } from '@graphprotocol/hypergraph';
 import request, { gql } from 'graphql-request';
 
 export type PreparePublishParams<S extends Entity.AnyNoContext> = {
@@ -68,14 +68,20 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
 
   if (data?.entity === null) {
     for (const [key, propertyId] of Object.entries(mappingEntry.properties || {})) {
+      if (entity[key] === undefined) {
+        if (TypeUtils.isOptional(fields[key])) {
+          continue;
+        }
+        throw new Error(`Value for ${key} is undefined`);
+      }
       let serializedValue: string = entity[key];
-      if (fields[key] === Type.Checkbox) {
+      if (TypeUtils.isCheckboxOrOptionalCheckboxType(fields[key])) {
         serializedValue = Graph.serializeCheckbox(entity[key]);
-      } else if (fields[key] === Type.Date) {
+      } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
         serializedValue = Graph.serializeDate(entity[key]);
-      } else if (fields[key] === Type.Point) {
+      } else if (TypeUtils.isPointOrOptionalPointType(fields[key])) {
         serializedValue = Graph.serializePoint(entity[key]);
-      } else if (fields[key] === Type.Number) {
+      } else if (TypeUtils.isNumberOrOptionalNumberType(fields[key])) {
         serializedValue = Graph.serializeNumber(entity[key]);
       }
       values.push({ property: propertyId, value: serializedValue });
@@ -105,14 +111,20 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
 
   if (data?.entity) {
     for (const [key, propertyId] of Object.entries(mappingEntry.properties || {})) {
+      if (entity[key] === undefined) {
+        if (TypeUtils.isOptional(fields[key])) {
+          continue;
+        }
+        throw new Error(`Value for ${key} is undefined`);
+      }
       let serializedValue: string = entity[key];
-      if (fields[key] === Type.Checkbox) {
+      if (TypeUtils.isCheckboxOrOptionalCheckboxType(fields[key])) {
         serializedValue = Graph.serializeCheckbox(entity[key]);
-      } else if (fields[key] === Type.Date) {
+      } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
         serializedValue = Graph.serializeDate(entity[key]);
-      } else if (fields[key] === Type.Point) {
+      } else if (TypeUtils.isPointOrOptionalPointType(fields[key])) {
         serializedValue = Graph.serializePoint(entity[key]);
-      } else if (fields[key] === Type.Number) {
+      } else if (TypeUtils.isNumberOrOptionalNumberType(fields[key])) {
         serializedValue = Graph.serializeNumber(entity[key]);
       }
 

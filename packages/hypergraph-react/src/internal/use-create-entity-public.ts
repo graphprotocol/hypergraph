@@ -1,6 +1,6 @@
 import { Graph, Id, type PropertiesParam, type RelationsParam } from '@graphprotocol/grc-20';
 import type { Connect, Entity } from '@graphprotocol/hypergraph';
-import { store, Type } from '@graphprotocol/hypergraph';
+import { store, TypeUtils } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import type * as Schema from 'effect/Schema';
@@ -33,14 +33,20 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
       const fields = type.fields;
       const values: PropertiesParam = [];
       for (const [key, value] of Object.entries(mappingEntry.properties || {})) {
+        if (data[key] === undefined) {
+          if (TypeUtils.isOptional(fields[key])) {
+            continue;
+          }
+          throw new Error(`Value for ${key} is undefined`);
+        }
         let serializedValue: string = data[key];
-        if (fields[key] === Type.Checkbox) {
+        if (TypeUtils.isCheckboxOrOptionalCheckboxType(fields[key])) {
           serializedValue = Graph.serializeCheckbox(data[key]);
-        } else if (fields[key] === Type.Date) {
+        } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
           serializedValue = Graph.serializeDate(data[key]);
-        } else if (fields[key] === Type.Point) {
+        } else if (TypeUtils.isPointOrOptionalPointType(fields[key])) {
           serializedValue = Graph.serializePoint(data[key]);
-        } else if (fields[key] === Type.Number) {
+        } else if (TypeUtils.isNumberOrOptionalNumberType(fields[key])) {
           serializedValue = Graph.serializeNumber(data[key]);
         }
 
