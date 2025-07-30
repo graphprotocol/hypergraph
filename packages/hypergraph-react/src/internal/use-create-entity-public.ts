@@ -40,7 +40,7 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
           throw new Error(`Value for ${key} is undefined`);
         }
         let serializedValue: string = data[key];
-        if (TypeUtils.isCheckboxOrOptionalCheckboxType(fields[key])) {
+        if (TypeUtils.isBooleanOrOptionalBooleanType(fields[key])) {
           serializedValue = Graph.serializeCheckbox(data[key]);
         } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
           serializedValue = Graph.serializeDate(data[key]);

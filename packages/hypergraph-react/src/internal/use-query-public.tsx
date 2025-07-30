@@ -153,7 +153,7 @@ const convertPropertyValue = (
   key: string,
   type: Entity.AnyNoContext,
 ) => {
-  if (TypeUtils.isCheckboxOrOptionalCheckboxType(type.fields[key]) && property.value !== undefined) {
+  if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.value !== undefined) {
     return Boolean(property.value);
   }
   if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.value !== undefined) {

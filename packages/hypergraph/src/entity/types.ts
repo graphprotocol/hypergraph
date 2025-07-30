@@ -47,7 +47,7 @@ export type DocumentContent = {
   relations?: Record<string, DocumentRelation>;
 };
 
-export type EntityCheckboxFilter = {
+export type EntityBooleanFilter = {
   is: boolean;
 };
 

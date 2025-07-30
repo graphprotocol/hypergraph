@@ -94,7 +94,7 @@ export type SchemaDataTypeRelation = typeof SchemaDataTypeRelation.Type;
 /**
  * @since 0.2.0
  */
-export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Checkbox', 'Date', 'Point');
+export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point');
 /**
  * @since 0.2.0
  */
@@ -749,7 +749,7 @@ export class RelationValueTypeDoesNotExistError extends Data.TaggedError(
  */
 export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): CreatePropertyParams['dataType'] {
   switch (true) {
-    case dataType === 'Checkbox': {
+    case dataType === 'Boolean': {
       return 'CHECKBOX';
     }
     case dataType === 'Date': {

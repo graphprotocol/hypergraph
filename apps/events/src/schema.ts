@@ -6,13 +6,13 @@ export class User extends Entity.Class<User>('User')({
 
 export class Todo extends Entity.Class<Todo>('Todo')({
   name: Type.Text,
-  completed: Type.Checkbox,
+  completed: Type.Boolean,
   assignees: Type.Relation(User),
 }) {}
 
 export class Todo2 extends Entity.Class<Todo2>('Todo2')({
   name: Type.Text,
-  checked: Type.Checkbox,
+  checked: Type.Boolean,
   assignees: Type.Relation(User),
   due: Type.Date,
   amount: Type.Number,

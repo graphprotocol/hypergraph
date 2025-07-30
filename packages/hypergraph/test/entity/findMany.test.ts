@@ -11,7 +11,7 @@ describe('findMany with filters', () => {
   class Person extends Entity.Class<Person>('Person')({
     name: Type.Text,
     age: Type.Number,
-    isActive: Type.Checkbox,
+    isActive: Type.Boolean,
   }) {}
 
   class Product extends Entity.Class<Product>('Product')({
