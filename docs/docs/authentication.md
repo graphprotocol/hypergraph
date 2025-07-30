@@ -101,7 +101,7 @@ function Login() {
       onClick={() => {
         redirectToConnect({
           storage: localStorage,
-          connectUrl: "https://hypergraph-connect.vercel.app/",
+          connectUrl: "https://connect.geobrowser.io/",
           successUrl: `${window.location.origin}/authenticate-success`,
           // your app id (any valid uuid)
           appId: "93bb8907-085a-4a0e-83dd-62b0dc98e793",

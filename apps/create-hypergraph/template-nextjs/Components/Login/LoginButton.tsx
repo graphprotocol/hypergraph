@@ -10,7 +10,7 @@ export function LoginButton() {
   const handleSignIn = () => {
     redirectToConnect({
       storage: localStorage,
-      connectUrl: 'https://hypergraph-connect.vercel.app/',
+      connectUrl: 'https://connect.geobrowser.io/',
       successUrl: `${window.location.origin}/authenticate-success`,
       redirectFn: (url: URL) => {
         window.location.href = url.toString();
