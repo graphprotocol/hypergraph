@@ -12,7 +12,6 @@ import { themes as prismThemes } from 'prism-react-renderer';
 const config = {
   title: 'Hypergraph',
   tagline: 'Framework for building web3 apps',
-  favicon: 'img/HypergraphLogo.png',
 
   // Set the production url of your site here
   url: 'https://graphprotocol.github.io',
