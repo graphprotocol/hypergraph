@@ -4,6 +4,9 @@
 # Production
 /build
 
+# Should be generated on build by the plugin
+/static/llms.txt
+
 # Generated files
 .docusaurus
 .cache-loader

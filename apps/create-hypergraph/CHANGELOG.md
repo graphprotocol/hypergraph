@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.4.0
+### Minor Changes
+
+- 35504b3: Update templates to use Mapping exported from @graphprotocol/hypergraph package. Remove @graphprotocol/typesync dep from templates'
+
 ## 0.3.3
 ### Patch Changes
 

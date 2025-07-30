@@ -47,5 +47,6 @@
     "activityBar.background": "#053334",
     "titleBar.activeBackground": "#074749",
     "titleBar.activeForeground": "#ECFDFD"
-  }
+  },
+  "editor.suggest.showSnippets": false
 }
