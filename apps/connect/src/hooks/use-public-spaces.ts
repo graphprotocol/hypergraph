@@ -50,7 +50,7 @@ export const usePublicSpaces = (url: string): UseQueryResult<PublicSpaceData[], 
       return result?.spaces
         ? result.spaces.map((space: SpaceQueryResult) => ({
             id: space.id,
-            name: space.page?.name ?? undefined,
+            name: space.page?.name,
             type: space.type,
             mainVotingAddress: space.mainVotingAddress,
             personalAddress: space.personalAddress,
