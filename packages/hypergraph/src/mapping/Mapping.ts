@@ -100,6 +100,12 @@ export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'C
  */
 export type SchemaDataTypePrimitive = typeof SchemaDataTypePrimitive.Type;
 /**
+ * @since 0.3.0
+ */
+export function isDataTypePrimitive(val: string): val is SchemaDataTypePrimitive {
+  return ['Text', 'Number', 'Checkbox', 'Date', 'Point'].includes(val);
+}
+/**
  * @since 0.2.0
  */
 export const SchemaDataType = EffectSchema.Union(SchemaDataTypePrimitive, SchemaDataTypeRelation);
@@ -107,6 +113,22 @@ export const SchemaDataType = EffectSchema.Union(SchemaDataTypePrimitive, Schema
  * @since 0.2.0
  */
 export type SchemaDataType = typeof SchemaDataType.Type;
+/**
+ * @since 0.3.0
+ */
+export function isDataType(val: string): val is SchemaDataType {
+  return isDataTypePrimitive(val) || isDataTypeRelation(val);
+}
+/**
+ * @since 0.3.0
+ */
+export function getDataType(val: string): SchemaDataType {
+  const dataType = isDataTypePrimitive(val) || isDataTypeRelation(val);
+  if (dataType) {
+    return val;
+  }
+  throw new Error(`Passed dataType ${val} is not supported`);
+}
 /**
  * @since 0.2.0
  */

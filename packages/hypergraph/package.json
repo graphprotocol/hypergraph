@@ -3,6 +3,10 @@
   "version": "0.2.0",
   "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
   "publishConfig": {
+    "bin": {
+      "hypergraph": "./dist/cli/bin.js",
+      "hg": "./dist/cli/bin.js"
+    },
     "access": "public",
     "directory": "publish",
     "provenance": false
@@ -37,10 +41,23 @@
   "sideEffects": [],
   "scripts": {
     "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
-    "test": "vitest"
+    "test": "vitest",
+    "hypergraph": "pnpm tsx ./src/cli/bun.ts"
+  },
+  "bin": {
+    "hypergraph": "./src/cli/bun.ts",
+    "hg": "./src/cli/bun.ts"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "@effect/cli": "^0.69.0",
+    "@effect/platform": "^0.90.0",
+    "@effect/platform-node": "^0.94.0",
+    "@effect/printer-ansi": "^0.45.0",
+    "@effect/vitest": "^0.25.0",
+    "@types/node": "^24.1.0",
+    "@types/uuid": "^10.0.0",
+    "jiti": "^2.5.1",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@automerge/automerge": "^2.2.9",
@@ -55,7 +72,7 @@
     "@serenity-kit/noble-sodium": "^0.2.1",
     "@xstate/store": "^3.5.1",
     "bs58check": "^4.0.0",
-    "effect": "^3.17.1",
+    "effect": "^3.17.3",
     "permissionless": "^0.2.47",
     "siwe": "^3.0.0",
     "uuid": "^11.1.0",
