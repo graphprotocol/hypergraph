@@ -3,9 +3,9 @@ import * as Type from '../type/type.js';
 // biome-ignore lint/suspicious/noExplicitAny: TODO
 export const isStringOrOptionalStringType = (type: any) => {
   if (type.ast && type.ast._tag === 'PropertySignatureDeclaration' && type.ast.isOptional) {
-    return type.from === Type.Text;
+    return type.from === Type.String;
   }
-  return type === Type.Text;
+  return type === Type.String;
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: TODO

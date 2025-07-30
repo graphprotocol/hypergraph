@@ -21,22 +21,22 @@ afterEach(() => {
 describe('preparePublish', () => {
   // Test entity classes
   class Person extends Entity.Class<Person>('Person')({
-    name: Type.Text,
+    name: Type.String,
     age: Type.Number,
-    email: Type.optional(Type.Text),
+    email: Type.optional(Type.String),
     isActive: Type.Boolean,
     birthDate: Type.Date,
     location: Type.Point,
   }) {}
 
   class Company extends Entity.Class<Company>('Company')({
-    name: Type.Text,
+    name: Type.String,
     employees: Type.Relation(Person),
   }) {}
 
   // Entity class for testing optional types
   class OptionalFieldsEntity extends Entity.Class<OptionalFieldsEntity>('OptionalFieldsEntity')({
-    name: Type.Text, // required field
+    name: Type.String, // required field
     optionalNumber: Type.optional(Type.Number),
     optionalBoolean: Type.optional(Type.Boolean),
     optionalDate: Type.optional(Type.Date),
@@ -323,7 +323,7 @@ describe('preparePublish', () => {
 
     it('should throw error when mapping entry is not found', async () => {
       class UnmappedEntity extends Entity.Class<UnmappedEntity>('UnmappedEntity')({
-        name: Type.Text,
+        name: Type.String,
       }) {}
 
       const entity = {

@@ -20,17 +20,17 @@ afterEach(() => {
 
 describe('HypergraphSpaceContext', () => {
   class Person extends Entity.Class<Person>('Person')({
-    name: Type.Text,
+    name: Type.String,
     age: Type.Number,
   }) {}
 
   class User extends Entity.Class<User>('User')({
-    name: Type.Text,
-    email: Type.Text,
+    name: Type.String,
+    email: Type.String,
   }) {}
 
   class Event extends Entity.Class<Event>('Event')({
-    name: Type.Text,
+    name: Type.String,
   }) {}
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';

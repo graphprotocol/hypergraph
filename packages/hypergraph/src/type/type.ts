@@ -2,7 +2,8 @@ import * as Schema from 'effect/Schema';
 import { Field } from '../entity/entity.js';
 import type { AnyNoContext, EntityWithRelation } from '../entity/types.js';
 
-export const Text = Schema.String;
+// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
+export const String = Schema.String;
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const Number = Schema.Number;
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
