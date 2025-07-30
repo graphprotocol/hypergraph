@@ -9,15 +9,15 @@ import { idToAutomergeId } from '../../src/utils/automergeId.js';
 describe('findMany with filters', () => {
   // Define entity classes for testing
   class Person extends Entity.Class<Person>('Person')({
-    name: Type.Text,
+    name: Type.String,
     age: Type.Number,
     isActive: Type.Boolean,
   }) {}
 
   class Product extends Entity.Class<Product>('Product')({
-    name: Type.Text,
+    name: Type.String,
     price: Type.Number,
-    category: Type.Text,
+    category: Type.String,
   }) {}
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
@@ -34,7 +34,7 @@ describe('findMany with filters', () => {
     handle.doneLoading();
   });
 
-  describe('Text filters', () => {
+  describe('String filters', () => {
     it('should filter entities by exact text match', () => {
       // Create test entities
       Entity.create(handle, Person)({ name: 'John', age: 30, isActive: true });

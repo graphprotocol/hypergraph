@@ -94,7 +94,7 @@ export type SchemaDataTypeRelation = typeof SchemaDataTypeRelation.Type;
 /**
  * @since 0.2.0
  */
-export const SchemaDataTypePrimitive = EffectSchema.Literal('Text', 'Number', 'Boolean', 'Date', 'Point');
+export const SchemaDataTypePrimitive = EffectSchema.Literal('String', 'Number', 'Boolean', 'Date', 'Point');
 /**
  * @since 0.2.0
  */
@@ -195,7 +195,7 @@ export const Schema = EffectSchema.Struct({
         {
           name: 'Account',
           knowledgeGraphId: null,
-          properties: [{ name: 'username', knowledgeGraphId: null, dataType: 'Text' }],
+          properties: [{ name: 'username', knowledgeGraphId: null, dataType: 'String' }],
         },
       ],
     },
@@ -204,7 +204,7 @@ export const Schema = EffectSchema.Struct({
         {
           name: 'Account',
           knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
-          properties: [{ name: 'name', knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935', dataType: 'Text' }],
+          properties: [{ name: 'name', knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935', dataType: 'String' }],
         },
       ],
     },

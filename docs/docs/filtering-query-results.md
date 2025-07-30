@@ -8,7 +8,7 @@ Note: Filtering is not yet supported for public data.
 
 ```tsx
 export class Event extends Entity.Class<Event>("Event")({
-  name: Type.Text,
+  name: Type.String,
   cancelled: Type.Boolean,
 }) {}
 
@@ -29,7 +29,7 @@ The filter API supports different filters for different property types and offer
   exists: true/false, // filter by existence of the property
 }
 
-// text filter
+// string filter
 {
   is: "text", // exact match
   contains: "text",
@@ -131,7 +131,7 @@ const { data } = useQuery(Person, {
 ```tsx
 // schema
 export class Todo extends Entity.Class<Todo2>('Todo')({
-  name: Type.Text,
+  name: Type.String,
   checked: Type.Boolean,
   assignees: Type.Relation(User),
 })
@@ -174,7 +174,7 @@ const { data } = useQuery(Person, {
 ```tsx
 // schema
 export class Todo extends Entity.Class<Todo2>('Todo')({
-  name: Type.Text,
+  name: Type.String,
   checked: Type.Boolean,
   assignees: Type.Relation(User, {
     entity: {
