@@ -1,6 +1,6 @@
 # @graphprotocol/hypergraph-react
 
-## 1.0.0
+## 0.2.0
 ### Minor Changes
 
 - 8622688: Move @graphprotocol/typesync Mapping and Utils into @graphprotocol/hypergraph package and export from there. Update @graphprotocol/hypergraph-react to use mapping from @graphprotocol/hypergraph.
