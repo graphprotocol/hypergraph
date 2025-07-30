@@ -34,6 +34,15 @@ describe('preparePublish', () => {
     employees: Type.Relation(Person),
   }) {}
 
+  // Entity class for testing optional types
+  class OptionalFieldsEntity extends Entity.Class<OptionalFieldsEntity>('OptionalFieldsEntity')({
+    name: Type.Text, // required field
+    optionalNumber: Type.optional(Type.Number),
+    optionalCheckbox: Type.optional(Type.Checkbox),
+    optionalDate: Type.optional(Type.Date),
+    optionalPoint: Type.optional(Type.Point),
+  }) {}
+
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const publicSpaceId = '2e5e39da-a00d-4fd8-b53b-98095337112f';
 
@@ -67,6 +76,17 @@ describe('preparePublish', () => {
           relations: {
             employees: Id.Id('6530b1dc-24ce-46ca-95e7-e89e87dd3839'),
           },
+        },
+        OptionalFieldsEntity: {
+          typeIds: [Id.Id('3f9e28c1-5b7d-4e8f-9a2c-6d5e4f3a2b1c')],
+          properties: {
+            name: Id.Id('2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d'),
+            optionalNumber: Id.Id('eaf9f4f8-5647-4228-aff5-8725368fc87c'),
+            optionalCheckbox: Id.Id('2742d8b6-3059-4adb-b439-fdfcd588dccb'),
+            optionalDate: Id.Id('9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f'),
+            optionalPoint: Id.Id('0c1d2e3f-4a5b-4c7d-8e9f-0a1b2c3d4e5f'),
+          },
+          relations: {},
         },
       },
     });
@@ -155,7 +175,7 @@ describe('preparePublish', () => {
     });
 
     it('should throw error when required field is undefined', async () => {
-      const entity: Entity.Entity<typeof Person> = {
+      const entity = {
         id: '7f8c9d2e-4b5a-6c7d-8e9f-0a1b2c3d4e5f',
         type: 'Person',
         age: 25,
@@ -164,10 +184,7 @@ describe('preparePublish', () => {
         location: [0, 0],
         __schema: Person,
         // name is required but undefined
-      };
-
-      // Manually set name to undefined to test error case
-      entity.name = undefined;
+      } as unknown as Entity.Entity<typeof Person>;
 
       const params: PreparePublishParams<typeof Person> = {
         entity,
@@ -200,13 +217,16 @@ describe('preparePublish', () => {
         __schema: Person,
       } as Entity.Entity<typeof Person>;
 
-      const company: Entity.Entity<typeof Company> = {
+      const company = {
         id: 'd2033169-590f-4b88-bf18-4719949ea953',
         type: 'Company',
         name: 'Test Company',
-        employees: [{ ...employee1 }, { ...employee2 }],
+        employees: [
+          { ...employee1, _relation: { id: 'ba8a247b-af9d-40eb-ad75-aa8a23fb9911' } },
+          { ...employee2, _relation: { id: '4f7504e8-f2cc-4284-b2f2-2cd7fe1a6d90' } },
+        ],
         __schema: Company,
-      };
+      } as unknown as Entity.Entity<typeof Company>;
 
       const params: PreparePublishParams<typeof Company> = {
         entity: company,
@@ -371,6 +391,300 @@ describe('preparePublish', () => {
 
       expect(result.ops).toBeDefined();
       expect(result.ops.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('optional field types', () => {
+    beforeEach(() => {
+      mockRequest.mockResolvedValue({ entity: null });
+    });
+
+    it('should create entity with all optional fields present', async () => {
+      const entity = {
+        id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+        type: 'OptionalFieldsEntity',
+        name: 'Test Entity',
+        optionalNumber: 42.5,
+        optionalCheckbox: true,
+        optionalDate: new Date('2024-01-15'),
+        optionalPoint: [12.34, 56.78],
+        __schema: OptionalFieldsEntity,
+      } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+        entity,
+        publicSpace: publicSpaceId,
+      };
+
+      const result = await preparePublish(params);
+
+      expect(result.ops).toBeDefined();
+      expect(result.ops.length).toBeGreaterThan(0);
+    });
+
+    it('should create entity with some optional fields undefined', async () => {
+      const entity = {
+        id: '4d77f7bc-fb12-4a8e-9224-99b0b5cb09a9',
+        type: 'OptionalFieldsEntity',
+        name: 'Test Entity',
+        optionalNumber: 25,
+        // optionalCheckbox is undefined
+        optionalDate: new Date('2024-02-20'),
+        // optionalPoint is undefined
+        __schema: OptionalFieldsEntity,
+      } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+        entity,
+        publicSpace: publicSpaceId,
+      };
+
+      const result = await preparePublish(params);
+
+      expect(result.ops).toBeDefined();
+      expect(result.ops.length).toBeGreaterThan(0);
+    });
+
+    it('should create entity with only required fields (all optional fields undefined)', async () => {
+      const entity = {
+        id: 'c3d4e5f6-a7b8-4c9d-8e2f-3a4b5c6d7e8f',
+        type: 'OptionalFieldsEntity',
+        name: 'Minimal Entity',
+        // All optional fields are undefined
+        __schema: OptionalFieldsEntity,
+      } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+        entity,
+        publicSpace: publicSpaceId,
+      };
+
+      const result = await preparePublish(params);
+
+      expect(result.ops).toBeDefined();
+      expect(result.ops.length).toBeGreaterThan(0);
+    });
+
+    it('should handle optional Number field variations', async () => {
+      const testCases = [
+        { value: 0, description: 'zero' },
+        { value: -15.5, description: 'negative decimal' },
+        { value: 999999, description: 'large integer' },
+        { value: undefined, description: 'undefined' },
+      ];
+
+      for (const testCase of testCases) {
+        const entity = {
+          id: '6ced2b76-e465-47de-a7ff-ac9b27a41fd4',
+          type: 'OptionalFieldsEntity',
+          name: `Test ${testCase.description}`,
+          optionalNumber: testCase.value,
+          __schema: OptionalFieldsEntity,
+        } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+        const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+          entity,
+          publicSpace: publicSpaceId,
+        };
+
+        const result = await preparePublish(params);
+        expect(result.ops).toBeDefined();
+      }
+    });
+
+    it('should handle optional Checkbox field variations', async () => {
+      const testCases = [
+        { value: true, description: 'true' },
+        { value: false, description: 'false' },
+        { value: undefined, description: 'undefined' },
+      ];
+
+      for (const testCase of testCases) {
+        const entity = {
+          id: 'e68aa940-8452-48de-8523-292ba3771f81',
+          type: 'OptionalFieldsEntity',
+          name: `Test ${testCase.description}`,
+          optionalCheckbox: testCase.value,
+          __schema: OptionalFieldsEntity,
+        } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+        const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+          entity,
+          publicSpace: publicSpaceId,
+        };
+
+        const result = await preparePublish(params);
+        expect(result.ops).toBeDefined();
+      }
+    });
+
+    it('should handle optional Date field variations', async () => {
+      const testCases = [
+        { value: new Date('2024-01-01'), description: 'valid date' },
+        { value: new Date('1900-01-01'), description: 'old date' },
+        { value: new Date('2100-12-31'), description: 'future date' },
+        { value: undefined, description: 'undefined' },
+      ];
+
+      for (const testCase of testCases) {
+        const entity = {
+          id: 'fde9afb6-8c58-45bd-86a7-1e5222f92284',
+          type: 'OptionalFieldsEntity',
+          name: `Test ${testCase.description}`,
+          optionalDate: testCase.value,
+          __schema: OptionalFieldsEntity,
+        } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+        const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+          entity,
+          publicSpace: publicSpaceId,
+        };
+
+        const result = await preparePublish(params);
+        expect(result.ops).toBeDefined();
+      }
+    });
+
+    it('should handle optional Point field variations', async () => {
+      const testCases = [
+        { value: [0, 0], description: 'origin' },
+        { value: [-90, -180], description: 'negative coordinates' },
+        { value: [90.123456, 180.654321], description: 'precise coordinates' },
+        { value: undefined, description: 'undefined' },
+      ];
+
+      for (const testCase of testCases) {
+        const entity = {
+          id: '539cb728-ca6e-4d3c-ae6f-0b5b6bcb570a',
+          type: 'OptionalFieldsEntity',
+          name: `Test ${testCase.description}`,
+          optionalPoint: testCase.value,
+          __schema: OptionalFieldsEntity,
+        } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+        const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+          entity,
+          publicSpace: publicSpaceId,
+        };
+
+        const result = await preparePublish(params);
+        expect(result.ops).toBeDefined();
+      }
+    });
+
+    it('should throw error when required field is missing from optional fields entity', async () => {
+      const entity = {
+        id: 'd4e5f6a7-b8c9-4d1e-af3a-4b5c6d7e8f9a',
+        type: 'OptionalFieldsEntity',
+        // name is missing (required field)
+        optionalNumber: 42,
+        __schema: OptionalFieldsEntity,
+      } as unknown as Entity.Entity<typeof OptionalFieldsEntity>;
+
+      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+        entity,
+        publicSpace: publicSpaceId,
+      };
+
+      await expect(preparePublish(params)).rejects.toThrow('Value for name is undefined');
+    });
+  });
+
+  describe('updating entities with optional fields', () => {
+    it('should add optional fields to existing entity', async () => {
+      // Mock existing entity with only required field
+      mockRequest.mockResolvedValue({
+        entity: {
+          valuesList: [{ propertyId: '2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d', value: 'Existing Entity' }],
+          relationsList: [],
+        },
+      });
+
+      const entity = {
+        id: 'e5f6a7b8-c9d0-4e2f-ba4b-5c6d7e8f9a0b',
+        type: 'OptionalFieldsEntity',
+        name: 'Existing Entity',
+        optionalNumber: 100, // New field
+        optionalCheckbox: true, // New field
+        optionalDate: new Date('2024-03-15'), // New field
+        optionalPoint: [45.0, 90.0], // New field
+        __schema: OptionalFieldsEntity,
+      } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+        entity,
+        publicSpace: publicSpaceId,
+      };
+
+      const result = await preparePublish(params);
+
+      expect(result.ops).toBeDefined();
+      expect(result.ops.length).toBeGreaterThan(0);
+    });
+
+    it('should remove optional fields from existing entity (set to undefined)', async () => {
+      // Mock existing entity with optional fields
+      mockRequest.mockResolvedValue({
+        entity: {
+          valuesList: [
+            { propertyId: '2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d', value: 'Existing Entity' },
+            { propertyId: 'eaf9f4f8-5647-4228-aff5-8725368fc87c', value: Graph.serializeNumber(50) },
+            { propertyId: '2742d8b6-3059-4adb-b439-fdfcd588dccb', value: Graph.serializeCheckbox(true) },
+          ],
+          relationsList: [],
+        },
+      });
+
+      const entity = {
+        id: 'f6a7b8c9-d0e1-4f3a-bb5c-6d7e8f9a0b1c',
+        type: 'OptionalFieldsEntity',
+        name: 'Existing Entity',
+        // All optional fields are now undefined (removed)
+        __schema: OptionalFieldsEntity,
+      } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+        entity,
+        publicSpace: publicSpaceId,
+      };
+
+      const result = await preparePublish(params);
+
+      expect(result.ops).toBeDefined();
+    });
+
+    it('should update some optional fields while keeping others', async () => {
+      // Mock existing entity with mixed optional fields
+      mockRequest.mockResolvedValue({
+        entity: {
+          valuesList: [
+            { propertyId: '2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d', value: 'Existing Entity' },
+            { propertyId: 'eaf9f4f8-5647-4228-aff5-8725368fc87c', value: Graph.serializeNumber(75) },
+            { propertyId: '9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f', value: Graph.serializeDate(new Date('2023-01-01')) },
+          ],
+          relationsList: [],
+        },
+      });
+
+      const entity = {
+        id: '809c9f0a-dbe5-4208-9092-17135f282613',
+        type: 'OptionalFieldsEntity',
+        name: 'Existing Entity',
+        optionalNumber: 125, // Changed from 75
+        // optionalCheckbox: undefined (not present, will remain undefined)
+        optionalDate: new Date('2023-01-01'), // Same as existing (no change)
+        optionalPoint: [12.5, 25.0], // New field
+        __schema: OptionalFieldsEntity,
+      } as Entity.Entity<typeof OptionalFieldsEntity>;
+
+      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
+        entity,
+        publicSpace: publicSpaceId,
+      };
+
+      const result = await preparePublish(params);
+
+      expect(result.ops).toBeDefined();
     });
   });
 });

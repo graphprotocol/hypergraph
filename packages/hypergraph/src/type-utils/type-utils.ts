@@ -3,7 +3,7 @@ import * as Type from '../type/type.js';
 // biome-ignore lint/suspicious/noExplicitAny: TODO
 export const isStringOrOptionalStringType = (type: any) => {
   if (type.ast && type.ast._tag === 'PropertySignatureDeclaration' && type.ast.isOptional) {
-    return type === Type.Text;
+    return type.from === Type.Text;
   }
   return type === Type.Text;
 };
@@ -11,7 +11,7 @@ export const isStringOrOptionalStringType = (type: any) => {
 // biome-ignore lint/suspicious/noExplicitAny: TODO
 export const isNumberOrOptionalNumberType = (type: any) => {
   if (type.ast && type.ast._tag === 'PropertySignatureDeclaration' && type.ast.isOptional) {
-    return type === Type.Number;
+    return type.from === Type.Number;
   }
   return type === Type.Number;
 };
@@ -19,7 +19,7 @@ export const isNumberOrOptionalNumberType = (type: any) => {
 // biome-ignore lint/suspicious/noExplicitAny: TODO
 export const isDateOrOptionalDateType = (type: any) => {
   if (type.ast && type.ast._tag === 'PropertySignatureDeclaration' && type.ast.isOptional) {
-    return type === Type.Date;
+    return type.from === Type.Date;
   }
   return type === Type.Date;
 };
@@ -27,7 +27,7 @@ export const isDateOrOptionalDateType = (type: any) => {
 // biome-ignore lint/suspicious/noExplicitAny: TODO
 export const isCheckboxOrOptionalCheckboxType = (type: any) => {
   if (type.ast && type.ast._tag === 'PropertySignatureDeclaration' && type.ast.isOptional) {
-    return type === Type.Checkbox;
+    return type.from === Type.Checkbox;
   }
   return type === Type.Checkbox;
 };
@@ -35,7 +35,7 @@ export const isCheckboxOrOptionalCheckboxType = (type: any) => {
 // biome-ignore lint/suspicious/noExplicitAny: TODO
 export const isPointOrOptionalPointType = (type: any) => {
   if (type.ast && type.ast._tag === 'PropertySignatureDeclaration' && type.ast.isOptional) {
-    return type === Type.Point;
+    return type.from === Type.Point;
   }
   return type === Type.Point;
 };
