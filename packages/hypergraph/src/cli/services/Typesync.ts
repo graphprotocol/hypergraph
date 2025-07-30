@@ -4,24 +4,7 @@ import { AnsiDoc } from '@effect/printer-ansi';
 import { Cause, Data, Effect, Array as EffectArray, Option, Stream } from 'effect';
 import type { NonEmptyReadonlyArray } from 'effect/Array';
 import type { Schema as HypergraphSchema, Mapping } from '../../mapping/Mapping.js';
-import { parseSchema } from './schema-parser.js';
-
-/**
- * @internal
- *
- * Runtime check to see if a value looks like a Mapping
- */
-function isMappingLike(value: unknown): value is Mapping {
-  if (!value || typeof value !== 'object') return false;
-  return Object.values(value).every(
-    (entry) =>
-      entry &&
-      typeof entry === 'object' &&
-      'typeIds' in entry &&
-      // biome-ignore lint/suspicious/noExplicitAny: parsing so type unknown
-      EffectArray.isArray((entry as any).typeIds),
-  );
-}
+import { parseHypergraphMapping, parseSchema } from './Utils.js';
 
 export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaStreamBuilder>()(
   '/Hypergraph/cli/services/TypesyncSchemaStreamBuilder',
@@ -67,31 +50,7 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
             return cause;
           },
         }).pipe(
-          // biome-ignore lint/suspicious/noExplicitAny: type should be import object from jiti
-          Effect.map((moduleExports: any) => {
-            // Find all exports that look like Mapping objects
-            const mappingCandidates = Object.entries(moduleExports).filter(([, value]) => isMappingLike(value));
-
-            if (mappingCandidates.length === 0) {
-              return {} as Mapping;
-            }
-
-            if (mappingCandidates.length === 1) {
-              return mappingCandidates[0][1] as Mapping;
-            }
-
-            // Multiple candidates - prefer common names
-            const preferredNames = ['mapping', 'default', 'config'];
-            for (const preferredName of preferredNames) {
-              const found = mappingCandidates.find(([name]) => name === preferredName);
-              if (found) {
-                return found[1] as Mapping;
-              }
-            }
-
-            // If no preferred names found, use the first one
-            return mappingCandidates[0][1] as Mapping;
-          }),
+          Effect.map(parseHypergraphMapping),
           Effect.mapError(
             (cause) => new MappingLoaderError({ cause, message: `Failed to load mapping file ${mappingFilePath}` }),
           ),

@@ -1,4 +1,4 @@
-import { Data, Effect } from 'effect';
+import { Data, Effect, Array as EffectArray } from 'effect';
 import ts from 'typescript';
 
 import * as Mapping from '../../mapping/Mapping.js';
@@ -42,7 +42,7 @@ export const parseSchema = (
                       for (const prop of arg.properties) {
                         if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
                           const propName = prop.name.text;
-                          let dataType: Mapping.SchemaDataType = 'Text';
+                          let dataType: Mapping.SchemaDataType = 'String';
                           let relationType: string | undefined;
 
                           const mappingEntry = mapping[className];
@@ -125,3 +125,63 @@ export class SchemaParserFailure extends Data.TaggedError('/Hypergraph/cli/error
   readonly message: string;
   readonly cause: unknown;
 }> {}
+
+/**
+ * @internal
+ *
+ * Runtime check to see if a value looks like a Mapping
+ */
+function isMappingLike(value: unknown): value is Mapping.Mapping {
+  if (!value || typeof value !== 'object') return false;
+  return Object.values(value).every(
+    (entry) =>
+      entry &&
+      typeof entry === 'object' &&
+      'typeIds' in entry &&
+      // biome-ignore lint/suspicious/noExplicitAny: parsing so type unknown
+      EffectArray.isArray((entry as any).typeIds),
+  );
+}
+
+/**
+ * @internal
+ *
+ * Look at the exported object from the mapping.ts file loaded via jiti and try to pull out the hypergraph mapping.
+ * Default should be:
+ * ```typescript
+ * export const mapping: Mapping
+ * ```
+ * But this is not guaranteed. This function looks through the file to try to find it using some logical defaults/checks.
+ *
+ * @param moduleExport the object imported from jiti from the mapping.ts file
+ */
+// biome-ignore lint/suspicious/noExplicitAny: type should be import object from jiti
+export function parseHypergraphMapping(moduleExport: any): Mapping.Mapping {
+  // Handle null/undefined inputs
+  if (!moduleExport || typeof moduleExport !== 'object') {
+    return {} as Mapping.Mapping;
+  }
+
+  // Find all exports that look like Mapping objects
+  const mappingCandidates = Object.entries(moduleExport).filter(([, value]) => isMappingLike(value));
+
+  if (mappingCandidates.length === 0) {
+    return {} as Mapping.Mapping;
+  }
+
+  if (mappingCandidates.length === 1) {
+    return mappingCandidates[0][1] as Mapping.Mapping;
+  }
+
+  // Multiple candidates - prefer common names
+  const preferredNames = ['mapping', 'default', 'config'];
+  for (const preferredName of preferredNames) {
+    const found = mappingCandidates.find(([name]) => name === preferredName);
+    if (found) {
+      return found[1] as Mapping.Mapping;
+    }
+  }
+
+  // If no preferred names found, use the first one
+  return mappingCandidates[0][1] as Mapping.Mapping;
+}

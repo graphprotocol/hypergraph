@@ -100,10 +100,10 @@ export const SchemaDataTypePrimitive = EffectSchema.Literal('String', 'Number', 
  */
 export type SchemaDataTypePrimitive = typeof SchemaDataTypePrimitive.Type;
 /**
- * @since 0.3.0
+ * @since 0.4.0
  */
 export function isDataTypePrimitive(val: string): val is SchemaDataTypePrimitive {
-  return ['Text', 'Number', 'Checkbox', 'Date', 'Point'].includes(val);
+  return ['String', 'Number', 'Boolean', 'Date', 'Point'].includes(val);
 }
 /**
  * @since 0.2.0
@@ -114,13 +114,13 @@ export const SchemaDataType = EffectSchema.Union(SchemaDataTypePrimitive, Schema
  */
 export type SchemaDataType = typeof SchemaDataType.Type;
 /**
- * @since 0.3.0
+ * @since 0.4.0
  */
 export function isDataType(val: string): val is SchemaDataType {
   return isDataTypePrimitive(val) || isDataTypeRelation(val);
 }
 /**
- * @since 0.3.0
+ * @since 0.4.0
  */
 export function getDataType(val: string): SchemaDataType {
   const dataType = isDataTypePrimitive(val) || isDataTypeRelation(val);
@@ -260,7 +260,7 @@ export const SchemaUnknownDecoder = EffectSchema.decodeUnknownSync(Schema);
  *     properties: [
  *       {
  *         name: "username",
- *         dataType: "Text",
+ *         dataType: "String",
  *         knowledgeGraphId: null
  *       }
  *     ]
@@ -519,7 +519,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *       properties: [
  *         {
  *           name: "username",
- *           dataType: "Text",
+ *           dataType: "String",
  *           knowledgeGraphId: "994edcff-6996-4a77-9797-a13e5e3efad8"
  *         },
  *         {
@@ -535,12 +535,12 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *       properties: [
  *         {
  *           name: "name",
- *           dataType: "Text",
+ *           dataType: "String",
  *           knowledgeGraphId: "3808e060-fb4a-4d08-8069-35b8c8a1902b"
  *         },
  *         {
  *           name: "description",
- *           dataType: "Text",
+ *           dataType: "String",
  *           knowledgeGraphId: null
  *         },
  *         {
@@ -580,7 +580,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *     type: "CREATE_PROPERTY",
  *     property: {
  *       id: Id.Id("8cd7d9ac-a878-4287-8000-e71e6f853117"),
- *       dataType: "TEXT"
+ *       dataType: "String"
  *     }
  *   },
  *   // Graph.createProperty Op for Event.description property
@@ -588,7 +588,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *     type: "CREATE_PROPERTY",
  *     property: {
  *       id: Id.Id("8fc4e17c-7581-4d6c-a712-943385afc7b5"),
- *       dataType: "TEXT"
+ *       dataType: "String"
  *     }
  *   },
  *   // Graph.createProperty Op for Event.speaker property

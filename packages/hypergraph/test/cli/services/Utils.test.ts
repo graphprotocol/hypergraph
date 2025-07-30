@@ -1,14 +1,14 @@
 import { describe, it } from '@effect/vitest';
 import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/hypergraph';
 import { Effect } from 'effect';
-import { parseSchema } from '../../../src/cli/services/schema-parser.js';
+import { parseHypergraphMapping, parseSchema } from '../../../src/cli/services/Utils.js';
+import type { Mapping } from '../../../src/mapping/Mapping.js';
 
 describe('parseSchema', () => {
   it.effect('should return empty types array for empty schema file', ({ expect }) =>
     Effect.gen(function* () {
       const emptySchemaContent = '';
-      const emptyMapping: Mapping.Mapping = {};
+      const emptyMapping: Mapping = {};
 
       const result = yield* parseSchema(emptySchemaContent, emptyMapping);
 
@@ -23,43 +23,43 @@ describe('parseSchema', () => {
       const schemaContent = `import { Entity, Type } from '@graphprotocol/hypergraph';
 
 export class User extends Entity.Class<User>('User')({
-  name: Type.Text,
+  name: Type.String,
 }) {}
 
 export class Todo extends Entity.Class<Todo>('Todo')({
-  name: Type.Text,
-  completed: Type.Checkbox,
+  name: Type.String,
+  completed: Type.Boolean,
   assignees: Type.Relation(User),
 }) {}
 
 export class Todo2 extends Entity.Class<Todo2>('Todo2')({
-  name: Type.Text,
-  checked: Type.Checkbox,
+  name: Type.String,
+  checked: Type.Boolean,
   assignees: Type.Relation(User),
   due: Type.Date,
   amount: Type.Number,
   point: Type.Point,
-  website: Type.Text,
+  website: Type.String,
 }) {}
 
 export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
-  name: Type.Text,
+  name: Type.String,
   salary: Type.Number,
 }) {}
 
 export class Company extends Entity.Class<Company>('Company')({
-  name: Type.Text,
-  // address: Type.Text,
+  name: Type.String,
+  // address: Type.String,
   jobOffers: Type.Relation(JobOffer),
 }) {}
 
 export class Event extends Entity.Class<Event>('Event')({
-  name: Type.Text,
-  // description: Type.Text,
+  name: Type.String,
+  // description: Type.String,
   sponsors: Type.Relation(Company),
 }) {}`;
 
-      const emptyMapping: Mapping.Mapping = {};
+      const emptyMapping: Mapping = {};
       const result = yield* parseSchema(schemaContent, emptyMapping);
 
       yield* Effect.sync(() => {
@@ -71,7 +71,7 @@ export class Event extends Entity.Class<Event>('Event')({
         expect(userEntity?.properties).toHaveLength(1);
         expect(userEntity?.properties[0]).toMatchObject({
           name: 'name',
-          dataType: 'Text',
+          dataType: 'String',
           knowledgeGraphId: null,
         });
 
@@ -81,12 +81,12 @@ export class Event extends Entity.Class<Event>('Event')({
         expect(todoEntity?.properties).toHaveLength(3);
         expect(todoEntity?.properties[0]).toMatchObject({
           name: 'name',
-          dataType: 'Text',
+          dataType: 'String',
           knowledgeGraphId: null,
         });
         expect(todoEntity?.properties[1]).toMatchObject({
           name: 'completed',
-          dataType: 'Checkbox',
+          dataType: 'Boolean',
           knowledgeGraphId: null,
         });
         expect(todoEntity?.properties[2]).toMatchObject({
@@ -135,22 +135,22 @@ export class Event extends Entity.Class<Event>('Event')({
       const schemaContent = `import { Entity, Type } from '@graphprotocol/hypergraph';
 
 export class Event extends Entity.Class<Event>('Event')({
-  name: Type.Text,
+  name: Type.String,
   sponsors: Type.Relation(Company),
 }) {}
 
 export class Company extends Entity.Class<Company>('Company')({
-  name: Type.Text,
+  name: Type.String,
   jobOffers: Type.Relation(JobOffer),
 }) {}
 
 export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
-  name: Type.Text,
+  name: Type.String,
   salary: Type.Number,
 }) {}`;
 
       // Use mapping from events app
-      const mapping: Mapping.Mapping = {
+      const mapping: Mapping = {
         Event: {
           typeIds: [Id.Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
           properties: {
@@ -190,7 +190,7 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
         expect(eventEntity?.properties).toHaveLength(2);
         expect(eventEntity?.properties[0]).toMatchObject({
           name: 'name',
-          dataType: 'Text',
+          dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
         });
         expect(eventEntity?.properties[1]).toMatchObject({
@@ -207,7 +207,7 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
         expect(companyEntity?.properties).toHaveLength(2);
         expect(companyEntity?.properties[0]).toMatchObject({
           name: 'name',
-          dataType: 'Text',
+          dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
         });
         expect(companyEntity?.properties[1]).toMatchObject({
@@ -224,7 +224,7 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
         expect(jobOfferEntity?.properties).toHaveLength(2);
         expect(jobOfferEntity?.properties[0]).toMatchObject({
           name: 'name',
-          dataType: 'Text',
+          dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
         });
         expect(jobOfferEntity?.properties[1]).toMatchObject({
@@ -235,4 +235,192 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
       });
     }),
   );
+});
+
+describe('parseHypergraphMapping', () => {
+  it('should return empty mapping for empty module export', ({ expect }) => {
+    const emptyModule = {};
+    const result = parseHypergraphMapping(emptyModule);
+    expect(result).toEqual({});
+  });
+
+  it('should return empty mapping for null/undefined module export', ({ expect }) => {
+    expect(parseHypergraphMapping(null)).toEqual({});
+    expect(parseHypergraphMapping(undefined)).toEqual({});
+  });
+
+  it('should return empty mapping when no valid mapping objects found', ({ expect }) => {
+    const moduleExport = {
+      someString: 'hello',
+      someNumber: 42,
+      someArray: [1, 2, 3],
+      invalidObject: { foo: 'bar' },
+    };
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual({});
+  });
+
+  it('should return the single mapping when only one valid mapping found', ({ expect }) => {
+    const mapping: Mapping = {
+      User: {
+        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        properties: {
+          name: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+        },
+      },
+    };
+
+    const moduleExport = {
+      someRandomExport: mapping,
+      otherStuff: 'not a mapping',
+    };
+
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual(mapping);
+  });
+
+  it('should prefer "mapping" when multiple valid mappings exist', ({ expect }) => {
+    const mappingPreferred: Mapping = {
+      User: {
+        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const otherMapping: Mapping = {
+      Post: {
+        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const moduleExport = {
+      mapping: mappingPreferred,
+      customMapping: otherMapping,
+    };
+
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual(mappingPreferred);
+  });
+
+  it('should prefer "default" when multiple valid mappings exist but no "mapping"', ({ expect }) => {
+    const defaultMapping: Mapping = {
+      User: {
+        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const otherMapping: Mapping = {
+      Post: {
+        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const moduleExport = {
+      default: defaultMapping,
+      customMapping: otherMapping,
+    };
+
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual(defaultMapping);
+  });
+
+  it('should prefer "config" when no "mapping" or "default" exists', ({ expect }) => {
+    const configMapping: Mapping = {
+      User: {
+        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const otherMapping: Mapping = {
+      Post: {
+        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const moduleExport = {
+      config: configMapping,
+      customMapping: otherMapping,
+    };
+
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual(configMapping);
+  });
+
+  it('should return first mapping when multiple exist with no preferred names', ({ expect }) => {
+    const firstMapping: Mapping = {
+      User: {
+        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const secondMapping: Mapping = {
+      Post: {
+        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+      },
+    };
+
+    const moduleExport = {
+      customMapping1: firstMapping,
+      customMapping2: secondMapping,
+    };
+
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual(firstMapping);
+  });
+
+  it('should handle mappings with full structure including properties and relations', ({ expect }) => {
+    const complexMapping: Mapping = {
+      Event: {
+        typeIds: [Id.Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+        properties: {
+          name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        },
+        relations: {
+          sponsors: Id.Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
+        },
+      },
+      Company: {
+        typeIds: [Id.Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
+        properties: {
+          name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        },
+        relations: {
+          jobOffers: Id.Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
+        },
+      },
+    };
+
+    const moduleExport = { mapping: complexMapping };
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual(complexMapping);
+  });
+
+  it('should handle mappings with empty typeIds array', ({ expect }) => {
+    const mappingWithEmptyTypeIds: Mapping = {
+      User: {
+        typeIds: [],
+        properties: {
+          name: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+        },
+      },
+    };
+
+    const moduleExport = { mapping: mappingWithEmptyTypeIds };
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual(mappingWithEmptyTypeIds);
+  });
+
+  it('should handle edge case where typeIds exists but is not an array', ({ expect }) => {
+    const invalidMapping = {
+      User: {
+        typeIds: 'not-an-array',
+        properties: {
+          name: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+        },
+      },
+    };
+
+    const moduleExport = { mapping: invalidMapping };
+    const result = parseHypergraphMapping(moduleExport);
+    expect(result).toEqual({});
+  });
 });
