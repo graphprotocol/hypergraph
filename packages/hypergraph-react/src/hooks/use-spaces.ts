@@ -24,7 +24,7 @@ type PublicSpacesQueryResult = {
     spaceAddress: string;
     page: {
       name: string;
-    };
+    } | null;
   }[];
 };
 
@@ -43,7 +43,7 @@ export const useSpaces = (params: { mode: 'public' | 'private' }) => {
       return result?.spaces
         ? result.spaces.map((space) => ({
             id: space.id,
-            name: space.page.name,
+            name: space.page?.name,
             spaceAddress: space.spaceAddress,
           }))
         : [];

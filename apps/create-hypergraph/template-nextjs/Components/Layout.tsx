@@ -23,7 +23,7 @@ export function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   const { redirectToConnect, logout } = useHypergraphApp();
 
   useLayoutEffect(() => {
-    if (pathname.startsWith('/login') || pathname.startsWith('/authenticate-success') || pathname === '/') {
+    if (pathname.startsWith('/login') || pathname.startsWith('/authenticate-success') || pathname === '/' ||  pathname === '/explore-public-knowledge') {
       return;
     }
 
@@ -36,7 +36,7 @@ export function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   const handleSignIn = () => {
     redirectToConnect({
       storage: localStorage,
-      connectUrl: 'https://hypergraph-connect.vercel.app/',
+      connectUrl: 'https://connect.geobrowser.io/',
       successUrl: `${window.location.origin}/authenticate-success`,
       redirectFn: (url: URL) => {
         window.location.href = url.toString();

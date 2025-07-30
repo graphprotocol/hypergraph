@@ -1,6 +1,21 @@
 # @graphprotocol/hypergraph-react
 
-## 1.0.0
+## 0.3.0
+### Minor Changes
+
+- cb54727: rename Type.Text to Type.String
+- c0035eb: rename Type.Checkbox to Type.Boolean
+
+### Patch Changes
+
+- f8ccaed: add Type.optional
+- a755f7c: update default sync server url
+- Updated dependencies [cb54727]
+- Updated dependencies [c0035eb]
+- Updated dependencies [f8ccaed]
+  - @graphprotocol/hypergraph@0.3.0
+
+## 0.2.0
 ### Minor Changes
 
 - 8622688: Move @graphprotocol/typesync Mapping and Utils into @graphprotocol/hypergraph package and export from there. Update @graphprotocol/hypergraph-react to use mapping from @graphprotocol/hypergraph.

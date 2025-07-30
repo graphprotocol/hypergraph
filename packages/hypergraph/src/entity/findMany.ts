@@ -15,7 +15,7 @@ import type {
   EntityFieldFilter,
   EntityFilter,
   EntityNumberFilter,
-  EntityTextFilter,
+  EntityStringFilter,
 } from './types.js';
 
 const documentChangeListener: {
@@ -298,19 +298,19 @@ export function findMany<const S extends AnyNoContext>(
 
     if (typeof fieldValue === 'string') {
       if ('startsWith' in fieldFilter) {
-        const textFilter = fieldFilter as EntityTextFilter;
+        const textFilter = fieldFilter as EntityStringFilter;
         if (textFilter.startsWith !== undefined && !fieldValue.startsWith(textFilter.startsWith)) {
           return false;
         }
       }
       if ('endsWith' in fieldFilter) {
-        const textFilter = fieldFilter as EntityTextFilter;
+        const textFilter = fieldFilter as EntityStringFilter;
         if (textFilter.endsWith !== undefined && !fieldValue.endsWith(textFilter.endsWith)) {
           return false;
         }
       }
       if ('contains' in fieldFilter) {
-        const textFilter = fieldFilter as EntityTextFilter;
+        const textFilter = fieldFilter as EntityStringFilter;
         if (textFilter.contains !== undefined && !fieldValue.includes(textFilter.contains)) {
           return false;
         }

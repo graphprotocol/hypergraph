@@ -12,7 +12,6 @@ import { themes as prismThemes } from 'prism-react-renderer';
 const config = {
   title: 'Hypergraph',
   tagline: 'Framework for building web3 apps',
-  favicon: 'img/HypergraphLogo.png',
 
   // Set the production url of your site here
   url: 'https://graphprotocol.github.io',
@@ -44,6 +43,33 @@ const config = {
         content: '536FEAE3B63DD658',
       },
     },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        href: '/img/HypergraphLogoDark.png',
+        media: '(prefers-color-scheme: light)',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        href: '/img/HypergraphLogo.png',
+        media: '(prefers-color-scheme: dark)',
+      },
+    },
+  ],
+
+  plugins: [
+    [
+      'docusaurus-plugin-generate-llms-txt',
+      {
+        outputFile: 'llms.txt', // defaults to llms.txt if not specified
+      },
+    ],
   ],
 
   presets: [

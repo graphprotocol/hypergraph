@@ -10,8 +10,8 @@ Here is an example of a schema for an Event app with the properties `name` and `
 import { Entity, Type } from '@graphprotocol/hypergraph';
 
 export class Event extends Entity.Class<Event>('Event')({
-  name: Type.Text,
-  description: Type.Text,
+  name: Type.String,
+  description: Type.String,
 }) {}
 ```
 
@@ -23,22 +23,22 @@ In order to define relations between Types, you can use the `Type.Relation` type
 import { Entity, Type } from '@graphprotocol/hypergraph';
 
 export class Company extends Entity.Class<Company>('Company')({
-  name: Type.Text,
+  name: Type.String,
 }) {}
 
 export class Event extends Entity.Class<Event>('Event')({
-  name: Type.Text,
-  description: Type.Text,
+  name: Type.String,
+  description: Type.String,
   sponsors: Type.Relation(Company),
 }) {}
 ```
 
 ## Available Types
 
-- `Type.Text` (string)
+- `Type.String` (string)
 - `Type.Number` (number)
 - `Type.Date` (date)
-- `Type.Checkbox` (boolean)
+- `Type.Boolean` (boolean)
 - `Type.Point` (serialized to a string with a comma separated list of numbers)
 - `Type.Relation` (relation to another Type)
 
@@ -48,11 +48,25 @@ Example:
 import { Entity, Type } from '@graphprotocol/hypergraph';
 
 export class Company extends Entity.Class<Company>('Company')({
-  name: Type.Text,
+  name: Type.String,
   employees: Type.Number,
   founded: Type.Date,
-  active: Type.Checkbox,
+  active: Type.Boolean,
   location: Type.Point,
+}) {}
+```
+
+## Optional Fields
+
+You can make a field optional by wrapping it in `Type.optional`.
+
+```ts
+import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class Company extends Entity.Class<Company>('Company')({
+  name: Type.String,
+  description: Type.optional(Type.String),
+  founded: Type.optional(Type.Date),
 }) {}
 ```
 

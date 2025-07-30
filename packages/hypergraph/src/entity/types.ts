@@ -47,7 +47,7 @@ export type DocumentContent = {
   relations?: Record<string, DocumentRelation>;
 };
 
-export type EntityCheckboxFilter = {
+export type EntityBooleanFilter = {
   is: boolean;
 };
 
@@ -59,14 +59,14 @@ export type EntityNumberFilter = {
   or?: EntityNumberFilter[];
 };
 
-export type EntityTextFilter = {
+export type EntityStringFilter = {
   is?: string;
   startsWith?: string;
   endsWith?: string;
   contains?: string;
   equals?: string;
-  not?: EntityTextFilter;
-  or?: EntityTextFilter[];
+  not?: EntityStringFilter;
+  or?: EntityStringFilter[];
 };
 
 export type CrossFieldFilter<T> = {

@@ -2,10 +2,12 @@ import * as Schema from 'effect/Schema';
 import { Field } from '../entity/entity.js';
 import type { AnyNoContext, EntityWithRelation } from '../entity/types.js';
 
-export const Text = Schema.String;
+// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
+export const String = Schema.String;
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const Number = Schema.Number;
-export const Checkbox = Schema.Boolean;
+// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
+export const Boolean = Schema.Boolean;
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const Date = Schema.Date;
 export const Point = Schema.transform(Schema.String, Schema.Array(Number), {
@@ -15,6 +17,8 @@ export const Point = Schema.transform(Schema.String, Schema.Array(Number), {
   },
   encode: (points: readonly number[]) => points.join(','),
 });
+
+export const optional = Schema.optional;
 
 export const Relation = <S extends AnyNoContext>(schema: S) => {
   const relationSchema = Field({

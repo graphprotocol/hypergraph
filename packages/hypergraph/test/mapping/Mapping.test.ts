@@ -12,11 +12,11 @@ import {
 describe('Mapping', () => {
   describe('mapSchemaDataTypeToGRC20PropDataType', () => {
     it('should be able to map the schema dataType to the correct GRC-20 dataType', () => {
-      expect(mapSchemaDataTypeToGRC20PropDataType('Checkbox')).toEqual('CHECKBOX');
+      expect(mapSchemaDataTypeToGRC20PropDataType('Boolean')).toEqual('CHECKBOX');
       expect(mapSchemaDataTypeToGRC20PropDataType('Number')).toEqual('NUMBER');
       expect(mapSchemaDataTypeToGRC20PropDataType('Date')).toEqual('TIME');
       expect(mapSchemaDataTypeToGRC20PropDataType('Point')).toEqual('POINT');
-      expect(mapSchemaDataTypeToGRC20PropDataType('Text')).toEqual('TEXT');
+      expect(mapSchemaDataTypeToGRC20PropDataType('String')).toEqual('TEXT');
       expect(mapSchemaDataTypeToGRC20PropDataType('Relation(Event)')).toEqual('RELATION');
     });
   });
@@ -27,7 +27,7 @@ describe('Mapping', () => {
         {
           name: 'Account',
           knowledgeGraphId: null,
-          properties: [{ name: 'username', dataType: 'Text', knowledgeGraphId: null }],
+          properties: [{ name: 'username', dataType: 'String', knowledgeGraphId: null }],
         },
         {
           name: 'Event',
@@ -65,7 +65,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'username',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
@@ -81,12 +81,12 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'name',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
                 name: 'description',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
@@ -130,7 +130,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'username',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: '994edcff-6996-4a77-9797-a13e5e3efad8',
               },
               {
@@ -146,12 +146,12 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'name',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: '3808e060-fb4a-4d08-8069-35b8c8a1902b',
               },
               {
                 name: 'description',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
@@ -195,7 +195,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'username',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
             ],
@@ -206,7 +206,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'name',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
@@ -248,7 +248,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'username',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
             ],
@@ -259,7 +259,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'name',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
@@ -301,7 +301,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'username',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: '994edcff-6996-4a77-9797-a13e5e3efad8',
               },
             ],
@@ -312,7 +312,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'name',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
@@ -328,7 +328,7 @@ describe('Mapping', () => {
             properties: [
               {
                 name: 'title',
-                dataType: 'Text',
+                dataType: 'String',
                 knowledgeGraphId: null,
               },
               {
@@ -383,12 +383,12 @@ describe('Mapping', () => {
               {
                 name: 'Account',
                 knowledgeGraphId: null,
-                properties: [{ name: 'username', dataType: 'Text', knowledgeGraphId: null }],
+                properties: [{ name: 'username', dataType: 'String', knowledgeGraphId: null }],
               },
               {
                 name: 'Account',
                 knowledgeGraphId: null,
-                properties: [{ name: 'image', dataType: 'Text', knowledgeGraphId: null }],
+                properties: [{ name: 'image', dataType: 'String', knowledgeGraphId: null }],
               },
             ],
           }),
@@ -402,8 +402,8 @@ describe('Mapping', () => {
                 name: 'Account',
                 knowledgeGraphId: null,
                 properties: [
-                  { name: 'username', dataType: 'Text', knowledgeGraphId: null },
-                  { name: 'username', dataType: 'Text', knowledgeGraphId: null },
+                  { name: 'username', dataType: 'String', knowledgeGraphId: null },
+                  { name: 'username', dataType: 'String', knowledgeGraphId: null },
                 ],
               },
             ],
