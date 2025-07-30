@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.4.1
+### Patch Changes
+
+- 21fe465: Bump @graphprotocol/hypergraph and @graphprotocol/hypergraph-react to latest in create-hypergraph
+
 ## 0.4.0
 ### Minor Changes
 
