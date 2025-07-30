@@ -75,7 +75,7 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
         throw new Error(`Value for ${key} is undefined`);
       }
       let serializedValue: string = entity[key];
-      if (TypeUtils.isCheckboxOrOptionalCheckboxType(fields[key])) {
+      if (TypeUtils.isBooleanOrOptionalBooleanType(fields[key])) {
         serializedValue = Graph.serializeCheckbox(entity[key]);
       } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
         serializedValue = Graph.serializeDate(entity[key]);
@@ -118,7 +118,7 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
         throw new Error(`Value for ${key} is undefined`);
       }
       let serializedValue: string = entity[key];
-      if (TypeUtils.isCheckboxOrOptionalCheckboxType(fields[key])) {
+      if (TypeUtils.isBooleanOrOptionalBooleanType(fields[key])) {
         serializedValue = Graph.serializeCheckbox(entity[key]);
       } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
         serializedValue = Graph.serializeDate(entity[key]);

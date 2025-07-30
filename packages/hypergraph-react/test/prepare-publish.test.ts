@@ -24,7 +24,7 @@ describe('preparePublish', () => {
     name: Type.Text,
     age: Type.Number,
     email: Type.optional(Type.Text),
-    isActive: Type.Checkbox,
+    isActive: Type.Boolean,
     birthDate: Type.Date,
     location: Type.Point,
   }) {}
@@ -38,7 +38,7 @@ describe('preparePublish', () => {
   class OptionalFieldsEntity extends Entity.Class<OptionalFieldsEntity>('OptionalFieldsEntity')({
     name: Type.Text, // required field
     optionalNumber: Type.optional(Type.Number),
-    optionalCheckbox: Type.optional(Type.Checkbox),
+    optionalBoolean: Type.optional(Type.Boolean),
     optionalDate: Type.optional(Type.Date),
     optionalPoint: Type.optional(Type.Point),
   }) {}
@@ -82,7 +82,7 @@ describe('preparePublish', () => {
           properties: {
             name: Id.Id('2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d'),
             optionalNumber: Id.Id('eaf9f4f8-5647-4228-aff5-8725368fc87c'),
-            optionalCheckbox: Id.Id('2742d8b6-3059-4adb-b439-fdfcd588dccb'),
+            optionalBoolean: Id.Id('2742d8b6-3059-4adb-b439-fdfcd588dccb'),
             optionalDate: Id.Id('9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f'),
             optionalPoint: Id.Id('0c1d2e3f-4a5b-4c7d-8e9f-0a1b2c3d4e5f'),
           },
@@ -405,7 +405,7 @@ describe('preparePublish', () => {
         type: 'OptionalFieldsEntity',
         name: 'Test Entity',
         optionalNumber: 42.5,
-        optionalCheckbox: true,
+        optionalBoolean: true,
         optionalDate: new Date('2024-01-15'),
         optionalPoint: [12.34, 56.78],
         __schema: OptionalFieldsEntity,
@@ -428,7 +428,7 @@ describe('preparePublish', () => {
         type: 'OptionalFieldsEntity',
         name: 'Test Entity',
         optionalNumber: 25,
-        // optionalCheckbox is undefined
+        // optionalBoolean is undefined
         optionalDate: new Date('2024-02-20'),
         // optionalPoint is undefined
         __schema: OptionalFieldsEntity,
@@ -492,7 +492,7 @@ describe('preparePublish', () => {
       }
     });
 
-    it('should handle optional Checkbox field variations', async () => {
+    it('should handle optional Boolean field variations', async () => {
       const testCases = [
         { value: true, description: 'true' },
         { value: false, description: 'false' },
@@ -504,7 +504,7 @@ describe('preparePublish', () => {
           id: 'e68aa940-8452-48de-8523-292ba3771f81',
           type: 'OptionalFieldsEntity',
           name: `Test ${testCase.description}`,
-          optionalCheckbox: testCase.value,
+          optionalBoolean: testCase.value,
           __schema: OptionalFieldsEntity,
         } as Entity.Entity<typeof OptionalFieldsEntity>;
 
@@ -605,7 +605,7 @@ describe('preparePublish', () => {
         type: 'OptionalFieldsEntity',
         name: 'Existing Entity',
         optionalNumber: 100, // New field
-        optionalCheckbox: true, // New field
+        optionalBoolean: true, // New field
         optionalDate: new Date('2024-03-15'), // New field
         optionalPoint: [45.0, 90.0], // New field
         __schema: OptionalFieldsEntity,
@@ -671,7 +671,7 @@ describe('preparePublish', () => {
         type: 'OptionalFieldsEntity',
         name: 'Existing Entity',
         optionalNumber: 125, // Changed from 75
-        // optionalCheckbox: undefined (not present, will remain undefined)
+        // optionalBoolean: undefined (not present, will remain undefined)
         optionalDate: new Date('2023-01-01'), // Same as existing (no change)
         optionalPoint: [12.5, 25.0], // New field
         __schema: OptionalFieldsEntity,

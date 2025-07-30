@@ -9,7 +9,7 @@ Note: Filtering is not yet supported for public data.
 ```tsx
 export class Event extends Entity.Class<Event>("Event")({
   name: Type.Text,
-  cancelled: Type.Checkbox,
+  cancelled: Type.Boolean,
 }) {}
 
 // inside the React component
@@ -23,7 +23,7 @@ const { data } = useQuery(Event, {
 The filter API supports different filters for different property types and offers a logical `or` and `not` operator.
 
 ```tsx
-// checkbox filter
+// boolean filter
 {
   is: true/false, // exact match
   exists: true/false, // filter by existence of the property
@@ -132,7 +132,7 @@ const { data } = useQuery(Person, {
 // schema
 export class Todo extends Entity.Class<Todo2>('Todo')({
   name: Type.Text,
-  checked: Type.Checkbox,
+  checked: Type.Boolean,
   assignees: Type.Relation(User),
 })
 ```
@@ -175,7 +175,7 @@ const { data } = useQuery(Person, {
 // schema
 export class Todo extends Entity.Class<Todo2>('Todo')({
   name: Type.Text,
-  checked: Type.Checkbox,
+  checked: Type.Boolean,
   assignees: Type.Relation(User, {
     entity: {
       assignedAt: Type.DateTime,

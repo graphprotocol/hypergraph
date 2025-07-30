@@ -38,7 +38,7 @@ export class Event extends Entity.Class<Event>('Event')({
 - `Type.Text` (string)
 - `Type.Number` (number)
 - `Type.Date` (date)
-- `Type.Checkbox` (boolean)
+- `Type.Boolean` (boolean)
 - `Type.Point` (serialized to a string with a comma separated list of numbers)
 - `Type.Relation` (relation to another Type)
 
@@ -51,7 +51,7 @@ export class Company extends Entity.Class<Company>('Company')({
   name: Type.Text,
   employees: Type.Number,
   founded: Type.Date,
-  active: Type.Checkbox,
+  active: Type.Boolean,
   location: Type.Point,
 }) {}
 ```

@@ -277,7 +277,7 @@ import * as S from "effect/Schema";
 export const type = {
   Text: S.String,
   Number: S.Number,
-  Checkbox: S.Boolean,
+  Boolean: S.Boolean,
 };
 ```
 
@@ -288,7 +288,7 @@ export const schema: Schema = {
   attributes: {
     name: type.Text,
     age: type.Number,
-    isActive: type.Checkbox,
+    isActive: type.Boolean,
     email: type.Text,
   },
   types: {

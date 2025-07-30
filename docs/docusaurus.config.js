@@ -43,24 +43,24 @@ const config = {
         content: '536FEAE3B63DD658',
       },
     },
-      {
-    tagName: 'link',
-    attributes: {
-      rel: 'icon',
-      type: 'image/png',
-      href: '/img/HypergraphLogoDark.png',
-      media: '(prefers-color-scheme: light)',
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        href: '/img/HypergraphLogoDark.png',
+        media: '(prefers-color-scheme: light)',
+      },
     },
-  },
-  {
-    tagName: 'link',
-    attributes: {
-      rel: 'icon',
-      type: 'image/png',
-      href: '/img/HypergraphLogo.png',
-      media: '(prefers-color-scheme: dark)',
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        href: '/img/HypergraphLogo.png',
+        media: '(prefers-color-scheme: dark)',
+      },
     },
-  },
   ],
 
   plugins: [

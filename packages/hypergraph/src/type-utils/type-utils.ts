@@ -25,11 +25,11 @@ export const isDateOrOptionalDateType = (type: any) => {
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: TODO
-export const isCheckboxOrOptionalCheckboxType = (type: any) => {
+export const isBooleanOrOptionalBooleanType = (type: any) => {
   if (type.ast && type.ast._tag === 'PropertySignatureDeclaration' && type.ast.isOptional) {
-    return type.from === Type.Checkbox;
+    return type.from === Type.Boolean;
   }
-  return type === Type.Checkbox;
+  return type === Type.Boolean;
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: TODO
