@@ -22,7 +22,13 @@
 }
 
 @utility c-input {
-  @apply text-foreground font-regular placeholder:text-foreground/25 bg-background min-h-12 rounded-lg indent-3 text-lg inset-shadow-xs/15 -outline-offset-2 transition disabled:opacity-25;
+  @apply text-foreground font-regular placeholder:text-foreground/25 bg-background relative min-h-12 appearance-none rounded-lg px-3 text-lg inset-shadow-xs/15 -outline-offset-2 transition disabled:opacity-25;
+
+  &:is(select) {
+    --light-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="%232a2b2e"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>');
+    --dark-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>');
+    @apply bg-(image:--light-image) bg-size-[theme(spacing.4)] bg-position-[right_theme(spacing.2)_center] bg-no-repeat pr-7 dark:bg-(image:--dark-image);
+  }
 }
 
 @utility c-card {

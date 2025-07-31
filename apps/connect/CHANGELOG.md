@@ -1,6 +1,7 @@
 # connect
 
 ## 0.1.2
+
 ### Patch Changes
 
 - Updated dependencies [cb54727]
@@ -11,6 +12,7 @@
   - @graphprotocol/hypergraph@0.3.0
 
 ## 0.1.1
+
 ### Patch Changes
 
 - Updated dependencies [8622688]
@@ -18,6 +20,7 @@
   - @graphprotocol/hypergraph@0.2.0
 
 ## 0.1.0
+
 ### Patch Changes
 
 - 114d743: breaking changes of the authentication flow to improve security and fix invitations

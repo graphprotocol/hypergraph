@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createWalletClient, custom, type WalletClient } from 'viem';
 import GeoLogo from '@/assets/images/geo-logo-branded.svg?react';
 import { AppTitle } from '@/components/ui/AppTitle';
+import { Loading } from '@/components/ui/Loading';
 
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const syncServerUri = import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN;
@@ -107,25 +108,24 @@ function Login() {
 
   return (
     <div className="flex grow flex-col items-center justify-center">
-      <div className="c-card sm:c-card--large">
+      <div className="c-card sm:c-card--large max-w-md sm:max-w-lg">
         <div className="flex items-center justify-center gap-3 text-4xl sm:gap-4 sm:text-5xl">
           <GeoLogo className="w-[1em] shrink-0" />
           <AppTitle />
         </div>
-        <div className="flex flex-col items-center justify-center gap-2 mt-4">
-          <p className="text-center text-muted-foreground max-w-72 leading-6 font-semibold">
-            Manage your private and public spaces on the decentralized web and grant access to 3rd party apps.
-          </p>
-        </div>
+        <p className="text-foreground-muted mt-4 text-center text-base leading-tight font-semibold sm:text-lg">
+          Manage your private and public spaces on the decentralized web and grant apps access to them.
+        </p>
         <button
           type="button"
           disabled={!privyReady || privyAuthenticated}
           onClick={() => {
             privyLogin();
           }}
-          className="c-button c-button--primary sm:c-button--large mt-4 w-full sm:mt-10"
+          className="c-button c-button--primary sm:c-button--large mt-6 w-full"
         >
           Sign in
+          {privyAuthenticated ? <Loading hideLabel /> : null}
         </button>
       </div>
     </div>

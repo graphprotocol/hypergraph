@@ -4,7 +4,7 @@ import { gql, request } from 'graphql-request';
 
 const publicSpacesQueryDocument = gql`
   query Spaces($accountAddress: String!) {
-    spaces(filter: {members: {some: {address: {is: $accountAddress}}}}) {
+    spaces(filter: { members: { some: { address: { is: $accountAddress } } } }) {
       id
       type
       mainVotingAddress
