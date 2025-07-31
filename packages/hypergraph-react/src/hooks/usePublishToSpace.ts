@@ -3,15 +3,24 @@ import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import { useHypergraphApp } from '../HypergraphAppContext.js';
 import { preparePublish } from '../prepare-publish.js';
 import { publishOps } from '../publish-ops.js';
+import type { OmitStrict } from '../types.js';
 
-type UsePublishToSpaceOptions = UseMutationOptions<Awaited<ReturnType<typeof publishOps>>, Error, string, unknown>;
+type Variables<S extends Entity.AnyNoContext> = {
+  entity: S;
+  spaceId: string;
+};
 
-export function usePublishToPublicSpace(spaceId: string, options: UsePublishToSpaceOptions) {
+type UsePublishToSpaceOptions = OmitStrict<
+  UseMutationOptions<Awaited<ReturnType<typeof publishOps>>, Error, Variables<Entity.AnyNoContext>, unknown>,
+  'mutationFn' | 'mutationKey'
+>;
+
+export function usePublishToPublicSpace(options: UsePublishToSpaceOptions = {}) {
   const { getSmartSessionClient } = useHypergraphApp();
 
   return useMutation({
     ...options,
-    mutationFn: async <S extends Entity.AnyNoContext>(entity: Entity.Entity<S>) => {
+    mutationFn: async ({ entity, spaceId }) => {
       const { ops } = await preparePublish({
         entity,
         publicSpace: spaceId,

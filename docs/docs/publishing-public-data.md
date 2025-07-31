@@ -56,7 +56,7 @@ const MyComponent = ({ publicSpaceId }: { publicSpaceId: string }) => {
   return (
     <div>
       {events.map((event) => (
-        <button key={event.id} onClick={() => mutate({ entity: event, publicSpaceId })}>
+        <button key={event.id} onClick={() => mutate({ entity: event, spaceId: publicSpaceId })}>
           {event.name}
         </button>
       ))}
