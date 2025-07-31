@@ -55,14 +55,8 @@ function Authorized() {
         <div className="c-card bg-gradient-clearmint lg:col-2 lg:row-2">
           <h2 className="c-card-title text-foreground-dark">What is this?</h2>
           <p>
-            Geo Connect allows you to create and manage personal{' '}
-            <a href="https://www.geobrowser.io/" target="_blank" rel="noreferrer" className="c-link text-inherit">
-              Geo
-            </a>{' '}
-            spaces, as well as authorize access to these spaces by third-party applications.
-          </p>
-          <p className="mt-6">
-            Geo is a web3 browser built on top of a knowledge graph, where data is interconnected and verifiable.
+            Geo Connect allows you to manage your private and public spaces on the decentralized web and grant apps
+            access to them.
           </p>
         </div>
       </div>
