@@ -14,6 +14,8 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
 
+      const encoder = new TextEncoder();
+
       const schemaCandidates = (cwd = '.') =>
         EffectArray.make(
           path.resolve(cwd, 'schema.ts'),
@@ -77,12 +79,15 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
        * @returns A stream of [Schema](../../mapping/Mapping.ts) pared from the schema.ts file
        */
       const currentSchemaStream = (
-        schemaFilePath: string,
+        schemaFilePath: Option.Option<string>,
         mappingFilePath: Option.Option<string>,
       ): Stream.Stream<HypergraphSchema, never, never> =>
         Stream.fromEffect(
           Effect.gen(function* () {
-            const schema = yield* fs.readFileString(schemaFilePath);
+            const schema = yield* Option.match(schemaFilePath, {
+              onNone: () => Effect.succeed(''),
+              onSome: fs.readFileString,
+            });
             const mapping = yield* Option.match(mappingFilePath, {
               onNone: () => Effect.succeed({} as Mapping),
               onSome: loadMapping,
@@ -110,20 +115,27 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
        * @returns A stream of [Schema](../../mapping/Mapping.ts) pared from the schema.ts file
        */
       const watchSchemaStream = (
-        schemaFilePath: string,
+        schemaFilePath: Option.Option<string>,
         mappingFilePath: Option.Option<string>,
       ): Stream.Stream<HypergraphSchema, never, never> => {
-        const schemaWatch = fs.watch(schemaFilePath);
+        const schemaWatch = Option.match(schemaFilePath, {
+          // @todo watch the root here so if a schema is created, it will get picked up
+          onNone: () => Stream.empty,
+          onSome: fs.watch,
+        });
         const mappingWatch = Option.match(mappingFilePath, {
           onNone: () => Stream.empty,
-          onSome: (path) => fs.watch(path),
+          onSome: fs.watch,
         });
 
         return Stream.mergeAll([schemaWatch, mappingWatch], { concurrency: 2 }).pipe(
           Stream.buffer({ capacity: 1, strategy: 'sliding' }),
           Stream.mapEffect(() =>
             Effect.gen(function* () {
-              const schema = yield* fs.readFileString(schemaFilePath);
+              const schema = yield* Option.match(schemaFilePath, {
+                onNone: () => Effect.succeed(''),
+                onSome: fs.readFileString,
+              });
               const mapping = yield* Option.match(mappingFilePath, {
                 onNone: () => Effect.succeed({} as Mapping),
                 onSome: loadMapping,
@@ -142,24 +154,15 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
       const hypergraphSchemaStream = (cwd = '.') =>
         Effect.gen(function* () {
           const schemaFileCandidates = schemaCandidates(cwd);
-          const schemaFile = yield* findHypergraphSchema(schemaFileCandidates).pipe(
-            Effect.flatMap(
-              Option.match({
-                onSome(file) {
-                  return Effect.succeed(Option.some(file));
-                },
-                onNone() {
-                  return Effect.succeed(Option.none<string>());
-                },
-              }),
-            ),
-          );
-          if (Option.isNone(schemaFile)) {
-            yield* Effect.logWarning(AnsiDoc.text('No Hypergraph schema file found. Searched:'), schemaFileCandidates);
-            return Stream.empty;
+          // Fetch the Schema definition from any schema.ts in the directory.
+          // If exists, use it to parse the Hypergraph schema
+          const schemaFilePath = yield* findHypergraphSchema(schemaFileCandidates);
+          if (Option.isNone(schemaFilePath)) {
+            yield* Effect.logDebug(
+              AnsiDoc.text('No Hypergraph schema file found. Searched:'),
+              AnsiDoc.cats(schemaFileCandidates.map((candidate) => AnsiDoc.text(candidate))),
+            );
           }
-          const schemaFilePath = schemaFile.value;
-
           // Fetch the Mapping definition from any mapping.ts in the directory.
           // If exists, use it to get the knowledgeGraphId for each type/property in the parsed schema
           const mappingFilePath = yield* findHypergraphSchema(mappingCandidates(cwd));
@@ -169,7 +172,7 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
             Stream.map((stream) => {
               const jsonData = JSON.stringify(stream);
               const sseData = `data: ${jsonData}\n\n`;
-              return new TextEncoder().encode(sseData);
+              return encoder.encode(sseData);
             }),
           );
         });
