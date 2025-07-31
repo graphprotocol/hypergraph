@@ -39,35 +39,24 @@ const { result } = publishOps({
 });
 ```
 
-Here is a full example flow:
+Additionally, we export a `usePublishToPublishSpace` hook which abstracts the above functionality into a single function call. This function internally uses React Query's useMutate hook, so you have access to the same state machine and callback functions.
 
 ```tsx
-import { publishOps, useHypergraphApp } from "@graphprotocol/hypergraph-react";
+import { usePublishToPublicSpace, useHypergraphApp } from "@graphprotocol/hypergraph-react";
 
 const MyComponent = ({ publicSpaceId }: { publicSpaceId: string }) => {
   const { getSmartSessionClient } = useHypergraphApp();
   const { data: events } = useQuery(Event, { mode: "private" });
+  const { mutate, isPending } = usePublishToPublicSpace();
 
-  const publishEvent = async (entity) => {
-    const smartSessionClient = await getSmartSessionClient();
-
-    const { ops } = preparePublish({
-      entity: entity,
-      publicSpace: publicSpaceId,
-    });
-
-    const result = await publishOps({
-      ops,
-      walletClient: smartSessionClient,
-      space: publicSpaceId,
-      name: "Create Event",
-    });
-  };
+  if (isPending) {
+    return <div>Publishing...</div>
+  }
 
   return (
     <div>
       {events.map((event) => (
-        <button key={event.id} onClick={() => publishEvent(event)}>
+        <button key={event.id} onClick={() => mutate({ entity: event, spaceId: publicSpaceId })}>
           {event.name}
         </button>
       ))}
