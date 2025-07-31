@@ -2,13 +2,11 @@ import { Button } from '@/components/ui/button';
 import { Address } from '@/schema';
 import {
   HypergraphSpaceProvider,
-  preparePublish,
-  publishOps,
   useCreateEntity,
-  useHypergraphApp,
   useQuery,
   useSpace,
   useSpaces,
+  usePublishToPublicSpace
 } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -34,7 +32,10 @@ function PrivateSpace() {
   const [selectedSpace, setSelectedSpace] = useState<string>('');
   const createAddress = useCreateEntity(Address);
   const [addressName, setAddressName] = useState('');
-  const { getSmartSessionClient } = useHypergraphApp();
+  const { mutate: publishToPublicSpace, isPending } = usePublishToPublicSpace({
+    onSuccess: () => alert('Address published to public space'),
+    onError: () => alert('Error publishing address to public space') 
+  });
 
   if (!ready) {
     return (
@@ -51,31 +52,6 @@ function PrivateSpace() {
     e.preventDefault();
     createAddress({ name: addressName, description: 'Beautiful address' });
     setAddressName('');
-  };
-
-  const publishToPublicSpace = async (address: Address) => {
-    if (!selectedSpace) {
-      alert('No space selected');
-      return;
-    }
-    try {
-      const { ops } = await preparePublish({ entity: address, publicSpace: selectedSpace });
-      const smartSessionClient = await getSmartSessionClient();
-      if (!smartSessionClient) {
-        throw new Error('Missing smartSessionClient');
-      }
-      const publishResult = await publishOps({
-        ops,
-        space: selectedSpace,
-        name: 'Publish Address',
-        walletClient: smartSessionClient,
-      });
-      console.log(publishResult, ops);
-      alert('Address published to public space');
-    } catch (error) {
-      console.error(error);
-      alert('Error publishing address to public space');
-    }
   };
 
   return (
@@ -153,8 +129,8 @@ function PrivateSpace() {
                         </div>
 
                         <Button
-                          onClick={() => publishToPublicSpace(address)}
-                          disabled={!selectedSpace}
+                          onClick={() => publishToPublicSpace({ entity: address, spaceId: selectedSpace })}
+                          disabled={!selectedSpace || isPending}
                           variant="outline"
                           size="sm"
                           className="w-full"
