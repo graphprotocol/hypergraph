@@ -39,7 +39,7 @@ const { result } = publishOps({
 });
 ```
 
-Additionally, we export a `usePublishToPublishSpace` hook which abstracts the above functionality into a single function call. This function internally uses React Query's useMutate hook, so you have access to all of the same state machine and callback functions.
+Additionally, we export a `usePublishToPublishSpace` hook which abstracts the above functionality into a single function call. This function internally uses React Query's useMutate hook, so you have access to the same state machine and callback functions.
 
 ```tsx
 import { usePublishToPublicSpace, useHypergraphApp } from "@graphprotocol/hypergraph-react";
