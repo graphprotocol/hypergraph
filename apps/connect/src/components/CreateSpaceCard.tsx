@@ -149,7 +149,7 @@ export function CreateSpaceCard({ className, ...props }: CreateSpaceCardProps) {
           className="c-input grow"
         />
         <select
-          className="c-input min-w-22"
+          className="c-input shrink-0"
           value={spaceType}
           onChange={(e) => setSpaceType(e.target.value as 'private' | 'public')}
         >
