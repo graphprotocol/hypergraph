@@ -1,11 +1,11 @@
 import { Graph } from '@graphprotocol/grc-20';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { createStore } from '@xstate/store';
 import { useSelector } from '@xstate/store/react';
 import { Effect, Schema } from 'effect';
-import { TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createWalletClient, custom } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -477,8 +477,13 @@ function AuthenticateComponent() {
               <div className="grid w-xl max-w-full flex-col gap-6 lg:w-4xl lg:grid-cols-2 lg:gap-8 2xl:w-6xl">
                 <div className="c-card relative isolate col-1 row-span-2 flex flex-col gap-6 overflow-clip">
                   <div className="bg-gradient-aqua dark:bg-gradient-lavender absolute inset-0 -z-10 opacity-30" />
-                  <p>A third-party application is requesting access to your personal Geo spaces.</p>
+                  <p className="leading-tight">
+                    <span className="font-semibold">An app is requesting write access to your public spaces.</span>
+                    <br />
+                    Additionally, you may select private spaces to authorize the app to read and write to.
+                  </p>
                   <dl className="mb-auto flex flex-col gap-4 text-lg">
+                    {/* TODO: Show app name in addition to ID */}
                     <div>
                       <dt className="text-foreground-muted font-semibold">App ID</dt>
                       <dd>{state.appInfo?.appId ?? 'unknown'}</dd>
@@ -491,7 +496,7 @@ function AuthenticateComponent() {
                   {state.step !== 'selecting-spaces-existing-app-identity' ? (
                     <div className="border-error-dark text-error-dark dark:text-error-light flex gap-2 rounded-lg border-2 border-dashed p-3 pr-4 leading-tight">
                       <span className="text-error-dark flex h-lh shrink-0 items-center">
-                        <TriangleAlert className="size-4" />
+                        <ExclamationTriangleIcon className="size-4" />
                       </span>{' '}
                       This is the first time you are authenticating with this app. Please verify the above information
                       before proceeding.
@@ -529,7 +534,7 @@ function AuthenticateComponent() {
                           : undefined
                     }
                     selected={selectedPrivateSpaces}
-                    onSelected={handleSpaceSelection}
+                    onSelectedChange={handleSpaceSelection}
                     currentAppId={state.appInfo?.appId}
                     className="lg:absolute lg:inset-0"
                   />
