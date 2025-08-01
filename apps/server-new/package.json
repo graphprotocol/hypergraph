@@ -1,0 +1,36 @@
+{
+  "name": "server-new",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch ./src/index.ts",
+    "start": "node ./dist/index.js",
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "lint:fix": "biome check --write --unsafe",
+    "prisma": "prisma",
+    "prebuild": "prisma generate"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.90.0",
+    "@effect/platform-node": "^0.94.0",
+    "@graphprotocol/hypergraph": "workspace:*",
+    "@prisma/client": "^6.7.0",
+    "@privy-io/server-auth": "^1.26.0",
+    "cors": "^2.8.5",
+    "effect": "^3.17.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/node": "^24.1.0",
+    "prisma": "^6.7.0",
+    "tsx": "^4.19.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

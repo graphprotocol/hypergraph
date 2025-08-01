@@ -1,0 +1,158 @@
+import { HttpApiBuilder } from '@effect/platform';
+import { Effect, Layer } from 'effect';
+import * as Api from './api.js';
+import * as Errors from './errors.js';
+
+/**
+ * Health Group Handlers
+ */
+const HealthGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Health', (handlers) => {
+  return handlers.handle('status', () => Effect.succeed('OK'));
+});
+
+/**
+ * Connect Group Handlers
+ */
+const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (handlers) => {
+  return handlers
+    .handle(
+      'getConnectSpaces',
+      Effect.fn(function* ({ request }) {
+        yield* Effect.logInfo('Getting connect spaces');
+        return { spaces: [] };
+      }),
+    )
+    .handle(
+      'postConnectSpaces',
+      Effect.fn(function* ({ payload }) {
+        yield* Effect.logInfo('Creating space', payload);
+        yield* new Errors.ResourceNotFoundError({
+          resource: 'postConnectSpaces',
+          id: 'postConnectSpaces',
+        });
+      }),
+    )
+    .handle(
+      'postConnectAddAppIdentityToSpaces',
+      Effect.fn(function* ({ payload }) {
+        yield* Effect.logInfo('Adding app identity to spaces', payload);
+        yield* new Errors.ResourceNotFoundError({
+          resource: 'postConnectAddAppIdentityToSpaces',
+          id: 'postConnectAddAppIdentityToSpaces',
+        });
+      }),
+    )
+    .handle(
+      'postConnectIdentity',
+      Effect.fn(function* ({ payload }) {
+        yield* Effect.logInfo('Creating connect identity', payload);
+        yield* new Errors.ResourceNotFoundError({ resource: 'postConnectIdentity', id: 'postConnectIdentity' });
+      }),
+    )
+    .handle(
+      'getConnectIdentityEncrypted',
+      Effect.fn(function* ({ request }) {
+        yield* Effect.logInfo('Getting encrypted identity');
+        yield* new Errors.ResourceNotFoundError({
+          resource: 'getConnectIdentityEncrypted',
+          id: 'getConnectIdentityEncrypted',
+        });
+      }),
+    )
+    .handle(
+      'getConnectAppIdentity',
+      Effect.fn(function* ({ path: { appId } }) {
+        yield* Effect.logInfo(`Getting app identity for appId: ${appId}`);
+        yield* new Errors.ResourceNotFoundError({ resource: 'getConnectAppIdentity', id: 'getConnectAppIdentity' });
+      }),
+    )
+    .handle(
+      'postConnectAppIdentity',
+      Effect.fn(function* ({ payload }) {
+        yield* Effect.logInfo('Creating app identity', payload);
+        yield* new Errors.ResourceNotFoundError({ resource: 'postConnectAppIdentity', id: 'postConnectAppIdentity' });
+      }),
+    );
+});
+
+/**
+ * Identity Group Handlers
+ */
+const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (handlers) => {
+  return handlers
+    .handle('getWhoami', () => Effect.succeed('Hypergraph Server v2'))
+    .handle(
+      'getConnectIdentity',
+      Effect.fn(function* ({ urlParams }) {
+        yield* Effect.logInfo('Getting connect identity', urlParams);
+        yield* new Errors.ResourceNotFoundError({ resource: 'Identity', id: 'connect' });
+      }),
+    )
+    .handle(
+      'getIdentity',
+      Effect.fn(function* ({ urlParams }) {
+        yield* Effect.logInfo('Getting identity', urlParams);
+        yield* new Errors.ResourceNotFoundError({ resource: 'Identity', id: 'general' });
+      }),
+    );
+});
+
+/**
+ * Inbox Group Handlers
+ */
+const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handlers) => {
+  return handlers
+    .handle(
+      'getSpaceInboxes',
+      Effect.fn(function* ({ path: { spaceId } }) {
+        yield* Effect.logInfo(`Getting space inboxes: ${spaceId}`);
+        yield* new Errors.ResourceNotFoundError({
+          resource: 'getSpaceInboxes',
+          id: 'getSpaceInboxes',
+        });
+      }),
+    )
+    .handle(
+      'getSpaceInbox',
+      Effect.fn(function* ({ path: { spaceId, inboxId } }) {
+        yield* Effect.logInfo(`Getting space inbox: ${spaceId}/${inboxId}`);
+        yield* new Errors.ResourceNotFoundError({ resource: 'SpaceInbox', id: inboxId });
+      }),
+    )
+    .handle(
+      'postSpaceInboxMessage',
+      Effect.fn(function* ({ path: { spaceId, inboxId }, payload }) {
+        yield* Effect.logInfo(`Posting message to space inbox: ${spaceId}/${inboxId}`, payload);
+        return { success: true };
+      }),
+    )
+    .handle(
+      'getAccountInboxes',
+      Effect.fn(function* ({ path: { accountAddress } }) {
+        yield* Effect.logInfo(`Getting account inboxes: ${accountAddress}`);
+        yield* new Errors.ResourceNotFoundError({
+          resource: 'getAccountInboxes',
+          id: 'getAccountInboxes',
+        });
+      }),
+    )
+    .handle(
+      'getAccountInbox',
+      Effect.fn(function* ({ path: { accountAddress, inboxId } }) {
+        yield* Effect.logInfo(`Getting account inbox: ${accountAddress}/${inboxId}`);
+        yield* new Errors.ResourceNotFoundError({ resource: 'AccountInbox', id: inboxId });
+      }),
+    )
+    .handle(
+      'postAccountInboxMessage',
+      Effect.fn(function* ({ path: { accountAddress, inboxId }, payload }) {
+        yield* Effect.logInfo(`Posting message to account inbox: ${accountAddress}/${inboxId}`, payload);
+        return { success: true };
+      }),
+    );
+});
+
+/**
+ * All handlers combined
+ */
+export const HandlersLive = Layer.mergeAll(HealthGroupLive, ConnectGroupLive, IdentityGroupLive, InboxGroupLive);
