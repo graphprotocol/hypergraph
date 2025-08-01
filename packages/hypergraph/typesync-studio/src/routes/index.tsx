@@ -10,6 +10,8 @@ import { Checkbox } from '@/Components/Form/Checkbox.tsx';
 import { fieldContext, formContext } from '@/Components/Form/form.ts';
 import { SubmitButton } from '@/Components/Form/SubmitButton.tsx';
 import { TextField } from '@/Components/Form/TextField.tsx';
+import { InlineCode } from '@/Components/InlineCode.tsx';
+import { KnowledgeGraphBrowser } from '@/Components/Schema/KnowledgeGraphBrowser.tsx';
 import { PropertyCombobox } from '@/Components/Schema/PropertyCombobox.tsx';
 import { TypeCombobox } from '@/Components/Schema/TypeCombobox.tsx';
 import { TypeSelect } from '@/Components/Schema/TypeSelect.tsx';
@@ -276,18 +278,99 @@ function SchemaBuilderComponent() {
 
   return (
     <div>
-      Schema Builder
       <createSchemaForm.AppField name="types" mode="array">
         {(field) => (
           <div className="grid grid-cols-2 2xl:grid-cols-3 gap-x-4 2xl:gap-x-8">
             {/** KG schema browser */}
-            <div className="w-full flex flex-col gap-y-4 pb-10" />
+            <div className="w-full flex flex-col gap-y-4 pb-10">
+              <KnowledgeGraphBrowser
+                typeSelected={(selected) => {
+                  if (selected.name == null) {
+                    return;
+                  }
+                  const relationSchemaTypes = mapSelectedTypeRelationPropertiesToTypes(selected);
+
+                  const selectedMappedToType = SchemaType.make({
+                    name: selected.name,
+                    knowledgeGraphId: selected.id,
+                    properties: (selected.properties ?? [])
+                      .filter((prop) => prop != null)
+                      .map((prop) => {
+                        const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.name || prop.id);
+                        if (isDataTypeRelation(dataType)) {
+                          return {
+                            name: prop.name || prop.id,
+                            knowledgeGraphId: prop.id,
+                            dataType,
+                            relationType: prop.name || prop.id,
+                          };
+                        }
+                        return {
+                          name: prop.name || prop.id,
+                          knowledgeGraphId: prop.id,
+                          dataType,
+                        };
+                      }),
+                  });
+                  // if schema is currently empty, set as first type
+                  if (field.state.value.length === 1) {
+                    const initialType = field.state.value[0];
+                    const properties = initialType.properties;
+                    if (
+                      EffectString.isEmpty(initialType.name) &&
+                      properties.length === 1 &&
+                      EffectString.isEmpty(initialType.properties[0].name)
+                    ) {
+                      EffectArray.match(relationSchemaTypes, {
+                        onEmpty() {
+                          field.replaceValue(0, selectedMappedToType as never);
+                        },
+                        onNonEmpty(mappedRelationTypes) {
+                          EffectArray.forEach(mappedRelationTypes, (mapped, idx) => {
+                            if (idx === 0) {
+                              field.replaceValue(0, {
+                                name: mapped.name,
+                                knowledgeGraphId: mapped.knowledgeGraphId,
+                                properties: mapped.properties,
+                              } as never);
+                              return;
+                            }
+                            field.pushValue(mapped as never);
+                          });
+                          // push selected type
+                          field.pushValue(selectedMappedToType as never);
+                        },
+                      });
+                      return;
+                    }
+                  }
+                  // add any relation types, and the selected type, as a new Type on the schema
+                  EffectArray.match(relationSchemaTypes, {
+                    onEmpty() {
+                      field.pushValue(selectedMappedToType as never);
+                    },
+                    onNonEmpty(mappedRelationTypes) {
+                      EffectArray.forEach(mappedRelationTypes, (mapped) => {
+                        field.pushValue({
+                          name: mapped.name,
+                          knowledgeGraphId: mapped.knowledgeGraphId,
+                          properties: mapped.properties,
+                        } as never);
+                      });
+                      // push selected type
+                      field.pushValue(selectedMappedToType as never);
+                    },
+                  });
+                  return;
+                }}
+              />
+            </div>
             {/** Hypergraph schema builder */}
             <div className="w-full flex flex-col gap-y-4 pb-10 2xl:col-span-2">
               <div className="border-b border-gray-200 dark:border-white/20 pb-5 h-20">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">Schema</h3>
                 <p className="mt-2 max-w-4xl text-sm text-gray-500 dark:text-gray-200">
-                  Build your app schema by adding types, properties belonging to those types, etc.
+                  This is parsed from the Hypergraph Schema defined in your <InlineCode>schema.ts</InlineCode>
                 </p>
               </div>
               <div>
