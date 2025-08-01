@@ -120,23 +120,23 @@ export const CreatePropertiesAndTypesTodos = ({ space }: { space: string }) => {
           });
 
           const newMapping = `Todo2: {
-  typeIds: [Id.Id('${todoTypeId}')],
+  typeIds: [Id('${todoTypeId}')],
   properties: {
-    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-    checked: Id.Id('${checkedPropertyId}'),
-    due: Id.Id('${duePropertyId}'),
-    point: Id.Id('${pointPropertyId}'),
-    website: Id.Id('${websitePropertyId}'),
-    amount: Id.Id('${amountPropertyId}'),
+    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    checked: Id('${checkedPropertyId}'),
+    due: Id('${duePropertyId}'),
+    point: Id('${pointPropertyId}'),
+    website: Id('${websitePropertyId}'),
+    amount: Id('${amountPropertyId}'),
   },
   relations: {
-    assignees: Id.Id('${assigneesRelationTypeId}'),
+    assignees: Id('${assigneesRelationTypeId}'),
   },
 },
 User: {
-  typeIds: [Id.Id('${userId}')],
+  typeIds: [Id('${userId}')],
   properties: {
-    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   },
 }
 `;
