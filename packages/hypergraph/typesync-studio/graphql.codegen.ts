@@ -19,7 +19,7 @@ const config = {
   generates: {
     './src/generated/': {
       schema: `${Graph.TESTNET_API_ORIGIN}/graphql`,
-      // documents: ['./src/**/*.{ts,tsx}'],
+      documents: ['./src/**/*.{ts,tsx}'],
       preset: 'client',
       config: pluginConfig,
       presetConfig: {

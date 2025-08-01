@@ -8,6 +8,8 @@ import { Schema } from 'effect';
 import { fieldContext, formContext } from '@/Components/Form/form.ts';
 import { SubmitButton } from '@/Components/Form/SubmitButton.tsx';
 import { TextField } from '@/Components/Form/TextField.tsx';
+import { PropertyCombobox } from '@/Components/Schema/PropertyCombobox.tsx';
+import { TypeCombobox } from '@/Components/Schema/TypeCombobox.tsx';
 import { TypeSelect } from '@/Components/Schema/TypeSelect.tsx';
 import { useHypergraphSchemaQuery } from '@/hooks/useHypergraphSchemaQuery.tsx';
 
@@ -17,7 +19,9 @@ export const Route = createFileRoute('/')({
 
 const { useAppForm } = createFormHook({
   fieldComponents: {
+    PropertyCombobox,
     TextField,
+    TypeCombobox,
     TypeSelect,
   },
   formComponents: {
