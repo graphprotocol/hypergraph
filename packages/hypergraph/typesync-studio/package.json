@@ -13,11 +13,11 @@
     "lint:fix": "biome check --write --unsafe"
   },
   "dependencies": {
-    "@base-ui-components/react": "1.0.0-beta.1",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@graphprotocol/grc-20": "^0.23.1",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
+    "@headlessui/react": "^2.2.7",
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/react-form": "^1.15.2",
