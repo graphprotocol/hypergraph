@@ -1,0 +1,1 @@
+# @graphprotocol/hypergraph TypeSync Studio

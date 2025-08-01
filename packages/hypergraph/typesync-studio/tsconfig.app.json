@@ -1,0 +1,41 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Shadcn */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@graphprotocol/hypergraph": ["../src/index.js"],
+      "@graphprotocol/hypergraph/*": ["../src/*.js"],
+      "@graphprotocol/hypergraph-react": ["../../hypergraph-react/src/index.js"],
+      "@graphprotocol/hypergraph-react/*": ["../../hypergraph-react/src/*.js"]
+    }
+  }
+}

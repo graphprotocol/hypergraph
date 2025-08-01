@@ -1,0 +1,20 @@
+{
+  "short_name": "Hypergraph Typesync Studio",
+  "name": "Graph Protocol Hypergraph Typesync Studio",
+  "icons": [
+    {
+      "src": "https://storage.thegraph.com/favicons/64x64.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "https://storage.thegraph.com/favicons/256x256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
