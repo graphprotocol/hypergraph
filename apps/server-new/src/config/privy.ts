@@ -1,5 +1,4 @@
-import { Config, Effect } from 'effect';
-import { PrivyConfigError } from '../http/errors.js';
+import { Config } from 'effect';
 
 /**
  * Privy configuration
@@ -10,16 +9,7 @@ export const privyAppSecretConfig = Config.redacted('PRIVY_APP_SECRET');
 /**
  * Load and validate Privy configuration
  */
-export const privyConfig = Effect.fn(function* () {
-  const appId = yield* privyAppIdConfig;
-  const appSecret = yield* privyAppSecretConfig;
-
-  if (!appId || !appSecret) {
-    return yield* Effect.fail(new PrivyConfigError({ message: 'Missing Privy configuration' }));
-  }
-
-  return {
-    appId,
-    appSecret,
-  };
+export const privyConfig = Config.all({
+  appId: privyAppIdConfig,
+  appSecret: privyAppSecretConfig,
 });

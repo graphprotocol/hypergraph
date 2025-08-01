@@ -80,7 +80,15 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
  */
 const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (handlers) => {
   return handlers
-    .handle('getWhoami', () => Effect.succeed('Hypergraph Server v2'))
+    .handle(
+      'getWhoami',
+      Effect.fn(function* () {
+        yield* Effect.log('Getting whoami');
+        yield* Effect.sleep('1 second').pipe(Effect.withSpan('sleeping'));
+        yield* Effect.sleep('2 second').pipe(Effect.withSpan('sleeping again'));
+        return 'Hypergraph Server v3';
+      }),
+    )
     .handle(
       'getConnectIdentity',
       Effect.fn(function* ({ urlParams }) {

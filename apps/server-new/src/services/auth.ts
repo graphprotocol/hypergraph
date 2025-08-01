@@ -20,8 +20,7 @@ export const AuthService = Context.GenericTag<AuthService>('AuthService');
  * Auth service implementation
  */
 export const makeAuthService = Effect.fn(function* () {
-  const config = yield* Config.privyConfig();
-
+  const config = yield* Config.privyConfig;
   const privy = new PrivyClient(config.appId, Redacted.value(config.appSecret));
 
   const verifyAuthToken = Effect.fn(function* (token: string) {
