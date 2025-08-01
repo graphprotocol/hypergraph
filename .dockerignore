@@ -40,3 +40,9 @@
 !packages/hypergraph-react/tsconfig.json
 !packages/hypergraph-react/tsconfig.src.json
 !packages/hypergraph-react/tsconfig.build.json
+
+!packages/typesync/package.json
+!packages/typesync/src
+!packages/typesync/tsconfig.json
+!packages/typesync/tsconfig.src.json
+!packages/typesync/tsconfig.build.json
