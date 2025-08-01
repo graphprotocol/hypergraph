@@ -15,7 +15,7 @@
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.1",
     "@graphql-typed-document-node/core": "^3.2.0",
-    "@graphprotocol/grc-20": "^0.22.0",
+    "@graphprotocol/grc-20": "^0.23.1",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "@phosphor-icons/react": "^2.1.10",

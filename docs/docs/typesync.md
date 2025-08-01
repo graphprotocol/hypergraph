@@ -63,10 +63,10 @@ import type { Mapping } from '@graphprotocol/typesync/Mapping';
 
 export const mapping: Mapping = {
   AcademicYear: {
-    typeIds: [Id.Id("27e097b7-fba0-4fdd-a264-b0ed70f79e0a")],
+    typeIds: [Id("27e097b7-fba0-4fdd-a264-b0ed70f79e0a")],
     properties: {
-      description: Id.Id("9b1f76ff-9711-404c-861e-59dc3fa7d037"),
-      name: Id.Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+      description: Id("9b1f76ff-9711-404c-861e-59dc3fa7d037"),
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
     },
   },
 }

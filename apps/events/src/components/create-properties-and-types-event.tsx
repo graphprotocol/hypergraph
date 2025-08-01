@@ -100,28 +100,28 @@ export const CreatePropertiesAndTypesEvent = ({ space }: { space: string }) => {
           });
 
           const newMapping = `Event: {
-  typeIds: [Id.Id('${eventTypeId}')],
+  typeIds: [Id('${eventTypeId}')],
   properties: {
-    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   },
   relations: {
-    sponsors: Id.Id('${sponsorsRelationTypeId}'),
+    sponsors: Id('${sponsorsRelationTypeId}'),
   },
 },
 Company: {
-  typeIds: [Id.Id('${companyTypeId}')],
+  typeIds: [Id('${companyTypeId}')],
   properties: {
-    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
   },
   relations: {
-    jobOffers: Id.Id('${jobOffersRelationTypeId}'),
+    jobOffers: Id('${jobOffersRelationTypeId}'),
   },
 },
 JobOffer: {
-  typeIds: [Id.Id('${jobOfferTypeId}')],
+  typeIds: [Id('${jobOfferTypeId}')],
   properties: {
-    name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-    salary: Id.Id('${salaryPropertyId}'),
+    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    salary: Id('${salaryPropertyId}'),
   },
 },
 `;
