@@ -378,7 +378,7 @@ export function buildMappingFile(schema: Domain.InsertAppSchema) {
     mappingLines.push(Doc.text(`  ${typeName}: {`));
 
     // Type IDs
-    const typeIdsList = typeData.typeIds.map((id: string) => `Id.Id("${id}")`).join(', ');
+    const typeIdsList = typeData.typeIds.map((id: string) => `Id("${id}")`).join(', ');
     mappingLines.push(Doc.text(`    typeIds: [${typeIdsList}],`));
 
     // Properties
@@ -388,7 +388,7 @@ export function buildMappingFile(schema: Domain.InsertAppSchema) {
       properties.forEach(([propName, propId], index, entries) => {
         const isLast = index === entries.length - 1;
         const comma = isLast ? '' : ',';
-        mappingLines.push(Doc.text(`      ${propName}: Id.Id("${propId}")${comma}`));
+        mappingLines.push(Doc.text(`      ${propName}: Id("${propId}")${comma}`));
       });
       mappingLines.push(Doc.text('    },'));
     }
@@ -400,7 +400,7 @@ export function buildMappingFile(schema: Domain.InsertAppSchema) {
       relations.forEach(([relationName, relationId], index, entries) => {
         const isLast = index === entries.length - 1;
         const comma = isLast ? '' : ',';
-        mappingLines.push(Doc.text(`      ${relationName}: Id.Id("${relationId}")${comma}`));
+        mappingLines.push(Doc.text(`      ${relationName}: Id("${relationId}")${comma}`));
       });
       mappingLines.push(Doc.text('    },'));
     }

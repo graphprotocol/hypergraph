@@ -167,16 +167,16 @@ describe('Mapping', () => {
       });
       const expected: Mapping = {
         Account: {
-          typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
           properties: {
-            username: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
-            createdAt: Id.Id('64bfba51-a69b-4746-be4b-213214a879fe'),
+            username: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+            createdAt: Id('64bfba51-a69b-4746-be4b-213214a879fe'),
           },
         },
         Event: {
           typeIds: [expect.any(String)],
           properties: {
-            name: Id.Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
+            name: Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
             description: expect.any(String),
           },
           relations: {
@@ -222,7 +222,7 @@ describe('Mapping', () => {
       });
       const expected: Mapping = {
         Account: {
-          typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
           properties: {
             username: expect.any(String),
           },
@@ -350,9 +350,9 @@ describe('Mapping', () => {
       });
       const expected: Mapping = {
         Account: {
-          typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
           properties: {
-            username: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+            username: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
           },
         },
         Venue: {

@@ -12,7 +12,7 @@ import request, { gql } from 'graphql-request';
 
 export type PreparePublishParams<S extends Entity.AnyNoContext> = {
   entity: Entity.Entity<S>;
-  publicSpace: string | Id.Id;
+  publicSpace: string | Id;
 };
 
 const entityToPublishQueryDocument = gql`

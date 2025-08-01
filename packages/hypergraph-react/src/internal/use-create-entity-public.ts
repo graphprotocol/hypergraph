@@ -51,25 +51,25 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
         }
 
         values.push({
-          property: Id.Id(value),
+          property: Id(value),
           value: serializedValue,
         });
       }
 
       const relations: RelationsParam = {};
       for (const [key, relationId] of Object.entries(mappingEntry.relations || {})) {
-        const toIds: { toEntity: Id.Id }[] = [];
+        const toIds: { toEntity: Id }[] = [];
 
         if (data[key]) {
           // @ts-expect-error - TODO: fix the types error
           for (const entity of data[key]) {
             if (typeof entity === 'string') {
-              toIds.push({ toEntity: Id.Id(entity) });
+              toIds.push({ toEntity: Id(entity) });
             } else {
-              toIds.push({ toEntity: Id.Id(entity.id) });
+              toIds.push({ toEntity: Id(entity.id) });
             }
           }
-          relations[Id.Id(relationId)] = toIds;
+          relations[Id(relationId)] = toIds;
         }
       }
 

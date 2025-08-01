@@ -152,28 +152,28 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
       // Use mapping from events app
       const mapping: Mapping = {
         Event: {
-          typeIds: [Id.Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+          typeIds: [Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
           properties: {
-            name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+            name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
           },
           relations: {
-            sponsors: Id.Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
+            sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
           },
         },
         Company: {
-          typeIds: [Id.Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
+          typeIds: [Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
           properties: {
-            name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+            name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
           },
           relations: {
-            jobOffers: Id.Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
+            jobOffers: Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
           },
         },
         JobOffer: {
-          typeIds: [Id.Id('f60585af-71b6-4674-9a26-b74ca6c1cceb')],
+          typeIds: [Id('f60585af-71b6-4674-9a26-b74ca6c1cceb')],
           properties: {
-            name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-            salary: Id.Id('baa36ac9-78ac-4cf7-8394-6b2d3006bebe'),
+            name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+            salary: Id('baa36ac9-78ac-4cf7-8394-6b2d3006bebe'),
           },
         },
       };
@@ -263,9 +263,9 @@ describe('parseHypergraphMapping', () => {
   it('should return the single mapping when only one valid mapping found', ({ expect }) => {
     const mapping: Mapping = {
       User: {
-        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
         properties: {
-          name: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+          name: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
         },
       },
     };
@@ -282,13 +282,13 @@ describe('parseHypergraphMapping', () => {
   it('should prefer "mapping" when multiple valid mappings exist', ({ expect }) => {
     const mappingPreferred: Mapping = {
       User: {
-        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
     const otherMapping: Mapping = {
       Post: {
-        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
@@ -304,13 +304,13 @@ describe('parseHypergraphMapping', () => {
   it('should prefer "default" when multiple valid mappings exist but no "mapping"', ({ expect }) => {
     const defaultMapping: Mapping = {
       User: {
-        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
     const otherMapping: Mapping = {
       Post: {
-        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
@@ -326,13 +326,13 @@ describe('parseHypergraphMapping', () => {
   it('should prefer "config" when no "mapping" or "default" exists', ({ expect }) => {
     const configMapping: Mapping = {
       User: {
-        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
     const otherMapping: Mapping = {
       Post: {
-        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
@@ -348,13 +348,13 @@ describe('parseHypergraphMapping', () => {
   it('should return first mapping when multiple exist with no preferred names', ({ expect }) => {
     const firstMapping: Mapping = {
       User: {
-        typeIds: [Id.Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
     const secondMapping: Mapping = {
       Post: {
-        typeIds: [Id.Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
       },
     };
 
@@ -370,21 +370,21 @@ describe('parseHypergraphMapping', () => {
   it('should handle mappings with full structure including properties and relations', ({ expect }) => {
     const complexMapping: Mapping = {
       Event: {
-        typeIds: [Id.Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+        typeIds: [Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
         properties: {
-          name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+          name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
         },
         relations: {
-          sponsors: Id.Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
+          sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
         },
       },
       Company: {
-        typeIds: [Id.Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
+        typeIds: [Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
         properties: {
-          name: Id.Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+          name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
         },
         relations: {
-          jobOffers: Id.Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
+          jobOffers: Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
         },
       },
     };
@@ -399,7 +399,7 @@ describe('parseHypergraphMapping', () => {
       User: {
         typeIds: [],
         properties: {
-          name: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+          name: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
         },
       },
     };
@@ -414,7 +414,7 @@ describe('parseHypergraphMapping', () => {
       User: {
         typeIds: 'not-an-array',
         properties: {
-          name: Id.Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+          name: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
         },
       },
     };
