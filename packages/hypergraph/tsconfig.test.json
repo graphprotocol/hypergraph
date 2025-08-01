@@ -3,7 +3,6 @@
   "include": ["test"],
   "references": [
     { "path": "./tsconfig.src.json" },
-    { "path": "../typesync/tsconfig.src.json" }
   ],
   "compilerOptions": {
     "tsBuildInfoFile": ".tsbuildinfo/test.tsbuildinfo",

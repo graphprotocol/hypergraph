@@ -23,6 +23,12 @@ const peerDependencies = pkgJson.peerDependencies;
 if (peerDependencies?.['@graphprotocol/hypergraph']) {
   peerDependencies['@graphprotocol/hypergraph'] = '*';
 }
+let bin = null;
+if (pkgJson.publishConfig?.bin) {
+  bin = pkgJson.publishConfig.bin;
+} else if (pkgJson.bin) {
+  bin = pkgJson.bin;
+}
 const publishPkgJson = {
   name: pkgJson.name,
   version: pkgJson.version,
@@ -39,7 +45,7 @@ const publishPkgJson = {
   exports: pkgJson.exports,
   peerDependencies: pkgJson.peerDependencies,
   dependencies: pkgJson.dependencies,
-  ...(pkgJson.bin ? { bin: pkgJson.bin } : {}),
+  ...(bin ? { bin } : {}),
   publishConfig: {
     provenance: false,
   },

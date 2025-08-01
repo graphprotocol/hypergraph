@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.src.json",
   "references": [
-    { "path": "../hypergraph/tsconfig.build.json" },
-    { "path": "../typesync/tsconfig.build.json" }
+    { "path": "../hypergraph/tsconfig.build.json" }
   ],
   "compilerOptions": {
     "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",

@@ -1,11 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "include": ["src", "src/connect/abis/*.json"],
-  "references": [
-    { "path": "../typesync/tsconfig.src.json" }
-  ],
   "compilerOptions": {
     "tsBuildInfoFile": ".tsbuildinfo/src.tsbuildinfo",
-    "rootDir": "src"
+    "rootDir": "src",
+    "types": ["node"]
   }
 }
