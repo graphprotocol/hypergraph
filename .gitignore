@@ -4,6 +4,7 @@ publish
 output
 # generated prisma client
 apps/server/prisma/generated/ 
+apps/server-new/prisma/generated/ 
 
 # Logs
 logs
