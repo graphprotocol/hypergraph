@@ -16,6 +16,7 @@
     "prebuild": "prisma generate"
   },
   "dependencies": {
+    "@effect/opentelemetry": "^0.56.0",
     "@effect/platform": "^0.90.0",
     "@effect/platform-node": "^0.94.0",
     "@graphprotocol/hypergraph": "workspace:*",
@@ -28,8 +29,8 @@
     "@types/cors": "^2.8.17",
     "@types/node": "^24.1.0",
     "prisma": "^6.7.0",
-    "tsx": "^4.19.0",
     "tsup": "^8.4.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }
