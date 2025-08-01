@@ -420,7 +420,7 @@ function SchemaBuilderComponent() {
                                         )}
                                       </createSchemaForm.AppField>
                                     </div>
-                                    <div className="col-span-5">
+                                    <div className="col-span-3 2xl:col-span-4">
                                       <createSchemaForm.AppField
                                         name={`types[${idx}].properties[${typePropIdx}].dataType` as const}
                                       >
@@ -440,6 +440,19 @@ function SchemaBuilderComponent() {
                                                 relationType,
                                               } as never)
                                             }
+                                          />
+                                        )}
+                                      </createSchemaForm.AppField>
+                                    </div>
+                                    <div className="col-span-2 2xl:col-span-1">
+                                      <createSchemaForm.AppField
+                                        name={`types[${idx}].properties[${typePropIdx}].optional` as const}
+                                      >
+                                        {(subPropField) => (
+                                          <subPropField.Checkbox
+                                            id={`types[${idx}].properties[${typePropIdx}].optional` as const}
+                                            name={`types[${idx}].properties[${typePropIdx}].optional` as const}
+                                            label="Optional"
                                           />
                                         )}
                                       </createSchemaForm.AppField>
