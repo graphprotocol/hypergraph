@@ -25,7 +25,7 @@
     "@tanstack/react-router-devtools": "^1.122.0",
     "@xstate/store": "^3.5.1",
     "clsx": "^2.1.1",
-    "effect": "^3.17.3",
+    "effect": "^3.17.4",
     "graphql-request": "^7.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -81,7 +81,7 @@
     "@tanstack/react-router-devtools": "^1.129.5",
     "better-sqlite3": "^12.2.0",
     "date-fns": "^4.1.0",
-    "effect": "^3.17.3",
+    "effect": "^3.17.4",
     "graphql": "^16.11.0",
     "graphql-request": "^7.2.0",
     "jotai": "^2.12.5",

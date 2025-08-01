@@ -43,6 +43,6 @@
   },
   "dependencies": {
     "@graphprotocol/grc-20": "^0.21.6",
-    "effect": "^3.17.3"
+    "effect": "^3.17.4"
   }
 }

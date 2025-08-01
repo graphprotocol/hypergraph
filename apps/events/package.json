@@ -23,7 +23,7 @@
     "@xstate/store": "^3.5.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "effect": "^3.17.3",
+    "effect": "^3.17.4",
     "framer-motion": "^12.10.1",
     "graphql-request": "^7.1.2",
     "isomorphic-ws": "^5.0.0",
