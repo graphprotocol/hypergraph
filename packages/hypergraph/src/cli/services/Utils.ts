@@ -44,14 +44,27 @@ export const parseSchema = (
                           const propName = prop.name.text;
                           let dataType: Mapping.SchemaDataType = 'String';
                           let relationType: string | undefined;
+                          let isOptional = false;
 
                           const mappingEntry = mapping[className];
                           const camelCasePropName = Utils.toCamelCase(propName);
 
+                          // Check if the property is wrapped with Type.optional()
+                          let typeExpression = prop.initializer;
+                          if (ts.isCallExpression(typeExpression) && 
+                              ts.isPropertyAccessExpression(typeExpression.expression) &&
+                              typeExpression.expression.name.text === 'optional') {
+                            isOptional = true;
+                            // Unwrap the optional to get the actual type
+                            if (typeExpression.arguments.length > 0) {
+                              typeExpression = typeExpression.arguments[0];
+                            }
+                          }
+
                           // Extract the type
-                          if (ts.isPropertyAccessExpression(prop.initializer)) {
-                            // Simple types like Type.Text
-                            dataType = Mapping.getDataType(prop.initializer.name.text);
+                          if (ts.isPropertyAccessExpression(typeExpression)) {
+                            // Simple types like Type.String
+                            dataType = Mapping.getDataType(typeExpression.name.text);
 
                             // Look up the property's knowledgeGraphId from the mapping
                             const propKnowledgeGraphId = mappingEntry?.properties?.[camelCasePropName] || null;
@@ -61,10 +74,11 @@ export const parseSchema = (
                               name: propName,
                               dataType: dataType as Mapping.SchemaDataTypePrimitive,
                               knowledgeGraphId: propKnowledgeGraphId,
+                              optional: isOptional || undefined,
                             } satisfies Mapping.SchemaTypePropertyPrimitive);
-                          } else if (ts.isCallExpression(prop.initializer)) {
+                          } else if (ts.isCallExpression(typeExpression)) {
                             // Relation types like Type.Relation(User)
-                            const callNode = prop.initializer;
+                            const callNode = typeExpression;
                             if (ts.isPropertyAccessExpression(callNode.expression)) {
                               const typeName = callNode.expression.name.text;
 
@@ -83,6 +97,7 @@ export const parseSchema = (
                                     dataType,
                                     relationType,
                                     knowledgeGraphId: relKnowledgeGraphId,
+                                    optional: isOptional || undefined,
                                   } satisfies Mapping.SchemaTypePropertyRelation);
                                 }
                               }

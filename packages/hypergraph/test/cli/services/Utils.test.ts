@@ -235,6 +235,109 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
       });
     }),
   );
+
+  it.effect('should parse schema with optional properties', ({ expect }) =>
+    Effect.gen(function* () {
+      const schemaContent = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class User extends Entity.Class<User>('User')({
+  name: Type.String,
+  email: Type.optional(Type.String),
+}) {}
+
+export class Event extends Entity.Class<Event>('Event')({
+  name: Type.String,
+  description: Type.optional(Type.String),
+  location: Type.optional(Type.Point),
+  startDate: Type.Date,
+  endDate: Type.optional(Type.Date),
+  organizer: Type.Relation(User),
+  coOrganizers: Type.optional(Type.Relation(User)),
+}) {}`;
+
+      const emptyMapping: Mapping = {};
+      const result = yield* parseSchema(schemaContent, emptyMapping);
+
+      yield* Effect.sync(() => {
+        expect(result.types).toHaveLength(2);
+
+        // Check User entity with optional email
+        const userEntity = result.types.find((t) => t.name === 'User');
+        expect(userEntity).toBeDefined();
+        expect(userEntity?.properties).toHaveLength(2);
+        expect(userEntity?.properties[0]).toMatchObject({
+          name: 'name',
+          dataType: 'String',
+          knowledgeGraphId: null,
+        });
+        expect(userEntity?.properties[0].optional).toBeUndefined();
+        expect(userEntity?.properties[1]).toMatchObject({
+          name: 'email',
+          dataType: 'String',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+
+        // Check Event entity with multiple optional properties
+        const eventEntity = result.types.find((t) => t.name === 'Event');
+        expect(eventEntity).toBeDefined();
+        expect(eventEntity?.properties).toHaveLength(7);
+        
+        // Required properties
+        expect(eventEntity?.properties[0]).toMatchObject({
+          name: 'name',
+          dataType: 'String',
+          knowledgeGraphId: null,
+        });
+        expect(eventEntity?.properties[0].optional).toBeUndefined();
+        
+        expect(eventEntity?.properties[3]).toMatchObject({
+          name: 'startDate',
+          dataType: 'Date',
+          knowledgeGraphId: null,
+        });
+        expect(eventEntity?.properties[3].optional).toBeUndefined();
+        
+        expect(eventEntity?.properties[5]).toMatchObject({
+          name: 'organizer',
+          dataType: 'Relation(User)',
+          relationType: 'User',
+          knowledgeGraphId: null,
+        });
+        expect(eventEntity?.properties[5].optional).toBeUndefined();
+
+        // Optional properties
+        expect(eventEntity?.properties[1]).toMatchObject({
+          name: 'description',
+          dataType: 'String',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+        
+        expect(eventEntity?.properties[2]).toMatchObject({
+          name: 'location',
+          dataType: 'Point',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+        
+        expect(eventEntity?.properties[4]).toMatchObject({
+          name: 'endDate',
+          dataType: 'Date',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+        
+        expect(eventEntity?.properties[6]).toMatchObject({
+          name: 'coOrganizers',
+          dataType: 'Relation(User)',
+          relationType: 'User',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+      });
+    }),
+  );
 });
 
 describe('parseHypergraphMapping', () => {
