@@ -1,3 +1,4 @@
+import { HypergraphAppProvider } from '@graphprotocol/hypergraph-react';
 import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -21,7 +22,9 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <RouterProvider<TypesyncAppRouter> router={router} />
+      <HypergraphAppProvider storage={localStorage} mapping={{}} appId="577fb988-3699-495a-9e59-ced8ccbf7a19">
+        <RouterProvider<TypesyncAppRouter> router={router} />
+      </HypergraphAppProvider>
     </StrictMode>,
   );
 }

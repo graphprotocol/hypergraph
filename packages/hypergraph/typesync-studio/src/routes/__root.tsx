@@ -5,6 +5,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import type { GraphQLClient } from 'graphql-request';
 
+import { UserPill } from '@/Components/Auth/UserPill.tsx';
+
 export interface TypeSyncRouterContext {
   readonly queryClient: QueryClient;
   readonly graphqlClient: GraphQLClient;
@@ -25,6 +27,7 @@ export const Route = createRootRouteWithContext<TypeSyncRouterContext>()({
               </Link>
             </div>
             <div className="flex items-center justify-end self-end w-fit gap-x-6 h-16">
+              <UserPill />
               <div aria-hidden="true" className="block h-6 w-px bg-gray-900/10 dark:bg-slate-300" />
               <div className="flex items-center w-fit h-16 gap-x-2">
                 <a

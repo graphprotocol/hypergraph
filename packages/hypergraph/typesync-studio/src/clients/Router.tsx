@@ -8,10 +8,9 @@ import {
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createRouter } from '@tanstack/react-router';
 
-import type { ReactNode } from 'react';
 import type { TypeSyncRouterContext } from '../routes/__root.js';
 import { routeTree } from '../routeTree.gen.js';
-import { graphqlClient } from './graphql.js';
+import { graphqlClient } from './Graphql.js';
 
 export function createTypesyncAppRouter() {
   const queryClient = new QueryClient({
@@ -46,7 +45,7 @@ export function createTypesyncAppRouter() {
     hydrate(dehydrated: { queryClientState: unknown }) {
       hydrate(queryClient, dehydrated.queryClientState);
     },
-    Wrap({ children }: { children: ReactNode }) {
+    Wrap({ children }) {
       return (
         <QueryClientProvider client={queryClient}>
           {children}
