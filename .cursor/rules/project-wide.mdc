@@ -55,7 +55,8 @@
 - Use efficient algorithms
 - Monitor performance metrics
 - Follow performance best practices
-description:
+description: |
+  Project-wide rules and standards for the Hypergraph monorepo, covering code style, TypeScript configuration, testing, documentation, git workflow, security, and performance to ensure consistency and quality across all packages.
 globs:
 alwaysApply: false
 ---
