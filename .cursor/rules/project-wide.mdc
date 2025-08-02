@@ -1,3 +1,9 @@
+---
+description: Root Configuration Rules for the Hypergraph monorepo and its packages
+globs:
+alwaysApply: true
+---
+
 # Hypergraph Project-Wide Rules
 
 ## Monorepo Structure
@@ -55,8 +61,3 @@
 - Use efficient algorithms
 - Monitor performance metrics
 - Follow performance best practices
-description: |
-  Project-wide rules and standards for the Hypergraph monorepo, covering code style, TypeScript configuration, testing, documentation, git workflow, security, and performance to ensure consistency and quality across all packages.
-globs:
-alwaysApply: false
----
