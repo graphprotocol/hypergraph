@@ -1,0 +1,56 @@
+---
+description: Connect frontend application patterns and conventions
+globs: ["src/**/*.tsx", "src/**/*.ts"]
+alwaysApply: false
+---
+
+# Connect Frontend App Rules
+
+## Technology Stack
+- Use Vite for build tooling
+- Use TanStack Router for routing
+- Use TanStack Query for server state
+- Use Tailwind CSS for styling
+- Use React 19 with latest features
+
+## Component Architecture
+- Use functional components with hooks
+- Implement proper TypeScript interfaces
+- Use the Hypergraph React SDK components
+- Follow the established routing patterns
+
+## State Management
+- Use XState Store for complex state
+- Use React Query for server state
+- Use Hypergraph contexts for app state
+- Implement proper loading states
+
+## Authentication
+- Use Privy for authentication
+- Implement proper SIWE integration
+- Handle authentication state properly
+- Use secure authentication patterns
+
+## Routing
+- Use TanStack Router for type-safe routing
+- Implement proper route guards
+- Use nested routing where appropriate
+- Handle route parameters safely
+
+## Styling
+- Use Tailwind CSS for styling
+- Follow responsive design patterns
+- Use consistent design tokens
+- Implement proper accessibility
+
+## Performance
+- Use React.memo for expensive components
+- Implement proper code splitting
+- Use lazy loading for routes
+- Optimize bundle size
+
+## Testing
+- Use React Testing Library
+- Test user interactions
+- Mock external dependencies
+- Test authentication flows

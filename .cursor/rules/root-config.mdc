@@ -1,0 +1,50 @@
+---
+description: Root Configuration Rules for the Hypergraph monorepo and its packages
+globs:
+alwaysApply: true
+---
+
+# Root Configuration Rules
+
+## Package Management
+- Use pnpm for package management
+- Maintain consistent workspace configuration
+- Use proper dependency management
+- Follow semantic versioning
+- Use proper package.json structure
+
+## Build Configuration
+- Use TypeScript for configuration
+- Implement proper build scripts
+- Use consistent build tooling
+- Maintain proper output structure
+- Use proper source maps
+
+## Linting and Formatting
+- Use Biome for linting and formatting
+- Maintain consistent code style
+- Use proper ignore patterns
+- Implement proper rule configuration
+- Follow established conventions
+
+## Documentation
+- Maintain comprehensive README
+- Use proper documentation structure
+- Include setup instructions
+- Document development workflow
+- Use consistent documentation style
+
+## CI/CD
+- Use proper GitHub Actions
+- Implement proper testing workflows
+- Use proper deployment strategies
+- Maintain proper environment configuration
+- Follow security best practices
+
+## Development Tools
+- Use proper development dependencies
+- Implement proper tooling configuration
+- Use consistent development workflow
+- Maintain proper debugging setup
+- Use proper IDE configuration
+
