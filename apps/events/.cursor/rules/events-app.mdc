@@ -1,0 +1,56 @@
+---
+description: Events application patterns and conventions
+globs: ["src/**/*.tsx", "src/**/*.ts"]
+alwaysApply: false
+---
+
+# Events App Rules
+
+## Technology Stack
+- Use Vite for build tooling
+- Use TanStack Router for routing
+- Use React for UI components
+- Use Tailwind CSS for styling
+- Use Hypergraph SDK for data management
+
+## Event Management
+- Implement proper event creation
+- Use type-safe event schemas
+- Implement proper event validation
+- Handle event state management
+- Use proper event lifecycle
+
+## User Management
+- Implement proper user authentication
+- Handle user permissions
+- Manage user profiles
+- Implement proper user state
+- Use secure authentication patterns
+
+## Data Management
+- Use Hypergraph for data storage
+- Implement proper data synchronization
+- Handle offline scenarios
+- Use proper data validation
+- Implement proper error handling
+
+## UI/UX
+- Use consistent design patterns
+- Implement responsive design
+- Follow accessibility guidelines
+- Use proper loading states
+- Implement proper error states
+
+## Performance
+- Optimize component rendering
+- Implement proper caching
+- Use lazy loading
+- Optimize bundle size
+- Monitor performance metrics
+
+## Testing
+- Test user interactions
+- Test event workflows
+- Mock external dependencies
+- Test error scenarios
+- Use React Testing Library

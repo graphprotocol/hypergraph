@@ -1,0 +1,56 @@
+---
+description: Next.js example application patterns and conventions
+globs: ["src/**/*.tsx", "src/**/*.ts"]
+alwaysApply: false
+---
+
+# Next.js Example App Rules
+
+## Technology Stack
+- Use Next.js 15+ for framework
+- Use App Router for routing
+- Use TypeScript for type safety
+- Use Tailwind CSS for styling
+- Use Hypergraph SDK for data
+
+## Next.js Patterns
+- Use App Router structure
+- Implement proper page components
+- Use Server Components where appropriate
+- Use Client Components for interactivity
+- Follow Next.js best practices
+
+## Routing
+- Use App Router file-based routing
+- Implement proper dynamic routes
+- Use proper route handlers
+- Handle route parameters safely
+- Implement proper redirects
+
+## Data Fetching
+- Use Server Components for data fetching
+- Implement proper loading states
+- Handle error boundaries
+- Use proper caching strategies
+- Implement proper revalidation
+
+## Styling
+- Use Tailwind CSS for styling
+- Follow responsive design patterns
+- Use consistent design tokens
+- Implement proper accessibility
+- Use CSS modules when needed
+
+## Performance
+- Use Next.js optimizations
+- Implement proper image optimization
+- Use proper code splitting
+- Optimize bundle size
+- Monitor Core Web Vitals
+
+## Testing
+- Use Next.js testing utilities
+- Test page components
+- Test API routes
+- Mock external dependencies
+- Test user interactions

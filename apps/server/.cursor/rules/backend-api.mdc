@@ -1,0 +1,59 @@
+---
+description: Server backend API patterns and conventions
+globs: ["src/**/*.ts"]
+alwaysApply: false
+---
+
+# Server Backend API Rules
+
+## Technology Stack
+- Use Express.js for HTTP server
+- Use Prisma for database operations
+- Use Bun for runtime
+- Use WebSocket for real-time communication
+- Use Effect for functional programming
+
+## API Design
+- Use RESTful API patterns
+- Implement proper HTTP status codes
+- Use consistent error response format
+- Implement proper request validation
+- Use middleware for cross-cutting concerns
+
+## Database
+- Use Prisma for type-safe database access
+- Implement proper migrations
+- Use transactions for data consistency
+- Implement proper indexing strategies
+- Follow database naming conventions
+
+## Authentication
+- Use Privy for authentication
+- Implement proper SIWE validation
+- Use secure session management
+- Implement proper authorization checks
+
+## Security
+- Use HPKE for encryption
+- Implement proper CORS policies
+- Use secure headers
+- Validate all inputs
+- Implement rate limiting
+
+## Error Handling
+- Use Effect for error handling
+- Implement proper error logging
+- Return consistent error responses
+- Handle edge cases gracefully
+
+## Performance
+- Implement proper caching strategies
+- Use connection pooling
+- Optimize database queries
+- Implement proper monitoring
+
+## Testing
+- Test API endpoints thoroughly
+- Mock external dependencies
+- Test authentication flows
+- Test error scenarios

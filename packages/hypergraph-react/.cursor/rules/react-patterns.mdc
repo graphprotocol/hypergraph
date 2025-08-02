@@ -1,0 +1,57 @@
+---
+description: React patterns and conventions for Hypergraph React components
+globs: ["src/**/*.tsx", "src/**/*.ts", "test/**/*.tsx", "test/**/*.ts"]
+alwaysApply: false
+---
+
+# Hypergraph React Rules
+
+## Component Architecture
+- Use functional components with hooks
+- Prefer composition over inheritance
+- Implement proper TypeScript interfaces for props
+- Use React Query for server state management
+- Follow the established context pattern for HypergraphAppContext
+
+## State Management
+- Use XState Store for complex state machines
+- Implement proper loading and error states
+- Use React Query for caching and synchronization
+- Prefer local state for UI-only concerns
+
+## Hooks Patterns
+- Create custom hooks for reusable logic
+- Use the `use` prefix for custom hooks
+- Implement proper dependency arrays
+- Handle cleanup in useEffect hooks
+
+## Context Usage
+- Use HypergraphAppContext for global app state
+- Use HypergraphSpaceContext for space-specific state
+- Implement proper context providers
+- Avoid prop drilling with context
+
+## TypeScript Integration
+- Use proper type definitions for all props
+- Implement generic components where appropriate
+- Use branded types from the core SDK
+- Ensure type safety across component boundaries
+
+## Testing
+- Use React Testing Library for component tests
+- Tests are located in the `./test` directory
+- Test user interactions, not implementation details
+- Mock Hypergraph contexts appropriately
+- Test both success and error scenarios
+
+## Performance
+- Use React.memo for expensive components
+- Implement proper key props for lists
+- Use useMemo and useCallback appropriately
+- Avoid unnecessary re-renders
+
+## Styling
+- Use Tailwind CSS for styling
+- Implement responsive design patterns
+- Follow accessibility guidelines
+- Use consistent spacing and typography

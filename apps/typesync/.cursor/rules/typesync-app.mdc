@@ -1,0 +1,56 @@
+---
+description: TypeSync application patterns and conventions
+globs: ["src/**/*.tsx", "src/**/*.ts"]
+alwaysApply: false
+---
+
+# TypeSync App Rules
+
+## Technology Stack
+- Use Vite for build tooling
+- Use React for UI components
+- Use Tailwind CSS for styling
+- Use GraphQL for data fetching
+- Use TypeScript for type safety
+
+## GraphQL Integration
+- Use proper GraphQL queries
+- Implement proper error handling
+- Use GraphQL code generation
+- Handle loading states properly
+- Implement proper caching
+
+## Type Generation
+- Generate type-safe code
+- Use proper TypeScript interfaces
+- Implement proper validation
+- Handle complex type relationships
+- Use consistent naming conventions
+
+## UI Components
+- Use functional React components
+- Implement proper TypeScript props
+- Use consistent styling patterns
+- Follow accessibility guidelines
+- Implement responsive design
+
+## Data Management
+- Handle GraphQL data properly
+- Implement proper error states
+- Use proper loading indicators
+- Handle data synchronization
+- Implement proper caching
+
+## Performance
+- Optimize GraphQL queries
+- Implement proper code splitting
+- Use lazy loading
+- Optimize bundle size
+- Monitor performance
+
+## Testing
+- Test GraphQL operations
+- Test type generation
+- Mock external dependencies
+- Test error scenarios
+- Use proper testing utilities

@@ -1,0 +1,56 @@
+---
+description: Docusaurus documentation patterns and conventions
+globs: ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx", "docs/**/*.md", "docs/**/*.mdx"]
+alwaysApply: false
+---
+
+# Docusaurus Documentation Rules
+
+## Documentation Structure
+- Use clear, hierarchical organization
+- Follow Docusaurus documentation patterns
+- Use proper frontmatter for metadata
+- Implement proper navigation structure
+- Use consistent file naming
+
+## Content Guidelines
+- Write clear, concise documentation
+- Use proper markdown formatting
+- Include code examples where appropriate
+- Use proper syntax highlighting
+- Implement proper linking between pages
+
+## Component Development
+- Use React components for interactive elements
+- Follow Docusaurus component patterns
+- Implement proper TypeScript interfaces
+- Use consistent styling patterns
+- Follow accessibility guidelines
+
+## Styling
+- Use Docusaurus theme system
+- Implement custom CSS when needed
+- Follow responsive design patterns
+- Use consistent design tokens
+- Implement proper dark mode support
+
+## Performance
+- Optimize images and assets
+- Use proper lazy loading
+- Implement proper caching
+- Optimize bundle size
+- Monitor Core Web Vitals
+
+## SEO and Metadata
+- Use proper meta tags
+- Implement proper Open Graph tags
+- Use structured data where appropriate
+- Optimize for search engines
+- Use proper canonical URLs
+
+## Testing
+- Test documentation links
+- Test interactive components
+- Test responsive design
+- Test accessibility
+- Use proper testing utilities

@@ -1,0 +1,55 @@
+---
+description: Create Hypergraph CLI tool patterns and conventions
+globs: ["src/**/*.ts"]
+alwaysApply: false
+---
+
+# Create Hypergraph CLI Rules
+
+## CLI Architecture
+- Use Effect CLI for command-line interface
+- Implement proper subcommands
+- Use descriptive command names
+- Provide helpful error messages
+- Implement proper help text
+
+## Template System
+- Use structured templates for scaffolding
+- Implement proper template validation
+- Use consistent template structure
+- Provide clear template documentation
+- Support multiple template types
+
+## File Operations
+- Use safe file system operations
+- Implement proper error handling
+- Validate file paths and permissions
+- Use consistent file naming
+- Implement proper backup strategies
+
+## User Experience
+- Provide clear progress indicators
+- Implement proper error recovery
+- Use consistent output formatting
+- Provide helpful suggestions
+- Implement proper validation
+
+## Code Generation
+- Generate type-safe code
+- Use consistent code formatting
+- Implement proper imports
+- Follow established patterns
+- Generate comprehensive documentation
+
+## Testing
+- Test CLI commands thoroughly
+- Mock file system operations
+- Test error scenarios
+- Test template generation
+- Use Vitest for testing
+
+## Distribution
+- Use proper package.json configuration
+- Implement proper binary setup
+- Use TypeScript for type safety
+- Follow npm publishing best practices
