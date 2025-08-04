@@ -1,5 +1,5 @@
 ---
-description: Root Configuration Rules for the Hypergraph monorepo and its packages
+description: Project-Wide Rules for the Hypergraph monorepo and its packages
 globs:
 alwaysApply: true
 ---
