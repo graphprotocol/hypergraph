@@ -15,5 +15,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Update the cache mount ID in the Dockerfile to include the service-specific pnpm store
-      - run: sed -i 's|\(--mount=type=cache,id=\)workspace|\1${{ env.SVC_ID }}-pnpm-store|' Dockerfile
+      - run: sed -i 's|\(--mount=type=cache,id=\)workspace|\1s/${{ env.SVC_ID }}-pnpm-store|' Dockerfile
       - run: railway up --service=${{ env.SVC_ID }}
