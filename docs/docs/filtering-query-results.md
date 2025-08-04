@@ -89,8 +89,8 @@ The filter API supports different filters for different property types and offer
 const { data } = useQuery(Person, {
   filter: {
     or: [
-      not: { name: { is: "Jane Doe" } },
-      not: { name: { is: "John Doe" } },
+      { not: { name: { is: 'Jane Doe' } } },
+      { not: { name: { is: 'John Doe' } } },
     ],
   },
 });
@@ -99,11 +99,11 @@ const { data } = useQuery(Person, {
 const { data } = useQuery(Person, {
   filter: {
     age: {
-      equals: 42
+      is: 42
     },
     or: [
-      not: { name: { is: "Jane Doe" } },
-      not: { name: { is: "John Doe" } },
+      { not: { name: { is: 'Jane Doe' } } },
+      { not: { name: { is: 'John Doe' } } },
     ],
     not: {
       or: [

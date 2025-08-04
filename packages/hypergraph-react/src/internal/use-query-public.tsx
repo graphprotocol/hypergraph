@@ -7,6 +7,7 @@ import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
+import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocumentLevel0 = gql`
@@ -396,7 +397,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
         relationTypeIdsLevel1,
         relationTypeIdsLevel2,
         first,
-        filter: filter ?? {},
+        filter: filter ? translateFilterToGraphql(filter, type, mapping) : {},
       });
       return result;
     },
