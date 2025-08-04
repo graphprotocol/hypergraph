@@ -3,6 +3,7 @@ import ts from 'typescript';
 
 import * as Mapping from '../../mapping/Mapping.js';
 import * as Utils from '../../mapping/Utils.js';
+import type * as Model from './Model.js';
 
 /**
  * Takes a parsed schema.ts file and maps it to a the Mapping.Schema type.
@@ -16,17 +17,17 @@ import * as Utils from '../../mapping/Utils.js';
 export const parseSchema = (
   sourceCode: string,
   mapping: Mapping.Mapping,
-): Effect.Effect<Mapping.Schema, SchemaParserFailure> =>
+): Effect.Effect<Model.TypesyncHypergraphSchema, SchemaParserFailure> =>
   Effect.try({
     try() {
       const sourceFile = ts.createSourceFile('schema.ts', sourceCode, ts.ScriptTarget.Latest, true);
 
-      const entities: Array<Mapping.SchemaType> = [];
+      const entities: Array<Model.TypesyncHypergraphSchemaType> = [];
 
       const visit = (node: ts.Node) => {
         if (ts.isClassDeclaration(node) && node.name) {
           const className = node.name.text;
-          const properties: Array<Mapping.SchemaTypePropertyPrimitive | Mapping.SchemaTypePropertyRelation> = [];
+          const properties: Array<Model.TypesyncHypergraphSchemaTypeProperty> = [];
 
           // Find the Entity.Class call
           if (node.heritageClauses) {
@@ -51,9 +52,11 @@ export const parseSchema = (
 
                           // Check if the property is wrapped with Type.optional()
                           let typeExpression = prop.initializer;
-                          if (ts.isCallExpression(typeExpression) && 
-                              ts.isPropertyAccessExpression(typeExpression.expression) &&
-                              typeExpression.expression.name.text === 'optional') {
+                          if (
+                            ts.isCallExpression(typeExpression) &&
+                            ts.isPropertyAccessExpression(typeExpression.expression) &&
+                            typeExpression.expression.name.text === 'optional'
+                          ) {
                             isOptional = true;
                             // Unwrap the optional to get the actual type
                             if (typeExpression.arguments.length > 0) {
@@ -75,7 +78,8 @@ export const parseSchema = (
                               dataType: dataType as Mapping.SchemaDataTypePrimitive,
                               knowledgeGraphId: propKnowledgeGraphId,
                               optional: isOptional || undefined,
-                            } satisfies Mapping.SchemaTypePropertyPrimitive);
+                              status: propKnowledgeGraphId != null ? 'published' : 'synced',
+                            } satisfies Model.TypesyncHypergraphSchemaTypeProperty);
                           } else if (ts.isCallExpression(typeExpression)) {
                             // Relation types like Type.Relation(User)
                             const callNode = typeExpression;
@@ -98,7 +102,8 @@ export const parseSchema = (
                                     relationType,
                                     knowledgeGraphId: relKnowledgeGraphId,
                                     optional: isOptional || undefined,
-                                  } satisfies Mapping.SchemaTypePropertyRelation);
+                                    status: relKnowledgeGraphId != null ? 'published' : 'synced',
+                                  } satisfies Model.TypesyncHypergraphSchemaTypeProperty);
                                 }
                               }
                             }
@@ -116,7 +121,12 @@ export const parseSchema = (
           const mappingEntry = mapping[Utils.toPascalCase(className)];
           const typeKnowledgeGraphId = mappingEntry?.typeIds?.[0] ? mappingEntry.typeIds[0] : null;
 
-          entities.push({ name: className, knowledgeGraphId: typeKnowledgeGraphId, properties });
+          entities.push({
+            name: className,
+            knowledgeGraphId: typeKnowledgeGraphId,
+            properties,
+            status: typeKnowledgeGraphId != null ? 'published' : 'synced',
+          });
         }
 
         ts.forEachChild(node, visit);

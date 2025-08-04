@@ -36,7 +36,8 @@
     "./space-info": "./dist/space-info/index.js",
     "./store": "./dist/store.js",
     "./store-connect": "./dist/store-connect.js",
-    "./types": "./dist/types.js"
+    "./types": "./dist/types.js",
+    "./typesync": "./dist/cli/services/Model.js"
   },
   "sideEffects": [],
   "scripts": {

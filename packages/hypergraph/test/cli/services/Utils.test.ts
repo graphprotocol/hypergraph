@@ -73,6 +73,7 @@ export class Event extends Entity.Class<Event>('Event')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: null,
+          status: 'synced',
         });
 
         // Check Todo entity
@@ -83,17 +84,20 @@ export class Event extends Entity.Class<Event>('Event')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todoEntity?.properties[1]).toMatchObject({
           name: 'completed',
           dataType: 'Boolean',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todoEntity?.properties[2]).toMatchObject({
           name: 'assignees',
           dataType: 'Relation(User)',
           relationType: 'User',
           knowledgeGraphId: null,
+          status: 'synced',
         });
 
         // Check Todo2 entity with various types
@@ -104,16 +108,19 @@ export class Event extends Entity.Class<Event>('Event')({
           name: 'due',
           dataType: 'Date',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todo2Entity?.properties[4]).toMatchObject({
           name: 'amount',
           dataType: 'Number',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todo2Entity?.properties[5]).toMatchObject({
           name: 'point',
           dataType: 'Point',
           knowledgeGraphId: null,
+          status: 'synced',
         });
 
         // Check Company entity with relation
@@ -125,6 +132,7 @@ export class Event extends Entity.Class<Event>('Event')({
           dataType: 'Relation(JobOffer)',
           relationType: 'JobOffer',
           knowledgeGraphId: null,
+          status: 'synced',
         });
       });
     }),
@@ -192,12 +200,14 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          status: 'published',
         });
         expect(eventEntity?.properties[1]).toMatchObject({
           name: 'sponsors',
           dataType: 'Relation(Company)',
           relationType: 'Company',
           knowledgeGraphId: '6860bfac-f703-4289-b789-972d0aaf3abe',
+          status: 'published',
         });
 
         // Check Company entity with resolved IDs
@@ -209,12 +219,14 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          status: 'published',
         });
         expect(companyEntity?.properties[1]).toMatchObject({
           name: 'jobOffers',
           dataType: 'Relation(JobOffer)',
           relationType: 'JobOffer',
           knowledgeGraphId: '1203064e-9741-4235-89d4-97f4b22eddfb',
+          status: 'published',
         });
 
         // Check JobOffer entity with resolved IDs
@@ -226,11 +238,13 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          status: 'published',
         });
         expect(jobOfferEntity?.properties[1]).toMatchObject({
           name: 'salary',
           dataType: 'Number',
           knowledgeGraphId: 'baa36ac9-78ac-4cf7-8394-6b2d3006bebe',
+          status: 'published',
         });
       });
     }),
@@ -282,7 +296,7 @@ export class Event extends Entity.Class<Event>('Event')({
         const eventEntity = result.types.find((t) => t.name === 'Event');
         expect(eventEntity).toBeDefined();
         expect(eventEntity?.properties).toHaveLength(7);
-        
+
         // Required properties
         expect(eventEntity?.properties[0]).toMatchObject({
           name: 'name',
@@ -290,14 +304,14 @@ export class Event extends Entity.Class<Event>('Event')({
           knowledgeGraphId: null,
         });
         expect(eventEntity?.properties[0].optional).toBeUndefined();
-        
+
         expect(eventEntity?.properties[3]).toMatchObject({
           name: 'startDate',
           dataType: 'Date',
           knowledgeGraphId: null,
         });
         expect(eventEntity?.properties[3].optional).toBeUndefined();
-        
+
         expect(eventEntity?.properties[5]).toMatchObject({
           name: 'organizer',
           dataType: 'Relation(User)',
@@ -313,21 +327,21 @@ export class Event extends Entity.Class<Event>('Event')({
           knowledgeGraphId: null,
           optional: true,
         });
-        
+
         expect(eventEntity?.properties[2]).toMatchObject({
           name: 'location',
           dataType: 'Point',
           knowledgeGraphId: null,
           optional: true,
         });
-        
+
         expect(eventEntity?.properties[4]).toMatchObject({
           name: 'endDate',
           dataType: 'Date',
           knowledgeGraphId: null,
           optional: true,
         });
-        
+
         expect(eventEntity?.properties[6]).toMatchObject({
           name: 'coOrganizers',
           dataType: 'Relation(User)',

@@ -3,7 +3,8 @@ import { NodeFileSystem } from '@effect/platform-node';
 import { AnsiDoc } from '@effect/printer-ansi';
 import { Cause, Data, Effect, Array as EffectArray, Option, Stream } from 'effect';
 import type { NonEmptyReadonlyArray } from 'effect/Array';
-import type { Schema as HypergraphSchema, Mapping } from '../../mapping/Mapping.js';
+import type { Mapping } from '../../mapping/Mapping.js';
+import type { TypesyncHypergraphSchema } from './Model.js';
 import { parseHypergraphMapping, parseSchema } from './Utils.js';
 
 export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaStreamBuilder>()(
@@ -81,7 +82,7 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
       const currentSchemaStream = (
         schemaFilePath: Option.Option<string>,
         mappingFilePath: Option.Option<string>,
-      ): Stream.Stream<HypergraphSchema, never, never> =>
+      ): Stream.Stream<TypesyncHypergraphSchema, never, never> =>
         Stream.fromEffect(
           Effect.gen(function* () {
             const schema = yield* Option.match(schemaFilePath, {
@@ -102,7 +103,7 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
             ),
           ),
           // if failure, don't bubble to return and just return empty schema
-          Stream.orElseSucceed(() => ({ types: [] }) satisfies HypergraphSchema),
+          Stream.orElseSucceed(() => ({ types: [] }) satisfies TypesyncHypergraphSchema),
         );
       /**
        * Reads the schema.ts file, and maybe reads the mapping.ts file (if exists).
@@ -117,7 +118,7 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
       const watchSchemaStream = (
         schemaFilePath: Option.Option<string>,
         mappingFilePath: Option.Option<string>,
-      ): Stream.Stream<HypergraphSchema, never, never> => {
+      ): Stream.Stream<TypesyncHypergraphSchema, never, never> => {
         const schemaWatch = Option.match(schemaFilePath, {
           // @todo watch the root here so if a schema is created, it will get picked up
           onNone: () => Stream.empty,
@@ -147,7 +148,7 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
             Effect.logError(AnsiDoc.text('Failure parsing schema changes into types'), { cause: Cause.pretty(cause) }),
           ),
           // if failure, don't bubble to return and just return empty schema
-          Stream.orElseSucceed(() => ({ types: [] }) satisfies HypergraphSchema),
+          Stream.orElseSucceed(() => ({ types: [] }) satisfies TypesyncHypergraphSchema),
         );
       };
 
