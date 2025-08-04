@@ -17,7 +17,6 @@ alwaysApply: false
 - Each module should export a clear public API
 - Use barrel exports (index.ts) for clean imports
 - Separate concerns: entity, identity, messages, space-events, etc.
-- Follow the established module pattern: Domain.ts, Utils.ts, etc.
 
 ## Type Safety
 - Use strict TypeScript configuration
@@ -29,12 +28,10 @@ alwaysApply: false
 - Use Automerge for conflict resolution
 - Implement proper merge strategies for concurrent edits
 - Handle offline-first scenarios gracefully
-- Use content-addressing for immutable data
 
 ## Crypto and Security
 - Use Noble libraries for cryptographic operations
 - Implement proper key management patterns
-- Follow SIWE standards for authentication
 - Use secure random number generation
 
 ## Testing
