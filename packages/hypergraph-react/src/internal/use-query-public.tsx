@@ -10,10 +10,12 @@ import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocumentLevel0 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!) {
   entities(
-    filter: {
-      relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}},
+    filter: { and: [{
+      relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+      spaceIds: {in: [$spaceId]},
+    }, $filter]}
     first: $first
   ) {
     id
@@ -31,11 +33,14 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int) {
 `;
 
 const entitiesQueryDocumentLevel1 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!) {
   entities(
     first: $first
-    filter: {
-    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
+    filter: { and: [{
+    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+    spaceIds: {in: [$spaceId]},
+  }, $filter]}
+  ) {
     id
     name
     valuesList(filter: {spaceId: {is: $spaceId}}) {
@@ -68,11 +73,14 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 `;
 
 const entitiesQueryDocumentLevel2 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!) {
   entities(
     first: $first
-    filter: {
-    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
+    filter: { and: [{
+    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+    spaceIds: {in: [$spaceId]},
+  }, $filter]}
+  ) {
     id
     name
     valuesList(filter: {spaceId: {is: $spaceId}}) {
@@ -370,7 +378,8 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
       mappingEntry?.typeIds,
       relationTypeIdsLevel1,
       relationTypeIdsLevel2,
-      // TODO should `first` be in here?
+      filter,
+      first,
     ],
     queryFn: async () => {
       let queryDocument = entitiesQueryDocumentLevel0;
@@ -387,6 +396,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
         relationTypeIdsLevel1,
         relationTypeIdsLevel2,
         first,
+        filter: filter ?? {},
       });
       return result;
     },
