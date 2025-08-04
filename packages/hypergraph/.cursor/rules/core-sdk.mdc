@@ -1,0 +1,42 @@
+---
+description: Core Hypergraph SDK patterns and conventions
+globs: ["src/**/*.ts", "test/**/*.ts"]
+alwaysApply: false
+---
+
+# Core Hypergraph SDK Rules
+
+## Architecture Patterns
+- Use Effect for functional programming patterns and error handling
+- Follow local-first architecture principles with Automerge for CRDT
+- Implement type-safe patterns with TypeScript strict mode
+- Use snake_case for service names and API endpoints
+- Prefer immutable data structures and pure functions
+
+## Module Structure
+- Each module should export a clear public API
+- Use barrel exports (index.ts) for clean imports
+- Separate concerns: entity, identity, messages, space-events, etc.
+
+## Type Safety
+- Use strict TypeScript configuration
+- Prefer branded types for domain-specific identifiers
+- Use discriminated unions for state management
+- Implement proper error types with Effect
+
+## CRDT and Sync
+- Use Automerge for conflict resolution
+- Implement proper merge strategies for concurrent edits
+- Handle offline-first scenarios gracefully
+
+## Crypto and Security
+- Use Noble libraries for cryptographic operations
+- Implement proper key management patterns
+- Use secure random number generation
+
+## Testing
+- Write comprehensive unit tests with Vitest
+- Tests are located in the `./test` directory
+- Test both success and error scenarios
+- Mock external dependencies appropriately
+- Use Effect testing utilities for functional code
