@@ -41,7 +41,7 @@ export type MappingEntry = {
 /**
  * @example
  * ```ts
- * import { Id } from '@graphprotocol/grc-20'
+ * import { Id } from '@graphprotocol/hypergraph'
  * import type { Mapping } from '@graphprotocol/hypergraph/mapping'
  *
  * const mapping: Mapping = {
