@@ -316,9 +316,9 @@ function SchemaBuilderComponent() {
     >
       <createSchemaForm.AppField name="types" mode="array">
         {(field) => (
-          <div className="grid grid-cols-2 2xl:grid-cols-3 gap-x-4 2xl:gap-x-8">
+          <div className="grid grid-cols-2 2xl:grid-cols-5 gap-x-4 2xl:gap-x-8">
             {/** KG schema browser */}
-            <div className="w-full flex flex-col gap-y-4 pb-10">
+            <div className="w-full flex flex-col gap-y-4 pb-10 2xl:col-span-2">
               <KnowledgeGraphBrowser
                 typeSelected={(selected) => {
                   if (selected.name == null) {
@@ -405,7 +405,7 @@ function SchemaBuilderComponent() {
               />
             </div>
             {/** Hypergraph schema builder */}
-            <div className="w-full flex flex-col gap-y-4 pb-10 2xl:col-span-2">
+            <div className="w-full flex flex-col gap-y-4 pb-10 2xl:col-span-3">
               <div className="border-b border-gray-200 dark:border-white/20 pb-5 h-20">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">Schema</h3>
                 <p className="mt-2 max-w-4xl text-sm text-gray-500 dark:text-gray-200">
@@ -502,11 +502,11 @@ function SchemaBuilderComponent() {
                               {propsField.state.value.map((_prop, typePropIdx) => {
                                 const typePropEntryKey = `createAppForm__type[${idx}]__prop[${typePropIdx}]`;
                                 return (
-                                  <div key={typePropEntryKey} className="grid grid-cols-11 gap-2">
+                                  <div key={typePropEntryKey} className="grid grid-cols-11 2xl:grid-cols-12 gap-2">
                                     <div className="col-span-1 size-full flex flex-col items-center justify-center">
                                       <SchemaPropertyStatus status={_prop.status} />
                                     </div>
-                                    <div className="col-span-4">
+                                    <div className="col-span-4 2xl:grid-cols-5">
                                       <createSchemaForm.AppField
                                         name={`types[${idx}].properties[${typePropIdx}].name` as const}
                                       >

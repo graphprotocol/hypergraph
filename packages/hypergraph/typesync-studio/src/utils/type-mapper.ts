@@ -1,10 +1,10 @@
-import type { SchemaDataType } from '@graphprotocol/hypergraph/mapping';
+import type { Mapping } from '@graphprotocol/hypergraph';
 
 import type { DataTypes } from '../generated/graphql';
 
-export function mapKGDataTypeToPrimitiveType(dataType: DataTypes, entity: string): SchemaDataType {
+export function mapKGDataTypeToPrimitiveType(dataType: DataTypes, entity: string): Mapping.SchemaDataType {
   switch (dataType) {
-    case 'CHECKBOX': {
+    case 'BOOLEAN': {
       return 'Boolean';
     }
     case 'NUMBER': {

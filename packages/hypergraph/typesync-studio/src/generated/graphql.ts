@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -9,18 +9,78 @@ export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> =
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string };
-  String: { input: string; output: string };
-  Boolean: { input: boolean; output: boolean };
-  Int: { input: number; output: number };
-  Float: { input: number; output: number };
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  /** A floating point number that requires more precision than IEEE 754 binary 64 */
+  BigFloat: { input: any; output: any; }
   /** A location in a connection that can be used for resuming pagination. */
-  Cursor: { input: any; output: any };
+  Cursor: { input: any; output: any; }
   /** A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122). */
-  UUID: { input: string; output: string };
+  UUID: { input: string; output: string; }
 };
 
-export type DataTypes = 'CHECKBOX' | 'NUMBER' | 'POINT' | 'RELATION' | 'TEXT' | 'TIME';
+/** A filter to be used against BigFloat fields. All fields are combined with a logical ‘and.’ */
+export type BigFloatFilter = {
+  /** Not equal to the specified value, treating null like an ordinary value. */
+  distinctFrom?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Greater than the specified value. */
+  greaterThan?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Greater than or equal to the specified value. */
+  greaterThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Included in the specified list. */
+  in?: InputMaybe<Array<Scalars['BigFloat']['input']>>;
+  /** Equal to the specified value. */
+  is?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Not equal to the specified value. */
+  isNot?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Less than the specified value. */
+  lessThan?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Less than or equal to the specified value. */
+  lessThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Equal to the specified value, treating null like an ordinary value. */
+  notDistinctFrom?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Not included in the specified list. */
+  notIn?: InputMaybe<Array<Scalars['BigFloat']['input']>>;
+};
+
+/** A filter to be used against Boolean fields. All fields are combined with a logical ‘and.’ */
+export type BooleanFilter = {
+  /** Not equal to the specified value, treating null like an ordinary value. */
+  distinctFrom?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Greater than the specified value. */
+  greaterThan?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Greater than or equal to the specified value. */
+  greaterThanOrEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Included in the specified list. */
+  in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  /** Equal to the specified value. */
+  is?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Not equal to the specified value. */
+  isNot?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Less than the specified value. */
+  lessThan?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Less than or equal to the specified value. */
+  lessThanOrEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Equal to the specified value, treating null like an ordinary value. */
+  notDistinctFrom?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Not included in the specified list. */
+  notIn?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+};
+
+export type DataTypes =
+  | 'BOOLEAN'
+  | 'NUMBER'
+  | 'POINT'
+  | 'RELATION'
+  | 'STRING'
+  | 'TIME';
 
 /** A filter to be used against DataTypes fields. All fields are combined with a logical ‘and.’ */
 export type DataTypesFilter = {
@@ -137,7 +197,12 @@ export type EntitiesEdge = {
 };
 
 /** Methods to use when ordering `Entity`. */
-export type EntitiesOrderBy = 'ID_ASC' | 'ID_DESC' | 'NATURAL' | 'PRIMARY_KEY_ASC' | 'PRIMARY_KEY_DESC';
+export type EntitiesOrderBy =
+  | 'ID_ASC'
+  | 'ID_DESC'
+  | 'NATURAL'
+  | 'PRIMARY_KEY_ASC'
+  | 'PRIMARY_KEY_DESC';
 
 export type Entity = Node & {
   __typename?: 'Entity';
@@ -182,6 +247,7 @@ export type Entity = Node & {
   valuesList: Array<Value>;
 };
 
+
 export type EntityBacklinksArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -193,6 +259,7 @@ export type EntityBacklinksArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
+
 export type EntityBacklinksListArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -201,12 +268,14 @@ export type EntityBacklinksListArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
+
 export type EntityPropertiesArgs = {
   filter?: InputMaybe<PropertyFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
+
 
 export type EntityPropertiesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -217,6 +286,7 @@ export type EntityPropertiesConnectionArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
+
 
 export type EntityRelationsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -229,6 +299,7 @@ export type EntityRelationsArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
+
 export type EntityRelationsListArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -236,6 +307,7 @@ export type EntityRelationsListArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
+
 
 export type EntityRelationsWhereEntityArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -248,6 +320,7 @@ export type EntityRelationsWhereEntityArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
+
 export type EntityRelationsWhereEntityListArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -256,11 +329,13 @@ export type EntityRelationsWhereEntityListArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
+
 export type EntitySpacesInArgs = {
   filter?: InputMaybe<SpaceFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type EntitySpacesInConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -271,11 +346,13 @@ export type EntitySpacesInConnectionArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
 export type EntityTypesArgs = {
   filter?: InputMaybe<EntityFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type EntityTypesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -285,6 +362,7 @@ export type EntityTypesConnectionArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type EntityValuesArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -296,6 +374,7 @@ export type EntityValuesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ValuesOrderBy>>;
 };
+
 
 export type EntityValuesListArgs = {
   condition?: InputMaybe<ValueCondition>;
@@ -483,7 +562,12 @@ export type MetasEdge = {
 };
 
 /** Methods to use when ordering `Meta`. */
-export type MetasOrderBy = 'ID_ASC' | 'ID_DESC' | 'NATURAL' | 'PRIMARY_KEY_ASC' | 'PRIMARY_KEY_DESC';
+export type MetasOrderBy =
+  | 'ID_ASC'
+  | 'ID_DESC'
+  | 'NATURAL'
+  | 'PRIMARY_KEY_ASC'
+  | 'PRIMARY_KEY_DESC';
 
 /** An object with a globally unique `ID`. */
 export type Node = {
@@ -554,11 +638,13 @@ export type Property = Node & {
   unit?: Maybe<Scalars['UUID']['output']>;
 };
 
+
 export type PropertyRelationValueTypesArgs = {
   filter?: InputMaybe<EntityFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type PropertyRelationValueTypesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -711,10 +797,12 @@ export type Query = Node & {
   valuesConnection?: Maybe<ValuesConnection>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryEditorByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEditorsArgs = {
@@ -724,6 +812,7 @@ export type QueryEditorsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEditorsConnectionArgs = {
@@ -737,6 +826,7 @@ export type QueryEditorsConnectionArgs = {
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryEntitiesArgs = {
   condition?: InputMaybe<EntityCondition>;
@@ -745,6 +835,7 @@ export type QueryEntitiesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<EntitiesOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEntitiesConnectionArgs = {
@@ -758,20 +849,24 @@ export type QueryEntitiesConnectionArgs = {
   orderBy?: InputMaybe<Array<EntitiesOrderBy>>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryEntityArgs = {
   id: Scalars['UUID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEntityByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryMemberByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMembersArgs = {
@@ -781,6 +876,7 @@ export type QueryMembersArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMembersConnectionArgs = {
@@ -794,15 +890,18 @@ export type QueryMembersConnectionArgs = {
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryMetaArgs = {
   id: Scalars['String']['input'];
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryMetaByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMetasArgs = {
@@ -812,6 +911,7 @@ export type QueryMetasArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<MetasOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMetasConnectionArgs = {
@@ -825,10 +925,12 @@ export type QueryMetasConnectionArgs = {
   orderBy?: InputMaybe<Array<MetasOrderBy>>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryNodeArgs = {
   nodeId: Scalars['ID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertiesArgs = {
@@ -838,6 +940,7 @@ export type QueryPropertiesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<PropertiesOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertiesConnectionArgs = {
@@ -851,25 +954,30 @@ export type QueryPropertiesConnectionArgs = {
   orderBy?: InputMaybe<Array<PropertiesOrderBy>>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertyArgs = {
   id: Scalars['UUID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertyByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationArgs = {
   id: Scalars['UUID']['input'];
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationsArgs = {
@@ -879,6 +987,7 @@ export type QueryRelationsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationsConnectionArgs = {
@@ -892,6 +1001,7 @@ export type QueryRelationsConnectionArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QuerySearchArgs = {
   filter?: InputMaybe<EntityFilter>;
@@ -901,6 +1011,7 @@ export type QuerySearchArgs = {
   similarityThreshold?: InputMaybe<Scalars['Float']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QuerySearchConnectionArgs = {
@@ -915,15 +1026,18 @@ export type QuerySearchConnectionArgs = {
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QuerySpaceArgs = {
   id: Scalars['UUID']['input'];
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QuerySpaceByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QuerySpacesArgs = {
@@ -933,6 +1047,7 @@ export type QuerySpacesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<SpacesOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QuerySpacesConnectionArgs = {
@@ -946,10 +1061,12 @@ export type QuerySpacesConnectionArgs = {
   orderBy?: InputMaybe<Array<SpacesOrderBy>>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryTypeArgs = {
   id?: InputMaybe<Scalars['UUID']['input']>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryTypesListArgs = {
@@ -958,6 +1075,7 @@ export type QueryTypesListArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryTypesListConnectionArgs = {
@@ -970,15 +1088,18 @@ export type QueryTypesListConnectionArgs = {
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryValueArgs = {
   id: Scalars['String']['input'];
 };
 
+
 /** The root query type which gives access points into the data universe. */
 export type QueryValueByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryValuesArgs = {
@@ -988,6 +1109,7 @@ export type QueryValuesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ValuesOrderBy>>;
 };
+
 
 /** The root query type which gives access points into the data universe. */
 export type QueryValuesConnectionArgs = {
@@ -1150,6 +1272,7 @@ export type Space = Node & {
   valuesConnection: ValuesConnection;
 };
 
+
 export type SpaceEditorsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1161,6 +1284,7 @@ export type SpaceEditorsArgs = {
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
 
+
 export type SpaceEditorsListArgs = {
   condition?: InputMaybe<EditorCondition>;
   filter?: InputMaybe<EditorFilter>;
@@ -1168,6 +1292,7 @@ export type SpaceEditorsListArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
+
 
 export type SpaceMembersArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1180,6 +1305,7 @@ export type SpaceMembersArgs = {
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
 
+
 export type SpaceMembersListArgs = {
   condition?: InputMaybe<MemberCondition>;
   filter?: InputMaybe<MemberFilter>;
@@ -1188,6 +1314,7 @@ export type SpaceMembersListArgs = {
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
 
+
 export type SpaceRelationsArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -1195,6 +1322,7 @@ export type SpaceRelationsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
+
 
 export type SpaceRelationsConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1207,6 +1335,7 @@ export type SpaceRelationsConnectionArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
+
 export type SpaceValuesArgs = {
   condition?: InputMaybe<ValueCondition>;
   filter?: InputMaybe<ValueFilter>;
@@ -1214,6 +1343,7 @@ export type SpaceValuesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ValuesOrderBy>>;
 };
+
 
 export type SpaceValuesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1300,7 +1430,9 @@ export type SpaceToManyValueFilter = {
   some?: InputMaybe<ValueFilter>;
 };
 
-export type SpaceTypes = 'PERSONAL' | 'PUBLIC';
+export type SpaceTypes =
+  | 'PERSONAL'
+  | 'PUBLIC';
 
 /** A connection to a list of `Space` values. */
 export type SpacesConnection = {
@@ -1325,7 +1457,12 @@ export type SpacesEdge = {
 };
 
 /** Methods to use when ordering `Space`. */
-export type SpacesOrderBy = 'ID_ASC' | 'ID_DESC' | 'NATURAL' | 'PRIMARY_KEY_ASC' | 'PRIMARY_KEY_DESC';
+export type SpacesOrderBy =
+  | 'ID_ASC'
+  | 'ID_DESC'
+  | 'NATURAL'
+  | 'PRIMARY_KEY_ASC'
+  | 'PRIMARY_KEY_DESC';
 
 /** A filter to be used against String fields. All fields are combined with a logical ‘and.’ */
 export type StringFilter = {
@@ -1473,6 +1610,7 @@ export type UuidListFilter = {
 
 export type Value = Node & {
   __typename?: 'Value';
+  boolean?: Maybe<Scalars['Boolean']['output']>;
   /** Reads a single `Entity` that is related to this `Value`. */
   entity?: Maybe<Entity>;
   entityId: Scalars['UUID']['output'];
@@ -1480,38 +1618,51 @@ export type Value = Node & {
   language?: Maybe<Scalars['String']['output']>;
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID']['output'];
+  number?: Maybe<Scalars['BigFloat']['output']>;
+  point?: Maybe<Scalars['String']['output']>;
   /** Reads a single `Property` that is related to this `Value`. */
   property?: Maybe<Property>;
   propertyId: Scalars['UUID']['output'];
   /** Reads a single `Space` that is related to this `Value`. */
   space?: Maybe<Space>;
   spaceId: Scalars['UUID']['output'];
+  string?: Maybe<Scalars['String']['output']>;
+  time?: Maybe<Scalars['String']['output']>;
   unit?: Maybe<Scalars['String']['output']>;
-  value: Scalars['String']['output'];
 };
 
 /** A condition to be used against `Value` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type ValueCondition = {
+  /** Checks for equality with the object’s `boolean` field. */
+  boolean?: InputMaybe<Scalars['Boolean']['input']>;
   /** Checks for equality with the object’s `entityId` field. */
   entityId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `language` field. */
   language?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `number` field. */
+  number?: InputMaybe<Scalars['BigFloat']['input']>;
+  /** Checks for equality with the object’s `point` field. */
+  point?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `propertyId` field. */
   propertyId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `spaceId` field. */
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `string` field. */
+  string?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `time` field. */
+  time?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `unit` field. */
   unit?: InputMaybe<Scalars['String']['input']>;
-  /** Checks for equality with the object’s `value` field. */
-  value?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `Value` object types. All fields are combined with a logical ‘and.’ */
 export type ValueFilter = {
   /** Checks for all expressions in this list. */
   and?: InputMaybe<Array<ValueFilter>>;
+  /** Filter by the object’s `boolean` field. */
+  boolean?: InputMaybe<BooleanFilter>;
   /** Filter by the object’s `entity` relation. */
   entity?: InputMaybe<EntityFilter>;
   /** Filter by the object’s `entityId` field. */
@@ -1522,8 +1673,12 @@ export type ValueFilter = {
   language?: InputMaybe<StringFilter>;
   /** Negates the expression. */
   not?: InputMaybe<ValueFilter>;
+  /** Filter by the object’s `number` field. */
+  number?: InputMaybe<BigFloatFilter>;
   /** Checks for any expressions in this list. */
   or?: InputMaybe<Array<ValueFilter>>;
+  /** Filter by the object’s `point` field. */
+  point?: InputMaybe<StringFilter>;
   /** Filter by the object’s `property` relation. */
   property?: InputMaybe<PropertyFilter>;
   /** Filter by the object’s `propertyId` field. */
@@ -1532,10 +1687,12 @@ export type ValueFilter = {
   space?: InputMaybe<SpaceFilter>;
   /** Filter by the object’s `spaceId` field. */
   spaceId?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `string` field. */
+  string?: InputMaybe<StringFilter>;
+  /** Filter by the object’s `time` field. */
+  time?: InputMaybe<StringFilter>;
   /** Filter by the object’s `unit` field. */
   unit?: InputMaybe<StringFilter>;
-  /** Filter by the object’s `value` field. */
-  value?: InputMaybe<StringFilter>;
 };
 
 /** A connection to a list of `Value` values. */
@@ -1562,6 +1719,8 @@ export type ValuesEdge = {
 
 /** Methods to use when ordering `Value`. */
 export type ValuesOrderBy =
+  | 'BOOLEAN_ASC'
+  | 'BOOLEAN_DESC'
   | 'ENTITY_ID_ASC'
   | 'ENTITY_ID_DESC'
   | 'ID_ASC'
@@ -1569,206 +1728,47 @@ export type ValuesOrderBy =
   | 'LANGUAGE_ASC'
   | 'LANGUAGE_DESC'
   | 'NATURAL'
+  | 'NUMBER_ASC'
+  | 'NUMBER_DESC'
+  | 'POINT_ASC'
+  | 'POINT_DESC'
   | 'PRIMARY_KEY_ASC'
   | 'PRIMARY_KEY_DESC'
   | 'PROPERTY_ID_ASC'
   | 'PROPERTY_ID_DESC'
   | 'SPACE_ID_ASC'
   | 'SPACE_ID_DESC'
+  | 'STRING_ASC'
+  | 'STRING_DESC'
+  | 'TIME_ASC'
+  | 'TIME_DESC'
   | 'UNIT_ASC'
-  | 'UNIT_DESC'
-  | 'VALUE_ASC'
-  | 'VALUE_DESC';
+  | 'UNIT_DESC';
 
 export type SchemaBrowserTypesQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-export type SchemaBrowserTypesQuery = {
-  __typename?: 'Query';
-  typesList?: Array<{
-    __typename?: 'Entity';
-    id: string;
-    name?: string | null;
-    description?: string | null;
-    properties?: Array<{
-      __typename?: 'Property';
-      id: string;
-      name?: string | null;
-      dataType: DataTypes;
-      relationValueTypes?: Array<{
-        __typename?: 'Entity';
-        id: string;
-        name?: string | null;
-        description?: string | null;
-        properties?: Array<{ __typename?: 'Property'; id: string; name?: string | null; dataType: DataTypes }> | null;
-      }> | null;
-    }> | null;
-  }> | null;
-};
 
-export type PropertiesQueryVariables = Exact<{
+export type SchemaBrowserTypesQuery = { __typename?: 'Query', typesList?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, dataType: DataTypes, relationValueTypes?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, dataType: DataTypes }> | null }> | null }> | null }> | null };
+
+export type TypeSearchQueryVariables = Exact<{
+  query: Scalars['String']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-export type PropertiesQuery = {
-  __typename?: 'Query';
-  properties?: Array<{
-    __typename?: 'Property';
-    id: string;
-    name?: string | null;
-    description?: string | null;
-    dataType: DataTypes;
-    relationValueTypes?: Array<{
-      __typename?: 'Entity';
-      id: string;
-      name?: string | null;
-      description?: string | null;
-      properties?: Array<{ __typename?: 'Property'; id: string; dataType: DataTypes; name?: string | null }> | null;
-    }> | null;
-  }> | null;
-};
 
-export const SchemaBrowserTypesDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: { kind: 'Name', value: 'SchemaBrowserTypes' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
-          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'typesList' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'first' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'properties' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'relationValueTypes' },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                            {
-                              kind: 'Field',
-                              name: { kind: 'Name', value: 'properties' },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                  { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                                  { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
-export const PropertiesDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: { kind: 'Name', value: 'Properties' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
-          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'properties' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'first' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'relationValueTypes' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'properties' },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<PropertiesQuery, PropertiesQueryVariables>;
+export type TypeSearchQuery = { __typename?: 'Query', typesList?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, dataType: DataTypes, renderableType?: string | null, relationValueTypes?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, dataType: DataTypes }> | null }> | null }> | null }> | null };
+
+export type PropertiesQueryVariables = Exact<{
+  query?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type PropertiesQuery = { __typename?: 'Query', properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, description?: string | null, dataType: DataTypes, relationValueTypes?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataTypes, name?: string | null }> | null }> | null }> | null };
+
+
+export const SchemaBrowserTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SchemaBrowserTypes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"typesList"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
+export const TypeSearchDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TypeSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"typesList"},"name":{"kind":"Name","value":"search"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"backlinksExist"},"value":{"kind":"BooleanValue","value":true}},{"kind":"ObjectField","name":{"kind":"Name","value":"typeIds"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"e7d737c5-3676-4c60-9fa1-6aa64a8c90ad","block":false}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"renderableType"}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<TypeSearchQuery, TypeSearchQueryVariables>;
+export const PropertiesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Properties"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"properties"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"or"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"includesInsensitive"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}]}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"description"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"includesInsensitive"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}]}}]}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<PropertiesQuery, PropertiesQueryVariables>;

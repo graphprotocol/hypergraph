@@ -11,7 +11,8 @@ import {
 } from '@headlessui/react';
 import { CaretUpDownIcon, CheckIcon } from '@phosphor-icons/react';
 import { useStore } from '@tanstack/react-form';
-import { Array as EffectArray, String as EffectString } from 'effect';
+import { String as EffectString } from 'effect';
+import debounce from 'lodash.debounce';
 import { useState } from 'react';
 
 import { type ExtendedProperty, usePropertiesQuery } from '@/hooks/useKnowledgeGraph.tsx';
@@ -34,17 +35,20 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
   const hasErrors = errors.length > 0 && touched;
 
   const [propsFilter, setPropsFilter] = useState('');
+  const debounceSearch = debounce<(val: string) => void>((val: string) => {
+    setPropsFilter(val);
+  }, 300);
 
-  const { data } = usePropertiesQuery({
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    select(data) {
-      if (EffectString.isEmpty(propsFilter)) {
-        return data;
-      }
-      return EffectArray.filter(data, (prop) => prop.slug.includes(propsFilter.toLowerCase()));
+  const { data } = usePropertiesQuery(
+    {
+      query: EffectString.isNonEmpty(propsFilter) ? EffectString.toLowerCase(propsFilter) : null,
+      first: 50,
     },
-  });
+    {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    },
+  );
   const props = data ?? [];
 
   return (
@@ -62,7 +66,7 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
         field.handleChange(val.name || val.id);
         propertySelected(val);
       }}
-      onClose={() => setPropsFilter('')}
+      onClose={() => debounceSearch('')}
       immediate
     >
       {label != null ? (
@@ -76,7 +80,7 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
           className="block min-w-0 grow py-1.5 pr-12 data-[state=invalid]:pr-10 text-base bg-white dark:bg-white/5 pl-3 outline -outline-offset-1 outline-gray-300 dark:outline-white/10 rounded-md text-gray-900 dark:text-white data-[state=invalid]:text-red-900 dark:data-[state=invalid]:text-red-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 data-[state=invalid]:placeholder:text-red-700 dark:data-[state=invalid]:placeholder:text-red-400 focus:outline sm:text-sm/6 focus-visible:outline-none"
           onChange={(event) => {
             const value = event.target.value;
-            setPropsFilter(value);
+            debounceSearch(value);
             field.handleChange(value);
           }}
           onBlur={() => setPropsFilter('')}

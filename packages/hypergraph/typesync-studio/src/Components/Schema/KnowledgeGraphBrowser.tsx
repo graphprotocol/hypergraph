@@ -1,34 +1,51 @@
 'use client';
 
-import { Disclosure, DisclosureButton, DisclosurePanel, Input } from '@headlessui/react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { CaretDownIcon, CaretRightIcon, PlusIcon } from '@phosphor-icons/react';
-import { Array as EffectArray, pipe } from 'effect';
+import { createFormHook } from '@tanstack/react-form';
+import { Array as EffectArray, String as EffectString } from 'effect';
 import { useState } from 'react';
 
+import { fieldContext, formContext } from '@/Components/Form/form.ts';
+import { TextField } from '@/Components/Form/TextField.tsx';
 import { type ExtendedSchemaBrowserType, useSchemaBrowserQuery } from '@/hooks/useKnowledgeGraph.tsx';
 import { mapKGDataTypeToPrimitiveType } from '@/utils/type-mapper.ts';
 import { InlineCode } from '../InlineCode.tsx';
 import { Loading } from '../Loading.tsx';
+
+const { useAppForm } = createFormHook({
+  fieldComponents: {
+    TextField,
+  },
+  formComponents: {},
+  fieldContext,
+  formContext,
+});
 
 export type KnowledgeGraphBrowserProps = Readonly<{
   typeSelected(type: ExtendedSchemaBrowserType): void;
 }>;
 export function KnowledgeGraphBrowser({ typeSelected }: KnowledgeGraphBrowserProps) {
   const [typeSearch, setTypeSearch] = useState('');
-
-  const { data: types, isLoading } = useSchemaBrowserQuery({
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    select(data) {
-      if (!typeSearch) {
-        return data;
-      }
-      return pipe(
-        data,
-        EffectArray.filter((type) => type.slug.includes(typeSearch.toLowerCase())),
-      );
+  const schemaBrowserForm = useAppForm({
+    defaultValues: {
+      search: '',
+    } as {
+      search: string;
     },
+    asyncDebounceMs: 300,
   });
+
+  const { data: types, isLoading } = useSchemaBrowserQuery(
+    {
+      query: EffectString.isNonEmpty(typeSearch) ? EffectString.toLowerCase(typeSearch) : null,
+      first: 100,
+    },
+    {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -43,15 +60,21 @@ export function KnowledgeGraphBrowser({ typeSelected }: KnowledgeGraphBrowserPro
       </div>
       <div className="bg-gray-100 dark:bg-slate-900 rounded-lg flex flex-col gap-y-3 pt-2">
         <div className="px-3 mt-2">
-          <Input
-            id="SchemaBrowserSearch"
-            name="SchemaBrowserSearch"
-            value={typeSearch}
-            onChange={(e) => setTypeSearch(e.target.value || '')}
-            type="search"
-            placeholder="Search types..."
-            className="block min-w-0 grow py-1.5 pl-2 pr-3 rounded-md bg-white dark:bg-slate-700 data-[state=invalid]:pr-10 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline sm:text-sm/6 focus-visible:outline-none w-full"
-          />
+          <schemaBrowserForm.AppField
+            name="search"
+            listeners={{
+              // wait 300ms before setting the TypeSearch state value.
+              // an update on that value will update the useSchemaBrowserQuery vars, sending a search query to the Knowledge Graph
+              onChangeDebounceMs: 300,
+              onChange({ value }) {
+                setTypeSearch(value);
+              },
+            }}
+          >
+            {(field) => (
+              <field.TextField id="search" name="search" type="search" placeholder="Search Knowledge Graph types..." />
+            )}
+          </schemaBrowserForm.AppField>
         </div>
         <ul className="px-4 divide-y divide-gray-100 dark:divide-gray-700 overflow-y-auto h-[500px] 2xl:h-[850px]">
           {(types ?? []).map((_type) => {

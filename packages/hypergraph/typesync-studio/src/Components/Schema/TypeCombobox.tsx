@@ -11,7 +11,8 @@ import {
 } from '@headlessui/react';
 import { CaretUpDownIcon, CheckIcon } from '@phosphor-icons/react';
 import { useStore } from '@tanstack/react-form';
-import { Array as EffectArray, String as EffectString } from 'effect';
+import { String as EffectString } from 'effect';
+import debounce from 'lodash.debounce';
 import { useState } from 'react';
 
 import { type ExtendedSchemaBrowserType, useSchemaBrowserQuery } from '@/hooks/useKnowledgeGraph.tsx';
@@ -33,16 +34,20 @@ export function TypeCombobox({ id, label, typeSelected, ...rest }: Readonly<Type
   const hasErrors = errors.length > 0 && touched;
 
   const [typesFilter, setTypesFilter] = useState('');
+  const debounceSearch = debounce<(val: string) => void>((val: string) => {
+    setTypesFilter(val);
+  }, 300);
 
-  const { data } = useSchemaBrowserQuery({
-    refetchOnMount: false,
-    select(data) {
-      if (EffectString.isEmpty(typesFilter)) {
-        return data;
-      }
-      return EffectArray.filter(data, (type) => type.slug.includes(typesFilter.toLowerCase()));
+  const { data } = useSchemaBrowserQuery(
+    {
+      query: EffectString.isNonEmpty(typesFilter) ? EffectString.toLowerCase(typesFilter) : null,
+      first: 50,
     },
-  });
+    {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    },
+  );
   const types = data ?? [];
 
   return (
@@ -61,7 +66,9 @@ export function TypeCombobox({ id, label, typeSelected, ...rest }: Readonly<Type
         // emit the change
         typeSelected(val);
       }}
-      onClose={() => setTypesFilter('')}
+      onClose={() => {
+        debounceSearch('');
+      }}
       immediate
     >
       {label != null ? (
@@ -75,11 +82,12 @@ export function TypeCombobox({ id, label, typeSelected, ...rest }: Readonly<Type
           className="block min-w-0 grow py-1.5 pr-12 data-[state=invalid]:pr-10 text-base bg-white dark:bg-white/5 pl-3 outline -outline-offset-1 outline-gray-300 dark:outline-white/10 rounded-md text-gray-900 dark:text-white data-[state=invalid]:text-red-900 dark:data-[state=invalid]:text-red-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 data-[state=invalid]:placeholder:text-red-700 dark:data-[state=invalid]:placeholder:text-red-400 focus:outline sm:text-sm/6 focus-visible:outline-none"
           onChange={(event) => {
             const value = event.target.value;
-            setTypesFilter(value);
+            debounceSearch(value);
             field.handleChange(value);
           }}
           onBlur={() => setTypesFilter('')}
           displayValue={(selectedType: string) => selectedType}
+          type="search"
         />
         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-hidden cursor-pointer">
           <CaretUpDownIcon className="size-5 text-gray-400 dark:text-gray-50" aria-hidden="true" />
