@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.4.1
+### Patch Changes
+
+- e324e68: use Id from @graphprotocol/hypergraph
+
 ## 0.4.0
 ### Minor Changes
 

@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.4.2
+### Patch Changes
+
+- Update templates to use the Id from @graphprotocol/hypergraph package
+
 ## 0.4.1
 ### Patch Changes
 
