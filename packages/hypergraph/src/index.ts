@@ -1,3 +1,4 @@
+export { Id } from '@graphprotocol/grc-20';
 export * as Connect from './connect/index.js';
 export * as Entity from './entity/index.js';
 export * as Identity from './identity/index.js';
