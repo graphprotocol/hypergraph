@@ -11,7 +11,6 @@ const config: ViteUserConfig = {
     alias: {
       ...alias('hypergraph'),
       ...alias('hypergraph-react'),
-      ...alias('typesync'),
     },
   },
 };

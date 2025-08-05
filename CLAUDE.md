@@ -13,7 +13,6 @@ Hypergraph is a local-first framework for building web3 consumer applications th
 # Run specific apps
 cd apps/events && pnpm dev      # Events demo app
 cd apps/server && pnpm dev      # Backend sync server
-cd apps/typesync && pnpm dev    # TypeSync development
 cd apps/connect && pnpm dev     # Geo Connect auth app
 ```
 
@@ -49,12 +48,10 @@ pnpm clean                      # Clean all build artifacts
 - **packages/** - Core libraries
   - `hypergraph/` - Main SDK with entity management, encryption, spaces, and inboxes
   - `hypergraph-react/` - React hooks and components
-  - `typesync/` - Schema management utilities
 - **apps/** - Complete applications
   - `server/` - Backend sync server (Express + Prisma + SQLite/PostgreSQL)
   - `events/` - Demo app showcasing the framework (Vite + React)
   - `connect/` - Geo Connect authentication app
-  - `typesync/` - CLI and web interface for schema development
   - `create-hypergraph/` - Project scaffolding tool
   - `next-example/` - Next.js integration example
 - **docs/** - Docusaurus documentation site
