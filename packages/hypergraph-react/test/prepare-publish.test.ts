@@ -246,9 +246,9 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', value: 'Old Name' },
-            { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', value: Graph.serializeNumber(25) },
-            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', value: Graph.serializeBoolean(false) },
+            { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', string: 'Old Name' },
+            { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', number: 25 },
+            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', boolean: false },
           ],
           relationsList: [],
         },
@@ -284,18 +284,18 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', value: 'Same Name' },
-            { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', value: Graph.serializeNumber(30) },
-            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', value: Graph.serializeBoolean(true) },
-            { propertyId: 'b5c0e2c7-9ac9-415e-8ffe-34f8b530f126', value: Graph.serializeDate(new Date('1993-01-01')) },
-            { propertyId: '45e707a5-4364-42fb-bb0b-927a5a8bc061', value: Graph.serializePoint([0, 0]) },
+            { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', string: 'Same Name' },
+            { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', number: 30 },
+            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', boolean: Graph.serializeBoolean(true) },
+            { propertyId: 'b5c0e2c7-9ac9-415e-8ffe-34f8b530f126', time: Graph.serializeDate(new Date('1993-01-01')) },
+            { propertyId: '45e707a5-4364-42fb-bb0b-927a5a8bc061', point: Graph.serializePoint([0, 0]) },
           ],
           relationsList: [],
         },
       });
 
       const entity = {
-        id: '8f9a0b1c-2d3e-4f5a-6b7c-8d9e0f1a2b3c',
+        id: '778ee1c4-a4ac-424c-81b0-565147fca460',
         type: 'Person',
         name: 'Same Name',
         age: 30,
