@@ -1,5 +1,15 @@
 # connect
 
+## 0.1.3
+### Patch Changes
+
+- f4fd295: update grc-20 library
+- Updated dependencies [b37483e]
+- Updated dependencies [f4fd295]
+- Updated dependencies [3f91e84]
+  - @graphprotocol/hypergraph@0.3.1
+  - @graphprotocol/hypergraph-react@0.3.1
+
 ## 0.1.2
 
 ### Patch Changes

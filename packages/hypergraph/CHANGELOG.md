@@ -1,5 +1,11 @@
 # @graphprotocol/hypergraph
 
+## 0.3.1
+### Patch Changes
+
+- b37483e: export Id (re-exported from grc-20)
+- f4fd295: update grc-20 library
+
 ## 0.3.0
 ### Minor Changes
 
