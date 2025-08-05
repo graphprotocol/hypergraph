@@ -509,7 +509,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  * @example
  * ```ts
  * import { Id } from "@graphprotocol/grc-20"
- * import { generateMapping } from "@graphprotocol/typesync"
+ * import { generateMapping } from "@graphprotocol/hypergraph"
  *
  * const schema: Schema = {
  *   types: [

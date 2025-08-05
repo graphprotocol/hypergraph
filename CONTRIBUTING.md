@@ -29,24 +29,6 @@ cd apps/server
 pnpm prisma migrate dev # this will also generate the Prisma client
 ```
 
-To develop the Typesync CLI, you can run:
-
-```sh
-cd apps/typesync
-pnpm dev
-```
-
-To develop the Typesync frontend run:
-
-```sh
-# open the vite.config.ts and comment out the server object that specifies the port to be 3000
-cd apps/typesync
-pnpm run dev:cli
-# in another tab
-cd apps/typesync
-pnpm dev:client
-```
-
 To develop the create-hypergraph, run:
 
 ```sh
@@ -89,7 +71,7 @@ pnpm up --interactive --latest -r
 
 ## Publishing
 
-Update the version in the `package.json` files (hypergraph, hypergraph-react, typesync)
+Update the version in the `package.json` files (hypergraph, hypergraph-react)
 
 ```sh
 pnpm changeset version
