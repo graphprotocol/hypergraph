@@ -311,12 +311,12 @@ function fieldToEntityString({
   // Convert type to Entity type
   const entityType = (() => {
     switch (true) {
-      case dataType === 'Text':
-        return 'Type.Text';
+      case dataType === 'String':
+        return 'Type.String';
       case dataType === 'Number':
         return 'Type.Number';
-      case dataType === 'Checkbox':
-        return 'Type.Checkbox';
+      case dataType === 'Boolean':
+        return 'Type.Boolean';
       case dataType === 'Date':
         return 'Type.Date';
       case dataType === 'Point':
@@ -326,7 +326,7 @@ function fieldToEntityString({
         return `Type.${dataType}`;
       default:
         // how to handle complex types
-        return 'Type.Text';
+        return 'Type.String';
     }
   })();
   // adds a tab before the property

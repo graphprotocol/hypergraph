@@ -248,7 +248,7 @@ describe('preparePublish', () => {
           valuesList: [
             { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', value: 'Old Name' },
             { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', value: Graph.serializeNumber(25) },
-            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', value: Graph.serializeCheckbox(false) },
+            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', value: Graph.serializeBoolean(false) },
           ],
           relationsList: [],
         },
@@ -286,7 +286,7 @@ describe('preparePublish', () => {
           valuesList: [
             { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', value: 'Same Name' },
             { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', value: Graph.serializeNumber(30) },
-            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', value: Graph.serializeCheckbox(true) },
+            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', value: Graph.serializeBoolean(true) },
             { propertyId: 'b5c0e2c7-9ac9-415e-8ffe-34f8b530f126', value: Graph.serializeDate(new Date('1993-01-01')) },
             { propertyId: '45e707a5-4364-42fb-bb0b-927a5a8bc061', value: Graph.serializePoint([0, 0]) },
           ],
@@ -629,7 +629,7 @@ describe('preparePublish', () => {
           valuesList: [
             { propertyId: '2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d', value: 'Existing Entity' },
             { propertyId: 'eaf9f4f8-5647-4228-aff5-8725368fc87c', value: Graph.serializeNumber(50) },
-            { propertyId: '2742d8b6-3059-4adb-b439-fdfcd588dccb', value: Graph.serializeCheckbox(true) },
+            { propertyId: '2742d8b6-3059-4adb-b439-fdfcd588dccb', value: Graph.serializeBoolean(true) },
           ],
           relationsList: [],
         },

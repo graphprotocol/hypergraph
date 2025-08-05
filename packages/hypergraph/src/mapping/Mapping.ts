@@ -772,7 +772,7 @@ export class RelationValueTypeDoesNotExistError extends Data.TaggedError(
 export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): CreatePropertyParams['dataType'] {
   switch (true) {
     case dataType === 'Boolean': {
-      return 'CHECKBOX';
+      return 'BOOLEAN';
     }
     case dataType === 'Date': {
       return 'TIME';
@@ -787,7 +787,7 @@ export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): 
       return 'RELATION';
     }
     default: {
-      return 'TEXT';
+      return 'STRING';
     }
   }
 }

@@ -41,7 +41,7 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
         }
         let serializedValue: string = data[key];
         if (TypeUtils.isBooleanOrOptionalBooleanType(fields[key])) {
-          serializedValue = Graph.serializeCheckbox(data[key]);
+          serializedValue = Graph.serializeBoolean(data[key]);
         } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
           serializedValue = Graph.serializeDate(data[key]);
         } else if (TypeUtils.isPointOrOptionalPointType(fields[key])) {

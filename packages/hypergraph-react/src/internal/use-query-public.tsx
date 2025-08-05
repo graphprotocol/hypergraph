@@ -20,7 +20,11 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int) {
     name
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
-      value
+      string
+      boolean
+      number
+      time
+      point
     }
   }
 }
@@ -36,7 +40,11 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
     name
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
-      value
+      string
+      boolean
+      number
+      time
+      point
     }
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
@@ -46,7 +54,11 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
         name
         valuesList(filter: {spaceId: {is: $spaceId}}) {
           propertyId
-          value
+          string
+          boolean
+          number
+          time
+          point
         }
       }
       typeId
@@ -65,7 +77,11 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
     name
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
-      value
+      string
+      boolean
+      number
+      time
+      point
     }
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
@@ -75,7 +91,11 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
         name
         valuesList(filter: {spaceId: {is: $spaceId}}) {
           propertyId
-          value
+          string
+          boolean
+          number
+          time
+          point
         }
         relationsList(
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
@@ -86,7 +106,11 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
             name
             valuesList(filter: {spaceId: {is: $spaceId}}) {
               propertyId
-              value
+              string
+              boolean
+              number
+              time
+              point
             }
           }
           typeId
@@ -104,7 +128,11 @@ type EntityQueryResult = {
     name: string;
     valuesList: {
       propertyId: string;
-      value: string;
+      string: string;
+      boolean: boolean;
+      number: number;
+      time: string;
+      point: string;
     }[];
     relationsList: {
       toEntity: {
@@ -112,7 +140,11 @@ type EntityQueryResult = {
         name: string;
         valuesList: {
           propertyId: string;
-          value: string;
+          string: string;
+          boolean: boolean;
+          number: number;
+          time: string;
+          point: string;
         }[];
         relationsList: {
           toEntity: {
@@ -120,7 +152,11 @@ type EntityQueryResult = {
             name: string;
             valuesList: {
               propertyId: string;
-              value: string;
+              string: string;
+              boolean: boolean;
+              number: number;
+              time: string;
+              point: string;
             }[];
           };
           typeId: string;
@@ -140,7 +176,11 @@ type RecursiveQueryEntity = {
   name: string;
   valuesList?: {
     propertyId: string;
-    value: string;
+    string: string;
+    boolean: boolean;
+    number: number;
+    time: string;
+    point: string;
   }[];
   relationsList?: {
     toEntity: RecursiveQueryEntity;
@@ -149,23 +189,23 @@ type RecursiveQueryEntity = {
 };
 
 const convertPropertyValue = (
-  property: { propertyId: string; value: string },
+  property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
   key: string,
   type: Entity.AnyNoContext,
 ) => {
-  if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.value !== undefined) {
-    return Boolean(property.value);
+  if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.boolean !== undefined) {
+    return Boolean(property.boolean);
   }
-  if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.value !== undefined) {
-    return property.value;
+  if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.point !== undefined) {
+    return property.point;
   }
-  if (TypeUtils.isDateOrOptionalDateType(type.fields[key]) && property.value !== undefined) {
-    return property.value;
+  if (TypeUtils.isDateOrOptionalDateType(type.fields[key]) && property.time !== undefined) {
+    return property.time;
   }
-  if (TypeUtils.isNumberOrOptionalNumberType(type.fields[key]) && property.value !== undefined) {
-    return Number(property.value);
+  if (TypeUtils.isNumberOrOptionalNumberType(type.fields[key]) && property.number !== undefined) {
+    return Number(property.number);
   }
-  return property.value;
+  return property.string;
 };
 
 const convertRelations = <S extends Entity.AnyNoContext>(

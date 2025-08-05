@@ -37,7 +37,7 @@ export const InsertAppSchema = Schema.Struct({
         {
           name: 'Account',
           knowledgeGraphId: null,
-          properties: [{ name: 'username', knowledgeGraphId: null, dataType: 'Text' }],
+          properties: [{ name: 'username', knowledgeGraphId: null, dataType: 'String' }],
         },
         {
           name: 'Event',
