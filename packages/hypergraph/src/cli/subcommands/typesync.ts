@@ -40,6 +40,18 @@ const hypergraphTypeSyncApi = HttpApi.make('HypergraphTypeSyncApi')
           .addError(HttpApiError.InternalServerError)
           .addError(HttpApiError.BadRequest),
       )
+      .add(
+        HttpApiEndpoint.post('SyncHypergraphMapping')`/mapping/sync`
+          .setPayload(
+            Schema.Struct({
+              schema: Model.TypesyncHypergraphSchema,
+              mapping: Model.TypesyncHypergraphMapping,
+            }),
+          )
+          .addSuccess(Model.TypesyncHypergraphSchema)
+          .addError(HttpApiError.InternalServerError)
+          .addError(HttpApiError.BadRequest),
+      )
       .prefix('/v1'),
   )
   .prefix('/api');
@@ -73,10 +85,20 @@ const hypergraphTypeSyncApiLive = HttpApiBuilder.group(hypergraphTypeSyncApi, 'S
         }),
       )
       .handle('SyncHypergraphSchema', ({ payload }) =>
-        schemaStream.sync(payload).pipe(
+        schemaStream.syncSchema(payload).pipe(
           Effect.tapErrorCause((cause) =>
             Effect.logError(
               AnsiDoc.cat(AnsiDoc.text('Failure syncing Hypergraph Schema:'), AnsiDoc.text(Cause.pretty(cause))),
+            ),
+          ),
+          Effect.catchAll(() => new HttpApiError.InternalServerError()),
+        ),
+      )
+      .handle('SyncHypergraphMapping', ({ payload }) =>
+        schemaStream.syncMapping(payload.schema, payload.mapping).pipe(
+          Effect.tapErrorCause((cause) =>
+            Effect.logError(
+              AnsiDoc.cat(AnsiDoc.text('Failure syncing Hypergraph mapping:'), AnsiDoc.text(Cause.pretty(cause))),
             ),
           ),
           Effect.catchAll(() => new HttpApiError.InternalServerError()),

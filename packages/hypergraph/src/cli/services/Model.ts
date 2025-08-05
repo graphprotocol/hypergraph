@@ -48,3 +48,31 @@ export class TypesyncHypergraphSchema extends Schema.Class<TypesyncHypergraphSch
     }),
   ),
 }) {}
+
+/**
+ * Extending the hypergraph [Mapping definition](../../mapping/Mapping.ts) to make it an effect Schema instance.
+ * Allows decoding as well as passing in the api request payload
+ */
+export const TypesyncHypergraphMapping = Schema.Record({
+  key: Schema.NonEmptyTrimmedString,
+  value: Schema.Struct({
+    typeIds: Schema.Array(Schema.UUID).pipe(Schema.minItems(1)),
+    properties: Schema.optional(
+      Schema.UndefinedOr(
+        Schema.Record({
+          key: Schema.NonEmptyTrimmedString,
+          value: Schema.UUID,
+        }),
+      ),
+    ),
+    relations: Schema.optional(
+      Schema.UndefinedOr(
+        Schema.Record({
+          key: Schema.NonEmptyTrimmedString,
+          value: Schema.UUID,
+        }),
+      ),
+    ),
+  }),
+});
+export type TypesyncHypergraphMapping = typeof TypesyncHypergraphMapping.Type;

@@ -764,11 +764,11 @@ importers:
         specifier: ^2.0.6
         version: 2.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@graphprotocol/grc-20':
-        specifier: ^0.21.6
-        version: 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.24.1
+        version: 0.24.1(bufferutil@4.0.9)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@graphprotocol/hypergraph':
         specifier: '*'
-        version: 0.3.0(@effect/platform@0.90.0(effect@3.17.4))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.1)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        version: 0.3.0(@effect/platform@0.90.0(effect@3.17.6))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.1)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/hashes':
         specifier: ^1.8.0
         version: 1.8.0
@@ -776,8 +776,8 @@ importers:
         specifier: ^5.75.5
         version: 5.84.1(react@19.1.1)
       effect:
-        specifier: ^3.17.1
-        version: 3.17.4
+        specifier: ^3.17.4
+        version: 3.17.6
       graphql-request:
         specifier: ^7.1.2
         version: 7.2.0(graphql@16.11.0)
@@ -806,8 +806,8 @@ importers:
         specifier: ^0.51.1
         version: 0.51.1(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4)
       '@graphprotocol/grc-20':
-        specifier: ^0.23.1
-        version: 0.23.1(bufferutil@4.0.9)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+        specifier: ^0.24.1
+        version: 0.24.1(bufferutil@4.0.9)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/ciphers':
         specifier: ^1.3.0
         version: 1.3.0
@@ -15992,6 +15992,12 @@ snapshots:
       effect: 3.17.4
       uuid: 11.1.0
 
+  '@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
+    dependencies:
+      '@effect/platform': 0.90.0(effect@3.17.6)
+      effect: 3.17.6
+      uuid: 11.1.0
+
   '@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4)':
     dependencies:
       '@effect/platform': 0.90.0(effect@3.17.4)
@@ -16062,6 +16068,14 @@ snapshots:
     dependencies:
       '@opentelemetry/semantic-conventions': 1.34.0
       effect: 3.17.4
+      find-my-way-ts: 0.1.6
+      msgpackr: 1.11.4
+      multipasta: 0.2.7
+
+  '@effect/platform@0.90.0(effect@3.17.6)':
+    dependencies:
+      '@opentelemetry/semantic-conventions': 1.34.0
+      effect: 3.17.6
       find-my-way-ts: 0.1.6
       msgpackr: 1.11.4
       multipasta: 0.2.7
@@ -16882,31 +16896,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@graphprotocol/grc-20@0.23.1(bufferutil@4.0.9)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
-    dependencies:
-      '@bufbuild/protobuf': 1.10.1
-      effect: 3.17.4
-      fflate: 0.8.2
-      fractional-indexing-jittered: 1.0.0
-      image-size: 2.0.2
-      permissionless: 0.2.52(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))
-      uuid: 11.1.0
-      viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
-    transitivePeerDependencies:
-      - bufferutil
-      - ox
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@graphprotocol/grc-20@0.23.1(bufferutil@4.0.9)(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
-      effect: 3.17.4
+      effect: 3.17.6
       fflate: 0.8.2
       fractional-indexing-jittered: 1.0.0
       image-size: 2.0.2
-      permissionless: 0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))
+      permissionless: 0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14))
       uuid: 11.1.0
       viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14)
     transitivePeerDependencies:
@@ -16950,11 +16947,11 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@graphprotocol/hypergraph@0.3.0(@effect/platform@0.90.0(effect@3.17.4))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.1)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
+  '@graphprotocol/hypergraph@0.3.0(@effect/platform@0.90.0(effect@3.17.6))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.1)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@automerge/automerge': 2.2.9
       '@automerge/automerge-repo': 2.0.6
-      '@effect/experimental': 0.51.1(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4)
+      '@effect/experimental': 0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       '@graphprotocol/grc-20': 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/ciphers': 1.3.0
       '@noble/curves': 1.9.1
@@ -16964,7 +16961,7 @@ snapshots:
       '@serenity-kit/noble-sodium': 0.2.1
       '@xstate/store': 3.5.1(react@19.1.1)(solid-js@1.9.5)
       bs58check: 4.0.0
-      effect: 3.17.4
+      effect: 3.17.6
       permissionless: 0.2.47(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(viem@2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))
       siwe: 3.0.0(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       uuid: 11.1.0
@@ -26553,9 +26550,9 @@ snapshots:
     optionalDependencies:
       ox: 0.6.9(typescript@5.8.3)(zod@3.25.51)
 
-  permissionless@0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)):
+  permissionless@0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14)):
     dependencies:
-      viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
+      viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14)
     optionalDependencies:
       ox: 0.6.9(typescript@5.8.3)(zod@4.0.14)
 

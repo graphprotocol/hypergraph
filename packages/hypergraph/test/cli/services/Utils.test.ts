@@ -1188,8 +1188,8 @@ describe('buildMappingFileFromSchema', () => {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   User: {
@@ -1238,8 +1238,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   User: {
@@ -1294,8 +1294,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Product: {
@@ -1354,8 +1354,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Post: {
@@ -1450,8 +1450,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Event: {
@@ -1506,8 +1506,8 @@ export const mapping: Mapping = {
 
     // When knowledgeGraphId is null, generateMapping will create new IDs
     // We just check the structure is correct
-    expect(result).toMatch(/import \{ Id \} from '@graphprotocol\/grc-20';/);
-    expect(result).toMatch(/import type \{ Mapping \} from '@graphprotocol\/typesync\/Mapping';/);
+    expect(result).toMatch(/import \{ Id \} from '@graphprotocol\/hypergraph';/);
+    expect(result).toMatch(/import type \{ Mapping \} from '@graphprotocol\/hypergraph\/mapping';/);
     expect(result).toMatch(/export const mapping: Mapping = \{/);
     expect(result).toMatch(/User: \{/);
     expect(result).toMatch(/typeIds: \[Id\("[a-f0-9-]+"\)\],/);
@@ -1543,8 +1543,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Settings: {
@@ -1603,8 +1603,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Friendship: {
@@ -1675,8 +1675,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   UserProfile: {
@@ -1830,8 +1830,8 @@ export const mapping: Mapping = {
     };
 
     const result = buildMappingFileFromSchema(schema);
-    const expected = `import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Event: {

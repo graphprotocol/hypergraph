@@ -4,12 +4,14 @@ import { AnsiDoc } from '@effect/printer-ansi';
 import { Cause, Data, Effect, Array as EffectArray, Option, Stream } from 'effect';
 import type { NonEmptyReadonlyArray } from 'effect/Array';
 import { type Mapping, propertyIsRelation } from '../../mapping/Mapping.js';
+import { toCamelCase, toPascalCase } from '../../mapping/Utils.js';
 import {
+  type TypesyncHypergraphMapping,
   TypesyncHypergraphSchema,
   TypesyncHypergraphSchemaType,
   type TypesyncHypergraphSchemaTypeProperty,
 } from './Model.js';
-import { buildSchemaFile, parseHypergraphMapping, parseSchema } from './Utils.js';
+import { buildMappingFile, buildSchemaFile, parseHypergraphMapping, parseSchema } from './Utils.js';
 
 export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaStreamBuilder>()(
   '/Hypergraph/cli/services/TypesyncSchemaStreamBuilder',
@@ -193,7 +195,13 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
           );
         });
 
-      const sync = (schema: TypesyncHypergraphSchema) =>
+      /**
+       * Write the user-submitted Hypergraph schema to the schema.ts file in the users repo.
+       *
+       * @param schema the user-submitted Hypergraph schema from the Typesync UI
+       * @returns the updated Hypergraph schema
+       */
+      const syncSchema = (schema: TypesyncHypergraphSchema) =>
         Effect.gen(function* () {
           const cwd = process.cwd();
 
@@ -232,7 +240,72 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
           });
         });
 
-      return { hypergraphSchemaStream, sync } as const;
+      /**
+       * Update the mapping.ts file in the users repo with the up-to-date, published to the Knowledge Graph, mapping
+       *
+       * @param schema the Hypergraph schema
+       * @param mapping the up-to-date Hypergraph Mapping with all types/properties having Id
+       * @returns the updated schema with connected knowledgeGraphIds
+       */
+      const syncMapping = (schema: TypesyncHypergraphSchema, mapping: TypesyncHypergraphMapping) =>
+        Effect.gen(function* () {
+          const cwd = process.cwd();
+
+          const mappingFilePath = yield* kv
+            .get(MAPPING_FILE_PATH_STORAGE_KEY)
+            .pipe(Effect.map(Option.getOrElse(() => path.join(cwd, 'src', 'mapping.ts'))));
+          // update mapping file with updated content from the typesync studio UI
+          yield* fs.writeFileString(mappingFilePath, buildMappingFile(mapping));
+
+          // update Schema to update with generated GRC-20 Ids for types/properties
+          return TypesyncHypergraphSchema.make({
+            types: EffectArray.map(schema.types, (type) => {
+              const mappingEntry = mapping[toPascalCase(type.name)];
+
+              let knowledgeGraphId = type.knowledgeGraphId;
+              if (!knowledgeGraphId) {
+                const typeKnowledgeGraphId = mappingEntry?.typeIds?.[0] ? mappingEntry.typeIds[0] : null;
+                if (typeKnowledgeGraphId) {
+                  knowledgeGraphId = typeKnowledgeGraphId;
+                }
+              }
+
+              return TypesyncHypergraphSchemaType.make({
+                name: type.name,
+                knowledgeGraphId,
+                status: knowledgeGraphId != null ? 'published' : 'synced',
+                properties: EffectArray.map(type.properties, (prop) => {
+                  const propName = toCamelCase(prop.name);
+
+                  if (propertyIsRelation(prop)) {
+                    const relKnowledgeGraphId = prop.knowledgeGraphId || mappingEntry?.relations?.[propName] || null;
+                    return {
+                      name: prop.name,
+                      knowledgeGraphId: relKnowledgeGraphId,
+                      dataType: prop.dataType,
+                      relationType: prop.relationType,
+                      status: relKnowledgeGraphId != null ? 'published' : 'synced',
+                    } satisfies TypesyncHypergraphSchemaTypeProperty;
+                  }
+
+                  const propKnowledgeGraphId = prop.knowledgeGraphId || mappingEntry?.properties?.[propName] || null;
+                  return {
+                    name: prop.name,
+                    knowledgeGraphId: propKnowledgeGraphId,
+                    dataType: prop.dataType,
+                    status: propKnowledgeGraphId != null ? 'published' : 'synced',
+                  } satisfies TypesyncHypergraphSchemaTypeProperty;
+                }),
+              });
+            }),
+          });
+        });
+
+      return {
+        hypergraphSchemaStream,
+        syncSchema,
+        syncMapping,
+      } as const;
     }),
   },
 ) {}

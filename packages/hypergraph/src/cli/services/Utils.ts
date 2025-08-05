@@ -305,11 +305,11 @@ export function buildSchemaFile(schema: Model.TypesyncHypergraphSchema) {
   return [importStatement, typeDefinitions].join('\n\n');
 }
 
-export function buildMappingFile(mapping: Mapping.Mapping) {
+export function buildMappingFile(mapping: Mapping.Mapping | Model.TypesyncHypergraphMapping) {
   // Import statements
   const imports = Doc.vsep([
-    Doc.text("import { Id } from '@graphprotocol/grc-20';"),
     Doc.text("import type { Mapping } from '@graphprotocol/hypergraph/mapping';"),
+    Doc.text("import { Id } from '@graphprotocol/hypergraph';"),
   ]);
 
   // Generate the mapping object - build it line by line for exact formatting
@@ -386,8 +386,8 @@ export function buildMappingFile(mapping: Mapping.Mapping) {
  * const mappingFile = buildMappingFile(schema)
  *
  * expect(mappingFile).toEqual(`
- * import { Id } from '@graphprotocol/grc-20';
  * import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+ * import { Id } from '@graphprotocol/hypergraph';
  *
  * export const mapping: Mapping = {
  *   User: {
