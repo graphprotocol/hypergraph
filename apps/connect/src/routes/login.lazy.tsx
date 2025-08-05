@@ -36,7 +36,7 @@ function Login() {
         },
         signMessage: async (message: string) => {
           if (embeddedWallet.walletClientType === 'privy') {
-            const { signature } = await signMessage({ message });
+            const { signature } = await signMessage({ message }, { uiOptions: { showWalletUIs: false } });
             return signature;
           }
           const [address] = await walletClient.getAddresses();

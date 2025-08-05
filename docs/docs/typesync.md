@@ -58,8 +58,8 @@ You're all set! You can now start building your application by editing the files
 
 Example of the generated schema (```src/schema.ts```):
 ```typescript
-import { Id } from '@graphprotocol/grc-20';
-import type { Mapping } from '@graphprotocol/typesync/Mapping';
+import type { Mapping } from '@graphprotocol/hypergraph';
+import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   AcademicYear: {

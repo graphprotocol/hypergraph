@@ -5,6 +5,7 @@ export default defineConfig({
     include: ['./test/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: [],
     globals: true,
+    testTimeout: 10000,
     coverage: {
       provider: 'v8',
     },

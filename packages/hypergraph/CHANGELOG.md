@@ -1,5 +1,21 @@
 # @graphprotocol/hypergraph
 
+## 0.4.1
+### Patch Changes
+
+- e324e68: use Id from @graphprotocol/hypergraph
+
+## 0.4.0
+### Minor Changes
+
+- 9b29006: change dataType (text -> string, checkbox -> boolean) and update queries using value
+
+## 0.3.1
+### Patch Changes
+
+- b37483e: export Id (re-exported from grc-20)
+- f4fd295: update grc-20 library
+
 ## 0.3.0
 ### Minor Changes
 

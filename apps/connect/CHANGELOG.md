@@ -1,5 +1,33 @@
 # connect
 
+## 0.2.1
+### Patch Changes
+
+- Updated dependencies [e324e68]
+  - @graphprotocol/hypergraph@0.4.1
+  - @graphprotocol/hypergraph-react@0.4.1
+
+## 0.2.0
+### Minor Changes
+
+- 9b29006: change dataType (text -> string, checkbox -> boolean) and update queries using value
+
+### Patch Changes
+
+- Updated dependencies [9b29006]
+  - @graphprotocol/hypergraph-react@1.0.0
+  - @graphprotocol/hypergraph@0.4.0
+
+## 0.1.3
+### Patch Changes
+
+- f4fd295: update grc-20 library
+- Updated dependencies [b37483e]
+- Updated dependencies [f4fd295]
+- Updated dependencies [3f91e84]
+  - @graphprotocol/hypergraph@0.3.1
+  - @graphprotocol/hypergraph-react@0.3.1
+
 ## 0.1.2
 
 ### Patch Changes

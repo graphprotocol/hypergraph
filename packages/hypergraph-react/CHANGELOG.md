@@ -1,5 +1,30 @@
 # @graphprotocol/hypergraph-react
 
+## 0.4.1
+### Patch Changes
+
+- Updated dependencies [e324e68]
+  - @graphprotocol/hypergraph@0.4.1
+
+## 0.4.0
+### Minor Changes
+
+- 9b29006: change dataType (text -> string, checkbox -> boolean) and update queries using value
+
+### Patch Changes
+
+- Updated dependencies [9b29006]
+  - @graphprotocol/hypergraph@0.4.0
+
+## 0.3.1
+### Patch Changes
+
+- f4fd295: update grc-20 library
+- 3f91e84: Add usePublishToPublicSpace hook
+- Updated dependencies [b37483e]
+- Updated dependencies [f4fd295]
+  - @graphprotocol/hypergraph@0.3.1
+
 ## 0.3.0
 ### Minor Changes
 

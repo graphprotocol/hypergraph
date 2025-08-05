@@ -41,7 +41,7 @@ export type MappingEntry = {
 /**
  * @example
  * ```ts
- * import { Id } from '@graphprotocol/grc-20'
+ * import { Id } from '@graphprotocol/hypergraph'
  * import type { Mapping } from '@graphprotocol/hypergraph/mapping'
  *
  * const mapping: Mapping = {
@@ -524,7 +524,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  * @example
  * ```ts
  * import { Id } from "@graphprotocol/grc-20"
- * import { generateMapping } from "@graphprotocol/typesync"
+ * import { generateMapping } from "@graphprotocol/hypergraph"
  *
  * const schema: Schema = {
  *   types: [
@@ -787,7 +787,7 @@ export class RelationValueTypeDoesNotExistError extends Data.TaggedError(
 export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): CreatePropertyParams['dataType'] {
   switch (true) {
     case dataType === 'Boolean': {
-      return 'CHECKBOX';
+      return 'BOOLEAN';
     }
     case dataType === 'Date': {
       return 'TIME';
@@ -802,7 +802,7 @@ export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): 
       return 'RELATION';
     }
     default: {
-      return 'TEXT';
+      return 'STRING';
     }
   }
 }
