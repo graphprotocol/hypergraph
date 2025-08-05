@@ -406,7 +406,7 @@ importers:
         version: 7.1.2(graphql@16.11.0)
       isomorphic-ws:
         specifier: ^5.0.0
-        version: 5.0.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        version: 5.0.0(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       lucide-react:
         specifier: ^0.508.0
         version: 0.508.0(react@19.1.0)
@@ -816,6 +816,9 @@ importers:
       '@effect/platform-node':
         specifier: ^0.94.0
         version: 0.94.0(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.4))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4))(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4))(@effect/workflow@0.1.2(effect@3.17.4))(effect@3.17.4))(@effect/platform@0.90.0(effect@3.17.4))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4))(@effect/platform@0.90.0(effect@3.17.4))(effect@3.17.4))(bufferutil@4.0.9)(effect@3.17.4)(utf-8-validate@5.0.10)
+      '@effect/printer':
+        specifier: ^0.45.0
+        version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.4))(effect@3.17.4)
       '@effect/printer-ansi':
         specifier: ^0.45.0
         version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.4))(effect@3.17.4)
@@ -17312,7 +17315,7 @@ snapshots:
       fflate: 0.8.2
       fractional-indexing-jittered: 1.0.0
       image-size: 2.0.2
-      permissionless: 0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14))
+      permissionless: 0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51))
       uuid: 11.1.0
       viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14)
     transitivePeerDependencies:
@@ -25455,6 +25458,10 @@ snapshots:
     dependencies:
       ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
 
+  isomorphic-ws@5.0.0(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
+    dependencies:
+      ws: 8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+
   isomorphic-ws@5.0.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
     dependencies:
       ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -27259,9 +27266,9 @@ snapshots:
     optionalDependencies:
       ox: 0.6.9(typescript@5.8.3)(zod@3.25.51)
 
-  permissionless@0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14)):
+  permissionless@0.2.52(ox@0.6.9(typescript@5.8.3)(zod@4.0.14))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)):
     dependencies:
-      viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.14)
+      viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
     optionalDependencies:
       ox: 0.6.9(typescript@5.8.3)(zod@4.0.14)
 

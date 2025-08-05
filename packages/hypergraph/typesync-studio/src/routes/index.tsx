@@ -22,6 +22,7 @@ import { TypeCombobox } from '@/Components/Schema/TypeCombobox.tsx';
 import { TypeSelect } from '@/Components/Schema/TypeSelect.tsx';
 import { useHypergraphSchemaQuery } from '@/hooks/useHypergraphSchemaQuery.tsx';
 import type { ExtendedProperty, ExtendedSchemaBrowserType } from '@/hooks/useKnowledgeGraph.tsx';
+import { useSyncHypergraphSchemaMutation } from '@/hooks/useSyncHypergraphSchemaMutation.tsx';
 import { mapKGDataTypeToPrimitiveType } from '@/utils/type-mapper.ts';
 
 export const Route = createFileRoute('/')({
@@ -46,12 +47,22 @@ const { useAppForm } = createFormHook({
 function SchemaBuilderComponent() {
   const { data: schema } = useHypergraphSchemaQuery();
 
+  const { mutateAsync, isError, isPending, isSuccess } = useSyncHypergraphSchemaMutation();
+
   const createSchemaForm = useAppForm({
     defaultValues: schema,
     validators: {
       onChangeAsyncDebounceMs: 100,
       // biome-ignore lint/suspicious/noExplicitAny: fixes an issue with the prop.dataType type-string of `Relation(${name})`
       onChange: Schema.standardSchemaV1(TypesyncHypergraphSchema) as any,
+    },
+    async onSubmit({ value, formApi }) {
+      await mutateAsync(value).then((data) => {
+        setTimeout(async () => {
+          // reset the form
+          formApi.reset(data);
+        }, 1_500);
+      });
     },
   });
   const appTypes = useStore(createSchemaForm.store, (state) =>
@@ -293,7 +304,15 @@ function SchemaBuilderComponent() {
   };
 
   return (
-    <div>
+    <form
+      noValidate
+      aria-disabled={isPending ? 'true' : undefined}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        void createSchemaForm.handleSubmit();
+      }}
+    >
       <createSchemaForm.AppField name="types" mode="array">
         {(field) => (
           <div className="grid grid-cols-2 2xl:grid-cols-3 gap-x-4 2xl:gap-x-8">
@@ -628,10 +647,19 @@ function SchemaBuilderComponent() {
                   </button>
                 </div>
               </div>
+              <div className="mt-6 flex items-center justify-end gap-x-6 bg-white dark:bg-inherit p-4 rounded-lg">
+                <createSchemaForm.AppForm>
+                  <createSchemaForm.SubmitButton
+                    status={isPending ? 'submitting' : isError ? 'error' : isSuccess ? 'success' : 'idle'}
+                  >
+                    Sync with <InlineCode>schema.ts</InlineCode>
+                  </createSchemaForm.SubmitButton>
+                </createSchemaForm.AppForm>
+              </div>
             </div>
           </div>
         )}
       </createSchemaForm.AppField>
-    </div>
+    </form>
   );
 }

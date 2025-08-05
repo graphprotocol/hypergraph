@@ -52,7 +52,7 @@ export function TypeSelect({
     EffectArray.filter((_type) => EffectString.isNonEmpty(_type.type)),
     EffectArray.map((_type) =>
       RelationTypeOption.make({
-        id: `Relation(${_type})`,
+        id: `Relation(${_type.type})`,
         name: `Relation(${_type.type})`,
         relationType: _type.type,
       }),

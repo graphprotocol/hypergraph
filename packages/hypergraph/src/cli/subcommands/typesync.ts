@@ -13,7 +13,8 @@ import {
 } from '@effect/platform';
 import { NodeHttpServer } from '@effect/platform-node';
 import { AnsiDoc } from '@effect/printer-ansi';
-import { Effect, Layer, Schema } from 'effect';
+import { Cause, Effect, Layer, Schema } from 'effect';
+import * as Model from '../services/Model.js';
 import * as Typesync from '../services/Typesync.js';
 
 const hypergraphTypeSyncApi = HttpApi.make('HypergraphTypeSyncApi')
@@ -32,28 +33,56 @@ const hypergraphTypeSyncApi = HttpApi.make('HypergraphTypeSyncApi')
             ),
           ),
       )
+      .add(
+        HttpApiEndpoint.post('SyncHypergraphSchema')`/schema/sync`
+          .setPayload(Model.TypesyncHypergraphSchema)
+          .addSuccess(Model.TypesyncHypergraphSchema)
+          .addError(HttpApiError.InternalServerError)
+          .addError(HttpApiError.BadRequest),
+      )
       .prefix('/v1'),
   )
   .prefix('/api');
 
 const hypergraphTypeSyncApiLive = HttpApiBuilder.group(hypergraphTypeSyncApi, 'SchemaStreamGroup', (handlers) =>
-  handlers.handle('HypergraphSchemaEventStream', () =>
-    Effect.gen(function* () {
-      const schemaStream = yield* Typesync.TypesyncSchemaStreamBuilder;
+  Effect.gen(function* () {
+    const schemaStream = yield* Typesync.TypesyncSchemaStreamBuilder;
 
-      const stream = yield* schemaStream
-        .hypergraphSchemaStream()
-        .pipe(Effect.catchAll(() => new HttpApiError.InternalServerError()));
+    return handlers
+      .handle('HypergraphSchemaEventStream', () =>
+        Effect.gen(function* () {
+          const stream = yield* schemaStream.hypergraphSchemaStream().pipe(
+            Effect.tapErrorCause((cause) =>
+              Effect.logError(
+                AnsiDoc.cat(
+                  AnsiDoc.text('Failure building Hypergraph events stream:'),
+                  AnsiDoc.text(Cause.pretty(cause)),
+                ),
+              ),
+            ),
+            Effect.catchAll(() => new HttpApiError.InternalServerError()),
+          );
 
-      return yield* HttpServerResponse.stream(stream, { contentType: 'text/event-stream' }).pipe(
-        HttpServerResponse.setHeaders({
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive',
+          return yield* HttpServerResponse.stream(stream, { contentType: 'text/event-stream' }).pipe(
+            HttpServerResponse.setHeaders({
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              Connection: 'keep-alive',
+            }),
+          );
         }),
+      )
+      .handle('SyncHypergraphSchema', ({ payload }) =>
+        schemaStream.sync(payload).pipe(
+          Effect.tapErrorCause((cause) =>
+            Effect.logError(
+              AnsiDoc.cat(AnsiDoc.text('Failure syncing Hypergraph Schema:'), AnsiDoc.text(Cause.pretty(cause))),
+            ),
+          ),
+          Effect.catchAll(() => new HttpApiError.InternalServerError()),
+        ),
       );
-    }),
-  ),
+  }),
 );
 
 const HypergraphTypeSyncApiLive = HttpApiBuilder.api(hypergraphTypeSyncApi).pipe(

@@ -1,21 +1,30 @@
-import { FileSystem, Path } from '@effect/platform';
+import { FileSystem, KeyValueStore, Path } from '@effect/platform';
 import { NodeFileSystem } from '@effect/platform-node';
 import { AnsiDoc } from '@effect/printer-ansi';
+import { toCamelCase, toPascalCase } from '@graphprotocol/hypergraph/mapping/Utils';
 import { Cause, Data, Effect, Array as EffectArray, Option, Stream } from 'effect';
 import type { NonEmptyReadonlyArray } from 'effect/Array';
-import type { Mapping } from '../../mapping/Mapping.js';
-import type { TypesyncHypergraphSchema } from './Model.js';
-import { parseHypergraphMapping, parseSchema } from './Utils.js';
+import { generateMapping, type Mapping, propertyIsRelation } from '../../mapping/Mapping.js';
+import {
+  TypesyncHypergraphSchema,
+  TypesyncHypergraphSchemaType,
+  type TypesyncHypergraphSchemaTypeProperty,
+} from './Model.js';
+import { buildMappingFile, buildSchemaFile, parseHypergraphMapping, parseSchema } from './Utils.js';
 
 export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaStreamBuilder>()(
   '/Hypergraph/cli/services/TypesyncSchemaStreamBuilder',
   {
-    dependencies: [NodeFileSystem.layer],
+    dependencies: [NodeFileSystem.layer, KeyValueStore.layerMemory],
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
+      const kv = yield* KeyValueStore.KeyValueStore;
 
       const encoder = new TextEncoder();
+
+      const SCHEMA_FILE_PATH_STORAGE_KEY = 'SCHEMA_FILE_PATH';
+      const MAPPING_FILE_PATH_STORAGE_KEY = 'MAPPING_FILE_PATH';
 
       const schemaCandidates = (cwd = '.') =>
         EffectArray.make(
@@ -163,10 +172,17 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
               AnsiDoc.text('No Hypergraph schema file found. Searched:'),
               AnsiDoc.cats(schemaFileCandidates.map((candidate) => AnsiDoc.text(candidate))),
             );
+          } else if (Option.isSome(schemaFilePath)) {
+            // store schema file location in KeyValueStore for reference
+            yield* kv.set(SCHEMA_FILE_PATH_STORAGE_KEY, schemaFilePath.value);
           }
           // Fetch the Mapping definition from any mapping.ts in the directory.
           // If exists, use it to get the knowledgeGraphId for each type/property in the parsed schema
           const mappingFilePath = yield* findHypergraphSchema(mappingCandidates(cwd));
+          if (Option.isSome(mappingFilePath)) {
+            // store mapping file location in KeyValueStore for reference
+            yield* kv.set(MAPPING_FILE_PATH_STORAGE_KEY, mappingFilePath.value);
+          }
 
           return currentSchemaStream(schemaFilePath, mappingFilePath).pipe(
             Stream.concat(watchSchemaStream(schemaFilePath, mappingFilePath)),
@@ -178,7 +194,69 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
           );
         });
 
-      return { hypergraphSchemaStream } as const;
+      const sync = (schema: TypesyncHypergraphSchema) =>
+        Effect.gen(function* () {
+          const cwd = process.cwd();
+
+          const schemaFilePath = yield* kv
+            .get(SCHEMA_FILE_PATH_STORAGE_KEY)
+            .pipe(Effect.map(Option.getOrElse(() => path.join(cwd, 'src', 'schema.ts'))));
+          // update schema file with updated content from the typesync studio UI
+          yield* fs.writeFileString(schemaFilePath, buildSchemaFile(schema));
+
+          const mappingFilePath = yield* kv
+            .get(MAPPING_FILE_PATH_STORAGE_KEY)
+            .pipe(Effect.map(Option.getOrElse(() => path.join(cwd, 'src', 'mapping.ts'))));
+
+          const [mapping] = generateMapping(schema);
+          // update mapping file with updated generated mapping from types/properties edited through the typesync studio UI
+          yield* fs.writeFileString(mappingFilePath, buildMappingFile(mapping));
+
+          // update Schema to update with generated GRC-20 Ids for types/properties
+          return TypesyncHypergraphSchema.make({
+            types: EffectArray.map(schema.types, (type) => {
+              const mappingEntry = mapping[toPascalCase(type.name)];
+
+              let knowledgeGraphId = type.knowledgeGraphId;
+              if (!knowledgeGraphId) {
+                const typeKnowledgeGraphId = mappingEntry?.typeIds?.[0] ? mappingEntry.typeIds[0] : null;
+                if (typeKnowledgeGraphId) {
+                  knowledgeGraphId = typeKnowledgeGraphId;
+                }
+              }
+
+              return TypesyncHypergraphSchemaType.make({
+                name: type.name,
+                knowledgeGraphId,
+                status: knowledgeGraphId != null ? 'published' : 'synced',
+                properties: EffectArray.map(type.properties, (prop) => {
+                  const propName = toCamelCase(prop.name);
+
+                  if (propertyIsRelation(prop)) {
+                    const relKnowledgeGraphId = prop.knowledgeGraphId || mappingEntry?.relations?.[propName] || null;
+                    return {
+                      name: prop.name,
+                      knowledgeGraphId: relKnowledgeGraphId,
+                      dataType: prop.dataType,
+                      relationType: prop.relationType,
+                      status: relKnowledgeGraphId != null ? 'published' : 'synced',
+                    } satisfies TypesyncHypergraphSchemaTypeProperty;
+                  }
+
+                  const propKnowledgeGraphId = prop.knowledgeGraphId || mappingEntry?.properties?.[propName] || null;
+                  return {
+                    name: prop.name,
+                    knowledgeGraphId: propKnowledgeGraphId,
+                    dataType: prop.dataType,
+                    status: propKnowledgeGraphId != null ? 'published' : 'synced',
+                  } satisfies TypesyncHypergraphSchemaTypeProperty;
+                }),
+              });
+            }),
+          });
+        });
+
+      return { hypergraphSchemaStream, sync } as const;
     }),
   },
 ) {}

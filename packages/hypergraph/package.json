@@ -4,8 +4,8 @@
   "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
   "publishConfig": {
     "bin": {
-      "hypergraph": "./dist/cli/bin.js",
-      "hg": "./dist/cli/bin.js"
+      "hypergraph": "./dist/cli/bun.js",
+      "hg": "./dist/cli/bun.js"
     },
     "access": "public",
     "directory": "publish",
@@ -56,6 +56,7 @@
     "@effect/cli": "^0.69.0",
     "@effect/platform": "^0.90.0",
     "@effect/platform-node": "^0.94.0",
+    "@effect/printer": "^0.45.0",
     "@effect/printer-ansi": "^0.45.0",
     "@effect/vitest": "^0.25.0",
     "@types/node": "^24.1.0",
