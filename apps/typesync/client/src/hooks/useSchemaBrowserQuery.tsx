@@ -43,7 +43,7 @@ export async function fetchSchemaTypes(first = 100) {
 
 const Property = Schema.Struct({
   id: Schema.UUID,
-  dataType: Schema.Literal('TEXT', 'NUMBER', 'CHECKBOX', 'TIME', 'POINT', 'RELATION'),
+  dataType: Schema.Literal('STRING', 'NUMBER', 'BOOLEAN', 'TIME', 'POINT', 'RELATION'),
   name: Schema.String,
 });
 export const RelationValueType = Schema.Struct({

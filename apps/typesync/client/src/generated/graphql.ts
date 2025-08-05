@@ -9,24 +9,18 @@ export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> =
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
+  ID: { input: string; output: string };
+  String: { input: string; output: string };
+  Boolean: { input: boolean; output: boolean };
+  Int: { input: number; output: number };
+  Float: { input: number; output: number };
   /** A location in a connection that can be used for resuming pagination. */
-  Cursor: { input: any; output: any; }
+  Cursor: { input: any; output: any };
   /** A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122). */
-  UUID: { input: string; output: string; }
+  UUID: { input: string; output: string };
 };
 
-export type DataTypes =
-  | 'CHECKBOX'
-  | 'NUMBER'
-  | 'POINT'
-  | 'RELATION'
-  | 'TEXT'
-  | 'TIME';
+export type DataTypes = 'BOOLEAN' | 'NUMBER' | 'POINT' | 'RELATION' | 'STRING' | 'TIME';
 
 /** A filter to be used against DataTypes fields. All fields are combined with a logical ‘and.’ */
 export type DataTypesFilter = {
@@ -143,12 +137,7 @@ export type EntitiesEdge = {
 };
 
 /** Methods to use when ordering `Entity`. */
-export type EntitiesOrderBy =
-  | 'ID_ASC'
-  | 'ID_DESC'
-  | 'NATURAL'
-  | 'PRIMARY_KEY_ASC'
-  | 'PRIMARY_KEY_DESC';
+export type EntitiesOrderBy = 'ID_ASC' | 'ID_DESC' | 'NATURAL' | 'PRIMARY_KEY_ASC' | 'PRIMARY_KEY_DESC';
 
 export type Entity = Node & {
   __typename?: 'Entity';
@@ -193,7 +182,6 @@ export type Entity = Node & {
   valuesList: Array<Value>;
 };
 
-
 export type EntityBacklinksArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -205,7 +193,6 @@ export type EntityBacklinksArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
-
 export type EntityBacklinksListArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -214,14 +201,12 @@ export type EntityBacklinksListArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
-
 export type EntityPropertiesArgs = {
   filter?: InputMaybe<PropertyFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
-
 
 export type EntityPropertiesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -232,7 +217,6 @@ export type EntityPropertiesConnectionArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
-
 
 export type EntityRelationsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -245,7 +229,6 @@ export type EntityRelationsArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
-
 export type EntityRelationsListArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -253,7 +236,6 @@ export type EntityRelationsListArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
-
 
 export type EntityRelationsWhereEntityArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -266,7 +248,6 @@ export type EntityRelationsWhereEntityArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
-
 export type EntityRelationsWhereEntityListArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -275,13 +256,11 @@ export type EntityRelationsWhereEntityListArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
-
 export type EntitySpacesInArgs = {
   filter?: InputMaybe<SpaceFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
-
 
 export type EntitySpacesInConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -292,13 +271,11 @@ export type EntitySpacesInConnectionArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
-
 export type EntityTypesArgs = {
   filter?: InputMaybe<EntityFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
-
 
 export type EntityTypesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -308,7 +285,6 @@ export type EntityTypesConnectionArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
-
 
 export type EntityValuesArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -320,7 +296,6 @@ export type EntityValuesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ValuesOrderBy>>;
 };
-
 
 export type EntityValuesListArgs = {
   condition?: InputMaybe<ValueCondition>;
@@ -508,12 +483,7 @@ export type MetasEdge = {
 };
 
 /** Methods to use when ordering `Meta`. */
-export type MetasOrderBy =
-  | 'ID_ASC'
-  | 'ID_DESC'
-  | 'NATURAL'
-  | 'PRIMARY_KEY_ASC'
-  | 'PRIMARY_KEY_DESC';
+export type MetasOrderBy = 'ID_ASC' | 'ID_DESC' | 'NATURAL' | 'PRIMARY_KEY_ASC' | 'PRIMARY_KEY_DESC';
 
 /** An object with a globally unique `ID`. */
 export type Node = {
@@ -582,13 +552,11 @@ export type Property = Node & {
   renderableType?: Maybe<Scalars['UUID']['output']>;
 };
 
-
 export type PropertyRelationValueTypesArgs = {
   filter?: InputMaybe<EntityFilter>;
   first?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
-
 
 export type PropertyRelationValueTypesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -737,12 +705,10 @@ export type Query = Node & {
   valuesConnection?: Maybe<ValuesConnection>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryEditorByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEditorsArgs = {
@@ -752,7 +718,6 @@ export type QueryEditorsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEditorsConnectionArgs = {
@@ -766,7 +731,6 @@ export type QueryEditorsConnectionArgs = {
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryEntitiesArgs = {
   condition?: InputMaybe<EntityCondition>;
@@ -775,7 +739,6 @@ export type QueryEntitiesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<EntitiesOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEntitiesConnectionArgs = {
@@ -789,24 +752,20 @@ export type QueryEntitiesConnectionArgs = {
   orderBy?: InputMaybe<Array<EntitiesOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryEntityArgs = {
   id: Scalars['UUID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryEntityByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryMemberByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMembersArgs = {
@@ -816,7 +775,6 @@ export type QueryMembersArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMembersConnectionArgs = {
@@ -830,18 +788,15 @@ export type QueryMembersConnectionArgs = {
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryMetaArgs = {
   id: Scalars['String']['input'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryMetaByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMetasArgs = {
@@ -851,7 +806,6 @@ export type QueryMetasArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<MetasOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryMetasConnectionArgs = {
@@ -865,12 +819,10 @@ export type QueryMetasConnectionArgs = {
   orderBy?: InputMaybe<Array<MetasOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryNodeArgs = {
   nodeId: Scalars['ID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertiesArgs = {
@@ -880,7 +832,6 @@ export type QueryPropertiesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<PropertiesOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertiesConnectionArgs = {
@@ -894,30 +845,25 @@ export type QueryPropertiesConnectionArgs = {
   orderBy?: InputMaybe<Array<PropertiesOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertyArgs = {
   id: Scalars['UUID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryPropertyByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationArgs = {
   id: Scalars['UUID']['input'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationsArgs = {
@@ -927,7 +873,6 @@ export type QueryRelationsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryRelationsConnectionArgs = {
@@ -941,7 +886,6 @@ export type QueryRelationsConnectionArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QuerySearchArgs = {
   filter?: InputMaybe<EntityFilter>;
@@ -951,7 +895,6 @@ export type QuerySearchArgs = {
   similarityThreshold?: InputMaybe<Scalars['Float']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QuerySearchConnectionArgs = {
@@ -966,18 +909,15 @@ export type QuerySearchConnectionArgs = {
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QuerySpaceArgs = {
   id: Scalars['UUID']['input'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QuerySpaceByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QuerySpacesArgs = {
@@ -987,7 +927,6 @@ export type QuerySpacesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<SpacesOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QuerySpacesConnectionArgs = {
@@ -1001,12 +940,10 @@ export type QuerySpacesConnectionArgs = {
   orderBy?: InputMaybe<Array<SpacesOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryTypeArgs = {
   id?: InputMaybe<Scalars['UUID']['input']>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryTypesListArgs = {
@@ -1015,7 +952,6 @@ export type QueryTypesListArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryTypesListConnectionArgs = {
@@ -1028,18 +964,15 @@ export type QueryTypesListConnectionArgs = {
   spaceId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryValueArgs = {
   id: Scalars['String']['input'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryValueByNodeIdArgs = {
   nodeId: Scalars['ID']['input'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryValuesArgs = {
@@ -1049,7 +982,6 @@ export type QueryValuesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ValuesOrderBy>>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryValuesConnectionArgs = {
@@ -1212,7 +1144,6 @@ export type Space = Node & {
   valuesConnection: ValuesConnection;
 };
 
-
 export type SpaceEditorsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1224,7 +1155,6 @@ export type SpaceEditorsArgs = {
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
 
-
 export type SpaceEditorsListArgs = {
   condition?: InputMaybe<EditorCondition>;
   filter?: InputMaybe<EditorFilter>;
@@ -1232,7 +1162,6 @@ export type SpaceEditorsListArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<EditorsOrderBy>>;
 };
-
 
 export type SpaceMembersArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1245,7 +1174,6 @@ export type SpaceMembersArgs = {
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
 
-
 export type SpaceMembersListArgs = {
   condition?: InputMaybe<MemberCondition>;
   filter?: InputMaybe<MemberFilter>;
@@ -1254,7 +1182,6 @@ export type SpaceMembersListArgs = {
   orderBy?: InputMaybe<Array<MembersOrderBy>>;
 };
 
-
 export type SpaceRelationsArgs = {
   condition?: InputMaybe<RelationCondition>;
   filter?: InputMaybe<RelationFilter>;
@@ -1262,7 +1189,6 @@ export type SpaceRelationsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
-
 
 export type SpaceRelationsConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1275,7 +1201,6 @@ export type SpaceRelationsConnectionArgs = {
   orderBy?: InputMaybe<Array<RelationsOrderBy>>;
 };
 
-
 export type SpaceValuesArgs = {
   condition?: InputMaybe<ValueCondition>;
   filter?: InputMaybe<ValueFilter>;
@@ -1283,7 +1208,6 @@ export type SpaceValuesArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ValuesOrderBy>>;
 };
-
 
 export type SpaceValuesConnectionArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1370,9 +1294,7 @@ export type SpaceToManyValueFilter = {
   some?: InputMaybe<ValueFilter>;
 };
 
-export type SpaceTypes =
-  | 'PERSONAL'
-  | 'PUBLIC';
+export type SpaceTypes = 'PERSONAL' | 'PUBLIC';
 
 /** A connection to a list of `Space` values. */
 export type SpacesConnection = {
@@ -1397,12 +1319,7 @@ export type SpacesEdge = {
 };
 
 /** Methods to use when ordering `Space`. */
-export type SpacesOrderBy =
-  | 'ID_ASC'
-  | 'ID_DESC'
-  | 'NATURAL'
-  | 'PRIMARY_KEY_ASC'
-  | 'PRIMARY_KEY_DESC';
+export type SpacesOrderBy = 'ID_ASC' | 'ID_DESC' | 'NATURAL' | 'PRIMARY_KEY_ASC' | 'PRIMARY_KEY_DESC';
 
 /** A filter to be used against String fields. All fields are combined with a logical ‘and.’ */
 export type StringFilter = {
@@ -1661,16 +1578,191 @@ export type SchemaBrowserTypesQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-
-export type SchemaBrowserTypesQuery = { __typename?: 'Query', typesList?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, dataType: DataTypes, relationValueTypes?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, dataType: DataTypes }> | null }> | null }> | null }> | null };
+export type SchemaBrowserTypesQuery = {
+  __typename?: 'Query';
+  typesList?: Array<{
+    __typename?: 'Entity';
+    id: string;
+    name?: string | null;
+    description?: string | null;
+    properties?: Array<{
+      __typename?: 'Property';
+      id: string;
+      name?: string | null;
+      dataType: DataTypes;
+      relationValueTypes?: Array<{
+        __typename?: 'Entity';
+        id: string;
+        name?: string | null;
+        description?: string | null;
+        properties?: Array<{ __typename?: 'Property'; id: string; name?: string | null; dataType: DataTypes }> | null;
+      }> | null;
+    }> | null;
+  }> | null;
+};
 
 export type PropertiesQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
+export type PropertiesQuery = {
+  __typename?: 'Query';
+  properties?: Array<{
+    __typename?: 'Property';
+    id: string;
+    name?: string | null;
+    description?: string | null;
+    dataType: DataTypes;
+    relationValueTypes?: Array<{
+      __typename?: 'Entity';
+      id: string;
+      name?: string | null;
+      description?: string | null;
+      properties?: Array<{ __typename?: 'Property'; id: string; dataType: DataTypes; name?: string | null }> | null;
+    }> | null;
+  }> | null;
+};
 
-export type PropertiesQuery = { __typename?: 'Query', properties?: Array<{ __typename?: 'Property', id: string, name?: string | null, description?: string | null, dataType: DataTypes, relationValueTypes?: Array<{ __typename?: 'Entity', id: string, name?: string | null, description?: string | null, properties?: Array<{ __typename?: 'Property', id: string, dataType: DataTypes, name?: string | null }> | null }> | null }> | null };
-
-
-export const SchemaBrowserTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SchemaBrowserTypes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"typesList"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
-export const PropertiesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Properties"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"properties"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"relationValueTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"properties"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dataType"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<PropertiesQuery, PropertiesQueryVariables>;
+export const SchemaBrowserTypesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SchemaBrowserTypes' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'typesList' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'properties' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'relationValueTypes' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'properties' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SchemaBrowserTypesQuery, SchemaBrowserTypesQueryVariables>;
+export const PropertiesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'Properties' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'properties' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'relationValueTypes' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'properties' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'dataType' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<PropertiesQuery, PropertiesQueryVariables>;

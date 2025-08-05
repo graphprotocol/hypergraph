@@ -20,7 +20,11 @@ query entityToPublish($entityId: UUID!, $spaceId: UUID!) {
   entity(id: $entityId) {
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
-      value
+      string
+      boolean
+      number
+      time
+      point
     }
     relationsList(filter: {spaceId: {is: $spaceId}}) {
       id
@@ -33,7 +37,11 @@ type EntityToPublishQueryResult = {
   entity: {
     valuesList: {
       propertyId: string;
-      value: string;
+      string: string;
+      boolean: boolean;
+      number: number;
+      time: string;
+      point: string;
     }[];
     relationsList: {
       id: string;
@@ -76,7 +84,7 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
       }
       let serializedValue: string = entity[key];
       if (TypeUtils.isBooleanOrOptionalBooleanType(fields[key])) {
-        serializedValue = Graph.serializeCheckbox(entity[key]);
+        serializedValue = Graph.serializeBoolean(entity[key]);
       } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
         serializedValue = Graph.serializeDate(entity[key]);
       } else if (TypeUtils.isPointOrOptionalPointType(fields[key])) {
@@ -117,20 +125,27 @@ export const preparePublish = async <S extends Entity.AnyNoContext>({
         }
         throw new Error(`Value for ${key} is undefined`);
       }
+
+      const existingValueEntry = data.entity.valuesList.find((value) => value.propertyId === propertyId);
+      let existingValue = existingValueEntry?.string;
       let serializedValue: string = entity[key];
       if (TypeUtils.isBooleanOrOptionalBooleanType(fields[key])) {
-        serializedValue = Graph.serializeCheckbox(entity[key]);
+        existingValue =
+          existingValueEntry?.boolean !== undefined ? Graph.serializeBoolean(existingValueEntry.boolean) : undefined;
+        serializedValue = Graph.serializeBoolean(entity[key]);
       } else if (TypeUtils.isDateOrOptionalDateType(fields[key])) {
+        existingValue = existingValueEntry?.time;
         serializedValue = Graph.serializeDate(entity[key]);
       } else if (TypeUtils.isPointOrOptionalPointType(fields[key])) {
+        existingValue = existingValueEntry?.point;
         serializedValue = Graph.serializePoint(entity[key]);
       } else if (TypeUtils.isNumberOrOptionalNumberType(fields[key])) {
+        existingValue =
+          existingValueEntry?.number !== undefined ? Graph.serializeNumber(existingValueEntry.number) : undefined;
         serializedValue = Graph.serializeNumber(entity[key]);
       }
 
-      const existingValue = data.entity.valuesList.find((value) => value.propertyId === propertyId);
-
-      if (serializedValue !== existingValue?.value) {
+      if (serializedValue !== existingValue) {
         values.push({ property: propertyId, value: serializedValue });
       }
     }

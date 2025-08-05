@@ -14,7 +14,7 @@ const createPropertiesAndTypesTodos = async ({
 }) => {
   const ops: Array<Op> = [];
   const { id: checkedPropertyId, ops: createCheckedPropertyOps } = Graph.createProperty({
-    dataType: 'CHECKBOX',
+    dataType: 'BOOLEAN',
     name: 'Checked',
   });
   ops.push(...createCheckedPropertyOps);
@@ -50,7 +50,7 @@ const createPropertiesAndTypesTodos = async ({
   ops.push(...createAmountPropertyOps);
 
   const { id: websitePropertyId, ops: createWebsitePropertyOps } = Graph.createProperty({
-    dataType: 'TEXT',
+    dataType: 'STRING',
     name: 'Website',
   });
   ops.push(...createWebsitePropertyOps);

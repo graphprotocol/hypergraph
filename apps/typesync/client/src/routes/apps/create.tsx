@@ -36,7 +36,7 @@ const defaultValues: InsertAppSchema = {
     {
       name: '',
       knowledgeGraphId: null,
-      properties: [{ name: '', knowledgeGraphId: null, dataType: 'Text' }],
+      properties: [{ name: '', knowledgeGraphId: null, dataType: 'String' }],
     },
   ],
 };
@@ -671,7 +671,7 @@ function CreateAppPage() {
                                         propsField.pushValue({
                                           name: '',
                                           knowledgeGraphId: null,
-                                          dataType: 'Text',
+                                          dataType: 'String',
                                         } as never)
                                       }
                                     >
@@ -702,7 +702,7 @@ function CreateAppPage() {
                           field.pushValue({
                             name: '',
                             knowledgeGraphId: null,
-                            properties: [{ name: '', knowledgeGraphId: null, dataType: 'Text' }],
+                            properties: [{ name: '', knowledgeGraphId: null, dataType: 'String' }],
                           } as never)
                         }
                       >
