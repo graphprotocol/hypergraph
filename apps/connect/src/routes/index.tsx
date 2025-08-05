@@ -1,3 +1,4 @@
+import { Graph } from '@graphprotocol/grc-20';
 import { useIdentityToken } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { CreateSpaceCard } from '@/components/CreateSpaceCard';
