@@ -18,6 +18,7 @@ import { TextField } from '@/Components/Form/TextField.tsx';
 import { InlineCode } from '@/Components/InlineCode.tsx';
 import { KnowledgeGraphBrowser } from '@/Components/Schema/KnowledgeGraphBrowser.tsx';
 import { PropertyCombobox } from '@/Components/Schema/PropertyCombobox.tsx';
+import { SchemaPropertyStatus } from '@/Components/Schema/Status.tsx';
 import { TypeCombobox } from '@/Components/Schema/TypeCombobox.tsx';
 import { TypeSelect } from '@/Components/Schema/TypeSelect.tsx';
 import { useHypergraphSchemaQuery } from '@/hooks/useHypergraphSchemaQuery.tsx';
@@ -421,6 +422,9 @@ function SchemaBuilderComponent() {
                       className="border-l-2 border-indigo-600 dark:border-indigo-400 pl-2 py-2 flex flex-col gap-y-4"
                     >
                       <div className="flex items-start justify-between gap-x-3">
+                        <div className="h-16 w-8 flex flex-col items-center justify-center">
+                          <SchemaPropertyStatus status={_type.status} />
+                        </div>
                         <div className="flex-1 shrink-0">
                           <createSchemaForm.AppField name={`types[${idx}].name` as const}>
                             {(subfield) => (
@@ -493,13 +497,16 @@ function SchemaBuilderComponent() {
                       <createSchemaForm.AppField name={`types[${idx}].properties` as const} mode="array">
                         {(propsField) => (
                           <div className="flex flex-col gap-y-1 pl-2 ml-1 border-l border-indigo-300">
-                            <h4 className="text-xl text-gray-800 dark:text-gray-200">Properties</h4>
+                            <h4 className="text-md font-mono text-gray-800 dark:text-gray-200">Properties</h4>
                             <div className="w-full flex flex-col gap-y-2">
                               {propsField.state.value.map((_prop, typePropIdx) => {
                                 const typePropEntryKey = `createAppForm__type[${idx}]__prop[${typePropIdx}]`;
                                 return (
                                   <div key={typePropEntryKey} className="grid grid-cols-11 gap-2">
-                                    <div className="col-span-5">
+                                    <div className="col-span-1 size-full flex flex-col items-center justify-center">
+                                      <SchemaPropertyStatus status={_prop.status} />
+                                    </div>
+                                    <div className="col-span-4">
                                       <createSchemaForm.AppField
                                         name={`types[${idx}].properties[${typePropIdx}].name` as const}
                                       >
