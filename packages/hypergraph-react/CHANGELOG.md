@@ -1,5 +1,14 @@
 # @graphprotocol/hypergraph-react
 
+## 0.3.1
+### Patch Changes
+
+- f4fd295: update grc-20 library
+- 3f91e84: Add usePublishToPublicSpace hook
+- Updated dependencies [b37483e]
+- Updated dependencies [f4fd295]
+  - @graphprotocol/hypergraph@0.3.1
+
 ## 0.3.0
 ### Minor Changes
 
