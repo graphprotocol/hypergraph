@@ -19,7 +19,7 @@
     "@privy-io/server-auth": "^1.26.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
-    "effect": "^3.17.4",
+    "effect": "^3.17.6",
     "express": "^5.1.0",
     "prisma": "^6.7.0",
     "siwe": "^3.0.0",
@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
-    "@types/node": "^24.1.0",
+    "@types/node": "^24.2.0",
     "@types/pg": "^8.15.0",
     "@types/ws": "^8.18.1",
     "tsup": "^8.4.0",

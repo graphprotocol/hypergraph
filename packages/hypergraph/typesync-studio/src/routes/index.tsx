@@ -1,11 +1,6 @@
 'use client';
 
-import { isDataTypeRelation } from '@graphprotocol/hypergraph/mapping';
-import {
-  TypesyncHypergraphSchema,
-  TypesyncHypergraphSchemaType,
-  type TypesyncHypergraphSchemaTypeProperty,
-} from '@graphprotocol/hypergraph/typesync';
+import { Mapping, Typesync } from '@graphprotocol/hypergraph';
 import { ArrowCounterClockwiseIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
@@ -55,7 +50,7 @@ function SchemaBuilderComponent() {
     validators: {
       onChangeAsyncDebounceMs: 100,
       // biome-ignore lint/suspicious/noExplicitAny: fixes an issue with the prop.dataType type-string of `Relation(${name})`
-      onChange: Schema.standardSchemaV1(TypesyncHypergraphSchema) as any,
+      onChange: Schema.standardSchemaV1(Typesync.TypesyncHypergraphSchema) as any,
     },
     async onSubmit({ value, formApi }) {
       await mutateAsync(value).then((data) => {
@@ -135,10 +130,10 @@ function SchemaBuilderComponent() {
    */
   const mapSelectedTypeRelationPropertiesToTypes = (
     selected: ExtendedSchemaBrowserType,
-    mapped: Array<TypesyncHypergraphSchemaType> = [],
+    mapped: Array<Typesync.TypesyncHypergraphSchemaType> = [],
   ) => {
     // map the relation properties into types to add to the schema
-    const relationSchemaTypes: Array<TypesyncHypergraphSchemaType> = [...mapped];
+    const relationSchemaTypes: Array<Typesync.TypesyncHypergraphSchemaType> = [...mapped];
 
     function alreadyAddedToSchema<T extends { readonly name: string }>(type: T): boolean {
       return (
@@ -178,7 +173,7 @@ function SchemaBuilderComponent() {
         status: 'published',
         properties: EffectArray.map(relationValueType.properties ?? [], (prop) => {
           const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.name);
-          if (isDataTypeRelation(dataType)) {
+          if (Mapping.isDataTypeRelation(dataType)) {
             // need to recursively build type for property
             return {
               name: prop.name,
@@ -220,13 +215,17 @@ function SchemaBuilderComponent() {
 
     // perform one final check for uniqueness on type name
     // @todo figure out why this is needed in logic above.
-    return EffectArray.reduce(relationSchemaTypes, [] as Array<TypesyncHypergraphSchemaType>, (final, curr) => {
-      const existsInFinal = EffectArray.findFirst(final, ({ name }) => name === curr.name);
-      if (Option.isNone(existsInFinal)) {
-        final.push(curr);
-      }
-      return final;
-    });
+    return EffectArray.reduce(
+      relationSchemaTypes,
+      [] as Array<Typesync.TypesyncHypergraphSchemaType>,
+      (final, curr) => {
+        const existsInFinal = EffectArray.findFirst(final, ({ name }) => name === curr.name);
+        if (Option.isNone(existsInFinal)) {
+          final.push(curr);
+        }
+        return final;
+      },
+    );
   };
 
   /**
@@ -242,9 +241,9 @@ function SchemaBuilderComponent() {
    */
   const mapSelectedRelationPropertyTypesToSchema = (
     property: ExtendedProperty,
-    mapped: Array<TypesyncHypergraphSchemaType> = [],
+    mapped: Array<Typesync.TypesyncHypergraphSchemaType> = [],
   ) => {
-    const propRelationSchemaTypes: Array<TypesyncHypergraphSchemaType> = [...mapped];
+    const propRelationSchemaTypes: Array<Typesync.TypesyncHypergraphSchemaType> = [...mapped];
 
     function alreadyAddedToSchema<T extends { readonly name: string }>(type: T): boolean {
       return (
@@ -265,7 +264,7 @@ function SchemaBuilderComponent() {
           const name = prop.name!;
 
           const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, name);
-          if (isDataTypeRelation(dataType)) {
+          if (Mapping.isDataTypeRelation(dataType)) {
             // relation type as a type to the schema if not existing
             // @todo, this should recursively find those types, with properties
             if (!alreadyAddedToSchema({ name })) {
@@ -283,14 +282,14 @@ function SchemaBuilderComponent() {
               dataType,
               relationType: name,
               status: 'published',
-            } satisfies TypesyncHypergraphSchemaTypeProperty;
+            } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
           }
           return {
             name,
             knowledgeGraphId: prop.id,
             dataType,
             status: 'published',
-          } satisfies TypesyncHypergraphSchemaTypeProperty;
+          } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
         }),
       );
       propRelationSchemaTypes.push({
@@ -326,7 +325,7 @@ function SchemaBuilderComponent() {
                   }
                   const relationSchemaTypes = mapSelectedTypeRelationPropertiesToTypes(selected);
 
-                  const selectedMappedToType = TypesyncHypergraphSchemaType.make({
+                  const selectedMappedToType = Typesync.TypesyncHypergraphSchemaType.make({
                     name: selected.name,
                     knowledgeGraphId: selected.id,
                     status: 'published',
@@ -334,21 +333,21 @@ function SchemaBuilderComponent() {
                       .filter((prop) => prop != null)
                       .map((prop) => {
                         const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.name || prop.id);
-                        if (isDataTypeRelation(dataType)) {
+                        if (Mapping.isDataTypeRelation(dataType)) {
                           return {
                             name: prop.name || prop.id,
                             knowledgeGraphId: prop.id,
                             dataType,
                             relationType: prop.name || prop.id,
                             status: 'published',
-                          } satisfies TypesyncHypergraphSchemaTypeProperty;
+                          } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                         }
                         return {
                           name: prop.name || prop.id,
                           knowledgeGraphId: prop.id,
                           dataType,
                           status: 'published',
-                        } satisfies TypesyncHypergraphSchemaTypeProperty;
+                        } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                       }),
                   });
                   // if schema is currently empty, set as first type
@@ -435,7 +434,7 @@ function SchemaBuilderComponent() {
                                 label="Type Name"
                                 typeSelected={(selected) => {
                                   const relationSchemaTypes = mapSelectedTypeRelationPropertiesToTypes(selected);
-                                  const selectedMappedToType = TypesyncHypergraphSchemaType.make({
+                                  const selectedMappedToType = Typesync.TypesyncHypergraphSchemaType.make({
                                     name: selected.name,
                                     knowledgeGraphId: selected.id,
                                     status: 'published',
@@ -446,21 +445,21 @@ function SchemaBuilderComponent() {
                                           prop.dataType,
                                           prop.name || prop.id,
                                         );
-                                        if (isDataTypeRelation(dataType)) {
+                                        if (Mapping.isDataTypeRelation(dataType)) {
                                           return {
                                             name: prop.name || prop.id,
                                             knowledgeGraphId: prop.id,
                                             dataType,
                                             relationType: prop.name || prop.id,
                                             status: 'published',
-                                          } satisfies TypesyncHypergraphSchemaTypeProperty;
+                                          } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                                         }
                                         return {
                                           name: prop.name || prop.id,
                                           knowledgeGraphId: prop.id,
                                           dataType,
                                           status: 'published',
-                                        } satisfies TypesyncHypergraphSchemaTypeProperty;
+                                        } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                                       }),
                                   });
                                   // add any relation types to the schema (that don't already exist),
@@ -525,7 +524,7 @@ function SchemaBuilderComponent() {
                                                 knowledgeGraphId: prop.id,
                                                 status: 'published',
                                                 dataType,
-                                                ...(isDataTypeRelation(dataType)
+                                                ...(Mapping.isDataTypeRelation(dataType)
                                                   ? { relationType: prop.name || prop.id }
                                                   : {}),
                                               } as never;

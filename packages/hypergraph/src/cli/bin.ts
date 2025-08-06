@@ -6,7 +6,6 @@ import * as AnsiDoc from '@effect/printer-ansi/AnsiDoc';
 import * as Effect from 'effect/Effect';
 import * as Logger from 'effect/Logger';
 import * as LogLevel from 'effect/LogLevel';
-
 import { run } from './Cli.js';
 import { AnsiDocLogger } from './Logger.js';
 

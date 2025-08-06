@@ -41,12 +41,13 @@
   },
   "sideEffects": [],
   "scripts": {
-    "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
+    "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && pnpm run prepare-typesync-studio && node ../../scripts/package.mjs",
     "build:typesync-studio": "cd ./typesync-studio && pnpm run build",
     "copy-typesync-studio-dist": "tsx scripts/copy-typesync-studio-dist.ts",
     "prepare-typesync-studio": "pnpm run build:typesync-studio && pnpm run copy-typesync-studio-dist",
     "test": "vitest",
-    "hypergraph": "pnpm tsx ./src/cli/bun.ts"
+    "hypergraph": "node ./dist/cli/bun.js",
+    "hypergraph:dev": "pnpx tsx ./src/cli/bun.ts"
   },
   "bin": {
     "hypergraph": "./src/cli/bun.ts",
@@ -55,13 +56,14 @@
   "devDependencies": {
     "@effect/cli": "^0.69.0",
     "@effect/platform": "^0.90.0",
-    "@effect/platform-node": "^0.94.0",
+    "@effect/platform-node": "^0.94.1",
     "@effect/printer": "^0.45.0",
     "@effect/printer-ansi": "^0.45.0",
     "@effect/vitest": "^0.25.0",
-    "@types/node": "^24.1.0",
+    "@types/node": "^24.2.0",
     "@types/uuid": "^10.0.0",
     "jiti": "^2.5.1",
+    "open": "^10.2.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
@@ -78,7 +80,7 @@
     "@serenity-kit/noble-sodium": "^0.2.1",
     "@xstate/store": "^3.5.1",
     "bs58check": "^4.0.0",
-    "effect": "^3.17.4",
+    "effect": "^3.17.6",
     "permissionless": "^0.2.47",
     "siwe": "^3.0.0",
     "uuid": "^11.1.0",

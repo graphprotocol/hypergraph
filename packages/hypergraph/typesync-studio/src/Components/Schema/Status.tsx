@@ -1,10 +1,10 @@
 'use client';
 
 import { Tooltip } from '@base-ui-components/react/tooltip';
-import type { TypesyncHypergraphSchemaStatus } from '@graphprotocol/hypergraph/typesync';
+import type { Typesync } from '@graphprotocol/hypergraph';
 import { LockIcon, LockKeyIcon, LockOpenIcon } from '@phosphor-icons/react';
 
-export function SchemaPropertyStatus({ status }: Readonly<{ status: TypesyncHypergraphSchemaStatus }>) {
+export function SchemaPropertyStatus({ status }: Readonly<{ status: Typesync.TypesyncHypergraphSchemaStatus }>) {
   const content = StatusTooltipContentMap[status || 'local'];
 
   return (
@@ -28,7 +28,7 @@ export function SchemaPropertyStatus({ status }: Readonly<{ status: TypesyncHype
   );
 }
 
-function CorrectIcon({ status }: Readonly<{ status: TypesyncHypergraphSchemaStatus }>) {
+function CorrectIcon({ status }: Readonly<{ status: Typesync.TypesyncHypergraphSchemaStatus }>) {
   if (status === 'published') {
     // type/property is published to the Knowledge Graph
     return <LockKeyIcon className="size-4 text-inherit" aria-hidden="true" />;

@@ -1,14 +1,14 @@
 'use client';
 
-import { TypesyncHypergraphSchema } from '@graphprotocol/hypergraph/typesync';
+import { Typesync } from '@graphprotocol/hypergraph';
 import { mutationOptions, type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import { Schema } from 'effect';
 
-const TypesyncHypergraphSchemaDecoder = Schema.decodeUnknownSync(TypesyncHypergraphSchema);
+const TypesyncHypergraphSchemaDecoder = Schema.decodeUnknownSync(Typesync.TypesyncHypergraphSchema);
 
 const useSyncHypergraphSchemaMutationOptions = mutationOptions({
   mutationKey: ['Hypergraph', 'Typesync', 'Studio', 'Schema', 'sync'] as const,
-  async mutationFn(variables: TypesyncHypergraphSchema) {
+  async mutationFn(variables: Typesync.TypesyncHypergraphSchema) {
     try {
       const response = await fetch('http://localhost:3000/api/v1/schema/sync', {
         method: 'POST',
@@ -34,7 +34,7 @@ const useSyncHypergraphSchemaMutationOptions = mutationOptions({
 
 export function useSyncHypergraphSchemaMutation(
   options: Omit<
-    UseMutationOptions<TypesyncHypergraphSchema, Error, TypesyncHypergraphSchema, unknown>,
+    UseMutationOptions<Typesync.TypesyncHypergraphSchema, Error, Typesync.TypesyncHypergraphSchema, unknown>,
     'mutationKey' | 'mutationFn'
   > = {},
 ) {

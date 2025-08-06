@@ -1,27 +1,27 @@
 'use client';
 
-import { TypesyncHypergraphSchema } from '@graphprotocol/hypergraph/typesync';
+import { Typesync } from '@graphprotocol/hypergraph';
 import { Schema } from 'effect';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 
-const HypergraphSchemaJSONDecoder = Schema.decodeUnknownSync(Schema.parseJson(TypesyncHypergraphSchema));
+const HypergraphSchemaJSONDecoder = Schema.decodeUnknownSync(Schema.parseJson(Typesync.TypesyncHypergraphSchema));
 
 export interface UseHypergraphSchemaQueryOptions {
   enabled?: boolean;
-  onSuccess?(data?: TypesyncHypergraphSchema): void;
+  onSuccess?(data?: Typesync.TypesyncHypergraphSchema): void;
   onError?(error: Error): void;
   retry?: boolean;
   retryDelay?: number;
 }
 
 interface HypergraphSchemaQueryState {
-  data: TypesyncHypergraphSchema;
+  data: Typesync.TypesyncHypergraphSchema;
   error?: Error | null | undefined;
   status: 'idle' | 'fetching' | 'success' | 'error';
 }
 type HypergraphSchemaQueryAction =
   | { type: 'FETCHING' }
-  | { type: 'SUCCESS'; payload: TypesyncHypergraphSchema }
+  | { type: 'SUCCESS'; payload: Typesync.TypesyncHypergraphSchema }
   | { type: 'ERROR'; payload: Error }
   | { type: 'RESET' };
 function reducer(state: HypergraphSchemaQueryState, action: HypergraphSchemaQueryAction): HypergraphSchemaQueryState {
