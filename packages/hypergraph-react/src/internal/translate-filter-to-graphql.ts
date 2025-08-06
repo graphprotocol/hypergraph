@@ -57,7 +57,10 @@ export function translateFilterToGraphql<S extends Entity.AnyNoContext>(
   for (const [fieldName, fieldFilter] of Object.entries(filter)) {
     if (fieldName === 'or') {
       graphqlFilter.push({
-        or: fieldFilter.map((filter: Entity.EntityFilter<S>) => translateFilterToGraphql(filter, type, mapping)),
+        or: fieldFilter.map(
+          (filter: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> }) =>
+            translateFilterToGraphql(filter, type, mapping),
+        ),
       });
       continue;
     }
