@@ -51,7 +51,6 @@ const TypeSearch = graphql(`
         id
         name
         dataType
-        renderableType
         relationValueTypes {
           id
           name
@@ -127,7 +126,7 @@ export const schemaBrowserQueryOptions = (
   vars: Readonly<{ query?: string | null | undefined; first?: number | null | undefined }>,
 ) =>
   queryOptions({
-    queryKey: ['SchemaBrowser', 'types', vars] as const,
+    queryKey: ['Hypergraph', 'Typesync', 'Studio', 'Schema', 'types', vars] as const,
     async queryFn() {
       return await fetchSchemaTypes(vars.query, vars.first || undefined)
         .then((data) => data.typesList ?? [])
@@ -200,7 +199,10 @@ export function useSchemaBrowserQuery(
       Error,
       Array<ExtendedSchemaBrowserType>,
       readonly [
-        'SchemaBrowser',
+        'Hypergraph',
+        'Typesync',
+        'Studio',
+        'Schema',
         'types',
         Readonly<{ query?: string | null | undefined; first?: number | null | undefined }>,
       ]
@@ -262,7 +264,7 @@ export const propertiesQueryOptions = (
   vars: Readonly<{ query?: string | null | undefined; first?: number | null | undefined }>,
 ) =>
   queryOptions({
-    queryKey: ['SchemaBrowser', 'properties', vars] as const,
+    queryKey: ['Hypergraph', 'Typesync', 'Studio', 'Schema', 'properties', vars] as const,
     async queryFn() {
       return await fetchProperties(vars.query, vars.first || undefined)
         .then((data) => data.properties ?? [])
@@ -322,7 +324,10 @@ export function usePropertiesQuery(
       Error,
       Array<ExtendedProperty>,
       readonly [
-        'SchemaBrowser',
+        'Hypergraph',
+        'Typesync',
+        'Studio',
+        'Schema',
         'properties',
         Readonly<{ query?: string | null | undefined; first?: number | null | undefined }>,
       ]
