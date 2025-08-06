@@ -2,8 +2,6 @@
 
 The filter API allows you to filter the results of a query by property values and in the future also by relations.
 
-Note: Filtering is not yet supported for public data.
-
 ## Filtering by property values
 
 ```tsx
