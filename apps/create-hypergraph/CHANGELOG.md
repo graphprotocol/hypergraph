@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.4.3
+### Patch Changes
+
+- a16e5cf: Update the copy-package-json script to set the type to module on the package.json in the dist that gets published
+
 ## 0.4.2
 ### Patch Changes
 
