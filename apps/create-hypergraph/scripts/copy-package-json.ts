@@ -15,6 +15,7 @@ const read = pipe(
       'create-hypergraph': 'bin.js',
       ch: 'bin.js',
     },
+    type: json.type,
     engines: json.engines,
     repository: json.repository,
     license: json.license,
