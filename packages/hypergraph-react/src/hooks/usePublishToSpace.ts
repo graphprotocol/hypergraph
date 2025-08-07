@@ -6,22 +6,24 @@ import { publishOps } from '../publish-ops.js';
 import type { OmitStrict } from '../types.js';
 
 type Variables<S extends Entity.AnyNoContext> = {
-  entity: S;
+  entity: Entity.Entity<S>;
   spaceId: string;
 };
 
-type UsePublishToSpaceOptions = OmitStrict<
-  UseMutationOptions<Awaited<ReturnType<typeof publishOps>>, Error, Variables<Entity.AnyNoContext>, unknown>,
+type UsePublishToSpaceOptions<S extends Entity.AnyNoContext> = OmitStrict<
+  UseMutationOptions<Awaited<ReturnType<typeof publishOps>>, Error, Variables<S>, unknown>,
   'mutationFn' | 'mutationKey'
 >;
 
-export function usePublishToPublicSpace(options: UsePublishToSpaceOptions = {}) {
+export function usePublishToPublicSpace<const S extends Entity.AnyNoContext>(
+  options: UsePublishToSpaceOptions<S> = {},
+) {
   const { getSmartSessionClient } = useHypergraphApp();
 
   return useMutation({
     ...options,
     mutationFn: async ({ entity, spaceId }) => {
-      const { ops } = await preparePublish({
+      const { ops } = await preparePublish<S>({
         entity,
         publicSpace: spaceId,
       });
