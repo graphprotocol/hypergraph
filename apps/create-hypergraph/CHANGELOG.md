@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.4.4
+### Patch Changes
+
+- 72f8874: Bump to templates > @graphprotocol/hypergraph-react to latest version for usePublishToPublicSpace fix
+
 ## 0.4.3
 ### Patch Changes
 
