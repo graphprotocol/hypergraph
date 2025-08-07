@@ -146,7 +146,7 @@ importers:
         version: 0.90.0(effect@3.17.6)
       '@effect/platform-node':
         specifier: ^0.94.1
-        version: 0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
+        version: 0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
       '@effect/printer-ansi':
         specifier: ^0.45.0
         version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6)
@@ -604,14 +604,14 @@ importers:
   packages/hypergraph:
     dependencies:
       '@automerge/automerge':
-        specifier: ^2.2.9
-        version: 2.2.9
+        specifier: ^3.1.1
+        version: 3.1.1
       '@automerge/automerge-repo':
-        specifier: ^2.0.6
-        version: 2.0.6
+        specifier: ^2.2.0
+        version: 2.2.0
       '@effect/experimental':
-        specifier: ^0.51.1
-        version: 0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
+        specifier: ^0.54.3
+        version: 0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       '@graphprotocol/grc-20':
         specifier: ^0.24.1
         version: 0.24.1(bufferutil@4.0.9)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
@@ -663,7 +663,7 @@ importers:
         version: 0.90.0(effect@3.17.6)
       '@effect/platform-node':
         specifier: ^0.94.1
-        version: 0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
+        version: 0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
       '@effect/printer':
         specifier: ^0.45.0
         version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6)
@@ -696,14 +696,14 @@ importers:
   packages/hypergraph-react:
     dependencies:
       '@automerge/automerge':
-        specifier: ^2.2.9
-        version: 2.2.9
+        specifier: ^3.1.1
+        version: 3.1.1
       '@automerge/automerge-repo':
-        specifier: ^2.0.6
-        version: 2.0.6
+        specifier: ^2.2.0
+        version: 2.2.0
       '@automerge/automerge-repo-react-hooks':
-        specifier: ^2.0.6
-        version: 2.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^2.2.0
+        version: 2.2.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@graphprotocol/grc-20':
         specifier: ^0.24.1
         version: 0.24.1(bufferutil@4.0.9)(ox@0.6.9(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
@@ -737,13 +737,13 @@ importers:
         version: 6.6.3
       '@testing-library/react':
         specifier: ^16.3.0
-        version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.1.7(@types/react@19.1.3))(@types/react@19.1.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@types/react':
-        specifier: ^19.1.3
-        version: 19.1.3
+        specifier: ^19.1.9
+        version: 19.1.9
       '@vitejs/plugin-react':
-        specifier: ^4.4.1
-        version: 4.4.1(vite@7.0.6(@types/node@24.2.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.20.3)(yaml@2.7.0))
+        specifier: ^4.7.0
+        version: 4.7.0(vite@7.0.6(@types/node@24.2.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.20.3)(yaml@2.7.0))
       '@xstate/store':
         specifier: ^3.5.1
         version: 3.5.1(react@19.1.1)(solid-js@1.9.5)
@@ -1072,11 +1072,23 @@ packages:
       react: ^18.0.0
       react-dom: ^18.0.0
 
+  '@automerge/automerge-repo-react-hooks@2.2.0':
+    resolution: {integrity: sha512-zHP44jXSCmV1DyyKdTKgv8nz7yrdCT7VFXs/QrF3YRhE/3czhhvbXo2zahGvOoM+jryH0eJxHTrJ7jMEtt/Ung==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+
   '@automerge/automerge-repo@2.0.6':
     resolution: {integrity: sha512-vFvRh+fUYL2sCoisBIaRerSjnToqgT4LtBruABAM/SATio/jnyTCBcPTL7LSsdnxy4PFsINIfxkKQQqS4ZV01g==}
 
+  '@automerge/automerge-repo@2.2.0':
+    resolution: {integrity: sha512-/4cAxnUDPykqdSMJJiJvPlR2VY0JHJnvEoM7fO8qVXwQors34S0VkJEScXRJZExcVhWGhFTwCTWvUbb6hhWQIQ==}
+
   '@automerge/automerge@2.2.9':
     resolution: {integrity: sha512-6HM52Ops79hAQBWMg/t0MNfGOdEiXyenQjO9F1hKZq0RWDsMLpPa1SzRy/C4/4UyX67sTHuA5CwBpH34SpfZlA==}
+
+  '@automerge/automerge@3.1.1':
+    resolution: {integrity: sha512-x7tZiMBLk4/SKYimVEVl1/wPntT9buGvLOWCey9ZcH8JUsB0dgm49C0S7Ojzgvflcs2hc/YjiXRPcFeFkinIgw==}
 
   '@babel/cli@7.28.0':
     resolution: {integrity: sha512-CYrZG7FagtE8ReKDBfItxnrEBf2khq2eTMnPuqO8UVN0wzhp1eMX1wfda8b1a32l2aqYLwRRIOGNovm8FVzmMw==}
@@ -2447,11 +2459,11 @@ packages:
       lmdb:
         optional: true
 
-  '@effect/experimental@0.54.2':
-    resolution: {integrity: sha512-edHopTBPXQdgyuR4ytRmyoPq7Ubt6CS4TymiXpyd6lu3kxlK7K78/eTMju9hRfJbiSDFVy8S5C2dW8CH9i66Rg==}
+  '@effect/experimental@0.54.3':
+    resolution: {integrity: sha512-FR+4KfGxte/BwQyVvbq8boWSWyN5p69tdtUQX9Owf/JfnLmZY42d+L3nnn1Gg8EhTPiAk+hMnODWWHnV03JmbQ==}
     peerDependencies:
       '@effect/platform': ^0.90.0
-      effect: ^3.17.3
+      effect: ^3.17.4
       ioredis: ^5
       lmdb: ^3
     peerDependenciesMeta:
@@ -13789,6 +13801,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@automerge/automerge-repo-react-hooks@2.2.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@automerge/automerge': 3.1.1
+      '@automerge/automerge-repo': 2.2.0
+      eventemitter3: 5.0.1
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+      react-usestateref: 1.0.9(react@19.1.1)
+    transitivePeerDependencies:
+      - supports-color
+
   '@automerge/automerge-repo@2.0.6':
     dependencies:
       '@automerge/automerge': 2.2.9
@@ -13802,9 +13825,24 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@automerge/automerge-repo@2.2.0':
+    dependencies:
+      '@automerge/automerge': 3.1.1
+      bs58check: 3.0.1
+      cbor-x: 1.6.0
+      debug: 4.4.1
+      eventemitter3: 5.0.1
+      fast-sha256: 1.3.0
+      uuid: 9.0.1
+      xstate: 5.18.1
+    transitivePeerDependencies:
+      - supports-color
+
   '@automerge/automerge@2.2.9':
     dependencies:
       uuid: 9.0.1
+
+  '@automerge/automerge@3.1.1': {}
 
   '@babel/cli@7.28.0(@babel/core@7.28.0)':
     dependencies:
@@ -15997,19 +16035,11 @@ snapshots:
       toml: 3.0.0
       yaml: 2.7.0
 
-  '@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)':
+  '@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)':
     dependencies:
       '@effect/platform': 0.90.0(effect@3.17.6)
       '@effect/rpc': 0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/sql': 0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/workflow': 0.1.2(effect@3.17.6)
-      effect: 3.17.6
-
-  '@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)':
-    dependencies:
-      '@effect/platform': 0.90.0(effect@3.17.6)
-      '@effect/rpc': 0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/sql': 0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
+      '@effect/sql': 0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       '@effect/workflow': 0.1.2(effect@3.17.6)
       effect: 3.17.6
 
@@ -16019,7 +16049,7 @@ snapshots:
       effect: 3.17.6
       uuid: 11.1.0
 
-  '@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
+  '@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
     dependencies:
       '@effect/platform': 0.90.0(effect@3.17.6)
       effect: 3.17.6
@@ -16027,12 +16057,12 @@ snapshots:
 
   '@effect/language-service@0.34.0': {}
 
-  '@effect/platform-node-shared@0.47.0(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)':
+  '@effect/platform-node-shared@0.47.0(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)':
     dependencies:
-      '@effect/cluster': 0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)
+      '@effect/cluster': 0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)
       '@effect/platform': 0.90.0(effect@3.17.6)
       '@effect/rpc': 0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/sql': 0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
+      '@effect/sql': 0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       '@parcel/watcher': 2.5.1
       effect: 3.17.6
       multipasta: 0.2.7
@@ -16041,42 +16071,13 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node-shared@0.47.0(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)':
+  '@effect/platform-node@0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)':
     dependencies:
-      '@effect/cluster': 0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)
+      '@effect/cluster': 0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)
       '@effect/platform': 0.90.0(effect@3.17.6)
+      '@effect/platform-node-shared': 0.47.0(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
       '@effect/rpc': 0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/sql': 0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@parcel/watcher': 2.5.1
-      effect: 3.17.6
-      multipasta: 0.2.7
-      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
-  '@effect/platform-node@0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@effect/cluster': 0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)
-      '@effect/platform': 0.90.0(effect@3.17.6)
-      '@effect/platform-node-shared': 0.47.0(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
-      '@effect/rpc': 0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/sql': 0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      effect: 3.17.6
-      mime: 3.0.0
-      undici: 7.10.0
-      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
-  '@effect/platform-node@0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@effect/cluster': 0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6)
-      '@effect/platform': 0.90.0(effect@3.17.6)
-      '@effect/platform-node-shared': 0.47.0(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
-      '@effect/rpc': 0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/sql': 0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
+      '@effect/sql': 0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       effect: 3.17.6
       mime: 3.0.0
       undici: 7.10.0
@@ -16109,17 +16110,9 @@ snapshots:
       '@effect/platform': 0.90.0(effect@3.17.6)
       effect: 3.17.6
 
-  '@effect/sql@0.44.0(@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
+  '@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
     dependencies:
-      '@effect/experimental': 0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/platform': 0.90.0(effect@3.17.6)
-      '@opentelemetry/semantic-conventions': 1.34.0
-      effect: 3.17.6
-      uuid: 11.1.0
-
-  '@effect/sql@0.44.0(@effect/experimental@0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
-    dependencies:
-      '@effect/experimental': 0.54.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
+      '@effect/experimental': 0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       '@effect/platform': 0.90.0(effect@3.17.6)
       '@opentelemetry/semantic-conventions': 1.34.0
       effect: 3.17.6
@@ -16928,7 +16921,7 @@ snapshots:
   '@graphprotocol/hypergraph@0.3.0(@effect/platform@0.90.0(effect@3.17.6))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(react@19.1.1)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)':
     dependencies:
       '@automerge/automerge': 2.2.9
-      '@automerge/automerge-repo': 2.0.6
+      '@automerge/automerge-repo': 2.2.0
       '@effect/experimental': 0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       '@graphprotocol/grc-20': 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.51))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.51)
       '@noble/ciphers': 1.3.0
@@ -20288,16 +20281,6 @@ snapshots:
       lodash: 4.17.21
       redent: 3.0.0
 
-  '@testing-library/react@16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.1.7(@types/react@19.1.3))(@types/react@19.1.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
-    dependencies:
-      '@babel/runtime': 7.27.1
-      '@testing-library/dom': 10.4.1
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-    optionalDependencies:
-      '@types/react': 19.1.3
-      '@types/react-dom': 19.1.7(@types/react@19.1.3)
-
   '@testing-library/react@16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@babel/runtime': 7.27.1
@@ -20514,11 +20497,6 @@ snapshots:
   '@types/react-dom@19.1.6(@types/react@19.1.8)':
     dependencies:
       '@types/react': 19.1.8
-
-  '@types/react-dom@19.1.7(@types/react@19.1.3)':
-    dependencies:
-      '@types/react': 19.1.3
-    optional: true
 
   '@types/react-dom@19.1.7(@types/react@19.1.9)':
     dependencies:
@@ -20781,17 +20759,6 @@ snapshots:
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
       vite: 6.3.5(@types/node@24.2.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.20.3)(yaml@2.7.0)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitejs/plugin-react@4.4.1(vite@7.0.6(@types/node@24.2.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.20.3)(yaml@2.7.0))':
-    dependencies:
-      '@babel/core': 7.28.0
-      '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.28.0)
-      '@babel/plugin-transform-react-jsx-source': 7.25.9(@babel/core@7.28.0)
-      '@types/babel__core': 7.20.5
-      react-refresh: 0.17.0
-      vite: 7.0.6(@types/node@24.2.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.39.1)(tsx@4.20.3)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -23375,8 +23342,8 @@ snapshots:
       '@typescript-eslint/parser': 8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3)
       eslint: 9.31.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.31.0(jiti@2.5.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.31.0(jiti@2.5.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.31.0(jiti@2.5.1))
       eslint-plugin-react: 7.37.5(eslint@9.31.0(jiti@2.5.1))
       eslint-plugin-react-hooks: 5.2.0(eslint@9.31.0(jiti@2.5.1))
@@ -23395,7 +23362,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.31.0(jiti@2.5.1)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.1
@@ -23406,22 +23373,22 @@ snapshots:
       tinyglobby: 0.2.14
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.31.0(jiti@2.5.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.31.0(jiti@2.5.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3)
       eslint: 9.31.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.31.0(jiti@2.5.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.31.0(jiti@2.5.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -23432,7 +23399,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.31.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1)))(eslint@9.31.0(jiti@2.5.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.31.0(jiti@2.5.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
