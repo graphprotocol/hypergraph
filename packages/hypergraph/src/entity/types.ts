@@ -64,7 +64,6 @@ export type EntityStringFilter = {
   startsWith?: string;
   endsWith?: string;
   contains?: string;
-  equals?: string;
   not?: EntityStringFilter;
   or?: EntityStringFilter[];
 };

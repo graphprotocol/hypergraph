@@ -7,13 +7,16 @@ import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
+import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
 import type { QueryPublicParams } from './types.js';
 
 const entitiesQueryDocumentLevel0 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!) {
   entities(
-    filter: {
-      relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}},
+    filter: { and: [{
+      relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+      spaceIds: {in: [$spaceId]},
+    }, $filter]}
     first: $first
   ) {
     id
@@ -31,11 +34,14 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int) {
 `;
 
 const entitiesQueryDocumentLevel1 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!) {
   entities(
     first: $first
-    filter: {
-    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
+    filter: { and: [{
+    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+    spaceIds: {in: [$spaceId]},
+  }, $filter]}
+  ) {
     id
     name
     valuesList(filter: {spaceId: {is: $spaceId}}) {
@@ -68,11 +74,14 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 `;
 
 const entitiesQueryDocumentLevel2 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!) {
   entities(
     first: $first
-    filter: {
-    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, spaceIds: {in: [$spaceId]}}) {
+    filter: { and: [{
+    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+    spaceIds: {in: [$spaceId]},
+  }, $filter]}
+  ) {
     id
     name
     valuesList(filter: {spaceId: {is: $spaceId}}) {
@@ -332,7 +341,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
 };
 
 export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
-  const { enabled = true, include, space: spaceFromParams, first = 100 } = params ?? {};
+  const { enabled = true, filter, include, space: spaceFromParams, first = 100 } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
   const mapping = useSelector(store, (state) => state.context.mapping);
@@ -370,7 +379,8 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
       mappingEntry?.typeIds,
       relationTypeIdsLevel1,
       relationTypeIdsLevel2,
-      // TODO should `first` be in here?
+      filter,
+      first,
     ],
     queryFn: async () => {
       let queryDocument = entitiesQueryDocumentLevel0;
@@ -387,6 +397,7 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
         relationTypeIdsLevel1,
         relationTypeIdsLevel2,
         first,
+        filter: filter ? translateFilterToGraphql(filter, type, mapping) : {},
       });
       return result;
     },

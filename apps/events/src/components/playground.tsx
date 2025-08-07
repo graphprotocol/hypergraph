@@ -17,6 +17,11 @@ export const Playground = ({ spaceId }: { spaceId: string }) => {
         jobOffers: {},
       },
     },
+    // filter: {
+    //   name: {
+    //     startsWith: 'test',
+    //   },
+    // },
     first: 100,
     space: spaceId,
   });
