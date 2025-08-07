@@ -16,7 +16,7 @@ const preparePublishDummy = () => undefined;
 
 export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: QueryParams<S>) {
   const { mode, filter, include, space, first } = params;
-  const publicResult = useQueryPublic(type, { enabled: mode === 'public', include, first, space });
+  const publicResult = useQueryPublic(type, { enabled: mode === 'public', filter, include, first, space });
   const localResult = useQueryLocal(type, { enabled: mode === 'private', filter, include, space });
 
   if (mode === 'public') {

@@ -2,8 +2,6 @@
 
 The filter API allows you to filter the results of a query by property values and in the future also by relations.
 
-Note: Filtering is not yet supported for public data.
-
 ## Filtering by property values
 
 ```tsx
@@ -89,8 +87,8 @@ The filter API supports different filters for different property types and offer
 const { data } = useQuery(Person, {
   filter: {
     or: [
-      not: { name: { is: "Jane Doe" } },
-      not: { name: { is: "John Doe" } },
+      { not: { name: { is: 'Jane Doe' } } },
+      { not: { name: { is: 'John Doe' } } },
     ],
   },
 });
@@ -99,11 +97,11 @@ const { data } = useQuery(Person, {
 const { data } = useQuery(Person, {
   filter: {
     age: {
-      equals: 42
+      is: 42
     },
     or: [
-      not: { name: { is: "Jane Doe" } },
-      not: { name: { is: "John Doe" } },
+      { not: { name: { is: 'Jane Doe' } } },
+      { not: { name: { is: 'John Doe' } } },
     ],
     not: {
       or: [
