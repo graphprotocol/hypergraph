@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph-react
 
+## 0.4.3
+### Patch Changes
+
+- d7b4fe0: Update variable types of usePublishToPublicSpace function to accept and instance of an Entity and not the Entity type
+
 ## 0.4.2
 ### Patch Changes
 

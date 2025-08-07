@@ -1,5 +1,15 @@
 # create-hypergraph
 
+## 0.4.4
+### Patch Changes
+
+- 72f8874: Bump to templates > @graphprotocol/hypergraph-react to latest version for usePublishToPublicSpace fix
+
+## 0.4.3
+### Patch Changes
+
+- a16e5cf: Update the copy-package-json script to set the type to module on the package.json in the dist that gets published
+
 ## 0.4.2
 ### Patch Changes
 
