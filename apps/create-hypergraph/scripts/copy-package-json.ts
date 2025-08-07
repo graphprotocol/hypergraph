@@ -1,7 +1,7 @@
-import * as path from 'node:path';
-import * as FileSystem from '@effect/platform/FileSystem';
 import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
+import * as FileSystem from '@effect/platform/FileSystem';
 import { Effect, pipe } from 'effect';
+import * as path from 'node:path';
 
 const read = pipe(
   FileSystem.FileSystem,
@@ -15,6 +15,7 @@ const read = pipe(
       'create-hypergraph': 'bin.js',
       ch: 'bin.js',
     },
+    type: json.type,
     engines: json.engines,
     repository: json.repository,
     license: json.license,
