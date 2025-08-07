@@ -1,7 +1,7 @@
-import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
-import * as FileSystem from '@effect/platform/FileSystem';
-import { Effect, pipe } from 'effect';
 import * as path from 'node:path';
+import * as FileSystem from '@effect/platform/FileSystem';
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
+import { Effect, pipe } from 'effect';
 
 const read = pipe(
   FileSystem.FileSystem,
