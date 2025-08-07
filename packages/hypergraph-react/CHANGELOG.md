@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.4.2
+### Patch Changes
+
+- 4410012: add value filtering for useQuery(Type, { mode: "public", … })
+- Updated dependencies [4410012]
+  - @graphprotocol/hypergraph@0.4.2
+
 ## 0.4.1
 ### Patch Changes
 
