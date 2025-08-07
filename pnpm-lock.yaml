@@ -779,7 +779,7 @@ importers:
         specifier: ^5.75.5
         version: 5.84.1(react@19.1.1)
       effect:
-        specifier: ^3.17.4
+        specifier: ^3.17.3
         version: 3.17.6
       graphql-request:
         specifier: ^7.1.2
@@ -836,7 +836,7 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       effect:
-        specifier: ^3.17.6
+        specifier: ^3.17.3
         version: 3.17.6
       permissionless:
         specifier: ^0.2.47

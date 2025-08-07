@@ -1,9 +1,7 @@
 'use client';
 
-// @ts-expect-error not properly typed and exported in the automerge package
-import { automergeWasmBase64 } from '@automerge/automerge/automerge.wasm.base64.js';
+import { automergeWasmBase64 } from '@automerge/automerge/automerge.wasm.base64';
 import * as automerge from '@automerge/automerge/slim';
-import { uuid } from '@automerge/automerge/slim';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo/slim';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
@@ -36,6 +34,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { v4 as uuid } from 'uuid';
 import type { Address, Hex } from 'viem';
 
 const decodeResponseMessage = Schema.decodeUnknownEither(Messages.ResponseMessage);
