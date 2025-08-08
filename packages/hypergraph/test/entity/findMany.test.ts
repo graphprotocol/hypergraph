@@ -193,7 +193,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { not: { is: 'John' } },
+          not: { name: { is: 'John' } },
         },
         undefined,
       );
@@ -212,7 +212,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          age: { not: { is: 30 } },
+          not: { age: { is: 30 } },
         },
         undefined,
       );
@@ -233,7 +233,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { or: [{ is: 'John' }, { is: 'Jane' }] },
+          or: [{ name: { is: 'John' } }, { name: { is: 'Jane' } }],
         },
         undefined,
       );
@@ -252,7 +252,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          age: { or: [{ is: 25 }, { is: 40 }] },
+          or: [{ age: { is: 25 } }, { age: { is: 40 } }],
         },
         undefined,
       );
@@ -273,7 +273,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { not: { or: [{ is: 'John' }, { is: 'Jane' }] } },
+          not: { or: [{ name: { is: 'John' } }, { name: { is: 'Jane' } }] },
         },
         undefined,
       );
@@ -292,7 +292,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { not: { or: [{ is: 'John' }, { is: 'Jane' }] } },
+          not: { or: [{ name: { is: 'John' } }, { name: { is: 'Jane' } }] },
         },
         undefined,
       );
@@ -384,8 +384,7 @@ describe('findMany with filters', () => {
         handle,
         Person,
         {
-          name: { not: { startsWith: 'J' } },
-          age: { not: { greaterThan: 35 } },
+          not: { or: [{ name: { startsWith: 'J' } }, { age: { greaterThan: 35 } }] },
         },
         undefined,
       );

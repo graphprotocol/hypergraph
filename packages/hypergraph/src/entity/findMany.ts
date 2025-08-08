@@ -255,17 +255,9 @@ export function findMany<const S extends AnyNoContext>(
   const filtered: Array<Entity<S>> = [];
 
   const evaluateFilter = <T>(fieldFilter: EntityFieldFilter<T>, fieldValue: T): boolean => {
-    // Handle NOT operator
-    if ('not' in fieldFilter && fieldFilter.not) {
-      return !evaluateFilter(fieldFilter.not, fieldValue);
-    }
-
-    // Handle OR operator
-    if ('or' in fieldFilter) {
-      const orFilters = fieldFilter.or;
-      if (Array.isArray(orFilters)) {
-        return orFilters.some((orFilter) => evaluateFilter(orFilter as EntityFieldFilter<T>, fieldValue));
-      }
+    const ff = fieldFilter as unknown as Record<string, unknown>;
+    if ('not' in ff || 'or' in ff || 'and' in ff) {
+      throw new Error("Logical operators 'not', 'or', 'and' are only allowed at the root (cross-field) level.");
     }
 
     // Handle basic filters
@@ -324,14 +316,35 @@ export function findMany<const S extends AnyNoContext>(
     crossFieldFilter: CrossFieldFilter<Schema.Schema.Type<S>>,
     entity: Entity<S>,
   ): boolean => {
+    // Evaluate regular field filters with AND semantics
     for (const fieldName in crossFieldFilter) {
-      const fieldFilter = crossFieldFilter[fieldName];
-      const fieldValue = entity[fieldName];
-
-      if (fieldFilter && !evaluateFilter(fieldFilter, fieldValue)) {
+      if (fieldName === 'or' || fieldName === 'not') continue;
+      const fieldFilter = crossFieldFilter[fieldName] as unknown as EntityFieldFilter<unknown> | undefined;
+      if (!fieldFilter) continue;
+      const fieldValue = (entity as unknown as Record<string, unknown>)[fieldName] as unknown;
+      if (!evaluateFilter(fieldFilter, fieldValue)) {
         return false;
       }
     }
+
+    // Evaluate nested OR at cross-field level (if present)
+    const cf = crossFieldFilter as unknown as Record<string, unknown>;
+    const maybeOr = cf.or;
+    if (Array.isArray(maybeOr)) {
+      const orFilters = maybeOr as Array<CrossFieldFilter<Schema.Schema.Type<S>>>;
+      const orSatisfied = orFilters.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
+      if (!orSatisfied) return false;
+    }
+
+    // Evaluate nested NOT at cross-field level (if present)
+    const maybeNot = cf.not;
+    if (maybeNot) {
+      const notFilter = maybeNot as CrossFieldFilter<Schema.Schema.Type<S>>;
+      if (evaluateCrossFieldFilter(notFilter, entity)) {
+        return false;
+      }
+    }
+
     return true;
   };
 
