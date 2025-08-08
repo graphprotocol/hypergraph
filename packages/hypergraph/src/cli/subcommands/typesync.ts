@@ -116,7 +116,7 @@ const hypergraphTypeSyncApiLive = HttpApiBuilder.group(
 
 const HypergraphTypeSyncApiLayer = HttpApiBuilder.middlewareCors({
   allowedMethods: ['GET', 'POST', 'OPTIONS'],
-  allowedOrigins: ['http://localhost:3000'],
+  allowedOrigins: ['http://localhost:3000', 'http://localhost:5173'],
 }).pipe(
   Layer.provideMerge(HttpApiBuilder.api(HypergraphTypesyncStudioApi)),
   Layer.provide(Typesync.layer),

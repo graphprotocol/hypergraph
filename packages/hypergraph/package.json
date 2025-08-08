@@ -42,6 +42,7 @@
   "sideEffects": [],
   "scripts": {
     "build": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && pnpm run prepare-typesync-studio && node ../../scripts/package.mjs",
+    "build:hypergraph": "tsc -b --force tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps && node ../../scripts/package.mjs",
     "build:typesync-studio": "cd ./typesync-studio && pnpm run build",
     "copy-typesync-studio-dist": "tsx scripts/copy-typesync-studio-dist.ts",
     "prepare-typesync-studio": "pnpm run build:typesync-studio && pnpm run copy-typesync-studio-dist",
