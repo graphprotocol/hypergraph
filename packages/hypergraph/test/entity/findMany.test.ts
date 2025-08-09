@@ -201,7 +201,7 @@ describe('findMany with filters', () => {
       expect(result.entities.map((e) => e.name).sort()).toEqual(['Bob', 'Jane']);
     });
 
-    it.only('should throw an error if NOT operator is used at the field level', () => {
+    it('should throw an error if NOT operator is used at the field level', () => {
       // Create test entities
       Entity.create(handle, Person)({ name: 'John', age: 30, isActive: true });
       Entity.create(handle, Person)({ name: 'Jane', age: 25, isActive: true });
