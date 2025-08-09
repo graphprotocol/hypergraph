@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.5.0
+### Minor Changes
+
+- 9d22312: rework filter logic to match public filter logic - logic operators are only allowed at the cross-field level
+
 ## 0.4.2
 ### Patch Changes
 

@@ -1,5 +1,11 @@
 # server
 
+## 0.1.7
+### Patch Changes
+
+- Updated dependencies [9d22312]
+  - @graphprotocol/hypergraph@0.5.0
+
 ## 0.1.6
 ### Patch Changes
 
