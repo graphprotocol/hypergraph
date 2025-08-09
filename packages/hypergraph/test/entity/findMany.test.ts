@@ -328,7 +328,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       expect(() => {
-        // Filter by name NOT equal to 'John'
+        // Filter by name NOT (name is 'John' OR name is 'Jane')
         Entity.findMany(
           handle,
           Person,
