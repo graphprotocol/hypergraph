@@ -12,5 +12,6 @@ export class Image extends Entity.Class<Image>('Image')({
 export class Project extends Entity.Class<Project>('Project')({
   name: Type.String,
   description: Type.optional(Type.String),
+  xUrl: Type.optional(Type.String),
   avatar: Type.Relation(Image),
 }) {}
