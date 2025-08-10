@@ -1,3 +1,4 @@
+import { GraphImage } from '@/components/graph-image';
 import { Project } from '@/schema';
 import { useQuery } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
@@ -11,6 +12,12 @@ function ExplorePublicKnowledge() {
     mode: 'public',
     space: 'b2565802-3118-47be-91f2-e59170735bac',
     first: 40,
+    include: { avatar: {} },
+    // filter: {
+    //   name: {
+    //     startsWith: 'Okta',
+    //   },
+    // },
   });
 
   return (
@@ -36,8 +43,16 @@ function ExplorePublicKnowledge() {
             {/* Content */}
             <div className="relative p-6">
               {/* Project icon/avatar */}
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-white font-bold text-lg">{project.name.charAt(0).toUpperCase()}</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                {project.avatar?.[0]?.url ? (
+                  <GraphImage
+                    src={project.avatar[0].url}
+                    alt={`${project.name} avatar`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white font-bold text-lg">{project.name.charAt(0).toUpperCase()}</span>
+                )}
               </div>
 
               {/* Project name */}

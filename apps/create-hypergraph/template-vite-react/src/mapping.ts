@@ -13,6 +13,16 @@ export const mapping: Mapping.Mapping = {
     typeIds: [Id('484a18c5-030a-499c-b0f2-ef588ff16d50')],
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
+    },
+    relations: {
+      avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
+    },
+  },
+  Image: {
+    typeIds: [Id('ba4e4146-0010-499d-a0a3-caaa7f579d0e')],
+    properties: {
+      url: Id('8a743832-c094-4a62-b665-0c3cc2f9c7bc'),
     },
   },
 };
