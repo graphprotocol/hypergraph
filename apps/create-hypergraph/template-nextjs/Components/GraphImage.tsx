@@ -1,4 +1,4 @@
-function getImageUrl(src: string | undefined) {
+function getImageUrl(src: string | undefined | Blob) {
   if (!src || typeof src !== 'string') return src;
   const image = src.split('ipfs://');
   if (image.length == 2) {
