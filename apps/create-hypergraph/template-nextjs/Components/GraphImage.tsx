@@ -2,7 +2,7 @@ function getImageUrl(src: string | undefined | Blob) {
   if (!src || typeof src !== 'string') return src;
   const image = src.split('ipfs://');
   if (image.length === 2) {
-    return `http://gateway.lighthouse.storage/ipfs/${image[1]}`;
+    return `https://gateway.lighthouse.storage/ipfs/${image[1]}`;
   }
   return src;
 }
