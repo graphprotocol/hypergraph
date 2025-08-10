@@ -2,22 +2,25 @@ import { GraphImage } from '@/components/graph-image';
 import { Project } from '@/schema';
 import { useQuery } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 
 export const Route = createFileRoute('/explore-public-knowledge')({
   component: ExplorePublicKnowledge,
 });
 
 function ExplorePublicKnowledge() {
+  const [searchTerm, setSearchTerm] = useState('');
+
   const { data: projects, isPending } = useQuery(Project, {
     mode: 'public',
     space: 'b2565802-3118-47be-91f2-e59170735bac',
     first: 40,
     include: { avatar: {} },
-    // filter: {
-    //   name: {
-    //     startsWith: 'Okta',
-    //   },
-    // },
+    filter: {
+      name: {
+        startsWith: searchTerm,
+      },
+    },
   });
 
   return (
@@ -29,6 +32,29 @@ function ExplorePublicKnowledge() {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           This page demonstrates how to query public data from a space. No authentication is required.
         </p>
+      </div>
+
+      {/* Search UI */}
+      <div className="max-w-md mx-auto mb-8">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search projects..."
+            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
