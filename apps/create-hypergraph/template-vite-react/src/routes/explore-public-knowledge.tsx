@@ -1,16 +1,27 @@
+import { GraphImage } from '@/components/graph-image';
 import { Project } from '@/schema';
 import { useQuery } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 
 export const Route = createFileRoute('/explore-public-knowledge')({
   component: ExplorePublicKnowledge,
 });
 
 function ExplorePublicKnowledge() {
+  const [searchTerm, setSearchTerm] = useState('');
+
   const { data: projects, isPending } = useQuery(Project, {
     mode: 'public',
     space: 'b2565802-3118-47be-91f2-e59170735bac',
     first: 40,
+    include: { avatar: {} },
+    filter: {
+      name: {
+        // contains is case sensitive
+        contains: searchTerm,
+      },
+    },
   });
 
   return (
@@ -22,6 +33,29 @@ function ExplorePublicKnowledge() {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           This page demonstrates how to query public data from a space. No authentication is required.
         </p>
+      </div>
+
+      {/* Search UI */}
+      <div className="max-w-md mx-auto mb-8">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search projects..."
+            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -36,14 +70,43 @@ function ExplorePublicKnowledge() {
             {/* Content */}
             <div className="relative p-6">
               {/* Project icon/avatar */}
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-white font-bold text-lg">{project.name.charAt(0).toUpperCase()}</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                {project.avatar?.[0]?.url ? (
+                  <GraphImage
+                    src={project.avatar[0].url}
+                    alt={`${project.name} avatar`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white font-bold text-lg">{project.name.charAt(0).toUpperCase()}</span>
+                )}
               </div>
 
               {/* Project name */}
               <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
                 {project.name}
               </h3>
+
+              {/* Project ID */}
+              <p className="text-[10px] text-gray-500 mb-2 font-mono">{project.id}</p>
+
+              {/* Project description */}
+              {project.description && <p className="text-sm text-gray-600 mb-2 line-clamp-2">{project.description}</p>}
+
+              {/* Project xUrl */}
+              {project.xUrl && (
+                <a
+                  href={project.xUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  View on X
+                </a>
+              )}
             </div>
 
             {/* Decorative corner accent */}
