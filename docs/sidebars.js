@@ -37,7 +37,6 @@ const sidebars = {
     // { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
     { type: 'doc', id: 'troubleshooting', label: '🛠️ Troubleshooting' },
     { type: 'doc', id: 'faq', label: '❓ FAQ' },
-    // { type: 'doc', id: 'legacy/README', label: '🗃️ Legacy Documentation' },
     {
       type: 'category',
       label: 'Advanced',
