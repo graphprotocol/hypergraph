@@ -6,7 +6,7 @@ import {
   useQuery,
   useSpace,
   useSpaces,
-  usePublishToPublicSpace
+  usePublishToPublicSpace,
 } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -34,7 +34,7 @@ function PrivateSpace() {
   const [addressName, setAddressName] = useState('');
   const { mutate: publishToPublicSpace, isPending } = usePublishToPublicSpace({
     onSuccess: () => alert('Address published to public space'),
-    onError: () => alert('Error publishing address to public space') 
+    onError: () => alert('Error publishing address to public space'),
   });
 
   if (!ready) {

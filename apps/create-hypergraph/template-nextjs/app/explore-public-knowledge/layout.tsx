@@ -1,14 +1,9 @@
-import { ExploreTabs } from '@/components/explore-tabs';
-import { Outlet, createFileRoute } from '@tanstack/react-router';
+import { ExploreTabs } from '../../Components/explore-tabs';
 
-export const Route = createFileRoute('/explore-public-knowledge')({
-  component: ExploreLayout,
-});
-
-function ExploreLayout() {
+export default function ExplorePublicKnowledgeLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="text-center mb-6">
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Explore Public Knowledge
         </h1>
@@ -18,9 +13,8 @@ function ExploreLayout() {
       </div>
 
       <ExploreTabs />
-      <div className="mt-12">
-        <Outlet />
-      </div>
+
+      <div className="mt-12">{children}</div>
     </div>
   );
 }

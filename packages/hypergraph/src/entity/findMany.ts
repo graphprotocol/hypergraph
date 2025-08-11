@@ -255,20 +255,11 @@ export function findMany<const S extends AnyNoContext>(
   const filtered: Array<Entity<S>> = [];
 
   const evaluateFilter = <T>(fieldFilter: EntityFieldFilter<T>, fieldValue: T): boolean => {
-    // Handle NOT operator
-    if ('not' in fieldFilter && fieldFilter.not) {
-      return !evaluateFilter(fieldFilter.not, fieldValue);
+    if ('not' in fieldFilter || 'or' in fieldFilter) {
+      throw new Error("Logical operators 'not', 'or' are only allowed at the root (cross-field) level.");
     }
 
-    // Handle OR operator
-    if ('or' in fieldFilter) {
-      const orFilters = fieldFilter.or;
-      if (Array.isArray(orFilters)) {
-        return orFilters.some((orFilter) => evaluateFilter(orFilter as EntityFieldFilter<T>, fieldValue));
-      }
-    }
-
-    // Handle basic filters
+    // handle basic filters
     if ('is' in fieldFilter) {
       if (typeof fieldValue === 'boolean') {
         return fieldValue === fieldFilter.is;
@@ -324,14 +315,28 @@ export function findMany<const S extends AnyNoContext>(
     crossFieldFilter: CrossFieldFilter<Schema.Schema.Type<S>>,
     entity: Entity<S>,
   ): boolean => {
+    // evaluate regular field filters with AND semantics
     for (const fieldName in crossFieldFilter) {
+      if (fieldName === 'or' || fieldName === 'not') continue;
       const fieldFilter = crossFieldFilter[fieldName];
+      if (!fieldFilter) continue;
       const fieldValue = entity[fieldName];
-
-      if (fieldFilter && !evaluateFilter(fieldFilter, fieldValue)) {
+      if (!evaluateFilter(fieldFilter, fieldValue)) {
         return false;
       }
     }
+
+    // evaluate nested OR at cross-field level (if present)
+    if (Array.isArray(crossFieldFilter.or)) {
+      const orSatisfied = crossFieldFilter.or.some((orFilter) => evaluateCrossFieldFilter(orFilter, entity));
+      if (!orSatisfied) return false;
+    }
+
+    // evaluate nested NOT at cross-field level (if present)
+    if (crossFieldFilter.not && evaluateCrossFieldFilter(crossFieldFilter.not, entity)) {
+      return false;
+    }
+
     return true;
   };
 
@@ -367,7 +372,14 @@ export function findMany<const S extends AnyNoContext>(
           decoded.__schema = type;
           filtered.push(decoded);
         }
-      } catch (_error) {
+      } catch (error) {
+        // rethrow in case it's filter error
+        if (
+          error instanceof Error &&
+          error.message.includes("Logical operators 'not', 'or' are only allowed at the root (cross-field) level")
+        ) {
+          throw error;
+        }
         corruptEntityIds.push(id);
       }
     }
