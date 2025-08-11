@@ -1,4 +1,4 @@
-import { Link, useRouter } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { clsx } from 'clsx';
 
 type Tab = {
@@ -14,29 +14,22 @@ const tabs: Tab[] = [
 ];
 
 export function ExploreTabs() {
-  const router = useRouter();
-  const pathname = router.state.location.pathname ?? '';
-
   return (
     <div className="w-full flex justify-center">
       <div className="inline-flex rounded-lg border bg-background p-1">
-        {tabs.map((tab) => {
-          const isActive = pathname.startsWith(tab.to);
-          return (
-            <Link
-              key={tab.to}
-              to={tab.to}
-              className={clsx(
-                'px-4 py-2 text-sm rounded-md transition-colors',
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-foreground hover:bg-accent hover:text-accent-foreground',
-              )}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
+        {tabs.map((tab) => (
+          <Link
+            key={tab.to}
+            to={tab.to}
+            activeOptions={{ exact: false }}
+            activeProps={{ className: 'bg-primary text-primary-foreground' }}
+            className={clsx(
+              'px-4 py-2 text-sm rounded-md transition-colors text-foreground hover:bg-accent hover:text-accent-foreground',
+            )}
+          >
+            {tab.label}
+          </Link>
+        ))}
       </div>
     </div>
   );
