@@ -2,7 +2,7 @@ import { Asset } from '@/schema';
 import { useQuery } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/explore-public-knowledge/asset-market')({
+export const Route = createFileRoute('/explore-public-knowledge/assets')({
   component: AssetMarket,
 });
 
@@ -17,7 +17,7 @@ function AssetMarket() {
     <>
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Asset Market
+          Assets
         </h2>
       </div>
 
