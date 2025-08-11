@@ -74,8 +74,8 @@ function AssetMarket() {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Projects Found</h3>
-          <p className="text-gray-500">There are currently no public projects available to explore.</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Assets Found</h3>
+          <p className="text-gray-500">There are currently no public assets available to explore.</p>
         </div>
       )}
     </>
