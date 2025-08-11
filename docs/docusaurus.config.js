@@ -65,9 +65,29 @@ const config = {
 
   plugins: [
     [
-      'docusaurus-plugin-generate-llms-txt',
+      'docusaurus-plugin-llms',
       {
-        outputFile: 'llms.txt', // defaults to llms.txt if not specified
+        includeOrder: [
+          'quickstart',
+          'key-features',
+          'core-concepts',
+          'typesync',
+          'providers',
+          'authentication',
+          'spaces',
+          'schema',
+          'writing-private-data',
+          'query-private-data',
+          'mapping',
+          'publishing-public-data',
+          'query-public-data',
+          'filtering-query-results',
+          'space-invitations',
+          'inboxes',
+          'troubleshooting',
+          'faq',
+          'advanced/*',
+        ],
       },
     ],
   ],
