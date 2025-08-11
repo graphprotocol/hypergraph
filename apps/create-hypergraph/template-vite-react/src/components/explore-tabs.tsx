@@ -10,7 +10,7 @@ const tabs: Tab[] = [
   { label: 'Projects', to: '/explore-public-knowledge/projects' },
   { label: 'dApps', to: '/explore-public-knowledge/dapps' },
   { label: 'Investment Rounds', to: '/explore-public-knowledge/investment-rounds' },
-  { label: 'Asset Market', to: '/explore-public-knowledge/asset-market' },
+  { label: 'Assets', to: '/explore-public-knowledge/assets' },
 ];
 
 export function ExploreTabs() {

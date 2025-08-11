@@ -23,7 +23,7 @@ export function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   const { redirectToConnect, logout } = useHypergraphApp();
 
   useLayoutEffect(() => {
-    if (pathname.startsWith('/login') || pathname.startsWith('/authenticate-success') || pathname === '/' ||  pathname === '/explore-public-knowledge' || pathname === '/explore-public-knowledge/projects' || pathname === '/explore-public-knowledge/dapps' || pathname === '/explore-public-knowledge/investors' || pathname === '/explore-public-knowledge/investment-rounds' || pathname === '/explore-public-knowledge/asset-market') {
+    if (pathname.startsWith('/login') || pathname.startsWith('/authenticate-success') || pathname === '/' ||  pathname === '/explore-public-knowledge' || pathname === '/explore-public-knowledge/projects' || pathname === '/explore-public-knowledge/dapps' || pathname === '/explore-public-knowledge/investors' || pathname === '/explore-public-knowledge/investment-rounds' || pathname === '/explore-public-knowledge/assets') {
       return;
     }
 
