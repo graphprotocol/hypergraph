@@ -17,4 +17,4 @@ We support the [llms.txt](https://llmstxt.org/) standard for making documentatio
 We offer the following pages:
 
 - [`/llms.txt`](/llms.txt) — a listing of the available pages
-- [`/llms-full.txt`](/llms-full.txt) — complete documentation for Effect
+- [`/llms-full.txt`](/llms-full.txt) — complete documentation
