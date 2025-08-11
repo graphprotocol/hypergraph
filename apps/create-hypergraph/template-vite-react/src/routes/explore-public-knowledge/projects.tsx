@@ -14,7 +14,7 @@ function ExplorePublicKnowledgeProjects() {
   const { data: projects, isPending } = useQuery(Project, {
     mode: 'public',
     space: 'b2565802-3118-47be-91f2-e59170735bac',
-    first: 40,
+    first: 100,
     include: { avatar: {} },
     filter: {
       name: {

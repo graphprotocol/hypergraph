@@ -10,7 +10,7 @@ function AssetMarket() {
   const { data: assets, isPending } = useQuery(Asset, {
     mode: 'public',
     space: 'b2565802-3118-47be-91f2-e59170735bac',
-    first: 40,
+    first: 100,
   });
 
   return (

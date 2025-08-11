@@ -17,7 +17,7 @@ import { Route as ExplorePublicKnowledgeIndexRouteImport } from './routes/explor
 import { Route as PublicSpaceSpaceIdRouteImport } from './routes/public-space/$space-id'
 import { Route as PrivateSpaceSpaceIdRouteImport } from './routes/private-space/$space-id'
 import { Route as ExplorePublicKnowledgeProjectsRouteImport } from './routes/explore-public-knowledge/projects'
-import { Route as ExplorePublicKnowledgeInvestmentRountsRouteImport } from './routes/explore-public-knowledge/investment-rounts'
+import { Route as ExplorePublicKnowledgeInvestmentRoundsRouteImport } from './routes/explore-public-knowledge/investment-rounds'
 import { Route as ExplorePublicKnowledgeDappsRouteImport } from './routes/explore-public-knowledge/dapps'
 import { Route as ExplorePublicKnowledgeAssetMarketRouteImport } from './routes/explore-public-knowledge/asset-market'
 
@@ -63,10 +63,10 @@ const ExplorePublicKnowledgeProjectsRoute =
     path: '/projects',
     getParentRoute: () => ExplorePublicKnowledgeRoute,
   } as any)
-const ExplorePublicKnowledgeInvestmentRountsRoute =
-  ExplorePublicKnowledgeInvestmentRountsRouteImport.update({
-    id: '/investment-rounts',
-    path: '/investment-rounts',
+const ExplorePublicKnowledgeInvestmentRoundsRoute =
+  ExplorePublicKnowledgeInvestmentRoundsRouteImport.update({
+    id: '/investment-rounds',
+    path: '/investment-rounds',
     getParentRoute: () => ExplorePublicKnowledgeRoute,
   } as any)
 const ExplorePublicKnowledgeDappsRoute =
@@ -89,7 +89,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/explore-public-knowledge/asset-market': typeof ExplorePublicKnowledgeAssetMarketRoute
   '/explore-public-knowledge/dapps': typeof ExplorePublicKnowledgeDappsRoute
-  '/explore-public-knowledge/investment-rounts': typeof ExplorePublicKnowledgeInvestmentRountsRoute
+  '/explore-public-knowledge/investment-rounds': typeof ExplorePublicKnowledgeInvestmentRoundsRoute
   '/explore-public-knowledge/projects': typeof ExplorePublicKnowledgeProjectsRoute
   '/private-space/$space-id': typeof PrivateSpaceSpaceIdRoute
   '/public-space/$space-id': typeof PublicSpaceSpaceIdRoute
@@ -101,7 +101,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/explore-public-knowledge/asset-market': typeof ExplorePublicKnowledgeAssetMarketRoute
   '/explore-public-knowledge/dapps': typeof ExplorePublicKnowledgeDappsRoute
-  '/explore-public-knowledge/investment-rounts': typeof ExplorePublicKnowledgeInvestmentRountsRoute
+  '/explore-public-knowledge/investment-rounds': typeof ExplorePublicKnowledgeInvestmentRoundsRoute
   '/explore-public-knowledge/projects': typeof ExplorePublicKnowledgeProjectsRoute
   '/private-space/$space-id': typeof PrivateSpaceSpaceIdRoute
   '/public-space/$space-id': typeof PublicSpaceSpaceIdRoute
@@ -115,7 +115,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/explore-public-knowledge/asset-market': typeof ExplorePublicKnowledgeAssetMarketRoute
   '/explore-public-knowledge/dapps': typeof ExplorePublicKnowledgeDappsRoute
-  '/explore-public-knowledge/investment-rounts': typeof ExplorePublicKnowledgeInvestmentRountsRoute
+  '/explore-public-knowledge/investment-rounds': typeof ExplorePublicKnowledgeInvestmentRoundsRoute
   '/explore-public-knowledge/projects': typeof ExplorePublicKnowledgeProjectsRoute
   '/private-space/$space-id': typeof PrivateSpaceSpaceIdRoute
   '/public-space/$space-id': typeof PublicSpaceSpaceIdRoute
@@ -130,7 +130,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/explore-public-knowledge/asset-market'
     | '/explore-public-knowledge/dapps'
-    | '/explore-public-knowledge/investment-rounts'
+    | '/explore-public-knowledge/investment-rounds'
     | '/explore-public-knowledge/projects'
     | '/private-space/$space-id'
     | '/public-space/$space-id'
@@ -142,7 +142,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/explore-public-knowledge/asset-market'
     | '/explore-public-knowledge/dapps'
-    | '/explore-public-knowledge/investment-rounts'
+    | '/explore-public-knowledge/investment-rounds'
     | '/explore-public-knowledge/projects'
     | '/private-space/$space-id'
     | '/public-space/$space-id'
@@ -155,7 +155,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/explore-public-knowledge/asset-market'
     | '/explore-public-knowledge/dapps'
-    | '/explore-public-knowledge/investment-rounts'
+    | '/explore-public-knowledge/investment-rounds'
     | '/explore-public-knowledge/projects'
     | '/private-space/$space-id'
     | '/public-space/$space-id'
@@ -229,11 +229,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExplorePublicKnowledgeProjectsRouteImport
       parentRoute: typeof ExplorePublicKnowledgeRoute
     }
-    '/explore-public-knowledge/investment-rounts': {
-      id: '/explore-public-knowledge/investment-rounts'
-      path: '/investment-rounts'
-      fullPath: '/explore-public-knowledge/investment-rounts'
-      preLoaderRoute: typeof ExplorePublicKnowledgeInvestmentRountsRouteImport
+    '/explore-public-knowledge/investment-rounds': {
+      id: '/explore-public-knowledge/investment-rounds'
+      path: '/investment-rounds'
+      fullPath: '/explore-public-knowledge/investment-rounds'
+      preLoaderRoute: typeof ExplorePublicKnowledgeInvestmentRoundsRouteImport
       parentRoute: typeof ExplorePublicKnowledgeRoute
     }
     '/explore-public-knowledge/dapps': {
@@ -256,7 +256,7 @@ declare module '@tanstack/react-router' {
 interface ExplorePublicKnowledgeRouteChildren {
   ExplorePublicKnowledgeAssetMarketRoute: typeof ExplorePublicKnowledgeAssetMarketRoute
   ExplorePublicKnowledgeDappsRoute: typeof ExplorePublicKnowledgeDappsRoute
-  ExplorePublicKnowledgeInvestmentRountsRoute: typeof ExplorePublicKnowledgeInvestmentRountsRoute
+  ExplorePublicKnowledgeInvestmentRoundsRoute: typeof ExplorePublicKnowledgeInvestmentRoundsRoute
   ExplorePublicKnowledgeProjectsRoute: typeof ExplorePublicKnowledgeProjectsRoute
   ExplorePublicKnowledgeIndexRoute: typeof ExplorePublicKnowledgeIndexRoute
 }
@@ -266,8 +266,8 @@ const ExplorePublicKnowledgeRouteChildren: ExplorePublicKnowledgeRouteChildren =
     ExplorePublicKnowledgeAssetMarketRoute:
       ExplorePublicKnowledgeAssetMarketRoute,
     ExplorePublicKnowledgeDappsRoute: ExplorePublicKnowledgeDappsRoute,
-    ExplorePublicKnowledgeInvestmentRountsRoute:
-      ExplorePublicKnowledgeInvestmentRountsRoute,
+    ExplorePublicKnowledgeInvestmentRoundsRoute:
+      ExplorePublicKnowledgeInvestmentRoundsRoute,
     ExplorePublicKnowledgeProjectsRoute: ExplorePublicKnowledgeProjectsRoute,
     ExplorePublicKnowledgeIndexRoute: ExplorePublicKnowledgeIndexRoute,
   }
