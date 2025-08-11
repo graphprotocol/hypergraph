@@ -3,7 +3,16 @@ import { Schema } from 'effect';
 import * as Mapping from '../../mapping/Mapping.js';
 import * as Utils from '../../mapping/Utils.js';
 
-export const TypesyncHypergraphSchemaStatus = Schema.NullOr(Schema.Literal('published', 'synced'));
+export const TypesyncHypergraphSchemaStatus = Schema.NullOr(
+  Schema.Literal(
+    // the type/property has been synced to the schema file and published to the Knowledge Graph
+    'published',
+    // the type/property has been synced to the schema file, but requires publishing to the Knowledge Graph
+    'synced',
+    // the type/property exists in the Knowledge Graph, has been added to the users schema through the Typesync UI, but requires syncing to the schema file
+    'published_not_synced',
+  ),
+);
 export type TypesyncHypergraphSchemaStatus = typeof TypesyncHypergraphSchemaStatus.Type;
 
 export const TypesyncHypergraphSchemaTypeProperty = Schema.Union(

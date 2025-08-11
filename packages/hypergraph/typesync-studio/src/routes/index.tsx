@@ -1,6 +1,7 @@
 'use client';
 
 import { Mapping, Typesync } from '@graphprotocol/hypergraph';
+import { useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { ArrowCounterClockwiseIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
@@ -16,9 +17,12 @@ import { PropertyCombobox } from '@/Components/Schema/PropertyCombobox.tsx';
 import { SchemaPropertyStatus } from '@/Components/Schema/Status.tsx';
 import { TypeCombobox } from '@/Components/Schema/TypeCombobox.tsx';
 import { TypeSelect } from '@/Components/Schema/TypeSelect.tsx';
+import { useAppSchemaSpace } from '@/Context/AppSchemaSpaceContext.tsx';
 import { useHypergraphSchemaQuery } from '@/hooks/useHypergraphSchemaQuery.tsx';
 import type { ExtendedProperty, ExtendedSchemaBrowserType } from '@/hooks/useKnowledgeGraph.tsx';
+import { useSyncHypergraphMappingMutation } from '@/hooks/useSyncHypergraphMappingMutation.tsx';
 import { useSyncHypergraphSchemaMutation } from '@/hooks/useSyncHypergraphSchemaMutation.tsx';
+import { classnames } from '@/utils/classnames';
 import { mapKGDataTypeToPrimitiveType } from '@/utils/type-mapper.ts';
 
 export const Route = createFileRoute('/')({
@@ -41,9 +45,25 @@ const { useAppForm } = createFormHook({
 });
 
 function SchemaBuilderComponent() {
+  const { authenticated } = useHypergraphAuth();
+  const { spaceId } = useAppSchemaSpace();
+
   const { data: schema } = useHypergraphSchemaQuery();
 
-  const { mutateAsync, isError, isPending, isSuccess } = useSyncHypergraphSchemaMutation();
+  const {
+    mutateAsync: syncSchemaMutateAsync,
+    isError: syncSchemaIsError,
+    isPending: syncSchemaIsPending,
+    isSuccess: syncSchemaIsSuccess,
+    reset: syncSchemaReset,
+  } = useSyncHypergraphSchemaMutation();
+  const {
+    mutateAsync: syncMappingMutateAsync,
+    isError: syncMappingIsError,
+    isPending: syncMappingIsPending,
+    isSuccess: syncMappingIsSuccess,
+    reset: syncMappingReset,
+  } = useSyncHypergraphMappingMutation();
 
   const createSchemaForm = useAppForm({
     defaultValues: schema,
@@ -53,10 +73,11 @@ function SchemaBuilderComponent() {
       onChange: Schema.standardSchemaV1(Typesync.TypesyncHypergraphSchema) as any,
     },
     async onSubmit({ value, formApi }) {
-      await mutateAsync(value).then((data) => {
+      await syncSchemaMutateAsync(value).then((data) => {
         setTimeout(async () => {
           // reset the form
           formApi.reset(data);
+          syncSchemaReset();
         }, 1_500);
       });
     },
@@ -80,6 +101,8 @@ function SchemaBuilderComponent() {
     EffectArray.map((schemaType) => schemaType.type),
     EffectArray.reduce(new Set<string>(), (set, curr) => set.add(curr)),
   );
+
+  const currentSchema = useStore(createSchemaForm.store, (state) => state.values);
 
   /**
    * If the user selects an already existing type from the Knowledge Graph,
@@ -170,7 +193,7 @@ function SchemaBuilderComponent() {
       relationSchemaTypes.push({
         name: relationValueType.name,
         knowledgeGraphId: relationValueType.id,
-        status: 'published',
+        status: 'published_not_synced',
         properties: EffectArray.map(relationValueType.properties ?? [], (prop) => {
           const dataType = mapKGDataTypeToPrimitiveType(prop.dataType, prop.name);
           if (Mapping.isDataTypeRelation(dataType)) {
@@ -180,14 +203,14 @@ function SchemaBuilderComponent() {
               knowledgeGraphId: prop.id,
               dataType,
               relationType: prop.name,
-              status: 'published',
+              status: 'published_not_synced',
             };
           }
           return {
             name: prop.name,
             knowledgeGraphId: prop.id,
             dataType,
-            status: 'published',
+            status: 'published_not_synced',
           };
         }),
       });
@@ -281,21 +304,21 @@ function SchemaBuilderComponent() {
               knowledgeGraphId: prop.id,
               dataType,
               relationType: name,
-              status: 'published',
+              status: 'published_not_synced',
             } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
           }
           return {
             name,
             knowledgeGraphId: prop.id,
             dataType,
-            status: 'published',
+            status: 'published_not_synced',
           } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
         }),
       );
       propRelationSchemaTypes.push({
         name: relationValueType.name,
         knowledgeGraphId: relationValueType.id,
-        status: 'published',
+        status: 'published_not_synced',
         properties,
       });
     }
@@ -306,7 +329,7 @@ function SchemaBuilderComponent() {
   return (
     <form
       noValidate
-      aria-disabled={isPending ? 'true' : undefined}
+      aria-disabled={syncSchemaIsPending ? 'true' : undefined}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -315,9 +338,9 @@ function SchemaBuilderComponent() {
     >
       <createSchemaForm.AppField name="types" mode="array">
         {(field) => (
-          <div className="grid grid-cols-2 2xl:grid-cols-5 gap-x-4 2xl:gap-x-8">
+          <div className="grid grid-cols-2 2xl:grid-cols-5 gap-x-4 2xl:gap-x-8 h-full">
             {/** KG schema browser */}
-            <div className="w-full flex flex-col gap-y-4 pb-10 2xl:col-span-2">
+            <div className="w-full flex flex-col gap-y-4 pb-10 2xl:col-span-2 h-full">
               <KnowledgeGraphBrowser
                 typeSelected={(selected) => {
                   if (selected.name == null) {
@@ -328,7 +351,7 @@ function SchemaBuilderComponent() {
                   const selectedMappedToType = Typesync.TypesyncHypergraphSchemaType.make({
                     name: selected.name,
                     knowledgeGraphId: selected.id,
-                    status: 'published',
+                    status: 'published_not_synced',
                     properties: (selected.properties ?? [])
                       .filter((prop) => prop != null)
                       .map((prop) => {
@@ -339,14 +362,14 @@ function SchemaBuilderComponent() {
                             knowledgeGraphId: prop.id,
                             dataType,
                             relationType: prop.name || prop.id,
-                            status: 'published',
+                            status: 'published_not_synced',
                           } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                         }
                         return {
                           name: prop.name || prop.id,
                           knowledgeGraphId: prop.id,
                           dataType,
-                          status: 'published',
+                          status: 'published_not_synced',
                         } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                       }),
                   });
@@ -437,7 +460,7 @@ function SchemaBuilderComponent() {
                                   const selectedMappedToType = Typesync.TypesyncHypergraphSchemaType.make({
                                     name: selected.name,
                                     knowledgeGraphId: selected.id,
-                                    status: 'published',
+                                    status: 'published_not_synced',
                                     properties: (selected.properties ?? [])
                                       .filter((prop) => prop != null)
                                       .map((prop) => {
@@ -451,14 +474,14 @@ function SchemaBuilderComponent() {
                                             knowledgeGraphId: prop.id,
                                             dataType,
                                             relationType: prop.name || prop.id,
-                                            status: 'published',
+                                            status: 'published_not_synced',
                                           } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                                         }
                                         return {
                                           name: prop.name || prop.id,
                                           knowledgeGraphId: prop.id,
                                           dataType,
-                                          status: 'published',
+                                          status: 'published_not_synced',
                                         } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                                       }),
                                   });
@@ -522,7 +545,7 @@ function SchemaBuilderComponent() {
                                               const selectedProp = {
                                                 name: prop.name || prop.id,
                                                 knowledgeGraphId: prop.id,
-                                                status: 'published',
+                                                status: 'published_not_synced',
                                                 dataType,
                                                 ...(Mapping.isDataTypeRelation(dataType)
                                                   ? { relationType: prop.name || prop.id }
@@ -631,7 +654,9 @@ function SchemaBuilderComponent() {
                   <button
                     type="button"
                     className="inline-flex items-center gap-x-1.5 text-sm/6 font-semibold text-gray-600 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 rounded-md px-2 py-1.5"
-                    onClick={() => createSchemaForm.resetField('types')}
+                    onClick={() => {
+                      createSchemaForm.resetField('types');
+                    }}
                   >
                     <ArrowCounterClockwiseIcon aria-hidden="true" className="-ml-0.5 size-4" />
                     Reset
@@ -656,11 +681,54 @@ function SchemaBuilderComponent() {
               <div className="mt-6 flex items-center justify-end gap-x-6 bg-white dark:bg-inherit p-4 rounded-lg">
                 <createSchemaForm.AppForm>
                   <createSchemaForm.SubmitButton
-                    status={isPending ? 'submitting' : isError ? 'error' : isSuccess ? 'success' : 'idle'}
+                    status={
+                      syncSchemaIsPending
+                        ? 'submitting'
+                        : syncSchemaIsError
+                          ? 'error'
+                          : syncSchemaIsSuccess
+                            ? 'success'
+                            : 'idle'
+                    }
                   >
                     Sync with <InlineCode>schema.ts</InlineCode>
                   </createSchemaForm.SubmitButton>
                 </createSchemaForm.AppForm>
+                {spaceId != null && authenticated ? (
+                  <button
+                    type="button"
+                    disabled={false /* should be disabled if user has no schema changes to publish to the KG */}
+                    data-state={
+                      syncMappingIsPending
+                        ? 'submitting'
+                        : syncMappingIsError
+                          ? 'error'
+                          : syncMappingIsSuccess
+                            ? 'success'
+                            : 'idle'
+                    }
+                    className={classnames(
+                      'rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 inline-flex items-center gap-x-2 cursor-pointer',
+                      'disabled:bg-gray-400 disabled:text-gray-900 disabled:hover:bg-gray-400 disabled:focus-visible:outline-gray-400 disabled:cursor-not-allowed',
+                      'data-[state=error]:bg-red-600 data-[state=error]:hover:bg-red-500 data-[state=error]:focus-visible:bg-red-500 data-[state=success]:focus-visible:bg-green-500',
+                      'data-[state=success]:bg-green-600 data-[state=success]:hover:bg-green-500',
+                    )}
+                    onClick={async () => {
+                      await syncMappingMutateAsync({
+                        schema: currentSchema,
+                        space: spaceId,
+                      }).then((updatedSchema) => {
+                        setTimeout(async () => {
+                          // reset the form
+                          createSchemaForm.reset(updatedSchema);
+                          syncMappingReset();
+                        }, 1_500);
+                      });
+                    }}
+                  >
+                    Publish Schema
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>
