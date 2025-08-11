@@ -26,4 +26,22 @@ export const mapping: Mapping.Mapping = {
       avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
     },
   },
+  Dapp: {
+    typeIds: [Id('8ca136d0-698a-4bbf-a76b-8e2741b2dc8c')],
+    properties: {
+      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    },
+  },
+  InvestmentRound: {
+    typeIds: [Id('8f03f4c9-59e4-44a8-a625-c0a40b1ff330')],
+    properties: {
+      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    },
+  },
+  Asset: {
+    typeIds: [Id('f8780a80-c238-4a2a-96cb-567d88b1aa63')],
+    properties: {
+      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    },
+  },
 };

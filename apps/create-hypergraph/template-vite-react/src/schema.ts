@@ -15,3 +15,15 @@ export class Project extends Entity.Class<Project>('Project')({
   xUrl: Type.optional(Type.String),
   avatar: Type.Relation(Image),
 }) {}
+
+export class Dapp extends Entity.Class<Dapp>('Dapp')({
+  name: Type.String,
+}) {}
+
+export class InvestmentRound extends Entity.Class<InvestmentRound>('InvestmentRound')({
+  name: Type.String,
+}) {}
+
+export class Asset extends Entity.Class<Asset>('Asset')({
+  name: Type.String,
+}) {}
