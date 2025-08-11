@@ -53,7 +53,7 @@ function Index() {
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Discover and explore the vast network of knowledge already available in the public Knowledge Graph.
             </p>
-            <Link to="/explore-public-knowledge">
+            <Link to="/explore-public-knowledge/projects">
               <Button variant="outline" className="w-full">
                 Start Exploring
               </Button>
