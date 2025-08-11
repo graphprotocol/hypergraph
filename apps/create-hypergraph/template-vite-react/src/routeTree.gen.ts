@@ -13,8 +13,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ExplorePublicKnowledgeRouteImport } from './routes/explore-public-knowledge'
 import { Route as AuthenticateSuccessRouteImport } from './routes/authenticate-success'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExplorePublicKnowledgeIndexRouteImport } from './routes/explore-public-knowledge/index'
 import { Route as PublicSpaceSpaceIdRouteImport } from './routes/public-space/$space-id'
 import { Route as PrivateSpaceSpaceIdRouteImport } from './routes/private-space/$space-id'
+import { Route as ExplorePublicKnowledgeProjectsRouteImport } from './routes/explore-public-knowledge/projects'
+import { Route as ExplorePublicKnowledgeInvestmentRoundsRouteImport } from './routes/explore-public-knowledge/investment-rounds'
+import { Route as ExplorePublicKnowledgeDappsRouteImport } from './routes/explore-public-knowledge/dapps'
+import { Route as ExplorePublicKnowledgeAssetMarketRouteImport } from './routes/explore-public-knowledge/asset-market'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -36,6 +41,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExplorePublicKnowledgeIndexRoute =
+  ExplorePublicKnowledgeIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ExplorePublicKnowledgeRoute,
+  } as any)
 const PublicSpaceSpaceIdRoute = PublicSpaceSpaceIdRouteImport.update({
   id: '/public-space/$space-id',
   path: '/public-space/$space-id',
@@ -46,31 +57,69 @@ const PrivateSpaceSpaceIdRoute = PrivateSpaceSpaceIdRouteImport.update({
   path: '/private-space/$space-id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExplorePublicKnowledgeProjectsRoute =
+  ExplorePublicKnowledgeProjectsRouteImport.update({
+    id: '/projects',
+    path: '/projects',
+    getParentRoute: () => ExplorePublicKnowledgeRoute,
+  } as any)
+const ExplorePublicKnowledgeInvestmentRoundsRoute =
+  ExplorePublicKnowledgeInvestmentRoundsRouteImport.update({
+    id: '/investment-rounds',
+    path: '/investment-rounds',
+    getParentRoute: () => ExplorePublicKnowledgeRoute,
+  } as any)
+const ExplorePublicKnowledgeDappsRoute =
+  ExplorePublicKnowledgeDappsRouteImport.update({
+    id: '/dapps',
+    path: '/dapps',
+    getParentRoute: () => ExplorePublicKnowledgeRoute,
+  } as any)
+const ExplorePublicKnowledgeAssetMarketRoute =
+  ExplorePublicKnowledgeAssetMarketRouteImport.update({
+    id: '/asset-market',
+    path: '/asset-market',
+    getParentRoute: () => ExplorePublicKnowledgeRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
-  '/explore-public-knowledge': typeof ExplorePublicKnowledgeRoute
+  '/explore-public-knowledge': typeof ExplorePublicKnowledgeRouteWithChildren
   '/login': typeof LoginRoute
+  '/explore-public-knowledge/asset-market': typeof ExplorePublicKnowledgeAssetMarketRoute
+  '/explore-public-knowledge/dapps': typeof ExplorePublicKnowledgeDappsRoute
+  '/explore-public-knowledge/investment-rounds': typeof ExplorePublicKnowledgeInvestmentRoundsRoute
+  '/explore-public-knowledge/projects': typeof ExplorePublicKnowledgeProjectsRoute
   '/private-space/$space-id': typeof PrivateSpaceSpaceIdRoute
   '/public-space/$space-id': typeof PublicSpaceSpaceIdRoute
+  '/explore-public-knowledge/': typeof ExplorePublicKnowledgeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
-  '/explore-public-knowledge': typeof ExplorePublicKnowledgeRoute
   '/login': typeof LoginRoute
+  '/explore-public-knowledge/asset-market': typeof ExplorePublicKnowledgeAssetMarketRoute
+  '/explore-public-knowledge/dapps': typeof ExplorePublicKnowledgeDappsRoute
+  '/explore-public-knowledge/investment-rounds': typeof ExplorePublicKnowledgeInvestmentRoundsRoute
+  '/explore-public-knowledge/projects': typeof ExplorePublicKnowledgeProjectsRoute
   '/private-space/$space-id': typeof PrivateSpaceSpaceIdRoute
   '/public-space/$space-id': typeof PublicSpaceSpaceIdRoute
+  '/explore-public-knowledge': typeof ExplorePublicKnowledgeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
-  '/explore-public-knowledge': typeof ExplorePublicKnowledgeRoute
+  '/explore-public-knowledge': typeof ExplorePublicKnowledgeRouteWithChildren
   '/login': typeof LoginRoute
+  '/explore-public-knowledge/asset-market': typeof ExplorePublicKnowledgeAssetMarketRoute
+  '/explore-public-knowledge/dapps': typeof ExplorePublicKnowledgeDappsRoute
+  '/explore-public-knowledge/investment-rounds': typeof ExplorePublicKnowledgeInvestmentRoundsRoute
+  '/explore-public-knowledge/projects': typeof ExplorePublicKnowledgeProjectsRoute
   '/private-space/$space-id': typeof PrivateSpaceSpaceIdRoute
   '/public-space/$space-id': typeof PublicSpaceSpaceIdRoute
+  '/explore-public-knowledge/': typeof ExplorePublicKnowledgeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -79,30 +128,44 @@ export interface FileRouteTypes {
     | '/authenticate-success'
     | '/explore-public-knowledge'
     | '/login'
+    | '/explore-public-knowledge/asset-market'
+    | '/explore-public-knowledge/dapps'
+    | '/explore-public-knowledge/investment-rounds'
+    | '/explore-public-knowledge/projects'
     | '/private-space/$space-id'
     | '/public-space/$space-id'
+    | '/explore-public-knowledge/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/authenticate-success'
-    | '/explore-public-knowledge'
     | '/login'
+    | '/explore-public-knowledge/asset-market'
+    | '/explore-public-knowledge/dapps'
+    | '/explore-public-knowledge/investment-rounds'
+    | '/explore-public-knowledge/projects'
     | '/private-space/$space-id'
     | '/public-space/$space-id'
+    | '/explore-public-knowledge'
   id:
     | '__root__'
     | '/'
     | '/authenticate-success'
     | '/explore-public-knowledge'
     | '/login'
+    | '/explore-public-knowledge/asset-market'
+    | '/explore-public-knowledge/dapps'
+    | '/explore-public-knowledge/investment-rounds'
+    | '/explore-public-knowledge/projects'
     | '/private-space/$space-id'
     | '/public-space/$space-id'
+    | '/explore-public-knowledge/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticateSuccessRoute: typeof AuthenticateSuccessRoute
-  ExplorePublicKnowledgeRoute: typeof ExplorePublicKnowledgeRoute
+  ExplorePublicKnowledgeRoute: typeof ExplorePublicKnowledgeRouteWithChildren
   LoginRoute: typeof LoginRoute
   PrivateSpaceSpaceIdRoute: typeof PrivateSpaceSpaceIdRoute
   PublicSpaceSpaceIdRoute: typeof PublicSpaceSpaceIdRoute
@@ -138,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explore-public-knowledge/': {
+      id: '/explore-public-knowledge/'
+      path: '/'
+      fullPath: '/explore-public-knowledge/'
+      preLoaderRoute: typeof ExplorePublicKnowledgeIndexRouteImport
+      parentRoute: typeof ExplorePublicKnowledgeRoute
+    }
     '/public-space/$space-id': {
       id: '/public-space/$space-id'
       path: '/public-space/$space-id'
@@ -152,13 +222,65 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateSpaceSpaceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explore-public-knowledge/projects': {
+      id: '/explore-public-knowledge/projects'
+      path: '/projects'
+      fullPath: '/explore-public-knowledge/projects'
+      preLoaderRoute: typeof ExplorePublicKnowledgeProjectsRouteImport
+      parentRoute: typeof ExplorePublicKnowledgeRoute
+    }
+    '/explore-public-knowledge/investment-rounds': {
+      id: '/explore-public-knowledge/investment-rounds'
+      path: '/investment-rounds'
+      fullPath: '/explore-public-knowledge/investment-rounds'
+      preLoaderRoute: typeof ExplorePublicKnowledgeInvestmentRoundsRouteImport
+      parentRoute: typeof ExplorePublicKnowledgeRoute
+    }
+    '/explore-public-knowledge/dapps': {
+      id: '/explore-public-knowledge/dapps'
+      path: '/dapps'
+      fullPath: '/explore-public-knowledge/dapps'
+      preLoaderRoute: typeof ExplorePublicKnowledgeDappsRouteImport
+      parentRoute: typeof ExplorePublicKnowledgeRoute
+    }
+    '/explore-public-knowledge/asset-market': {
+      id: '/explore-public-knowledge/asset-market'
+      path: '/asset-market'
+      fullPath: '/explore-public-knowledge/asset-market'
+      preLoaderRoute: typeof ExplorePublicKnowledgeAssetMarketRouteImport
+      parentRoute: typeof ExplorePublicKnowledgeRoute
+    }
   }
 }
+
+interface ExplorePublicKnowledgeRouteChildren {
+  ExplorePublicKnowledgeAssetMarketRoute: typeof ExplorePublicKnowledgeAssetMarketRoute
+  ExplorePublicKnowledgeDappsRoute: typeof ExplorePublicKnowledgeDappsRoute
+  ExplorePublicKnowledgeInvestmentRoundsRoute: typeof ExplorePublicKnowledgeInvestmentRoundsRoute
+  ExplorePublicKnowledgeProjectsRoute: typeof ExplorePublicKnowledgeProjectsRoute
+  ExplorePublicKnowledgeIndexRoute: typeof ExplorePublicKnowledgeIndexRoute
+}
+
+const ExplorePublicKnowledgeRouteChildren: ExplorePublicKnowledgeRouteChildren =
+  {
+    ExplorePublicKnowledgeAssetMarketRoute:
+      ExplorePublicKnowledgeAssetMarketRoute,
+    ExplorePublicKnowledgeDappsRoute: ExplorePublicKnowledgeDappsRoute,
+    ExplorePublicKnowledgeInvestmentRoundsRoute:
+      ExplorePublicKnowledgeInvestmentRoundsRoute,
+    ExplorePublicKnowledgeProjectsRoute: ExplorePublicKnowledgeProjectsRoute,
+    ExplorePublicKnowledgeIndexRoute: ExplorePublicKnowledgeIndexRoute,
+  }
+
+const ExplorePublicKnowledgeRouteWithChildren =
+  ExplorePublicKnowledgeRoute._addFileChildren(
+    ExplorePublicKnowledgeRouteChildren,
+  )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticateSuccessRoute: AuthenticateSuccessRoute,
-  ExplorePublicKnowledgeRoute: ExplorePublicKnowledgeRoute,
+  ExplorePublicKnowledgeRoute: ExplorePublicKnowledgeRouteWithChildren,
   LoginRoute: LoginRoute,
   PrivateSpaceSpaceIdRoute: PrivateSpaceSpaceIdRoute,
   PublicSpaceSpaceIdRoute: PublicSpaceSpaceIdRoute,

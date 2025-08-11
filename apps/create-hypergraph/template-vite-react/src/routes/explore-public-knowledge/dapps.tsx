@@ -1,55 +1,34 @@
-'use client';
-
+import { GraphImage } from '@/components/graph-image';
+import { Dapp } from '@/schema';
 import { useQuery } from '@graphprotocol/hypergraph-react';
-import { useState } from 'react';
-import { Project } from '../../app/schema';
-import { GraphImage } from '../GraphImage';
+import { createFileRoute } from '@tanstack/react-router';
 
-export function PublicKnowledgeExplorer() {
-  const [searchTerm, setSearchTerm] = useState('');
+export const Route = createFileRoute('/explore-public-knowledge/dapps')({
+  component: Dapps,
+});
 
-  const { data: projects, isPending } = useQuery(Project, {
+function Dapps() {
+  const { data: dapps, isPending } = useQuery(Dapp, {
     mode: 'public',
     space: 'b2565802-3118-47be-91f2-e59170735bac',
-    first: 40,
+    first: 100,
     include: { avatar: {} },
-    filter: {
-      name: {
-        // contains is case sensitive
-        contains: searchTerm,
-      },
-    },
   });
 
   return (
     <>
-      {/* Search UI */}
-      <div className="max-w-md mx-auto mb-8">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search projects..."
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-          />
-        </div>
+      <div className="text-center mb-4">
+        <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Dapps
+        </h2>
       </div>
 
+      {isPending && <div className="text-center py-16">Loading…</div>}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {projects.map((project) => (
+        {dapps.map((dapp) => (
           <div
-            key={project.id}
+            key={dapp.id}
             className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200 transform hover:-translate-y-1 z-10"
           >
             {/* Gradient overlay */}
@@ -57,36 +36,34 @@ export function PublicKnowledgeExplorer() {
 
             {/* Content */}
             <div className="relative p-6">
-              {/* Project icon/avatar */}
+              {/* Dapp icon/avatar */}
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-                {project.avatar?.[0]?.url ? (
+                {dapp.avatar?.[0]?.url ? (
                   <GraphImage
-                    src={project.avatar[0].url}
-                    alt={`${project.name} avatar`}
+                    src={dapp.avatar[0].url}
+                    alt={`${dapp.name} avatar`}
                     className="w-full h-full object-cover"
-                    width={200}
-                    height={200}
                   />
                 ) : (
-                  <span className="text-white font-bold text-lg">{project.name.charAt(0).toUpperCase()}</span>
+                  <span className="text-white font-bold text-lg">{dapp.name.charAt(0).toUpperCase()}</span>
                 )}
               </div>
 
-              {/* Project name */}
+              {/* Asset name */}
               <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
-                {project.name}
+                {dapp.name}
               </h3>
 
-              {/* Project ID */}
-              <p className="text-[10px] text-gray-500 mb-2 font-mono">{project.id}</p>
+              {/* Asset ID */}
+              <p className="text-[10px] text-gray-500 mb-2 font-mono">{dapp.id}</p>
 
-              {/* Project description */}
-              {project.description && <p className="text-sm text-gray-600 mb-2 line-clamp-2">{project.description}</p>}
+              {/* Dapp description */}
+              {dapp.description && <p className="text-sm text-gray-600 mb-2 line-clamp-2">{dapp.description}</p>}
 
-              {/* Project xUrl */}
-              {project.xUrl && (
+              {/* Dapp xUrl */}
+              {dapp.xUrl && (
                 <a
-                  href={project.xUrl}
+                  href={dapp.xUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"
@@ -95,6 +72,21 @@ export function PublicKnowledgeExplorer() {
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
                   View on X
+                </a>
+              )}
+
+              {/* Dapp githubUrl */}
+              {dapp.githubUrl && (
+                <a
+                  href={dapp.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 22h20L12 2z" />
+                  </svg>
+                  View on Github
                 </a>
               )}
             </div>
@@ -106,7 +98,7 @@ export function PublicKnowledgeExplorer() {
       </div>
 
       {/* Empty state */}
-      {isPending === false && projects.length === 0 && (
+      {isPending === false && dapps.length === 0 && (
         <div className="text-center py-16">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,8 +110,8 @@ export function PublicKnowledgeExplorer() {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Projects Found</h3>
-          <p className="text-gray-500">There are currently no public projects available to explore.</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Dapps Found</h3>
+          <p className="text-gray-500">There are currently no public dapps available to explore.</p>
         </div>
       )}
     </>
