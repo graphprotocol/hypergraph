@@ -69,6 +69,7 @@ const config = {
       {
         includeOrder: [
           'quickstart',
+          'ai-usage',
           'key-features',
           'core-concepts',
           'typesync',
