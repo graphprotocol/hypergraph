@@ -35,7 +35,7 @@ const { data: spaceAData } = useQuery(Event, { mode: 'public', space: 'space-a-i
 const { data: spaceBData } = useQuery(Event, { mode: 'public', space: 'space-b-id' });
 ```
 
-### Filtering (not yet supported)
+### Filtering
 
 You can filter the data by passing in the `filter` parameter.
 
