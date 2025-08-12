@@ -506,3 +506,51 @@ describe('findMany with filters', () => {
     });
   });
 });
+
+describe('Date & Point filters',()=>{
+  class Meetup extends Entity.Class<Meetup>('Meetup')({
+    name:Type.String,
+    when:Type.Date,
+    location:Type.Point,
+  }) {}
+
+  const spaceId = '9a4a5a1b-2c3d-4e5f-8a9b-1234567890ab';
+  const automergeDocId = idToAutomergeId(spaceId) as AnyDocumentId;
+
+  let repo: Repo;
+  let handle: DocHandle<Entity.DocumentContent>;
+
+  beforeEach(()=>{
+    repo = new Repo({});
+    const result = repo.findWithProgress<Entity.DocumentContent>(automergeDocId);
+    handle = result.handle;
+    handle.doneLoading();
+  })
+
+  it('filters by Date is ',()=>{
+    Entity.create(handle,Meetup)({name:'A',when:new Date('2024-01-01T00:00:00Z'),location:[0,0]});
+    Entity.create(handle, Meetup)({ name: 'B', when: new Date('2025-01-01T00:00:00Z'), location: [0, 0] });
+
+    const r = Entity.findMany(
+      handle,
+      Meetup,
+      {when:{is:new Date('2024-01-01T00:00:00Z')}},
+      undefined,
+    );
+    expect(r.entities.map(e=>e.name)).toEqual(['A']);
+  });
+
+  it('filters by Point is ',()=>{
+    Entity.create(handle, Meetup)({ name: 'X', when: new Date('2024-01-01T00:00:00Z'), location: [1, 2] });
+    Entity.create(handle, Meetup)({ name: 'Y', when: new Date('2024-01-01T00:00:00Z'), location: [3, 4] });
+
+    const r = Entity.findMany(
+      handle,
+      Meetup,
+      {location:{is:[1,2]}},
+      undefined
+    );
+    expect(r.entities.map(e=>e.name)).toEqual(['X']);
+  });
+
+});
