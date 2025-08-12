@@ -17,6 +17,14 @@ type GraphqlFilterEntry =
           | {
               propertyId: { is: string };
               number: { is: string } | { greaterThan: string } | { lessThan: string };
+            }
+          | {
+              propertyId: {is: string};
+              time: {is: string};
+            }
+          | {
+              propertyId: {is: string};
+              point: {is: string};
             };
       };
     }
@@ -124,6 +132,28 @@ export function translateFilterToGraphql<S extends Entity.AnyNoContext>(
             },
           },
         });
+      }
+
+      if (TypeUtils.isDateOrOptionalDateType(type.fields[fieldName]) && fieldFilter.is instanceof Date) {
+        graphqlFilter.push({
+          values:{
+            some:{
+              propertyId:{is:propertyId},
+              time: {is: Graph.serializeDate(fieldFilter.is)},
+            },
+          },
+        });
+      }
+
+      if(TypeUtils.isPointOrOptionalPointType(type.fields[fieldName]) && Array.isArray(fieldFilter.is)&& fieldFilter.is.length === 2){
+        graphqlFilter.push({
+          values:{
+            some:{
+              propertyId: {is:propertyId},
+              point: { is: Graph.serializePoint([...(fieldFilter.is as ReadonlyArray<number>)]) },
+            }
+          }
+        })
       }
     }
   }
