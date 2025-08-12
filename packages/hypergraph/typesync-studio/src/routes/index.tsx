@@ -1,23 +1,28 @@
 'use client';
 
+import { Toast } from '@base-ui-components/react/toast';
+import { Tooltip } from '@base-ui-components/react/tooltip';
 import { Mapping, Typesync } from '@graphprotocol/hypergraph';
 import { useHypergraphAuth } from '@graphprotocol/hypergraph-react';
-import { ArrowCounterClockwiseIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { ArrowCounterClockwiseIcon, PlusIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, pipe, Schema } from 'effect';
+import { useState } from 'react';
 
+import { Arrow } from '@/Components/Arrow.tsx';
 import { Checkbox } from '@/Components/Form/Checkbox.tsx';
 import { fieldContext, formContext } from '@/Components/Form/form.ts';
 import { SubmitButton } from '@/Components/Form/SubmitButton.tsx';
 import { TextField } from '@/Components/Form/TextField.tsx';
 import { InlineCode } from '@/Components/InlineCode.tsx';
+import { AppSchemaSpaceDialog } from '@/Components/Schema/AppSchemaSpaceDialog.tsx';
 import { KnowledgeGraphBrowser } from '@/Components/Schema/KnowledgeGraphBrowser.tsx';
 import { PropertyCombobox } from '@/Components/Schema/PropertyCombobox.tsx';
 import { SchemaPropertyStatus } from '@/Components/Schema/Status.tsx';
 import { TypeCombobox } from '@/Components/Schema/TypeCombobox.tsx';
 import { TypeSelect } from '@/Components/Schema/TypeSelect.tsx';
-import { useAppSchemaSpace } from '@/Context/AppSchemaSpaceContext.tsx';
+import { useAppSchemaSpace } from '@/Context/AppSchemaSpaceContext';
 import { useHypergraphSchemaQuery } from '@/hooks/useHypergraphSchemaQuery.tsx';
 import type { ExtendedProperty, ExtendedSchemaBrowserType } from '@/hooks/useKnowledgeGraph.tsx';
 import { useSyncHypergraphMappingMutation } from '@/hooks/useSyncHypergraphMappingMutation.tsx';
@@ -46,9 +51,13 @@ const { useAppForm } = createFormHook({
 
 function SchemaBuilderComponent() {
   const { authenticated } = useHypergraphAuth();
+
+  const [selectSpaceSchemaDialogOpen, setSelectSpaceSchemaDialogOpen] = useState(false);
   const { spaceId } = useAppSchemaSpace();
 
   const { data: schema } = useHypergraphSchemaQuery();
+
+  const toastManager = Toast.useToastManager();
 
   const {
     mutateAsync: syncSchemaMutateAsync,
@@ -56,14 +65,28 @@ function SchemaBuilderComponent() {
     isPending: syncSchemaIsPending,
     isSuccess: syncSchemaIsSuccess,
     reset: syncSchemaReset,
-  } = useSyncHypergraphSchemaMutation();
+  } = useSyncHypergraphSchemaMutation({
+    onError(error) {
+      toastManager.add({
+        title: 'Failure syncing Schema to file',
+        description: error.message,
+      });
+    },
+  });
   const {
     mutateAsync: syncMappingMutateAsync,
     isError: syncMappingIsError,
     isPending: syncMappingIsPending,
     isSuccess: syncMappingIsSuccess,
     reset: syncMappingReset,
-  } = useSyncHypergraphMappingMutation();
+  } = useSyncHypergraphMappingMutation({
+    onError(error) {
+      toastManager.add({
+        title: 'Failure publishing Schema to Knowledge Graph',
+        description: error.message,
+      });
+    },
+  });
 
   const createSchemaForm = useAppForm({
     defaultValues: schema,
@@ -103,6 +126,28 @@ function SchemaBuilderComponent() {
   );
 
   const currentSchema = useStore(createSchemaForm.store, (state) => state.values);
+  // Returns a boolean on if the user needs to sync the schema form to the schema file.
+  // This means the schema form has diverged from the current schema file state.
+  const requiresSyncingToSchemaFile = useStore(createSchemaForm.store, (state) => {
+    return (
+      state.isDirty &&
+      EffectArray.some(
+        state.values.types,
+        (type) =>
+          type.status === 'published_not_synced' ||
+          type.status == null ||
+          EffectArray.some(type.properties, (prop) => prop.status === 'published_not_synced' || prop.status == null),
+      )
+    );
+  });
+  // Returns a boolean on if the user needs to publish the schema changes to the Knowledge Graph
+  // This means the schema/schema form have diverged from the schema in the Knowledge Graph
+  const requiresSyncingToKnowledgeGraph = useStore(createSchemaForm.store, (state) => {
+    return EffectArray.some(
+      state.values.types,
+      (type) => type.status === 'synced' || EffectArray.some(type.properties, (prop) => prop.status === 'synced'),
+    );
+  });
 
   /**
    * If the user selects an already existing type from the Knowledge Graph,
@@ -444,7 +489,7 @@ function SchemaBuilderComponent() {
                       className="border-l-2 border-indigo-600 dark:border-indigo-400 pl-2 py-2 flex flex-col gap-y-4"
                     >
                       <div className="flex items-start justify-between gap-x-3">
-                        <div className="h-16 w-8 flex flex-col items-center justify-center">
+                        <div className="h-16 w-8 flex flex-col items-center justify-end">
                           <SchemaPropertyStatus status={_type.status} />
                         </div>
                         <div className="flex-1 shrink-0">
@@ -524,55 +569,57 @@ function SchemaBuilderComponent() {
                               {propsField.state.value.map((_prop, typePropIdx) => {
                                 const typePropEntryKey = `createAppForm__type[${idx}]__prop[${typePropIdx}]`;
                                 return (
-                                  <div key={typePropEntryKey} className="grid grid-cols-11 2xl:grid-cols-12 gap-2">
-                                    <div className="col-span-1 size-full flex flex-col items-center justify-center">
-                                      <SchemaPropertyStatus status={_prop.status} />
-                                    </div>
-                                    <div className="col-span-4 2xl:grid-cols-5">
-                                      <createSchemaForm.AppField
-                                        name={`types[${idx}].properties[${typePropIdx}].name` as const}
-                                      >
-                                        {(subPropField) => (
-                                          <subPropField.PropertyCombobox
-                                            id={`types[${idx}].properties[${typePropIdx}].name` as const}
-                                            name={`types[${idx}].properties[${typePropIdx}].name` as const}
-                                            required
-                                            propertySelected={(prop) => {
-                                              const dataType = mapKGDataTypeToPrimitiveType(
-                                                prop.dataType,
-                                                prop.name || prop.id,
-                                              );
-                                              const selectedProp = {
-                                                name: prop.name || prop.id,
-                                                knowledgeGraphId: prop.id,
-                                                status: 'published_not_synced',
-                                                dataType,
-                                                ...(Mapping.isDataTypeRelation(dataType)
-                                                  ? { relationType: prop.name || prop.id }
-                                                  : {}),
-                                              } as never;
-                                              if (prop.dataType === 'RELATION') {
-                                                // if the user selects a property that is a relation,
-                                                // - attempt to find the type from the types query
-                                                // - add as a type (with nested types) to the schema
-                                                const propRelatedEntityTypes =
-                                                  mapSelectedRelationPropertyTypesToSchema(prop);
-                                                EffectArray.forEach(propRelatedEntityTypes, (mapped) => {
-                                                  field.pushValue({
-                                                    name: mapped.name,
-                                                    knowledgeGraphId: mapped.knowledgeGraphId,
-                                                    properties: mapped.properties,
-                                                  } as never);
-                                                });
+                                  <div key={typePropEntryKey} className="grid grid-cols-11 gap-2">
+                                    <div className="col-span-5 flex items-start gap-x-1">
+                                      <div className="w-8 h-full flex flex-col items-center justify-center">
+                                        <SchemaPropertyStatus status={_prop.status} />
+                                      </div>
+                                      <div className="w-full">
+                                        <createSchemaForm.AppField
+                                          name={`types[${idx}].properties[${typePropIdx}].name` as const}
+                                        >
+                                          {(subPropField) => (
+                                            <subPropField.PropertyCombobox
+                                              id={`types[${idx}].properties[${typePropIdx}].name` as const}
+                                              name={`types[${idx}].properties[${typePropIdx}].name` as const}
+                                              required
+                                              propertySelected={(prop) => {
+                                                const dataType = mapKGDataTypeToPrimitiveType(
+                                                  prop.dataType,
+                                                  prop.name || prop.id,
+                                                );
+                                                const selectedProp = {
+                                                  name: prop.name || prop.id,
+                                                  knowledgeGraphId: prop.id,
+                                                  status: 'published_not_synced',
+                                                  dataType,
+                                                  ...(Mapping.isDataTypeRelation(dataType)
+                                                    ? { relationType: prop.name || prop.id }
+                                                    : {}),
+                                                } as never;
+                                                if (prop.dataType === 'RELATION') {
+                                                  // if the user selects a property that is a relation,
+                                                  // - attempt to find the type from the types query
+                                                  // - add as a type (with nested types) to the schema
+                                                  const propRelatedEntityTypes =
+                                                    mapSelectedRelationPropertyTypesToSchema(prop);
+                                                  EffectArray.forEach(propRelatedEntityTypes, (mapped) => {
+                                                    field.pushValue({
+                                                      name: mapped.name,
+                                                      knowledgeGraphId: mapped.knowledgeGraphId,
+                                                      properties: mapped.properties,
+                                                    } as never);
+                                                  });
 
+                                                  propsField.replaceValue(typePropIdx, selectedProp);
+                                                  return;
+                                                }
                                                 propsField.replaceValue(typePropIdx, selectedProp);
-                                                return;
-                                              }
-                                              propsField.replaceValue(typePropIdx, selectedProp);
-                                            }}
-                                          />
-                                        )}
-                                      </createSchemaForm.AppField>
+                                              }}
+                                            />
+                                          )}
+                                        </createSchemaForm.AppField>
+                                      </div>
                                     </div>
                                     <div className="col-span-3 2xl:col-span-4">
                                       <createSchemaForm.AppField
@@ -694,46 +741,120 @@ function SchemaBuilderComponent() {
                     Sync with <InlineCode>schema.ts</InlineCode>
                   </createSchemaForm.SubmitButton>
                 </createSchemaForm.AppForm>
-                {spaceId != null && authenticated ? (
-                  <button
-                    type="button"
-                    disabled={false /* should be disabled if user has no schema changes to publish to the KG */}
-                    data-state={
-                      syncMappingIsPending
-                        ? 'submitting'
-                        : syncMappingIsError
-                          ? 'error'
-                          : syncMappingIsSuccess
-                            ? 'success'
-                            : 'idle'
-                    }
-                    className={classnames(
-                      'rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 inline-flex items-center gap-x-2 cursor-pointer',
-                      'disabled:bg-gray-400 disabled:text-gray-900 disabled:hover:bg-gray-400 disabled:focus-visible:outline-gray-400 disabled:cursor-not-allowed',
-                      'data-[state=error]:bg-red-600 data-[state=error]:hover:bg-red-500 data-[state=error]:focus-visible:bg-red-500 data-[state=success]:focus-visible:bg-green-500',
-                      'data-[state=success]:bg-green-600 data-[state=success]:hover:bg-green-500',
-                    )}
-                    onClick={async () => {
-                      await syncMappingMutateAsync({
-                        schema: currentSchema,
-                        space: spaceId,
-                      }).then((updatedSchema) => {
-                        setTimeout(async () => {
-                          // reset the form
-                          createSchemaForm.reset(updatedSchema);
-                          syncMappingReset();
-                        }, 1_500);
-                      });
-                    }}
-                  >
-                    Publish Schema
-                  </button>
+                {authenticated ? (
+                  <Tooltip.Provider delay={300} closeDelay={1_000}>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger
+                        type="button"
+                        disabled={!requiresSyncingToKnowledgeGraph}
+                        data-state={
+                          syncMappingIsPending
+                            ? 'submitting'
+                            : syncMappingIsError
+                              ? 'error'
+                              : syncMappingIsSuccess
+                                ? 'success'
+                                : 'idle'
+                        }
+                        className={classnames(
+                          'rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 inline-flex items-center gap-x-2 cursor-pointer',
+                          'disabled:bg-gray-400 disabled:text-gray-900 disabled:hover:bg-gray-400 disabled:focus-visible:outline-gray-400 disabled:cursor-not-allowed',
+                          'data-[state=error]:bg-red-600 data-[state=error]:hover:bg-red-500 data-[state=error]:focus-visible:bg-red-500 data-[state=success]:focus-visible:bg-green-500',
+                          'data-[state=success]:bg-green-600 data-[state=success]:hover:bg-green-500',
+                        )}
+                        onClick={async () => {
+                          if (!requiresSyncingToKnowledgeGraph || requiresSyncingToSchemaFile) {
+                            return;
+                          }
+                          if (!spaceId) {
+                            setSelectSpaceSchemaDialogOpen(true);
+                            return;
+                          }
+                          await syncMappingMutateAsync({
+                            schema: currentSchema,
+                            space: spaceId,
+                          }).then((updatedSchema) => {
+                            setTimeout(async () => {
+                              // reset the form
+                              createSchemaForm.reset(updatedSchema);
+                              syncMappingReset();
+                            }, 1_500);
+                          });
+                        }}
+                      >
+                        Publish Schema
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Positioner side="top" sideOffset={10}>
+                          <Tooltip.Popup className="box-border text-sm flex flex-col px-2 py-3 rounded-lg bg-gray-100 dark:bg-slate-900 transform-content data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 w-fit max-w-xs">
+                            <Tooltip.Arrow className="flex data-[side=top]:-bottom-2 data-[side=top]:rotate-180 data-[side=bottom]:-top-2 data-[side=bottom]:rotate-0 data-[side=left]:-right-3 data-[side=left]:rotate-90 data-[side=right]:-left-3 data-[side=right]:-rotate-90">
+                              <Arrow />
+                            </Tooltip.Arrow>
+                            <span className="text-xs text-gray-700 dark:text-white whitespace-break-spaces w-full">
+                              {requiresSyncingToSchemaFile
+                                ? 'Please sync your Schema to the schema.ts file first. Then publish to the Knowledge Graph'
+                                : !requiresSyncingToKnowledgeGraph
+                                  ? 'Add types/properties to your Schema and sync with your schema file before publishing to the Knowledge Graph'
+                                  : 'Publish your Schema changes to the Knowledge Graph'}
+                            </span>
+                          </Tooltip.Popup>
+                        </Tooltip.Positioner>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  </Tooltip.Provider>
                 ) : null}
               </div>
             </div>
           </div>
         )}
       </createSchemaForm.AppField>
+      <AppSchemaSpaceDialog
+        open={selectSpaceSchemaDialogOpen}
+        setOpen={setSelectSpaceSchemaDialogOpen}
+        spaceSubmitted={async (space) => {
+          setSelectSpaceSchemaDialogOpen(false);
+          // resubmit the sync mapping mutation
+          await syncMappingMutateAsync({
+            schema: currentSchema,
+            space: space.id,
+          }).then((updatedSchema) => {
+            setTimeout(async () => {
+              // reset the form
+              createSchemaForm.reset(updatedSchema);
+              syncMappingReset();
+            }, 1_500);
+          });
+        }}
+      />
+      <Toast.Viewport className="fixed z-10 w-sm mx-0 my-auto bottom-4 md:bottom-8 right-4 md:right-8 left-auto top-auto">
+        {toastManager.toasts.map((t) => (
+          <Toast.Root
+            key={t.id}
+            toast={t}
+            className="pointer-events-auto w-full max-w-md rounded-lg bg-white shadow-lg outline-1 outline-black/5 transition data-closed:opacity-0 data-enter:transform data-enter:duration-300 data-enter:ease-out data-closed:data-enter:translate-y-2 data-leave:duration-100 data-leave:ease-in data-closed:data-enter:sm:translate-x-2 data-closed:data-enter:sm:translate-y-0 dark:bg-gray-800 dark:-outline-offset-1 dark:outline-white/10 p-4"
+          >
+            <div className="p-4">
+              <div className="flex items-start">
+                <div className="shrink-0">
+                  <WarningIcon aria-hidden="true" className="size-6 text-red-400" />
+                </div>
+                <div className="ml-3 w-0 flex-1 pt-0.5">
+                  <Toast.Title className="text-sm font-medium text-gray-900 dark:text-white" />
+                  <Toast.Description className="mt-1 text-sm text-gray-500 dark:text-gray-400" />
+                </div>
+                <div className="ml-4 flex shrink-0">
+                  <Toast.Close
+                    aria-label="Close"
+                    className="inline-flex rounded-md text-gray-400 hover:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-red-600 dark:hover:text-white dark:focus:outline-red-500"
+                  >
+                    <XIcon className="size-4" aria-hidden="true" />
+                  </Toast.Close>
+                </div>
+              </div>
+            </div>
+          </Toast.Root>
+        ))}
+      </Toast.Viewport>
     </form>
   );
 }

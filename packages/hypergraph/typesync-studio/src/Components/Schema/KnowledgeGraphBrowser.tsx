@@ -94,7 +94,12 @@ export function KnowledgeGraphBrowser({ typeSelected }: KnowledgeGraphBrowserPro
                       {/* shown when the collapsible is closed */}
                       <CaretRightIcon className="size-4 flex group-data-open:hidden" aria-hidden="true" />
                       <p className="text-sm/6 font-semibold text-gray-900 dark:text-white">{_type.name || _type.id}</p>
-                      <InlineCode>{_type.id}</InlineCode>
+                      <div className="hidden 2xl:block">
+                        <InlineCode>{_type.id}</InlineCode>
+                      </div>
+                      <div className="block 2xl:hidden">
+                        <InlineCode>{`${_type.id.substring(0, 6)}...${_type.id.substring(_type.id.length - 6, _type.id.length)}`}</InlineCode>
+                      </div>
                     </div>
                   </DisclosureButton>
                   <div className="flex flex-none items-center justify-end">

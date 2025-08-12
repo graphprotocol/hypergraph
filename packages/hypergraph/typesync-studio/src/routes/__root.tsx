@@ -1,5 +1,6 @@
 'use client';
 
+import { Toast } from '@base-ui-components/react/toast';
 import { store } from '@graphprotocol/hypergraph';
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
@@ -19,7 +20,11 @@ export const Route = createRootRouteWithContext<TypeSyncRouterContext>()({
   component() {
     return (
       <AppSchemaSpaceProvider>
-        <Outlet />
+        <Toast.Provider>
+          <Toast.Portal>
+            <Outlet />
+          </Toast.Portal>
+        </Toast.Provider>
       </AppSchemaSpaceProvider>
     );
   },

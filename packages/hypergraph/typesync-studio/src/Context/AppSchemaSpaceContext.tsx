@@ -1,42 +1,54 @@
 'use client';
 
 import type { Id } from '@graphprotocol/hypergraph';
-import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
+import { type OmitStrict, useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import { GithubLogoIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 import { UserPill } from '@/Components/Auth/UserPill.tsx';
 
 export type AppSchemaSpaceCtx = {
   readonly spaceId: Id | null;
   readonly name: string | null;
+  setAppSchemaSpace(args: Readonly<{ id: Id; name: string }>): void;
 };
 
-export const AppSchemaSpaceContext = createContext<AppSchemaSpaceCtx>({ spaceId: null, name: null });
+export const AppSchemaSpaceContext = createContext<AppSchemaSpaceCtx>({
+  spaceId: null,
+  name: null,
+  setAppSchemaSpace() {},
+});
 
 export function useAppSchemaSpace(): AppSchemaSpaceCtx {
   return useContext<AppSchemaSpaceCtx>(AppSchemaSpaceContext);
 }
 
 export function AppSchemaSpaceProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-  const { createSpace, isConnecting } = useHypergraphApp();
+  const { isConnecting } = useHypergraphApp();
   const { authenticated } = useHypergraphAuth();
 
-  const [appSchemaSpaceCtx, setAppSchemaSpaceCtx] = useState<AppSchemaSpaceCtx>({
+  const [appSchemaSpaceCtx, setAppSchemaSpaceCtx] = useState<OmitStrict<AppSchemaSpaceCtx, 'setAppSchemaSpace'>>({
     spaceId: null,
     name: null,
   });
 
-  useEffect(() => {
-    if (!isConnecting && authenticated) {
-      // check for the existence of the app space (how do I get the name)
-      createSpace({ name: '' });
-    }
-  }, [isConnecting, createSpace, authenticated]);
-
   return (
-    <AppSchemaSpaceContext.Provider value={appSchemaSpaceCtx}>
+    <AppSchemaSpaceContext.Provider
+      value={{
+        ...appSchemaSpaceCtx,
+        setAppSchemaSpace(args) {
+          if (!authenticated || isConnecting) {
+            throw new Error('Must be authenticated');
+          }
+
+          setAppSchemaSpaceCtx({
+            spaceId: args.id,
+            name: args.name,
+          });
+        },
+      }}
+    >
       <div>
         <div>
           <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between gap-x-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm px-4">
