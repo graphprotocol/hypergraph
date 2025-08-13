@@ -4,7 +4,15 @@ import { Toast } from '@base-ui-components/react/toast';
 import { Tooltip } from '@base-ui-components/react/tooltip';
 import { Mapping, Typesync } from '@graphprotocol/hypergraph';
 import { useHypergraphAuth } from '@graphprotocol/hypergraph-react';
-import { ArrowCounterClockwiseIcon, PlusIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
+import {
+  ArrowCounterClockwiseIcon,
+  CheckIcon,
+  ExclamationMarkIcon,
+  PlusIcon,
+  TrashIcon,
+  WarningIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, pipe, Schema } from 'effect';
@@ -16,7 +24,9 @@ import { fieldContext, formContext } from '@/Components/Form/form.ts';
 import { SubmitButton } from '@/Components/Form/SubmitButton.tsx';
 import { TextField } from '@/Components/Form/TextField.tsx';
 import { InlineCode } from '@/Components/InlineCode.tsx';
+import { Loading } from '@/Components/Loading';
 import { AppSchemaSpaceDialog } from '@/Components/Schema/AppSchemaSpaceDialog.tsx';
+import { PublishedToKnowledgeGraphIcon } from '@/Components/Schema/Icons/PublishedToKnowledgeGraph.tsx';
 import { KnowledgeGraphBrowser } from '@/Components/Schema/KnowledgeGraphBrowser.tsx';
 import { PropertyCombobox } from '@/Components/Schema/PropertyCombobox.tsx';
 import { SchemaPropertyStatus } from '@/Components/Schema/Status.tsx';
@@ -75,10 +85,8 @@ function SchemaBuilderComponent() {
   });
   const {
     mutateAsync: syncMappingMutateAsync,
-    isError: syncMappingIsError,
-    isPending: syncMappingIsPending,
-    isSuccess: syncMappingIsSuccess,
     reset: syncMappingReset,
+    status: syncMappingStatus,
   } = useSyncHypergraphMappingMutation({
     onError(error) {
       toastManager.add({
@@ -748,11 +756,11 @@ function SchemaBuilderComponent() {
                       type="button"
                       disabled={!requiresSyncingToKnowledgeGraph || !authenticated}
                       data-state={
-                        syncMappingIsPending
+                        syncMappingStatus === 'pending'
                           ? 'submitting'
-                          : syncMappingIsError
+                          : syncMappingStatus === 'error'
                             ? 'error'
-                            : syncMappingIsSuccess
+                            : syncMappingStatus === 'success'
                               ? 'success'
                               : 'idle'
                       }
@@ -782,7 +790,27 @@ function SchemaBuilderComponent() {
                         });
                       }}
                     >
-                      Publish Schema
+                      {syncMappingStatus === 'pending' ? (
+                        <>
+                          <Loading />
+                          Publishing Schema
+                        </>
+                      ) : syncMappingStatus === 'success' ? (
+                        <>
+                          <CheckIcon className="size-5 text-white" aria-hidden="true" />
+                          Schema Published
+                        </>
+                      ) : syncMappingStatus === 'error' ? (
+                        <>
+                          <ExclamationMarkIcon className="size-5 text-white" aria-hidden="true" />
+                          Error
+                        </>
+                      ) : (
+                        <>
+                          <PublishedToKnowledgeGraphIcon className="size-5" aria-hidden="true" />
+                          Publish Schema
+                        </>
+                      )}
                     </Tooltip.Trigger>
                     <Tooltip.Portal>
                       <Tooltip.Positioner side="top" sideOffset={10}>

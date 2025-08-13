@@ -258,7 +258,7 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
           yield* fs.writeFileString(mappingFilePath, buildMappingFile(mapping));
 
           // update Schema to update with generated GRC-20 Ids for types/properties
-          return TypesyncHypergraphSchema.make({
+          const updatedSchema = TypesyncHypergraphSchema.make({
             types: EffectArray.map(schema.types, (type) => {
               const mappingEntry = mapping[toPascalCase(type.name)];
 
@@ -299,6 +299,11 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
               });
             }),
           });
+
+          // sync the schema to the schema.ts file
+          yield* syncSchema(updatedSchema);
+
+          return updatedSchema;
         });
 
       return {

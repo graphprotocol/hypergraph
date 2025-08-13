@@ -92,7 +92,7 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
         </ComboboxButton>
 
         {props.length > 0 || EffectString.isNonEmpty(propsFilter) ? (
-          <ComboboxOptions className="absolute z-10 mt-10 max-h-60 w-fit max-w-lg 2xl:max-w-xl overflow-auto rounded-md bg-white dark:bg-slate-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-black/10 focus:outline-hidden sm:text-sm">
+          <ComboboxOptions className="absolute z-10 mt-10 max-h-60 w-fit max-w-lg 2xl:max-w-xl overflow-y-auto overflow-x-hidden rounded-md bg-white dark:bg-slate-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-black/10 focus:outline-hidden sm:text-sm">
             {props.map((_prop) => (
               <ComboboxOption
                 key={_prop.id}

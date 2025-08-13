@@ -4,6 +4,7 @@ import { Tooltip } from '@base-ui-components/react/tooltip';
 import type { Typesync } from '@graphprotocol/hypergraph';
 
 import { Arrow } from '../Arrow.tsx';
+import { PublishedToKnowledgeGraphIcon } from './Icons/PublishedToKnowledgeGraph.tsx';
 
 export function SchemaPropertyStatus({ status }: Readonly<{ status: Typesync.TypesyncHypergraphSchemaStatus }>) {
   const content = StatusTooltipContentMap[status || 'typesync_ui'];
@@ -32,7 +33,7 @@ export function SchemaPropertyStatus({ status }: Readonly<{ status: Typesync.Typ
 function CorrectIcon({ status }: Readonly<{ status: Typesync.TypesyncHypergraphSchemaStatus }>) {
   if (status === 'published') {
     // type/property is published to the Knowledge Graph
-    return <ExistsInKnowledgeGraph className="size-4 text-inherit" aria-hidden="true" />;
+    return <PublishedToKnowledgeGraphIcon className="size-4 text-inherit" aria-hidden="true" />;
   }
   if (status === 'published_not_synced') {
     // type/property exists in the Knowledge Graph, but needs syncing to the schema file
@@ -40,85 +41,10 @@ function CorrectIcon({ status }: Readonly<{ status: Typesync.TypesyncHypergraphS
   }
   if (status === 'synced') {
     // type/property is synced with the schema.ts file, but needs published to the Knowledge Graph
-    return <SyncedRequiredPublishing className="size-4 text-inherit" aria-hidden="true" />;
+    return <SyncedRequiresPublishing className="size-4 text-inherit" aria-hidden="true" />;
   }
   // type/property is new/created in the UI. needs to be synced to the file/KG
   return <UIRequiresSyncing className="size-4 text-inherit" aria-hidden="true" />;
-}
-
-function ExistsInKnowledgeGraphDark(props: React.ComponentProps<'svg'>) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="hidden dark:inline-block"
-      {...props}
-    >
-      <title>Exists in Knowledge Graph | Dark Mode</title>
-      <g clipPath="url(#clip0_59284_4458)">
-        <circle cx="8.0032" cy="1.75" r="1.25" stroke="white" />
-        <circle cx="8.0032" cy="14.25" r="1.25" stroke="white" />
-        <path d="M7.99641 13.255L8.0032 2.75" stroke="white" />
-        <circle cx="13.4159" cy="5.125" r="1.25" transform="rotate(60 13.4159 5.125)" stroke="white" />
-        <circle cx="2.59055" cy="11.375" r="1.25" transform="rotate(60 2.59055 11.375)" stroke="white" />
-        <path d="M3.44885 10.8716L12.5498 5.625" stroke="white" />
-        <circle cx="13.4159" cy="11.375" r="1.25" transform="rotate(120 13.4159 11.375)" stroke="white" />
-        <circle cx="2.59055" cy="5.125" r="1.25" transform="rotate(120 2.59055 5.125)" stroke="white" />
-        <path d="M3.45564 5.61662L12.5498 10.875" stroke="white" />
-      </g>
-      <defs>
-        <clipPath id="clip0_59284_4458">
-          <rect width="16" height="16" fill="white" />
-        </clipPath>
-      </defs>
-    </svg>
-  );
-}
-function ExistsInKnowledgeGraphLight(props: React.ComponentProps<'svg'>) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="inline-block dark:hidden"
-      {...props}
-    >
-      <title>Exists in Knowledge Graph | Light Mode</title>
-      <g clipPath="url(#clip0_59285_4572)">
-        <circle cx="8.0032" cy="1.75" r="1.25" stroke="#2A2A2A" />
-        <circle cx="8.0032" cy="14.25" r="1.25" stroke="#2A2A2A" />
-        <path d="M7.99641 13.255L8.0032 2.75" stroke="#2A2A2A" />
-        <circle cx="13.4159" cy="5.125" r="1.25" transform="rotate(60 13.4159 5.125)" stroke="#2A2A2A" />
-        <circle cx="2.59055" cy="11.375" r="1.25" transform="rotate(60 2.59055 11.375)" stroke="#2A2A2A" />
-        <path d="M3.44885 10.8716L12.5498 5.625" stroke="#2A2A2A" />
-        <circle cx="13.4159" cy="11.375" r="1.25" transform="rotate(120 13.4159 11.375)" stroke="#2A2A2A" />
-        <circle cx="2.59055" cy="5.125" r="1.25" transform="rotate(120 2.59055 5.125)" stroke="#2A2A2A" />
-        <path d="M3.45564 5.61662L12.5498 10.875" stroke="#2A2A2A" />
-      </g>
-      <defs>
-        <clipPath id="clip0_59285_4572">
-          <rect width="16" height="16" fill="white" />
-        </clipPath>
-      </defs>
-    </svg>
-  );
-}
-function ExistsInKnowledgeGraph(props: React.ComponentProps<'svg'>) {
-  return (
-    <>
-      <span className="hidden dark:inline-block">
-        <ExistsInKnowledgeGraphDark {...props} />
-      </span>
-      <span className="inline-block dark:hidden">
-        <ExistsInKnowledgeGraphLight {...props} />
-      </span>
-    </>
-  );
 }
 
 function UIRequiresSyncingLight(props: React.ComponentProps<'svg'>) {
@@ -172,7 +98,7 @@ function UIRequiresSyncing(props: React.ComponentProps<'svg'>) {
   );
 }
 
-function SyncedRequiredPublishingLight(props: React.ComponentProps<'svg'>) {
+function SyncedRequiresPublishingLight(props: React.ComponentProps<'svg'>) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <title>Synced to the schema file, requires publishing | Light Mode</title>
@@ -200,7 +126,7 @@ function SyncedRequiredPublishingLight(props: React.ComponentProps<'svg'>) {
     </svg>
   );
 }
-function SyncedRequiredPublishingDark(props: React.ComponentProps<'svg'>) {
+function SyncedRequiresPublishingDark(props: React.ComponentProps<'svg'>) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <title>Synced to the schema file, requires publishing | Dark Mode</title>
@@ -228,14 +154,14 @@ function SyncedRequiredPublishingDark(props: React.ComponentProps<'svg'>) {
     </svg>
   );
 }
-function SyncedRequiredPublishing(props: React.ComponentProps<'svg'>) {
+function SyncedRequiresPublishing(props: React.ComponentProps<'svg'>) {
   return (
     <>
       <span className="hidden dark:inline-block">
-        <SyncedRequiredPublishingDark {...props} />
+        <SyncedRequiresPublishingDark {...props} />
       </span>
       <span className="inline-block dark:hidden">
-        <SyncedRequiredPublishingLight {...props} />
+        <SyncedRequiresPublishingLight {...props} />
       </span>
     </>
   );

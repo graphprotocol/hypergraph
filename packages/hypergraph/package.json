@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph",
-  "version": "0.5.0-alpha.2",
+  "version": "0.5.0-alpha.3",
   "description": "SDK for building performant, type-safe, local-first dapps on top of The Graph ecosystem knowledge graphs.",
   "publishConfig": {
     "bin": {
