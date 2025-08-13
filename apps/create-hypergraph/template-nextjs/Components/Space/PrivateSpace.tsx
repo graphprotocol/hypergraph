@@ -88,14 +88,14 @@ function PrivateSpace() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Create Address Form */}
+          {/* Create Project Form */}
           <div className="space-y-6">
             <div className="bg-card border rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-card-foreground mb-4">Create New Address</h2>
+              <h2 className="text-xl font-semibold text-card-foreground mb-4">Create New Project</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="address-name" className="text-sm font-medium text-card-foreground">
-                    Address Name
+                  <label htmlFor="project-name" className="text-sm font-medium text-card-foreground">
+                    Project Name
                   </label>
                   <input
                     id="project-name"
