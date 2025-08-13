@@ -11,7 +11,8 @@
     "lint:fix": "next lint --fix",
     "format": "prettier . --check",
     "format:fix": "prettier . --write --list-different",
-    "prebuild": "pnpm --workspace-concurrency 1 --filter @graphprotocol/hypergraph run build && pnpm --workspace-concurrency 1 --filter @graphprotocol/hypergraph-react run build"
+    "prebuild": "pnpm --workspace-concurrency 1 --filter @graphprotocol/hypergraph run build && pnpm --workspace-concurrency 1 --filter @graphprotocol/hypergraph-react run build",
+    "typesync": "hg typesync --open"
   },
   "type": "module",
   "dependencies": {
