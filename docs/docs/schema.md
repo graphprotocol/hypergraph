@@ -2,11 +2,11 @@
 
 The Hypergraph schema allows you to define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
 
-## Knowledge Graph Entity Browser
+## Hypergraph Schema Browser
 
-Building your app using a schema that is already actively used in Hypergraph's knowledge graph unlocks composability between your dataset and other datasets actively used in Hypergraph's knowledge graph. 
+Building your app using a schema that is already actively used in Hypergraph's knowledge graph unlocks composability between your dataset and other datasets used in Hypergraph's knowledge graph. 
 
-You can search for schemas used within the knowledge graph using the [Hypergraph Schema Browser](https://schema-browser.vercel.app/). 
+You can search for schemas used within the Hypergraph knowledge graph using the [Hypergraph Schema Browser](https://schema-browser.vercel.app/). 
 
 ## Example
 
