@@ -137,3 +137,46 @@ After successful scaffolding, navigate to your app directory and start developme
 cd <app-name>
 pnpm run dev  # or npm/yarn/bun run dev
 ```
+
+## TypeSync Studio
+
+Hypergraph includes TypeSync Studio, a visual tool for managing your application's data schema. After scaffolding your app, you can use it to:
+
+- Design and edit your GRC-20 compliant data schema
+- Generate TypeScript types from your schema
+- Manage entity relationships
+- Export schema definitions
+
+To open TypeSync Studio, run:
+```bash
+pnpm run typesync
+```
+
+This will:
+1. Start a local server on port 3000
+2. Open TypeSync Studio in your default browser
+3. Watch your local schema files for changes
+4. Allow you to visually edit and sync your schema
+
+### Alternative Commands
+
+The scaffolded templates include a convenient npm script, so you can also run TypeSync directly using:
+```bash
+pnpm hypergraph typesync
+# or
+pnpm hg typesync
+```
+
+### TypeSync CLI Options
+
+When using the direct CLI command, you can specify options:
+- `--open` (default: true): Automatically open the studio in your browser
+- `--browser, -b`: Specify which browser to use
+  - Options: `chrome`, `firefox`, `edge`, `safari`, `arc`, `browser` (default), `browserPrivate`
+
+Example:
+```bash
+pnpm hypergraph typesync --browser chrome
+```
+
+The TypeSync Studio provides a graphical interface for working with your Hypergraph schema, making it easier to design complex data models without manually editing JSON files.
