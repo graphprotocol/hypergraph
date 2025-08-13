@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.4.6
+### Patch Changes
+
+- dcc05b3: improve templates (use Projects instead of Address, show space IDs, show Project IDs)
+
 ## 0.4.5
 ### Patch Changes
 
