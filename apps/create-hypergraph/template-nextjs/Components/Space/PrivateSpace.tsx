@@ -12,7 +12,7 @@ import {
 } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 
-import { Address } from '@/app/schema';
+import { Project } from '@/app/schema';
 import { Button } from '../ui/button';
 
 export function PrivateSpaceWrapper({ spaceid }: Readonly<{ spaceid: string }>) {
@@ -24,12 +24,13 @@ export function PrivateSpaceWrapper({ spaceid }: Readonly<{ spaceid: string }>) 
 }
 
 function PrivateSpace() {
-  const { name, ready } = useSpace({ mode: 'private' });
-  const { data: addresses } = useQuery(Address, { mode: 'private' });
+  const { name, ready, id: spaceId } = useSpace({ mode: 'private' });
+  const { data: projects } = useQuery(Project, { mode: 'private' });
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const [selectedSpace, setSelectedSpace] = useState<string>('');
-  const createAddress = useCreateEntity(Address);
-  const [addressName, setAddressName] = useState('');
+  const createProject = useCreateEntity(Project);
+  const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
   const { getSmartSessionClient } = useHypergraphApp();
 
   if (!ready) {
@@ -45,17 +46,18 @@ function PrivateSpace() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    createAddress({ name: addressName, description: 'Beautiful address' });
-    setAddressName('');
+    createProject({ name: projectName, description: projectDescription });
+    setProjectName('');
+    setProjectDescription('');
   };
 
-  const publishToPublicSpace = async (address: Address) => {
+  const publishToPublicSpace = async (project: Project) => {
     if (!selectedSpace) {
       alert('No space selected');
       return;
     }
     try {
-      const { ops } = await preparePublish({ entity: address, publicSpace: selectedSpace });
+      const { ops } = await preparePublish({ entity: project, publicSpace: selectedSpace });
       const smartSessionClient = await getSmartSessionClient();
       if (!smartSessionClient) {
         throw new Error('Missing smartSessionClient');
@@ -63,14 +65,14 @@ function PrivateSpace() {
       const publishResult = await publishOps({
         ops,
         space: selectedSpace,
-        name: 'Publish Address',
+        name: 'Publish Project',
         walletClient: smartSessionClient,
       });
       console.log(publishResult, ops);
-      alert('Address published to public space');
+      alert('Project published to public space');
     } catch (error) {
       console.error(error);
-      alert('Error publishing address to public space');
+      alert('Error publishing project to public space');
     }
   };
 
@@ -79,32 +81,47 @@ function PrivateSpace() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">{name}</h1>
-          <p className="text-muted-foreground">Manage your private addresses and publish them to public spaces</p>
+          <p className="text-slate-600 mt-1 text-sm">Private Space</p>
+          <h1 className="text-3xl font-bold text-slate-900">{name}</h1>
+          <p className="text-slate-600 mt-1 text-sm">ID: {spaceId}</p>
+          <p className="text-muted-foreground mt-6">Manage your private projects and publish them to public spaces</p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Create Address Form */}
+          {/* Create Project Form */}
           <div className="space-y-6">
             <div className="bg-card border rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-card-foreground mb-4">Create New Address</h2>
+              <h2 className="text-xl font-semibold text-card-foreground mb-4">Create New Project</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="address-name" className="text-sm font-medium text-card-foreground">
-                    Address Name
+                  <label htmlFor="project-name" className="text-sm font-medium text-card-foreground">
+                    Project Name
                   </label>
                   <input
-                    id="address-name"
+                    id="project-name"
                     type="text"
-                    value={addressName}
-                    onChange={(e) => setAddressName(e.target.value)}
-                    placeholder="Enter address name..."
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Enter project name..."
                     className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={!addressName.trim()}>
-                  Create Address
+                <div className="space-y-2">
+                  <label htmlFor="project-description" className="text-sm font-medium text-card-foreground">
+                    Project Description
+                  </label>
+                  <input
+                    id="project-description"
+                    type="text"
+                    value={projectDescription}
+                    onChange={(e) => setProjectDescription(e.target.value)}
+                    placeholder="Enter project description..."
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={!projectName.trim()}>
+                  Create Project
                 </Button>
               </form>
             </div>
@@ -114,18 +131,23 @@ function PrivateSpace() {
           <div className="space-y-6">
             <div className="bg-card border rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-card-foreground mb-4">
-                Your Addresses ({addresses?.length || 0})
+                Your Projects ({projects?.length || 0})
               </h2>
 
-              {addresses && addresses.length > 0 ? (
+              {projects && projects.length > 0 ? (
                 <div className="space-y-4">
-                  {addresses.map((address) => (
-                    <div key={address.id} className="border border-border rounded-lg p-4 bg-background">
+                  {projects.map((project) => (
+                    <div key={project.id} className="border border-border rounded-lg p-4 bg-background">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-medium text-foreground">{address.name}</h3>
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                          ID: {address.id.slice(0, 8)}...
-                        </span>
+                        <h3 className="font-medium text-foreground">{project.name}</h3>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs text-muted-foreground">ID: {project.id}</p>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm text-muted-foreground">{project.description}</p>
                       </div>
 
                       <div className="space-y-3">
@@ -149,7 +171,7 @@ function PrivateSpace() {
                         </div>
 
                         <Button
-                          onClick={() => publishToPublicSpace(address)}
+                          onClick={() => publishToPublicSpace(project)}
                           disabled={!selectedSpace}
                           variant="outline"
                           size="sm"
@@ -178,8 +200,8 @@ function PrivateSpace() {
                       />
                     </svg>
                   </div>
-                  <p className="text-muted-foreground">No addresses created yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">Create your first address using the form</p>
+                  <p className="text-muted-foreground">No projects created yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Create your first project using the form</p>
                 </div>
               )}
             </div>

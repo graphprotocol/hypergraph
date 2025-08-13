@@ -13,7 +13,15 @@ function ExploreLayout() {
           Explore Public Knowledge
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          This page demonstrates how to query public data from a space. No authentication is required.
+          This page demonstrates how to query public data from the public space{' '}
+          <span className="inline-flex items-center rounded-full border bg-accent/60 text-accent-foreground px-2 py-0.5 text-sm align-middle">
+            Crypto
+          </span>{' '}
+          with the ID{' '}
+          <span className="inline-flex items-center rounded-full border bg-accent/60 text-accent-foreground px-2 py-0.5 text-xs font-mono align-middle">
+            b2565802-3118-47be-91f2-e59170735bac
+          </span>
+          . No authentication is required.
         </p>
       </div>
 
