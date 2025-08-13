@@ -2,9 +2,15 @@
 
 The Hypergraph schema allows you to define the data model for your application. It is based on the GRC-20 specification and allows you to define Types with properties and relations to other Types.
 
+## Knowledge Graph Entity Browser
+
+Building your app using a schema that is already actively used in Hypergraph's knowledge graph unlocks composability between your dataset and other datasets actively used in Hypergraph's knowledge graph. 
+
+You can search for schemas used within the knowledge graph using the [Hypergraph Schema Browser](https://schema-browser.vercel.app/). 
+
 ## Example
 
-Here is an example of a schema for an Event app with the properties `name` and `description`.
+Here is an example of a schema for an Event entity with the properties `name` and `description`.
 
 ```ts
 import { Entity, Type } from '@graphprotocol/hypergraph';
@@ -69,7 +75,3 @@ export class Company extends Entity.Class<Company>('Company')({
   founded: Type.optional(Type.Date),
 }) {}
 ```
-
-## Schema Examples
-
-You can search for dozens of schema/mapping examples on the [Hypergraph Schema Browser](https://schema-browser.vercel.app/).
