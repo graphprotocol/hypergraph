@@ -13,7 +13,7 @@ export function PublicSpaceWrapper({ spaceid }: Readonly<{ spaceid: string }>) {
 }
 
 function PublicSpace() {
-  const { ready, name } = useSpace({ mode: 'public' });
+  const { ready, name, id: spaceId } = useSpace({ mode: 'public' });
   const { data: projects, isPending } = useQuery(Project, { mode: 'public' });
 
   if (!ready) {
@@ -33,11 +33,14 @@ function PublicSpace() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between">
           <div>
+            <p className="text-slate-600 mt-1 text-sm">Public Space</p>
             <h1 className="text-3xl font-bold text-slate-900">{name}</h1>
-            <p className="text-slate-600 mt-1">Public Space</p>
+            <p className="text-slate-600 mt-1 text-sm">ID: {spaceId}</p>
           </div>
         </div>
       </div>
+
+      {isPending && <div className="text-center py-16">Loading…</div>}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

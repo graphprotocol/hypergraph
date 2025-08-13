@@ -26,7 +26,7 @@ function RouteComponent() {
 }
 
 function PrivateSpace() {
-  const { name, ready } = useSpace({ mode: 'private' });
+  const { name, ready, id: spaceId } = useSpace({ mode: 'private' });
   const { data: projects } = useQuery(Project, { mode: 'private' });
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const [selectedSpace, setSelectedSpace] = useState<string>('');
@@ -61,8 +61,10 @@ function PrivateSpace() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">{name}</h1>
-          <p className="text-muted-foreground">Manage your private projects and publish them to public spaces</p>
+          <p className="text-slate-600 mt-1 text-sm">Public Space</p>
+          <h1 className="text-3xl font-bold text-slate-900">{name}</h1>
+          <p className="text-slate-600 mt-1 text-sm">ID: {spaceId}</p>
+          <p className="text-muted-foreground mt-6">Manage your private projects and publish them to public spaces</p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
