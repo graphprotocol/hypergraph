@@ -4,6 +4,8 @@ import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-r
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { SignOutIcon } from '@phosphor-icons/react';
 
+import { shorten } from '@/utils/string.ts';
+
 export function UserPill() {
   const { logout, redirectToConnect } = useHypergraphApp();
   const { authenticated, identity } = useHypergraphAuth();
@@ -51,8 +53,4 @@ export function UserPill() {
       Sign in to Geo Account
     </button>
   );
-}
-
-function shorten(address: string) {
-  return `${address.substring(0, 6)}...${address.substring(address.length - 6, address.length)}`;
 }

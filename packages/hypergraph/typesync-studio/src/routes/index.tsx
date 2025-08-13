@@ -741,68 +741,68 @@ function SchemaBuilderComponent() {
                     Sync with <InlineCode>schema.ts</InlineCode>
                   </createSchemaForm.SubmitButton>
                 </createSchemaForm.AppForm>
-                {authenticated ? (
-                  <Tooltip.Provider delay={300} closeDelay={1_000}>
-                    <Tooltip.Root>
-                      <Tooltip.Trigger
-                        type="button"
-                        disabled={!requiresSyncingToKnowledgeGraph}
-                        data-state={
-                          syncMappingIsPending
-                            ? 'submitting'
-                            : syncMappingIsError
-                              ? 'error'
-                              : syncMappingIsSuccess
-                                ? 'success'
-                                : 'idle'
+                <Tooltip.Provider delay={300} closeDelay={1_000}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger
+                      type="button"
+                      disabled={!requiresSyncingToKnowledgeGraph || !authenticated}
+                      data-state={
+                        syncMappingIsPending
+                          ? 'submitting'
+                          : syncMappingIsError
+                            ? 'error'
+                            : syncMappingIsSuccess
+                              ? 'success'
+                              : 'idle'
+                      }
+                      className={classnames(
+                        'rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 inline-flex items-center gap-x-2 cursor-pointer',
+                        'disabled:bg-gray-400 disabled:text-gray-900 disabled:hover:bg-gray-400 disabled:focus-visible:outline-gray-400 disabled:cursor-not-allowed',
+                        'data-[state=error]:bg-red-600 data-[state=error]:hover:bg-red-500 data-[state=error]:focus-visible:bg-red-500 data-[state=success]:focus-visible:bg-green-500',
+                        'data-[state=success]:bg-green-600 data-[state=success]:hover:bg-green-500',
+                      )}
+                      onClick={async () => {
+                        if (!authenticated || !requiresSyncingToKnowledgeGraph || requiresSyncingToSchemaFile) {
+                          return;
                         }
-                        className={classnames(
-                          'rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 inline-flex items-center gap-x-2 cursor-pointer',
-                          'disabled:bg-gray-400 disabled:text-gray-900 disabled:hover:bg-gray-400 disabled:focus-visible:outline-gray-400 disabled:cursor-not-allowed',
-                          'data-[state=error]:bg-red-600 data-[state=error]:hover:bg-red-500 data-[state=error]:focus-visible:bg-red-500 data-[state=success]:focus-visible:bg-green-500',
-                          'data-[state=success]:bg-green-600 data-[state=success]:hover:bg-green-500',
-                        )}
-                        onClick={async () => {
-                          if (!requiresSyncingToKnowledgeGraph || requiresSyncingToSchemaFile) {
-                            return;
-                          }
-                          if (!spaceId) {
-                            setSelectSpaceSchemaDialogOpen(true);
-                            return;
-                          }
-                          await syncMappingMutateAsync({
-                            schema: currentSchema,
-                            space: spaceId,
-                          }).then((updatedSchema) => {
-                            setTimeout(async () => {
-                              // reset the form
-                              createSchemaForm.reset(updatedSchema);
-                              syncMappingReset();
-                            }, 1_500);
-                          });
-                        }}
-                      >
-                        Publish Schema
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal>
-                        <Tooltip.Positioner side="top" sideOffset={10}>
-                          <Tooltip.Popup className="box-border text-sm flex flex-col px-2 py-3 rounded-lg bg-gray-100 dark:bg-slate-900 transform-content data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 w-fit max-w-xs">
-                            <Tooltip.Arrow className="flex data-[side=top]:-bottom-2 data-[side=top]:rotate-180 data-[side=bottom]:-top-2 data-[side=bottom]:rotate-0 data-[side=left]:-right-3 data-[side=left]:rotate-90 data-[side=right]:-left-3 data-[side=right]:-rotate-90">
-                              <Arrow />
-                            </Tooltip.Arrow>
-                            <span className="text-xs text-gray-700 dark:text-white whitespace-break-spaces w-full">
-                              {requiresSyncingToSchemaFile
-                                ? 'Please sync your Schema to the schema.ts file first. Then publish to the Knowledge Graph'
+                        if (!spaceId) {
+                          setSelectSpaceSchemaDialogOpen(true);
+                          return;
+                        }
+                        await syncMappingMutateAsync({
+                          schema: currentSchema,
+                          space: spaceId,
+                        }).then((updatedSchema) => {
+                          setTimeout(async () => {
+                            // reset the form
+                            createSchemaForm.reset(updatedSchema, { keepDefaultValues: false });
+                            syncMappingReset();
+                          }, 1_500);
+                        });
+                      }}
+                    >
+                      Publish Schema
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Positioner side="top" sideOffset={10}>
+                        <Tooltip.Popup className="box-border text-sm flex flex-col px-2 py-3 rounded-lg bg-gray-100 dark:bg-slate-900 transform-content data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 w-fit max-w-xs">
+                          <Tooltip.Arrow className="flex data-[side=top]:-bottom-2 data-[side=top]:rotate-180 data-[side=bottom]:-top-2 data-[side=bottom]:rotate-0 data-[side=left]:-right-3 data-[side=left]:rotate-90 data-[side=right]:-left-3 data-[side=right]:-rotate-90">
+                            <Arrow />
+                          </Tooltip.Arrow>
+                          <span className="text-xs text-gray-700 dark:text-white whitespace-break-spaces w-full">
+                            {!authenticated
+                              ? 'Must be authenticated to Publish'
+                              : requiresSyncingToSchemaFile
+                                ? 'Please sync your Schema to the schema.ts file first. Then Publish to the Knowledge Graph'
                                 : !requiresSyncingToKnowledgeGraph
-                                  ? 'Add types/properties to your Schema and sync with your schema file before publishing to the Knowledge Graph'
+                                  ? 'Add types/properties to your Schema and sync with your schema file before Publishing to the Knowledge Graph'
                                   : 'Publish your Schema changes to the Knowledge Graph'}
-                            </span>
-                          </Tooltip.Popup>
-                        </Tooltip.Positioner>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
-                  </Tooltip.Provider>
-                ) : null}
+                          </span>
+                        </Tooltip.Popup>
+                      </Tooltip.Positioner>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               </div>
             </div>
           </div>
@@ -820,7 +820,7 @@ function SchemaBuilderComponent() {
           }).then((updatedSchema) => {
             setTimeout(async () => {
               // reset the form
-              createSchemaForm.reset(updatedSchema);
+              createSchemaForm.reset(updatedSchema, { keepDefaultValues: false });
               syncMappingReset();
             }, 1_500);
           });

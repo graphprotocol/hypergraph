@@ -17,6 +17,7 @@ import { useState } from 'react';
 
 import { type ExtendedProperty, usePropertiesQuery } from '@/hooks/useKnowledgeGraph.tsx';
 import { classnames } from '@/utils/classnames.ts';
+import { shorten } from '@/utils/string.ts';
 import { mapKGDataTypeToPrimitiveType } from '@/utils/type-mapper.ts';
 import { ErrorMessages } from '../Form/ErrorMessages.tsx';
 import { useFieldContext } from '../Form/form.ts';
@@ -91,7 +92,7 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
         </ComboboxButton>
 
         {props.length > 0 || EffectString.isNonEmpty(propsFilter) ? (
-          <ComboboxOptions className="absolute z-10 mt-10 max-h-60 w-fit min-w-md 2xl:min-w-xl overflow-auto rounded-md bg-white dark:bg-slate-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-black/10 focus:outline-hidden sm:text-sm">
+          <ComboboxOptions className="absolute z-10 mt-10 max-h-60 w-fit max-w-lg 2xl:max-w-xl overflow-auto rounded-md bg-white dark:bg-slate-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-black/10 focus:outline-hidden sm:text-sm">
             {props.map((_prop) => (
               <ComboboxOption
                 key={_prop.id}
@@ -105,8 +106,11 @@ export function PropertyCombobox({ id, label, propertySelected, ...rest }: Reado
                       {_prop.name || _prop.id}
                       <InlineCode>{mapKGDataTypeToPrimitiveType(_prop.dataType, _prop.name || _prop.id)}</InlineCode>
                     </p>
-                    <p className="hidden xl:block xl:w-fit">
+                    <p className="hidden 2xl:block 2xl:w-fit">
                       <InlineCode>{_prop.id}</InlineCode>
+                    </p>
+                    <p className="w-fit block 2xl:hidden">
+                      <InlineCode>{shorten(_prop.id)}</InlineCode>
                     </p>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-300 group-data-focus:text-gray-700 dark:group-data-focus:text-gray-50">

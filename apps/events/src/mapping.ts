@@ -1,7 +1,7 @@
-import type { Mapping } from '@graphprotocol/hypergraph';
 import { Id } from '@graphprotocol/hypergraph';
+import type { Mapping } from '@graphprotocol/hypergraph/mapping';
 
-export const mapping: Mapping.Mapping = {
+export const mapping: Mapping = {
   User: {
     typeIds: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
     properties: {
@@ -54,9 +54,18 @@ export const mapping: Mapping.Mapping = {
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
+      createdAt: Id('e2e6906b-d2b6-48d2-8aa2-54e8b29f6933'),
+      updatedAt: Id('2e877fe0-a504-4ea0-b43c-210d011db434'),
     },
     relations: {
       sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
+    },
+  },
+  Todo3: {
+    typeIds: [Id('4f7bba76-7855-4d63-b59d-1d9f2be866df')],
+    properties: {
+      name: Id('47006386-d351-411c-8287-1dae1c1aa8c1'),
+      completed: Id('9f9f00eb-4f32-4f71-92ba-b266566d0013'),
     },
   },
 };

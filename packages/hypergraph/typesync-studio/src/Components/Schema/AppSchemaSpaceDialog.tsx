@@ -1,7 +1,7 @@
 'use client';
 
 import { Id, type SpaceStorageEntry } from '@graphprotocol/hypergraph';
-import { useSpaces } from '@graphprotocol/hypergraph-react';
+import { useHypergraphApp, useHypergraphAuth, useSpaces } from '@graphprotocol/hypergraph-react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { WarningIcon, XIcon } from '@phosphor-icons/react';
 import { createFormHook, useStore } from '@tanstack/react-form';
@@ -158,14 +158,62 @@ type SchemaSpaceSelectProps = {
   ): void;
 };
 function SchemaSpaceSelect({ id, name, spaceSelected }: Readonly<SchemaSpaceSelectProps>) {
-  const { data: privateSpaces = [] } = useSpaces({ mode: 'private' });
-  const { data: publicSpaces = [] } = useSpaces({ mode: 'public' });
+  const { redirectToConnect } = useHypergraphApp();
+  const { authenticated } = useHypergraphAuth();
+  const { data: publicSpaces = [], isPending } = useSpaces({ mode: 'public' });
 
   const field = useFieldContext<string>();
   const value = useStore(field.store, (state) => state.value);
   const errors = useStore(field.store, (state) => state.meta.errors);
   const touched = useStore(field.store, (state) => state.meta.isTouched);
   const hasErrors = errors.length > 0 && touched;
+
+  if (!authenticated) {
+    return (
+      <button
+        type="button"
+        className="rounded-full bg-slate-900 flex items-center justify-center px-3 py-1.5 text-sm font-semibold text-white shadow-xs ring-1 ring-white/10 ring-inset hover:bg-white/10 cursor-pointer w-full"
+        onClick={() =>
+          redirectToConnect({
+            storage: localStorage,
+            connectUrl: 'https://connect.geobrowser.io/',
+            successUrl: `${window.location.origin}/authenticate-callback`,
+            redirectFn(url: URL) {
+              window.location.href = url.toString();
+            },
+          })
+        }
+      >
+        Sign in to Geo Account
+      </button>
+    );
+  }
+  if (!isPending && publicSpaces.length === 0) {
+    return (
+      <div className="w-full flex flex-col gap-y-2">
+        <p className="text-sm text-gray-700 dark:text-gray-300">
+          Schemas need to be published to a public Space you have granted access to this app
+        </p>
+        <p className="text-xs text-gray-700 dark:text-gray-300">Reconnect to Geo connect and connect public spaces</p>
+        <button
+          type="button"
+          className="rounded-full bg-slate-900 flex items-center justify-center px-3 py-1.5 text-sm font-semibold text-white shadow-xs ring-1 ring-white/10 ring-inset hover:bg-white/10 cursor-pointer w-full"
+          onClick={() =>
+            redirectToConnect({
+              storage: localStorage,
+              connectUrl: 'https://connect.geobrowser.io/',
+              successUrl: `${window.location.origin}/authenticate-callback`,
+              redirectFn(url: URL) {
+                window.location.href = url.toString();
+              },
+            })
+          }
+        >
+          Connect Spaces
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex flex-col gap-y-2 w-full">
@@ -179,38 +227,6 @@ function SchemaSpaceSelect({ id, name, spaceSelected }: Readonly<SchemaSpaceSele
         <legend className="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">
           Select the Space to publish your Hypergraph shema to.
         </legend>
-        {privateSpaces.map((privateSpace) => (
-          <label
-            key={privateSpace.id}
-            aria-label={privateSpace.name || privateSpace.id}
-            aria-description={`space-${privateSpace.id}`}
-            className="group flex border border-gray-200 p-4 first:rounded-tl-md first:rounded-tr-md last:rounded-br-md last:rounded-bl-md focus:outline-hidden has-checked:relative has-checked:border-indigo-200 has-checked:bg-indigo-50 dark:border-gray-700 dark:has-checked:border-indigo-800 dark:has-checked:bg-indigo-500/10 w-full cursor-pointer"
-          >
-            <input
-              value={privateSpace.id}
-              checked={privateSpace.id === value}
-              onChange={(e) => {
-                const checked = e.target.checked;
-                if (checked) {
-                  field.handleChange(privateSpace.id);
-                  spaceSelected(privateSpace);
-                }
-              }}
-              name={name}
-              type="radio"
-              className="relative mt-0.5 size-4 shrink-0 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 dark:border-white/10 dark:bg-white/5 dark:checked:border-indigo-500 dark:checked:bg-indigo-500 dark:focus-visible:outline-indigo-500 dark:disabled:border-white/5 dark:disabled:bg-white/10 dark:disabled:before:bg-white/20 forced-colors:appearance-auto forced-colors:before:hidden"
-            />
-            <span className="ml-3 flex flex-col gap-y-1">
-              <span className="flex items-center gap-x-2 text-sm font-medium text-gray-900 group-has-checked:text-indigo-900 dark:text-white dark:group-has-checked:text-indigo-300">
-                {privateSpace.name || privateSpace.id}
-                <SpaceVisibilityTag visibility="public" />
-              </span>
-              <span className="block text-sm text-gray-500 group-has-checked:text-indigo-700 dark:text-gray-400 dark:group-has-checked:text-indigo-300/75">
-                {privateSpace.name != null ? <InlineCode>{privateSpace.id}</InlineCode> : null}
-              </span>
-            </span>
-          </label>
-        ))}
         {publicSpaces.map((publicSpace) => (
           <label
             key={publicSpace.id}
@@ -235,7 +251,6 @@ function SchemaSpaceSelect({ id, name, spaceSelected }: Readonly<SchemaSpaceSele
             <span className="ml-3 flex flex-col gap-y-1">
               <span className="flex items-center gap-x-2 text-sm font-medium text-gray-900 group-has-checked:text-indigo-900 dark:text-white dark:group-has-checked:text-indigo-300">
                 {publicSpace.name || publicSpace.id}
-                <SpaceVisibilityTag visibility="public" />
               </span>
               <span className="block text-sm text-gray-500 group-has-checked:text-indigo-700 dark:text-gray-400 dark:group-has-checked:text-indigo-300/75">
                 {publicSpace.name != null ? <InlineCode>{publicSpace.id}</InlineCode> : null}
@@ -246,29 +261,5 @@ function SchemaSpaceSelect({ id, name, spaceSelected }: Readonly<SchemaSpaceSele
       </fieldset>
       {hasErrors ? <ErrorMessages id={`${id}-invalid`} errors={errors} /> : null}
     </div>
-  );
-}
-
-type SpaceVisibility = 'public' | 'private';
-
-function SpaceVisibilityTag({ visibility }: Readonly<{ visibility: SpaceVisibility }>) {
-  if (visibility === 'private') {
-    return (
-      <span className="inline-flex items-center gap-x-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-900 inset-ring inset-ring-gray-200 dark:text-white dark:inset-ring-white/10">
-        <svg viewBox="0 0 6 6" aria-hidden="true" className="size-1.5 fill-red-500 dark:fill-red-400">
-          <circle r={3} cx={3} cy={3} />
-        </svg>
-        Private
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center gap-x-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-900 inset-ring inset-ring-gray-200 dark:text-white dark:inset-ring-white/10">
-      <svg viewBox="0 0 6 6" aria-hidden="true" className="size-1.5 fill-green-500 dark:fill-green-400">
-        <circle r={3} cx={3} cy={3} />
-      </svg>
-      Public
-    </span>
   );
 }

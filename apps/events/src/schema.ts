@@ -36,4 +36,10 @@ export class Event extends Entity.Class<Event>('Event')({
   description: Type.optional(Type.String),
   sponsors: Type.Relation(Company),
   createdAt: Type.Date,
+  updatedAt: Type.Date,
+}) {}
+
+export class Todo3 extends Entity.Class<Todo3>('Todo3')({
+  name: Type.String,
+  completed: Type.Boolean,
 }) {}
