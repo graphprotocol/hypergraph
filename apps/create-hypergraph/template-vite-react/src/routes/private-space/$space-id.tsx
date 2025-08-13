@@ -61,7 +61,7 @@ function PrivateSpace() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-slate-600 mt-1 text-sm">Public Space</p>
+          <p className="text-slate-600 mt-1 text-sm">Private Space</p>
           <h1 className="text-3xl font-bold text-slate-900">{name}</h1>
           <p className="text-slate-600 mt-1 text-sm">ID: {spaceId}</p>
           <p className="text-muted-foreground mt-6">Manage your private projects and publish them to public spaces</p>
