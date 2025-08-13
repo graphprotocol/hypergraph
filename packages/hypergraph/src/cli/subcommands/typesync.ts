@@ -160,6 +160,13 @@ const TypesyncStudioFileRouter = Effect.gen(function* () {
         Effect.orElse(() => HttpServerResponse.empty({ status: 404 })),
       ),
     ),
+    // specific handler for the /authenticate-callback endpoint for auth
+    HttpRouter.get(
+      '/authenticate-callback',
+      HttpServerResponse.file(path.join(typesyncStudioClientDist, 'index.html')).pipe(
+        Effect.orElse(() => HttpServerResponse.empty({ status: 404 })),
+      ),
+    ),
     HttpRouter.get(
       '/assets/:file',
       Effect.gen(function* () {

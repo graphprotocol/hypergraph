@@ -380,6 +380,7 @@ function SchemaBuilderComponent() {
         e.stopPropagation();
         void createSchemaForm.handleSubmit();
       }}
+      className="px-4"
     >
       <createSchemaForm.AppField name="types" mode="array">
         {(field) => (
