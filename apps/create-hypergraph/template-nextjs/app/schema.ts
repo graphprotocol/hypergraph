@@ -1,10 +1,5 @@
 import { Entity, Type } from '@graphprotocol/hypergraph';
 
-export class Address extends Entity.Class<Address>('Address')({
-  name: Type.String,
-  description: Type.String,
-}) {}
-
 export class Image extends Entity.Class<Image>('Image')({
   url: Type.String,
 }) {}

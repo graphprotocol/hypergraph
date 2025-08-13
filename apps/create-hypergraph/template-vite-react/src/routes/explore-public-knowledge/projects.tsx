@@ -92,10 +92,10 @@ function ExplorePublicKnowledgeProjects() {
               {/* Project description */}
               {project.description && <p className="text-sm text-gray-600 mb-2 line-clamp-2">{project.description}</p>}
 
-              {/* Project xUrl */}
-              {project.xUrl && (
+              {/* Project x */}
+              {project.x && (
                 <a
-                  href={project.xUrl}
+                  href={project.x}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"

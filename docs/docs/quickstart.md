@@ -36,7 +36,7 @@ pnpm run dev
 bun run dev
 ```
 
-Open the browser, navigate to `http://localhost:5173` and you should see the app running.
+Open the browser and navigate to the development server URL shown in your terminal (for example, `http://localhost:5173` for Vite or `http://localhost:3000` for Next.js)
 
 ## Example Datasets
 

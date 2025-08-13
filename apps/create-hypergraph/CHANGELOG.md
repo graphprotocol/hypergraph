@@ -1,5 +1,16 @@
 # create-hypergraph
 
+## 0.4.6
+### Patch Changes
+
+- dcc05b3: improve templates (use Projects instead of Address, show space IDs, show Project IDs)
+
+## 0.4.5
+### Patch Changes
+
+- 7e20c0b: improve projects listing in both templates
+- b2fbdbb: add datasets (dapps, investment roundes, assets) to templates
+
 ## 0.4.4
 ### Patch Changes
 

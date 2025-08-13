@@ -18,7 +18,7 @@ const sidebars = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   docs: [
     { type: 'doc', id: 'quickstart', label: '🚀 Quickstart' },
-    // { type: 'doc', id: 'faucet', label: '🪙 Testnet Faucet' },
+    { type: 'doc', id: 'ai-usage', label: '✨ AI Usage' },
     { type: 'doc', id: 'key-features', label: '🌟 Key Features' },
     { type: 'doc', id: 'core-concepts', label: '🧠 Core Concepts' },
     { type: 'doc', id: 'typesync', label: '🧬 TypeSync' },
@@ -37,7 +37,6 @@ const sidebars = {
     // { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
     { type: 'doc', id: 'troubleshooting', label: '🛠️ Troubleshooting' },
     { type: 'doc', id: 'faq', label: '❓ FAQ' },
-    // { type: 'doc', id: 'legacy/README', label: '🗃️ Legacy Documentation' },
     {
       type: 'category',
       label: 'Advanced',
