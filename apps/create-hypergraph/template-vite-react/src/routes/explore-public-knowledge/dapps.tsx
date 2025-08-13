@@ -60,10 +60,10 @@ function Dapps() {
               {/* Dapp description */}
               {dapp.description && <p className="text-sm text-gray-600 mb-2 line-clamp-2">{dapp.description}</p>}
 
-              {/* Dapp xUrl */}
-              {dapp.xUrl && (
+              {/* Dapp x */}
+              {dapp.x && (
                 <a
-                  href={dapp.xUrl}
+                  href={dapp.x}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"
@@ -75,10 +75,10 @@ function Dapps() {
                 </a>
               )}
 
-              {/* Dapp githubUrl */}
-              {dapp.githubUrl && (
+              {/* Dapp github */}
+              {dapp.github && (
                 <a
-                  href={dapp.githubUrl}
+                  href={dapp.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"

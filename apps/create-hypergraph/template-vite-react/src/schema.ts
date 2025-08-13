@@ -7,15 +7,15 @@ export class Image extends Entity.Class<Image>('Image')({
 export class Project extends Entity.Class<Project>('Project')({
   name: Type.String,
   description: Type.optional(Type.String),
-  xUrl: Type.optional(Type.String),
+  x: Type.optional(Type.String),
   avatar: Type.Relation(Image),
 }) {}
 
 export class Dapp extends Entity.Class<Dapp>('Dapp')({
   name: Type.String,
   description: Type.optional(Type.String),
-  xUrl: Type.optional(Type.String),
-  githubUrl: Type.optional(Type.String),
+  x: Type.optional(Type.String),
+  github: Type.optional(Type.String),
   avatar: Type.Relation(Image),
 }) {}
 

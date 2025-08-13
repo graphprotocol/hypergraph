@@ -13,7 +13,7 @@ export const mapping: Mapping.Mapping = {
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      xUrl: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
+      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
     },
     relations: {
       avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
@@ -24,8 +24,8 @@ export const mapping: Mapping.Mapping = {
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      xUrl: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
-      githubUrl: Id('9eedefa8-60ae-4ac1-9a04-805054a4b094'),
+      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
+      github: Id('9eedefa8-60ae-4ac1-9a04-805054a4b094'),
     },
     relations: {
       avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
