@@ -1,7 +1,12 @@
 import { describe, it } from '@effect/vitest';
 import { Id } from '@graphprotocol/grc-20';
 import { Effect } from 'effect';
-import { parseHypergraphMapping, parseSchema } from '../../../src/cli/services/Utils.js';
+import {
+  buildMappingFileFromSchema,
+  buildSchemaFile,
+  parseHypergraphMapping,
+  parseSchema,
+} from '../../../src/cli/services/Utils.js';
 import type { Mapping } from '../../../src/mapping/Mapping.js';
 
 describe('parseSchema', () => {
@@ -73,6 +78,7 @@ export class Event extends Entity.Class<Event>('Event')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: null,
+          status: 'synced',
         });
 
         // Check Todo entity
@@ -83,17 +89,20 @@ export class Event extends Entity.Class<Event>('Event')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todoEntity?.properties[1]).toMatchObject({
           name: 'completed',
           dataType: 'Boolean',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todoEntity?.properties[2]).toMatchObject({
           name: 'assignees',
           dataType: 'Relation(User)',
           relationType: 'User',
           knowledgeGraphId: null,
+          status: 'synced',
         });
 
         // Check Todo2 entity with various types
@@ -104,16 +113,19 @@ export class Event extends Entity.Class<Event>('Event')({
           name: 'due',
           dataType: 'Date',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todo2Entity?.properties[4]).toMatchObject({
           name: 'amount',
           dataType: 'Number',
           knowledgeGraphId: null,
+          status: 'synced',
         });
         expect(todo2Entity?.properties[5]).toMatchObject({
           name: 'point',
           dataType: 'Point',
           knowledgeGraphId: null,
+          status: 'synced',
         });
 
         // Check Company entity with relation
@@ -125,6 +137,7 @@ export class Event extends Entity.Class<Event>('Event')({
           dataType: 'Relation(JobOffer)',
           relationType: 'JobOffer',
           knowledgeGraphId: null,
+          status: 'synced',
         });
       });
     }),
@@ -192,12 +205,14 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          status: 'published',
         });
         expect(eventEntity?.properties[1]).toMatchObject({
           name: 'sponsors',
           dataType: 'Relation(Company)',
           relationType: 'Company',
           knowledgeGraphId: '6860bfac-f703-4289-b789-972d0aaf3abe',
+          status: 'published',
         });
 
         // Check Company entity with resolved IDs
@@ -209,12 +224,14 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          status: 'published',
         });
         expect(companyEntity?.properties[1]).toMatchObject({
           name: 'jobOffers',
           dataType: 'Relation(JobOffer)',
           relationType: 'JobOffer',
           knowledgeGraphId: '1203064e-9741-4235-89d4-97f4b22eddfb',
+          status: 'published',
         });
 
         // Check JobOffer entity with resolved IDs
@@ -226,11 +243,116 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
           name: 'name',
           dataType: 'String',
           knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          status: 'published',
         });
         expect(jobOfferEntity?.properties[1]).toMatchObject({
           name: 'salary',
           dataType: 'Number',
           knowledgeGraphId: 'baa36ac9-78ac-4cf7-8394-6b2d3006bebe',
+          status: 'published',
+        });
+      });
+    }),
+  );
+
+  it.effect('should parse schema with optional properties', ({ expect }) =>
+    Effect.gen(function* () {
+      const schemaContent = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class User extends Entity.Class<User>('User')({
+  name: Type.String,
+  email: Type.optional(Type.String),
+}) {}
+
+export class Event extends Entity.Class<Event>('Event')({
+  name: Type.String,
+  description: Type.optional(Type.String),
+  location: Type.optional(Type.Point),
+  startDate: Type.Date,
+  endDate: Type.optional(Type.Date),
+  organizer: Type.Relation(User),
+  coOrganizers: Type.optional(Type.Relation(User)),
+}) {}`;
+
+      const emptyMapping: Mapping = {};
+      const result = yield* parseSchema(schemaContent, emptyMapping);
+
+      yield* Effect.sync(() => {
+        expect(result.types).toHaveLength(2);
+
+        // Check User entity with optional email
+        const userEntity = result.types.find((t) => t.name === 'User');
+        expect(userEntity).toBeDefined();
+        expect(userEntity?.properties).toHaveLength(2);
+        expect(userEntity?.properties[0]).toMatchObject({
+          name: 'name',
+          dataType: 'String',
+          knowledgeGraphId: null,
+        });
+        expect(userEntity?.properties[0].optional).toBeUndefined();
+        expect(userEntity?.properties[1]).toMatchObject({
+          name: 'email',
+          dataType: 'String',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+
+        // Check Event entity with multiple optional properties
+        const eventEntity = result.types.find((t) => t.name === 'Event');
+        expect(eventEntity).toBeDefined();
+        expect(eventEntity?.properties).toHaveLength(7);
+
+        // Required properties
+        expect(eventEntity?.properties[0]).toMatchObject({
+          name: 'name',
+          dataType: 'String',
+          knowledgeGraphId: null,
+        });
+        expect(eventEntity?.properties[0].optional).toBeUndefined();
+
+        expect(eventEntity?.properties[3]).toMatchObject({
+          name: 'startDate',
+          dataType: 'Date',
+          knowledgeGraphId: null,
+        });
+        expect(eventEntity?.properties[3].optional).toBeUndefined();
+
+        expect(eventEntity?.properties[5]).toMatchObject({
+          name: 'organizer',
+          dataType: 'Relation(User)',
+          relationType: 'User',
+          knowledgeGraphId: null,
+        });
+        expect(eventEntity?.properties[5].optional).toBeUndefined();
+
+        // Optional properties
+        expect(eventEntity?.properties[1]).toMatchObject({
+          name: 'description',
+          dataType: 'String',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+
+        expect(eventEntity?.properties[2]).toMatchObject({
+          name: 'location',
+          dataType: 'Point',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+
+        expect(eventEntity?.properties[4]).toMatchObject({
+          name: 'endDate',
+          dataType: 'Date',
+          knowledgeGraphId: null,
+          optional: true,
+        });
+
+        expect(eventEntity?.properties[6]).toMatchObject({
+          name: 'coOrganizers',
+          dataType: 'Relation(User)',
+          relationType: 'User',
+          knowledgeGraphId: null,
+          optional: true,
         });
       });
     }),
@@ -422,5 +544,1323 @@ describe('parseHypergraphMapping', () => {
     const moduleExport = { mapping: invalidMapping };
     const result = parseHypergraphMapping(moduleExport);
     expect(result).toEqual({});
+  });
+});
+
+describe('buildSchemaFile', () => {
+  it('should build schema file with single entity and single property', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class User extends Entity.Class<User>('User')({
+  name: Type.String
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should build schema file with multiple entities', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+        {
+          name: 'Post',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'title',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'content',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class User extends Entity.Class<User>('User')({
+  name: Type.String
+}) {}
+
+export class Post extends Entity.Class<Post>('Post')({
+  title: Type.String,
+  content: Type.String
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle all primitive data types', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'TestEntity',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'text_field',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'numeric_field',
+              dataType: 'Number' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'boolean_field',
+              dataType: 'Boolean' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'date_field',
+              dataType: 'Date' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'location_field',
+              dataType: 'Point' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class TestEntity extends Entity.Class<TestEntity>('TestEntity')({
+  textField: Type.String,
+  numericField: Type.Number,
+  booleanField: Type.Boolean,
+  dateField: Type.Date,
+  locationField: Type.Point
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle optional properties', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'email',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: true,
+              status: 'synced' as const,
+            },
+            {
+              name: 'age',
+              dataType: 'Number' as const,
+              knowledgeGraphId: null,
+              optional: true,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class User extends Entity.Class<User>('User')({
+  name: Type.String,
+  email: Type.optional(Type.String),
+  age: Type.optional(Type.Number)
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle relation properties', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Post',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'title',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'author',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class Post extends Entity.Class<Post>('Post')({
+  title: Type.String,
+  author: Type.Relation(User)
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle optional relation properties', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Event',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'organizer',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'co_organizers',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: null,
+              optional: true,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class Event extends Entity.Class<Event>('Event')({
+  name: Type.String,
+  organizer: Type.Relation(User),
+  coOrganizers: Type.optional(Type.Relation(User))
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should convert snake_case property names to camelCase', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Product',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'product_name',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'unit_price',
+              dataType: 'Number' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'is_available',
+              dataType: 'Boolean' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class Product extends Entity.Class<Product>('Product')({
+  productName: Type.String,
+  unitPrice: Type.Number,
+  isAvailable: Type.Boolean
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle empty schema', ({ expect }) => {
+    const schema = {
+      types: [],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should filter out entities with no name', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: '',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'field',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+        {
+          name: 'ValidEntity',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'field',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class ValidEntity extends Entity.Class<ValidEntity>('ValidEntity')({
+  field: Type.String
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should filter out entities with no properties', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'EmptyEntity',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [],
+        },
+        {
+          name: 'ValidEntity',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'field',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class ValidEntity extends Entity.Class<ValidEntity>('ValidEntity')({
+  field: Type.String
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should filter out properties with empty names', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: '',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'validField',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class User extends Entity.Class<User>('User')({
+  validField: Type.String
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle complex schema with multiple entities and various property types', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'email',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: true,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'Event',
+          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'title',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'start_date',
+              dataType: 'Date' as const,
+              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'location',
+              dataType: 'Point' as const,
+              knowledgeGraphId: 'e126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: true,
+              status: 'published' as const,
+            },
+            {
+              name: 'organizer',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: 'f126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class User extends Entity.Class<User>('User')({
+  name: Type.String,
+  email: Type.optional(Type.String)
+}) {}
+
+export class Event extends Entity.Class<Event>('Event')({
+  title: Type.String,
+  startDate: Type.Date,
+  location: Type.optional(Type.Point),
+  organizer: Type.Relation(User)
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle unknown data types by defaulting to String', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'TestEntity',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'unknown_field',
+              // biome-ignore lint/suspicious/noExplicitAny: test cases
+              dataType: 'UnknownType' as any,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class TestEntity extends Entity.Class<TestEntity>('TestEntity')({
+  unknownField: Type.String
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should convert class names to PascalCase', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'user_account',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'username',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+        {
+          name: 'blog-post',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'title',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildSchemaFile(schema);
+    const expected = `import { Entity, Type } from '@graphprotocol/hypergraph';
+
+export class UserAccount extends Entity.Class<UserAccount>('UserAccount')({
+  username: Type.String
+}) {}
+
+export class BlogPost extends Entity.Class<BlogPost>('BlogPost')({
+  title: Type.String
+}) {}`;
+
+    expect(result).toBe(expected);
+  });
+});
+
+describe('buildMappingFileFromSchema', () => {
+  it('should build mapping file with single entity', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  User: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle multiple entities', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'Post',
+          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'title',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  User: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+  Post: {
+    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      title: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle entities with multiple properties', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Product',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'price',
+              dataType: 'Number' as const,
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'available',
+              dataType: 'Boolean' as const,
+              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  Product: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
+      price: Id("b126ca53-0c8e-48d5-b888-82c734c38935"),
+      available: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle entities with relations', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Post',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'title',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'author',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'User',
+          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  Post: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      title: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+    relations: {
+      author: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+  User: {
+    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle entities with both properties and relations', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Event',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'description',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'sponsors',
+              dataType: 'Relation(Company)' as const,
+              relationType: 'Company',
+              knowledgeGraphId: '6860bfac-f703-4289-b789-972d0aaf3abe',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'attendees',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'Company',
+          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'e126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'User',
+          knowledgeGraphId: '9f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'f126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  Event: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
+      description: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+    relations: {
+      sponsors: Id("6860bfac-f703-4289-b789-972d0aaf3abe"),
+      attendees: Id("d126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+  Company: {
+    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("e126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+  User: {
+    typeIds: [Id("9f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("f126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle entities with no knowledgeGraphId', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'User',
+          knowledgeGraphId: null,
+          status: 'synced' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+
+    // When knowledgeGraphId is null, generateMapping will create new IDs
+    // We just check the structure is correct
+    expect(result).toMatch(/import \{ Id \} from '@graphprotocol\/hypergraph';/);
+    expect(result).toMatch(/import type \{ Mapping \} from '@graphprotocol\/hypergraph\/mapping';/);
+    expect(result).toMatch(/export const mapping: Mapping = \{/);
+    expect(result).toMatch(/User: \{/);
+    expect(result).toMatch(/typeIds: \[Id\("[a-f0-9-]+"\)\],/);
+    expect(result).toMatch(/properties: \{/);
+    expect(result).toMatch(/name: Id\("[a-f0-9-]+"\)/);
+  });
+
+  it('should handle entities with only properties and no relations', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Settings',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'theme',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'notifications_enabled',
+              dataType: 'Boolean' as const,
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  Settings: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      theme: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
+      notificationsEnabled: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle entities with only relations and no properties', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Friendship',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'user1',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'user2',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'User',
+          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  Friendship: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    relations: {
+      user1: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
+      user2: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+  User: {
+    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should convert snake_case property names to camelCase', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'UserProfile',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'first_name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'last_name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'profile_picture',
+              dataType: 'Relation(Image)' as const,
+              relationType: 'Image',
+              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'Image',
+          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'url',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  UserProfile: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      firstName: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
+      lastName: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+    relations: {
+      profilePicture: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+  Image: {
+    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      url: Id("d126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
+  });
+
+  it('should handle mixed properties with and without knowledgeGraphId', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Article',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'title',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'content',
+              dataType: 'String' as const,
+              knowledgeGraphId: null,
+              optional: undefined,
+              status: 'synced' as const,
+            },
+            {
+              name: 'author',
+              dataType: 'Relation(User)' as const,
+              relationType: 'User',
+              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'User',
+          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+
+    // Check structure and that title and author have the expected IDs
+    expect(result).toMatch(/title: Id\("a126ca53-0c8e-48d5-b888-82c734c38935"\)/);
+    expect(result).toMatch(/author: Id\("c126ca53-0c8e-48d5-b888-82c734c38935"\)/);
+    // content should have a generated ID
+    expect(result).toMatch(/content: Id\("[a-f0-9-]+"\)/);
+  });
+
+  it('should handle complex schema similar to the example in documentation', ({ expect }) => {
+    const schema = {
+      types: [
+        {
+          name: 'Event',
+          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'sponsors',
+              dataType: 'Relation(Company)' as const,
+              relationType: 'Company',
+              knowledgeGraphId: '6860bfac-f703-4289-b789-972d0aaf3abe',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'Company',
+          knowledgeGraphId: '6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'job_offers',
+              dataType: 'Relation(JobOffer)' as const,
+              relationType: 'JobOffer',
+              knowledgeGraphId: '1203064e-9741-4235-89d4-97f4b22eddfb',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+        {
+          name: 'JobOffer',
+          knowledgeGraphId: 'f60585af-71b6-4674-9a26-b74ca6c1cceb',
+          status: 'published' as const,
+          properties: [
+            {
+              name: 'name',
+              dataType: 'String' as const,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              optional: undefined,
+              status: 'published' as const,
+            },
+            {
+              name: 'salary',
+              dataType: 'Number' as const,
+              knowledgeGraphId: 'baa36ac9-78ac-4cf7-8394-6b2d3006bebe',
+              optional: undefined,
+              status: 'published' as const,
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = buildMappingFileFromSchema(schema);
+    const expected = `import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+import { Id } from '@graphprotocol/hypergraph';
+
+export const mapping: Mapping = {
+  Event: {
+    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    properties: {
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+    relations: {
+      sponsors: Id("6860bfac-f703-4289-b789-972d0aaf3abe")
+    },
+  },
+  Company: {
+    typeIds: [Id("6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5")],
+    properties: {
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+    },
+    relations: {
+      jobOffers: Id("1203064e-9741-4235-89d4-97f4b22eddfb")
+    },
+  },
+  JobOffer: {
+    typeIds: [Id("f60585af-71b6-4674-9a26-b74ca6c1cceb")],
+    properties: {
+      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
+      salary: Id("baa36ac9-78ac-4cf7-8394-6b2d3006bebe")
+    },
+  },
+}`;
+
+    expect(result).toBe(expected);
   });
 });

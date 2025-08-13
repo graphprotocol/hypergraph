@@ -129,12 +129,21 @@ export function getDataType(val: string): SchemaDataType {
   }
   throw new Error(`Passed dataType ${val} is not supported`);
 }
+
+const BaseSchemaTypeProperty = EffectSchema.Struct({
+  name: EffectSchema.NonEmptyTrimmedString,
+  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  /**
+   * @since 0.4.0
+   */
+  optional: EffectSchema.optional(EffectSchema.NullishOr(EffectSchema.Boolean)),
+});
+
 /**
  * @since 0.2.0
  */
 export const SchemaTypePropertyRelation = EffectSchema.Struct({
-  name: EffectSchema.NonEmptyTrimmedString,
-  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  ...BaseSchemaTypeProperty.fields,
   dataType: SchemaDataTypeRelation,
   relationType: EffectSchema.NonEmptyTrimmedString.annotations({
     identifier: 'SchemaTypePropertyRelation.relationType',
@@ -150,8 +159,7 @@ export type SchemaTypePropertyRelation = typeof SchemaTypePropertyRelation.Type;
  * @since 0.2.0
  */
 export const SchemaTypePropertyPrimitive = EffectSchema.Struct({
-  name: EffectSchema.NonEmptyTrimmedString,
-  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  ...BaseSchemaTypeProperty.fields,
   dataType: SchemaDataTypePrimitive,
 });
 /**
@@ -217,7 +225,7 @@ export const Schema = EffectSchema.Struct({
         {
           name: 'Account',
           knowledgeGraphId: null,
-          properties: [{ name: 'username', knowledgeGraphId: null, dataType: 'String' }],
+          properties: [{ name: 'username', optional: null, knowledgeGraphId: null, dataType: 'String' }],
         },
       ],
     },
@@ -226,7 +234,14 @@ export const Schema = EffectSchema.Struct({
         {
           name: 'Account',
           knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
-          properties: [{ name: 'name', knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935', dataType: 'String' }],
+          properties: [
+            {
+              name: 'name',
+              optional: true,
+              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              dataType: 'String',
+            },
+          ],
         },
       ],
     },

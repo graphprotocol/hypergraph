@@ -2,6 +2,7 @@ import { Entity, Type } from '@graphprotocol/hypergraph';
 
 export class User extends Entity.Class<User>('User')({
   name: Type.String,
+  created: Type.Date,
 }) {}
 
 export class Todo extends Entity.Class<Todo>('Todo')({
@@ -27,12 +28,19 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
 
 export class Company extends Entity.Class<Company>('Company')({
   name: Type.String,
-  // address: Type.String,
   jobOffers: Type.Relation(JobOffer),
 }) {}
 
 export class Event extends Entity.Class<Event>('Event')({
   name: Type.String,
-  description: Type.optional(Type.String),
+  description: Type.String,
   sponsors: Type.Relation(Company),
+  createdAt: Type.Date,
+  updatedAt: Type.Date,
+}) {}
+
+export class Todo3 extends Entity.Class<Todo3>('Todo3')({
+  name: Type.String,
+  completed: Type.Boolean,
+  description: Type.String,
 }) {}

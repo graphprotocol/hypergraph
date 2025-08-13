@@ -1,8 +1,10 @@
+import { Doc } from '@effect/printer';
 import { Data, Effect, Array as EffectArray } from 'effect';
 import ts from 'typescript';
 
 import * as Mapping from '../../mapping/Mapping.js';
 import * as Utils from '../../mapping/Utils.js';
+import type * as Model from './Model.js';
 
 /**
  * Takes a parsed schema.ts file and maps it to a the Mapping.Schema type.
@@ -16,17 +18,17 @@ import * as Utils from '../../mapping/Utils.js';
 export const parseSchema = (
   sourceCode: string,
   mapping: Mapping.Mapping,
-): Effect.Effect<Mapping.Schema, SchemaParserFailure> =>
+): Effect.Effect<Model.TypesyncHypergraphSchema, SchemaParserFailure> =>
   Effect.try({
     try() {
       const sourceFile = ts.createSourceFile('schema.ts', sourceCode, ts.ScriptTarget.Latest, true);
 
-      const entities: Array<Mapping.SchemaType> = [];
+      const entities: Array<Model.TypesyncHypergraphSchemaType> = [];
 
       const visit = (node: ts.Node) => {
         if (ts.isClassDeclaration(node) && node.name) {
           const className = node.name.text;
-          const properties: Array<Mapping.SchemaTypePropertyPrimitive | Mapping.SchemaTypePropertyRelation> = [];
+          const properties: Array<Model.TypesyncHypergraphSchemaTypeProperty> = [];
 
           // Find the Entity.Class call
           if (node.heritageClauses) {
@@ -44,14 +46,29 @@ export const parseSchema = (
                           const propName = prop.name.text;
                           let dataType: Mapping.SchemaDataType = 'String';
                           let relationType: string | undefined;
+                          let isOptional = false;
 
                           const mappingEntry = mapping[className];
                           const camelCasePropName = Utils.toCamelCase(propName);
 
+                          // Check if the property is wrapped with Type.optional()
+                          let typeExpression = prop.initializer;
+                          if (
+                            ts.isCallExpression(typeExpression) &&
+                            ts.isPropertyAccessExpression(typeExpression.expression) &&
+                            typeExpression.expression.name.text === 'optional'
+                          ) {
+                            isOptional = true;
+                            // Unwrap the optional to get the actual type
+                            if (typeExpression.arguments.length > 0) {
+                              typeExpression = typeExpression.arguments[0];
+                            }
+                          }
+
                           // Extract the type
-                          if (ts.isPropertyAccessExpression(prop.initializer)) {
-                            // Simple types like Type.Text
-                            dataType = Mapping.getDataType(prop.initializer.name.text);
+                          if (ts.isPropertyAccessExpression(typeExpression)) {
+                            // Simple types like Type.String
+                            dataType = Mapping.getDataType(typeExpression.name.text);
 
                             // Look up the property's knowledgeGraphId from the mapping
                             const propKnowledgeGraphId = mappingEntry?.properties?.[camelCasePropName] || null;
@@ -61,10 +78,12 @@ export const parseSchema = (
                               name: propName,
                               dataType: dataType as Mapping.SchemaDataTypePrimitive,
                               knowledgeGraphId: propKnowledgeGraphId,
-                            } satisfies Mapping.SchemaTypePropertyPrimitive);
-                          } else if (ts.isCallExpression(prop.initializer)) {
+                              optional: isOptional || undefined,
+                              status: propKnowledgeGraphId != null ? 'published' : 'synced',
+                            } satisfies Model.TypesyncHypergraphSchemaTypeProperty);
+                          } else if (ts.isCallExpression(typeExpression)) {
                             // Relation types like Type.Relation(User)
-                            const callNode = prop.initializer;
+                            const callNode = typeExpression;
                             if (ts.isPropertyAccessExpression(callNode.expression)) {
                               const typeName = callNode.expression.name.text;
 
@@ -83,7 +102,9 @@ export const parseSchema = (
                                     dataType,
                                     relationType,
                                     knowledgeGraphId: relKnowledgeGraphId,
-                                  } satisfies Mapping.SchemaTypePropertyRelation);
+                                    optional: isOptional || undefined,
+                                    status: relKnowledgeGraphId != null ? 'published' : 'synced',
+                                  } satisfies Model.TypesyncHypergraphSchemaTypeProperty);
                                 }
                               }
                             }
@@ -101,7 +122,12 @@ export const parseSchema = (
           const mappingEntry = mapping[Utils.toPascalCase(className)];
           const typeKnowledgeGraphId = mappingEntry?.typeIds?.[0] ? mappingEntry.typeIds[0] : null;
 
-          entities.push({ name: className, knowledgeGraphId: typeKnowledgeGraphId, properties });
+          entities.push({
+            name: className,
+            knowledgeGraphId: typeKnowledgeGraphId,
+            properties,
+            status: typeKnowledgeGraphId != null ? 'published' : 'synced',
+          });
         }
 
         ts.forEachChild(node, visit);
@@ -184,4 +210,198 @@ export function parseHypergraphMapping(moduleExport: any): Mapping.Mapping {
 
   // If no preferred names found, use the first one
   return mappingCandidates[0][1] as Mapping.Mapping;
+}
+
+function fieldToEntityString({ name, dataType, optional = false }: Model.TypesyncHypergraphSchemaTypeProperty): string {
+  // Convert type to Entity type
+  const entityType = (() => {
+    switch (true) {
+      case dataType === 'String':
+        return 'Type.String';
+      case dataType === 'Number':
+        return 'Type.Number';
+      case dataType === 'Boolean':
+        return 'Type.Boolean';
+      case dataType === 'Date':
+        return 'Type.Date';
+      case dataType === 'Point':
+        return 'Type.Point';
+      case Mapping.isDataTypeRelation(dataType):
+        // renders the type as `Type.Relation(Entity)`
+        return `Type.${dataType}`;
+      default:
+        // how to handle complex types
+        return 'Type.String';
+    }
+  })();
+
+  if (optional === true) {
+    return `  ${Utils.toCamelCase(name)}: Type.optional(${entityType})`;
+  }
+
+  // adds a tab before the property
+  return `  ${Utils.toCamelCase(name)}: ${entityType}`;
+}
+
+function typeDefinitionToString(type: Model.TypesyncHypergraphSchemaType): string | null {
+  if (!type.name) {
+    return null;
+  }
+  const fields = type.properties.filter((_prop) => _prop.name != null && _prop.name.length > 0);
+  if (fields.length === 0) {
+    return null;
+  }
+
+  const fieldStrings = fields.map(fieldToEntityString);
+
+  const name = Utils.toPascalCase(type.name);
+  return `export class ${name} extends Entity.Class<${name}>('${name}')({
+${fieldStrings.join(',\n')}
+}) {}`;
+}
+
+/**
+ * Builds a string of the schema.ts file contents after parsing the schema into the correct format.
+ *
+ * @example
+ *
+ * ```typescript
+ * const schema = Model.TypesyncHypergraphSchema.make({
+ *   types: [
+ *     {
+ *       name: "User",
+ *       knowledgeGraphId: null,
+ *       status: null,
+ *       properties: [
+ *         {
+ *           name: "name",
+ *           dataType: "String",
+ *           knowledgeGraphId: null,
+ *           optional: null,
+ *           status: null
+ *         }
+ *       ]
+ *     }
+ *   ]
+ * })
+ * const schemaFile = buildSchemaFile(schema)
+ *
+ * expect(schemaFile).toEqual(`
+ * import { Entity, Type } from '@graphprotocol/hypergraph';
+ *
+ * export class User extends Entity.Class<User>('User')({
+ *   name: Type.String
+ * }) {}
+ * `)
+ * ```
+ */
+export function buildSchemaFile(schema: Model.TypesyncHypergraphSchema) {
+  const importStatement = `import { Entity, Type } from '@graphprotocol/hypergraph';`;
+
+  const typeDefinitions = schema.types
+    .map(typeDefinitionToString)
+    .filter((def) => def != null)
+    .join('\n\n');
+  return [importStatement, typeDefinitions].join('\n\n');
+}
+
+export function buildMappingFile(mapping: Mapping.Mapping | Model.TypesyncHypergraphMapping) {
+  // Import statements
+  const imports = Doc.vsep([
+    Doc.text("import type { Mapping } from '@graphprotocol/hypergraph/mapping';"),
+    Doc.text("import { Id } from '@graphprotocol/hypergraph';"),
+  ]);
+
+  // Generate the mapping object - build it line by line for exact formatting
+  const mappingLines = [Doc.text('export const mapping: Mapping = {')];
+
+  for (const [typeName, typeData] of Object.entries(mapping)) {
+    mappingLines.push(Doc.text(`  ${typeName}: {`));
+
+    // Type IDs
+    const typeIdsList = typeData.typeIds.map((id: string) => `Id("${id}")`).join(', ');
+    mappingLines.push(Doc.text(`    typeIds: [${typeIdsList}],`));
+
+    // Properties
+    const properties = Object.entries(typeData.properties ?? {});
+    if (EffectArray.isNonEmptyArray(properties)) {
+      mappingLines.push(Doc.text('    properties: {'));
+      properties.forEach(([propName, propId], index, entries) => {
+        const isLast = index === entries.length - 1;
+        const comma = isLast ? '' : ',';
+        mappingLines.push(Doc.text(`      ${propName}: Id("${propId}")${comma}`));
+      });
+      mappingLines.push(Doc.text('    },'));
+    }
+
+    // Relations
+    const relations = Object.entries(typeData.relations ?? {});
+    if (EffectArray.isNonEmptyArray(relations)) {
+      mappingLines.push(Doc.text('    relations: {'));
+      relations.forEach(([relationName, relationId], index, entries) => {
+        const isLast = index === entries.length - 1;
+        const comma = isLast ? '' : ',';
+        mappingLines.push(Doc.text(`      ${relationName}: Id("${relationId}")${comma}`));
+      });
+      mappingLines.push(Doc.text('    },'));
+    }
+
+    mappingLines.push(Doc.text('  },'));
+  }
+
+  mappingLines.push(Doc.rbrace);
+
+  const compiled = Doc.vcat([imports, Doc.empty, ...mappingLines]);
+
+  return Doc.render(compiled, {
+    style: 'pretty',
+    options: { lineWidth: 120 },
+  });
+}
+
+/**
+ * Builds a string of the mapping.ts file contents after parsing the schema into the correct mapping format.
+ *
+ * @example
+ *
+ * ```typescript
+ * const schema = Model.TypesyncHypergraphSchema.make({
+ *   types: [
+ *     {
+ *       name: "User",
+ *       knowledgeGraphId: "7f9562d4-034d-4385-bf5c-f02cdebba47a",
+ *       status: null,
+ *       properties: [
+ *         {
+ *           name: "name",
+ *           dataType: "String",
+ *           knowledgeGraphId: "a126ca53-0c8e-48d5-b888-82c734c38935",
+ *           optional: null,
+ *           status: null
+ *         }
+ *       ]
+ *     }
+ *   ]
+ * })
+ * const mappingFile = buildMappingFile(schema)
+ *
+ * expect(mappingFile).toEqual(`
+ * import type { Mapping } from '@graphprotocol/hypergraph/mapping';
+ * import { Id } from '@graphprotocol/hypergraph';
+ *
+ * export const mapping: Mapping = {
+ *   User: {
+ *     typeIds: [Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+ *     properties: {
+ *       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+ *     }
+ *   }
+ * }
+ * `)
+ * ```
+ */
+export function buildMappingFileFromSchema(schema: Model.TypesyncHypergraphSchema) {
+  const [mapping] = Mapping.generateMapping(schema);
+
+  return buildMappingFile(mapping);
 }

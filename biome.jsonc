@@ -17,7 +17,8 @@
       "!**/tsconfig.*.json",
       "!**/variant-schema.ts",
       "!**/apps/create-hypergraph/template-*/**",
-      "!**/*.css"
+      "!**/*.css",
+      "!packages/hypergraph/typesync-studio/src/generated/**/*.ts"
     ]
   },
   "formatter": {
