@@ -114,6 +114,10 @@ When the event log grows large, a peer may emit `sendCompactedUpdate`—a snapsh
 | Stale clients | Each event carries `lastKnownSpaceEventId`; server rejects out-of-date mutations. |
 | Key leakage on member removal | **Key rotation** through `removeMember` → generates a new `spaceKey`. |
 
+## How Can I Explore a Space's Data?
+
+You can browse a space's data using [Geo Browser's Testnet](https://testnet.geobrowser.io/root). Simply enter the Space ID you want to explore into the search bar to view its contents. If you do not have access to the data due to privacy restrictions, you will not be able to view the data. 
+
 ## GRC-20: The Protocol Under the Hood
 
 > **⚠️ Advanced Section:** You don't need to understand GRC-20 to build with Hypergraph! This is for developers who want to understand the underlying protocol or need low-level access to the knowledge graph.
