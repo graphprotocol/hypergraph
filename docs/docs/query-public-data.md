@@ -400,7 +400,7 @@ export default function InvestmentRoundsExample() {
 }
 ```
 
-### Asset Markets Example
+### Assets Example
 
 **Schema Definition:**
 
@@ -461,7 +461,7 @@ export default function AssetMarketExample() {
 
   return (
     <div>
-      <h2>Asset Market</h2>
+      <h2>Assets</h2>
       <div>
         {assets.map((asset) => (
           <div key={asset.id}>
