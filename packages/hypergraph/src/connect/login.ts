@@ -137,6 +137,7 @@ const getAndUpdateSmartAccount = async (
   console.log('smartAccountWalletClient', smartAccountWalletClient);
   console.log('address', smartAccountWalletClient.account.address);
   console.log('is deployed', await isSmartAccountDeployed(smartAccountWalletClient));
+  await new Promise((resolve) => setTimeout(resolve, 250)); // trying to slow down since Privy seems to have a race condition
   // This will prompt the user to sign a user operation to update the smart account
   if (await smartAccountNeedsUpdate(smartAccountWalletClient, chain, rpcUrl)) {
     console.log('updating smart account');
@@ -145,6 +146,7 @@ const getAndUpdateSmartAccount = async (
     // Create the client again to ensure we have the 7579 config now
     return getSmartAccountWalletClient(smartAccountParams);
   }
+  await new Promise((resolve) => setTimeout(resolve, 250)); // trying to slow down since Privy seems to have a race condition
   console.log('leaving getAndUpdateSmartAccount');
   return smartAccountWalletClient;
 };
