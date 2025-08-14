@@ -145,6 +145,7 @@ const getAndUpdateSmartAccount = async (
     // Create the client again to ensure we have the 7579 config now
     return getSmartAccountWalletClient(smartAccountParams);
   }
+  console.log('leaving getAndUpdateSmartAccount');
   return smartAccountWalletClient;
 };
 

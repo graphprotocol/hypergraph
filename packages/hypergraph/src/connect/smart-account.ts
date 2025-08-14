@@ -157,10 +157,10 @@ export type Action = {
 // We re-export these functions to allow creating sessions with policies for
 // additional actions without needing the Rhinestone module SDK.
 export {
-  getSudoPolicy,
-  getUniversalActionPolicy,
   getSpendingLimitsPolicy,
+  getSudoPolicy,
   getTimeFramePolicy,
+  getUniversalActionPolicy,
   getUsageLimitPolicy,
   getValueLimitPolicy,
 };
@@ -440,16 +440,20 @@ export const smartAccountNeedsUpdate = async (
   chain: Chain,
   rpcUrl: string,
 ): Promise<boolean> => {
+  console.log('entering smartAccountNeedsUpdate');
   if (chain.id === GEO_TESTNET.id) {
     // We don't have the smart sessions module deployed on testnet yet, so we need to use the legacy smart account wallet client
     // TODO: remove this once we have the smart sessions module deployed on testnet
+    console.log('leaving smartAccountNeedsUpdate A');
     return false;
   }
   // If we haven't deployed the smart account, we would always deploy an updated version
   if (!(await isSmartAccountDeployed(smartAccountClient))) {
+    console.log('leaving smartAccountNeedsUpdate B');
     return false;
   }
   const updateStatus = await legacySmartAccountUpdateStatus(smartAccountClient, chain, rpcUrl);
+  console.log('leaving smartAccountNeedsUpdate C');
   return !updateStatus.has7579Module || !updateStatus.hasSmartSessionsValidator || !updateStatus.hasOwnableValidator;
 };
 
