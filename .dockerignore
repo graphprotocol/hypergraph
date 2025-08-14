@@ -29,14 +29,6 @@
 !apps/server/prisma
 
 # Workspace package dependencies.
-!packages/hypergraph/package.json
-!packages/hypergraph/src
-!packages/hypergraph/tsconfig.json
-!packages/hypergraph/tsconfig.src.json
-!packages/hypergraph/tsconfig.build.json
+!packages/hypergraph
 
-!packages/hypergraph-react/package.json
-!packages/hypergraph-react/src
-!packages/hypergraph-react/tsconfig.json
-!packages/hypergraph-react/tsconfig.src.json
-!packages/hypergraph-react/tsconfig.build.json
+!packages/hypergraph-react
