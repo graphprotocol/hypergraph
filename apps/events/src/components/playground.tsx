@@ -18,9 +18,7 @@ export const Playground = ({ spaceId }: { spaceId: string }) => {
       },
     },
     // filter: {
-    //   name: {
-    //     startsWith: 'test',
-    //   },
+    //   or: [{ name: { startsWith: 'test' } }, { name: { startsWith: 'ETH' } }],
     // },
     first: 100,
     space: spaceId,
