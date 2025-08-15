@@ -88,8 +88,6 @@ function Login() {
             transport: custom(privyProvider),
           });
 
-          await new Promise((resolve) => setTimeout(resolve, 500)); // trying to slow down since Privy seems to have a race condition
-
           await hypergraphLogin(walletClient, embeddedWallet);
 
           const redirect = localStorage.getItem('geo-connect-authenticate-redirect');
