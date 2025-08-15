@@ -1,5 +1,13 @@
 # connect
 
+## 0.2.6
+### Patch Changes
+
+- Updated dependencies [8ab0100]
+- Updated dependencies [c476388]
+  - @graphprotocol/hypergraph@0.6.1
+  - @graphprotocol/hypergraph-react@0.6.1
+
 ## 0.2.5
 ### Patch Changes
 

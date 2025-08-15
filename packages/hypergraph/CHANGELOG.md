@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.6.1
+### Patch Changes
+
+- 8ab0100: fixes loading the initial schema in typesync
+
 ## 0.6.0
 ### Minor Changes
 
