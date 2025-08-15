@@ -962,11 +962,11 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               await createAccountInbox(data);
               // Broadcast the inbox to other clients from the same account
               broadcastAccountInbox({ inbox: data });
+              console.log('--- Broadcasted create-account-inbox');
             } catch (error) {
               console.error('--- Error creating account inbox:', error);
               return;
             }
-            console.log('--- Sent create-account-inbox response');
             break;
           }
           case 'get-latest-space-inbox-messages': {
@@ -1053,6 +1053,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
                 clock: update.clock,
                 spaceId: data.spaceId,
               };
+              console.log('--- Sent create-update response');
               webSocket.send(Messages.serialize(outgoingMessage));
 
               broadcastUpdates({
@@ -1074,7 +1075,6 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             } catch (err) {
               console.error('--- Error creating update:', err);
             }
-            console.log('--- Sent create-update response');
             break;
           }
           default:
