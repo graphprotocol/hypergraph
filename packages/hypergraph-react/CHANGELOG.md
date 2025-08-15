@@ -3,7 +3,7 @@
 ## 0.6.1
 ### Patch Changes
 
-- c476388: fix type for useQuery filter option to allwo for or/not operators
+- c476388: fix type for useQuery filter option to allow for or/not operators
 - Updated dependencies [8ab0100]
   - @graphprotocol/hypergraph@0.6.1
 
