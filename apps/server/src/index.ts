@@ -797,6 +797,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
 
   console.log('Connection established', accountAddress);
   webSocket.on('message', async (message) => {
+    console.log('Received websocket message');
     try {
       const rawData = Messages.deserialize(message.toString());
       const result = decodeRequestMessage(rawData);
@@ -804,6 +805,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
         const data = result.right;
         switch (data.type) {
           case 'subscribe-space': {
+            console.log('--- Received subscribe-space message');
             const space = await getSpace({ accountAddress, spaceId: data.id, appIdentityAddress });
             const outgoingMessage: Messages.ResponseSpace = {
               ...space,
@@ -811,24 +813,30 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             };
             webSocket.subscribedSpaces.add(data.id);
             webSocket.send(Messages.serialize(outgoingMessage));
+            console.log('--- Sent subscribe-space response');
             break;
           }
           case 'list-spaces': {
+            console.log('--- Received list-spaces message');
             const spaces = await listSpacesByAppIdentity({ appIdentityAddress });
             const outgoingMessage: Messages.ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
             webSocket.send(Messages.serialize(outgoingMessage));
+            console.log('--- Sent list-spaces response');
             break;
           }
           case 'list-invitations': {
+            console.log('--- Received list-invitations message');
             const invitations = await listInvitations({ accountAddress });
             const outgoingMessage: Messages.ResponseListInvitations = {
               type: 'list-invitations',
               invitations: invitations,
             };
             webSocket.send(Messages.serialize(outgoingMessage));
+            console.log('--- Sent list-invitations response');
             break;
           }
           case 'create-space-event': {
+            console.log('--- Received create-space-event message');
             const getVerifiedIdentity = (accountAddressToFetch: string, publicKey: string) => {
               if (accountAddressToFetch !== accountAddress) {
                 return Effect.fail(new Identity.InvalidIdentityError());
@@ -867,14 +875,16 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
                 type: 'space',
               };
               webSocket.send(Messages.serialize(outgoingMessage));
+              console.log('--- Sent create-space-event response');
             } else {
-              console.log('Failed to apply create space event');
+              console.log('--- Failed to apply create space event');
               console.log(applyEventResult);
             }
             // TODO send back error
             break;
           }
           case 'create-invitation-event': {
+            console.log('--- Received create-invitation-event message');
             await applySpaceEvent({
               accountAddress,
               spaceId: data.spaceId,
@@ -887,6 +897,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               type: 'space',
             };
             webSocket.send(Messages.serialize(outgoingMessage));
+            console.log('--- Sent create-invitation-event response');
             for (const client of webSocketServer.clients as Set<CustomWebSocket>) {
               if (
                 client.readyState === WebSocket.OPEN &&
@@ -906,6 +917,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
             break;
           }
           case 'accept-invitation-event': {
+            console.log('--- Received accept-invitation-event message');
             await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
             const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId, appIdentityAddress });
             const outgoingMessage: Messages.ResponseSpace = {
@@ -913,10 +925,12 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               type: 'space',
             };
             webSocket.send(Messages.serialize(outgoingMessage));
+            console.log('--- Sent accept-invitation-event response');
             broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
             break;
           }
           case 'create-space-inbox-event': {
+            console.log('--- Received create-space-inbox-event message');
             await applySpaceEvent({ accountAddress, spaceId: data.spaceId, event: data.event, keyBoxes: [] });
             const spaceWithEvents = await getSpace({ accountAddress, spaceId: data.spaceId, appIdentityAddress });
             // TODO send back confirmation instead of the entire space
@@ -925,10 +939,12 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               type: 'space',
             };
             webSocket.send(Messages.serialize(outgoingMessage));
+            console.log('--- Sent create-space-inbox-event response');
             broadcastSpaceEvents({ spaceId: data.spaceId, event: data.event, currentClient: webSocket });
             break;
           }
           case 'create-account-inbox': {
+            console.log('--- Received create-account-inbox message');
             try {
               // Check that the signature is valid for the corresponding accountAddress
               if (data.accountAddress !== accountAddress) {
@@ -947,12 +963,14 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               // Broadcast the inbox to other clients from the same account
               broadcastAccountInbox({ inbox: data });
             } catch (error) {
-              console.error('Error creating account inbox:', error);
+              console.error('--- Error creating account inbox:', error);
               return;
             }
+            console.log('--- Sent create-account-inbox response');
             break;
           }
           case 'get-latest-space-inbox-messages': {
+            console.log('--- Received get-latest-space-inbox-messages message');
             try {
               // Check that the user has access to this space
               await getSpace({ accountAddress, spaceId: data.spaceId, appIdentityAddress });
@@ -968,12 +986,14 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               };
               webSocket.send(Messages.serialize(outgoingMessage));
             } catch (error) {
-              console.error('Error getting latest space inbox messages:', error);
+              console.error('--- Error getting latest space inbox messages:', error);
               return;
             }
+            console.log('--- Sent get-latest-space-inbox-messages response');
             break;
           }
           case 'get-latest-account-inbox-messages': {
+            console.log('--- Received get-latest-account-inbox-messages message');
             try {
               // Check that the user has access to this inbox
               await getAccountInbox({ accountAddress, inboxId: data.inboxId });
@@ -989,21 +1009,25 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
               };
               webSocket.send(Messages.serialize(outgoingMessage));
             } catch (error) {
-              console.error('Error getting latest account inbox messages:', error);
+              console.error('--- Error getting latest account inbox messages:', error);
               return;
             }
+            console.log('--- Sent get-latest-account-inbox-messages response');
             break;
           }
           case 'get-account-inboxes': {
+            console.log('--- Received get-account-inboxes message');
             const inboxes = await listAccountInboxes({ accountAddress });
             const outgoingMessage: Messages.ResponseAccountInboxes = {
               type: 'account-inboxes',
               inboxes,
             };
             webSocket.send(Messages.serialize(outgoingMessage));
+            console.log('--- Sent get-account-inboxes response');
             break;
           }
           case 'create-update': {
+            console.log('--- Received create-update message');
             try {
               // Check that the update was signed by a valid identity
               // belonging to this accountAddress
@@ -1048,8 +1072,9 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
                 currentClient: webSocket,
               });
             } catch (err) {
-              console.error('Error creating update:', err);
+              console.error('--- Error creating update:', err);
             }
+            console.log('--- Sent create-update response');
             break;
           }
           default:
@@ -1058,7 +1083,7 @@ webSocketServer.on('connection', async (webSocket: CustomWebSocket, request: Req
         }
       }
     } catch (error) {
-      console.error('Error processing message:', error);
+      console.error('--- Error processing message:', error);
     }
   });
   webSocket.on('close', () => {
