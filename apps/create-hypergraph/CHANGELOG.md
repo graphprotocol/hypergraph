@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.5.1
+### Patch Changes
+
+- 4d0f65f: bump dependencies
+
 ## 0.5.0
 ### Minor Changes
 
