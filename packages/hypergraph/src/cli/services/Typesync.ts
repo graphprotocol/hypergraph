@@ -185,13 +185,18 @@ export class TypesyncSchemaStreamBuilder extends Effect.Service<TypesyncSchemaSt
             yield* kv.set(MAPPING_FILE_PATH_STORAGE_KEY, mappingFilePath.value);
           }
 
-          return currentSchemaStream(schemaFilePath, mappingFilePath).pipe(
-            Stream.concat(watchSchemaStream(schemaFilePath, mappingFilePath)),
-            Stream.map((stream) => {
-              const jsonData = JSON.stringify(stream);
-              const sseData = `data: ${jsonData}\n\n`;
-              return encoder.encode(sseData);
-            }),
+          return Stream.concat(
+            // This is a workaround because the browser doesn't send a message until the second message is sent.
+            // We are sending an empty message, because then the actual first message will be the real second message and the browsers receives it.
+            Stream.succeed(encoder.encode('data: {"types":[]}\n\n')),
+            currentSchemaStream(schemaFilePath, mappingFilePath).pipe(
+              Stream.concat(watchSchemaStream(schemaFilePath, mappingFilePath)),
+              Stream.map((stream) => {
+                const jsonData = JSON.stringify(stream);
+                const sseData = `data: ${jsonData}\n\n`;
+                return encoder.encode(sseData);
+              }),
+            ),
           );
         });
 
