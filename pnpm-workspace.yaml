@@ -2,7 +2,6 @@ packages:
   - apps/*
   - apps/create-hypergraph/template-*
   - packages/*
-  - packages/*/*
   - docs
 
 onlyBuiltDependencies:
