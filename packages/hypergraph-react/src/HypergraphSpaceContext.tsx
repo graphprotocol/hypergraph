@@ -134,7 +134,7 @@ export function useHardDeleteEntity(options?: { space?: string }) {
 type QueryParams<S extends Entity.AnyNoContext> = {
   space?: string | undefined;
   enabled: boolean;
-  filter?: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined;
+  filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
 };
 

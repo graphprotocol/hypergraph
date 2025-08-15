@@ -6,7 +6,6 @@ export const mapping: Mapping = {
     typeIds: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
     properties: {
       name: Id('c9c79675-850a-42c5-bbbd-9e5c55d3f4e7'),
-      created: Id('f8df1caf-14b4-4c1e-85fb-4e97f7d7070a'),
     },
   },
   Todo: {
@@ -54,8 +53,6 @@ export const mapping: Mapping = {
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      createdAt: Id('e2e6906b-d2b6-48d2-8aa2-54e8b29f6933'),
-      updatedAt: Id('2e877fe0-a504-4ea0-b43c-210d011db434'),
     },
     relations: {
       sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
