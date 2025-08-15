@@ -8,6 +8,8 @@ Spaces are owned by a single person or a group of people and not by the app. Thi
 
 Public spaces are spaces that are open to the public. They are visible to anyone who knows the space ID.
 
+Public spaces can be found at [Geo Browser](https://www.geobrowser.io/root), where the space ID is in the address bar. 
+
 ### Indexer API
 
 Indexer API that indexes all the public spaces and the content in it!
