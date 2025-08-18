@@ -1,5 +1,5 @@
 {
-  "extends": "../../../tsconfig.base.json",
+  "extends": "../../tsconfig.base.json",
   "include": ["vite.config.ts", "vitest.config.ts"],
   "compilerOptions": {
     "target": "ES2022",

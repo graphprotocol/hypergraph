@@ -141,7 +141,7 @@ const TypesyncStudioFileRouter = Effect.gen(function* () {
     // npm published package (when this file is in node_modules/@graphprotocol/hypergraph/dist/cli/subcommands/)
     path.resolve(__dirname, '..', '..', 'typesync-studio', 'dist'),
     // Development mode (when this file is in packages/hypergraph/src/cli/subcommands/)
-    path.resolve(__dirname, '..', '..', '..', 'typesync-studio', 'dist'),
+    path.resolve(__dirname, '..', '..', '..', '..', 'typesync-studio', 'dist'),
   ];
 
   const findTypesyncStudioDist = Effect.fnUntraced(function* () {

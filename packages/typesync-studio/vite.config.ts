@@ -22,8 +22,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@graphprotocol/hypergraph': resolve(__dirname, '../src'),
-      '@graphprotocol/hypergraph-react': resolve(__dirname, '../../hypergraph-react/src'),
+      '@graphprotocol/hypergraph': resolve(__dirname, '../hypergraph/src'),
+      '@graphprotocol/hypergraph-react': resolve(__dirname, '../hypergraph-react/src'),
     },
   },
   optimizeDeps: {
