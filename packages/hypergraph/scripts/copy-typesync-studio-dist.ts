@@ -6,8 +6,8 @@ const program = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
 
-  const src = path.resolve('./', 'typesync-studio', 'dist');
-  const dest = path.resolve('./', 'dist', 'typesync-studio', 'dist');
+  const src = path.resolve('../', 'typesync-studio', 'dist');
+  const dest = path.resolve('../', 'dist', 'typesync-studio', 'dist');
 
   yield* fs
     .makeDirectory(dest, { recursive: true })

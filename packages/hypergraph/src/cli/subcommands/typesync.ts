@@ -1,5 +1,3 @@
-import { createServer } from 'node:http';
-import { fileURLToPath } from 'node:url';
 import { Command, Options } from '@effect/cli';
 import {
   FileSystem,
@@ -18,6 +16,8 @@ import {
 import { NodeHttpServer } from '@effect/platform-node';
 import { AnsiDoc } from '@effect/printer-ansi';
 import { Cause, Data, Effect, Layer, Option, Schema, Struct } from 'effect';
+import { createServer } from 'node:http';
+import { fileURLToPath } from 'node:url';
 import open, { type AppName, apps } from 'open';
 import * as Model from '../services/Model.js';
 import * as Typesync from '../services/Typesync.js';
@@ -141,7 +141,7 @@ const TypesyncStudioFileRouter = Effect.gen(function* () {
     // npm published package (when this file is in node_modules/@graphprotocol/hypergraph/dist/cli/subcommands/)
     path.resolve(__dirname, '..', '..', 'typesync-studio', 'dist'),
     // Development mode (when this file is in packages/hypergraph/src/cli/subcommands/)
-    path.resolve(__dirname, '..', '..', '..', 'typesync-studio', 'dist'),
+    path.resolve(__dirname, '..', '..', '..', '..', 'typesync-studio', 'dist'),
   ];
 
   const findTypesyncStudioDist = Effect.fnUntraced(function* () {
