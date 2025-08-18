@@ -16,7 +16,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/graphprotocol/hypergraph.git",
-    "directory": "apps/create-hypergraph"
+    "directory": "packages/create-hypergraph"
   },
   "publishConfig": {
     "access": "public",
@@ -52,7 +52,7 @@
   "bugs": {
     "url": "https://github.com/graphprotocol/hypergraph/issues"
   },
-  "homepage": "https://github.com/graphprotocol/hypergraph/tree/main/apps/create-hypergraph-app#readme",
+  "homepage": "https://github.com/graphprotocol/hypergraph/tree/main/packages/create-hypergraph-app#readme",
   "devDependencies": {
     "@effect/cli": "^0.69.0",
     "@effect/language-service": "^0.34.0",

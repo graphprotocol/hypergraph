@@ -32,7 +32,7 @@ pnpm prisma migrate dev # this will also generate the Prisma client
 To develop the create-hypergraph, run:
 
 ```sh
-cd apps/create-hypergraph
+cd packages/create-hypergraph
 pnpm run dev
 ```
 

@@ -7,6 +7,6 @@
     { "path": "apps/server" },
     { "path": "apps/connect" },
     { "path": "apps/events" },
-    { "path": "apps/create-hypergraph" }
+    { "path": "packages/create-hypergraph" }
   ]
 }
