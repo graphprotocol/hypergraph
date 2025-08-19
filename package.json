@@ -9,7 +9,7 @@
     "test": "vitest",
     "lint": "biome check",
     "lint:fix": "biome check --write --unsafe",
-    "check": "tsc --noEmit",
+    "check": "tsc --build --noEmit",
     "db:migrate:dev": "pnpm --filter server db:migrate:dev",
     "db:studio": "pnpm --filter server db:studio",
     "graph": "pnpm --filter server-logic-ts graph"
