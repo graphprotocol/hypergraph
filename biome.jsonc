@@ -16,7 +16,7 @@
       "!**/tsconfig.json",
       "!**/tsconfig.*.json",
       "!**/variant-schema.ts",
-      "!**/packages/create-hypergraph/template-*/**",
+      "!**/apps/template-*/**",
       "!**/*.css",
       "!**/packages/typesync-studio/src/generated/**/*.ts"
     ]
