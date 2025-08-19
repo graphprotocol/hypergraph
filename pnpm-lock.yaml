@@ -355,87 +355,14 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  docs:
-    dependencies:
-      '@docusaurus/core':
-        specifier: 3.8.1
-        version: 3.8.1(@mdx-js/react@3.1.0(@types/react@19.1.9)(react@19.1.1))(acorn@8.15.0)(bufferutil@4.0.9)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@docusaurus/preset-classic':
-        specifier: 3.8.1
-        version: 3.8.1(@algolia/client-search@5.35.0)(@mdx-js/react@3.1.0(@types/react@19.1.9)(react@19.1.1))(@types/react@19.1.9)(acorn@8.15.0)(bufferutil@4.0.9)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(search-insights@2.17.3)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@mdx-js/react':
-        specifier: ^3.0.0
-        version: 3.1.0(@types/react@19.1.9)(react@19.1.1)
-      clsx:
-        specifier: ^2.0.0
-        version: 2.1.1
-      prism-react-renderer:
-        specifier: ^2.3.0
-        version: 2.4.1(react@19.1.1)
-      react:
-        specifier: ^19.1.1
-        version: 19.1.1
-      react-dom:
-        specifier: ^19.1.1
-        version: 19.1.1(react@19.1.1)
-    devDependencies:
-      '@docusaurus/module-type-aliases':
-        specifier: 3.8.1
-        version: 3.8.1(acorn@8.15.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@docusaurus/types':
-        specifier: 3.8.1
-        version: 3.8.1(acorn@8.15.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      docusaurus-plugin-llms:
-        specifier: ^0.1.5
-        version: 0.1.5(@docusaurus/core@3.8.1(@mdx-js/react@3.1.0(@types/react@19.1.9)(react@19.1.1))(acorn@8.15.0)(bufferutil@4.0.9)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10))
-
-  packages/create-hypergraph:
-    devDependencies:
-      '@effect/cli':
-        specifier: ^0.69.0
-        version: 0.69.0(@effect/platform@0.90.0(effect@3.17.6))(@effect/printer-ansi@0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6))(@effect/printer@0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6))(effect@3.17.6)
-      '@effect/language-service':
-        specifier: ^0.34.0
-        version: 0.34.0
-      '@effect/platform':
-        specifier: ^0.90.0
-        version: 0.90.0(effect@3.17.6)
-      '@effect/platform-node':
-        specifier: ^0.94.1
-        version: 0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
-      '@effect/printer-ansi':
-        specifier: ^0.45.0
-        version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6)
-      '@effect/vitest':
-        specifier: ^0.25.0
-        version: 0.25.0(effect@3.17.6)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.2.0)(jiti@2.5.1)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.7.0))
-      '@types/node':
-        specifier: ^24.2.0
-        version: 24.2.0
-      effect:
-        specifier: ^3.17.6
-        version: 3.17.6
-      execa:
-        specifier: ^9.6.0
-        version: 9.6.0
-      tsdown:
-        specifier: ^0.13.3
-        version: 0.13.3(typescript@5.8.3)
-      tsx:
-        specifier: ^4.20.3
-        version: 4.20.3
-    publishDirectory: dist
-
-  packages/create-hypergraph/dist: {}
-
-  packages/create-hypergraph/template-nextjs:
+  apps/template-nextjs:
     dependencies:
       '@graphprotocol/hypergraph':
         specifier: workspace:*
-        version: link:../../hypergraph/publish
+        version: link:../../packages/hypergraph/publish
       '@graphprotocol/hypergraph-react':
         specifier: workspace:*
-        version: link:../../hypergraph-react/publish
+        version: link:../../packages/hypergraph-react/publish
       '@radix-ui/react-navigation-menu':
         specifier: ^1.2.13
         version: 1.2.13(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -504,14 +431,14 @@ importers:
         specifier: ^5
         version: 5.8.3
 
-  packages/create-hypergraph/template-vite-react:
+  apps/template-vite-react:
     dependencies:
       '@graphprotocol/hypergraph':
         specifier: workspace:*
-        version: link:../../hypergraph/publish
+        version: link:../../packages/hypergraph/publish
       '@graphprotocol/hypergraph-react':
         specifier: workspace:*
-        version: link:../../hypergraph-react/publish
+        version: link:../../packages/hypergraph-react/publish
       '@radix-ui/react-navigation-menu':
         specifier: ^1.2.13
         version: 1.2.13(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -600,6 +527,77 @@ importers:
       typescript-eslint:
         specifier: ^8.38.0
         version: 8.38.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3)
+
+  docs:
+    dependencies:
+      '@docusaurus/core':
+        specifier: 3.8.1
+        version: 3.8.1(@mdx-js/react@3.1.0(@types/react@19.1.9)(react@19.1.1))(acorn@8.15.0)(bufferutil@4.0.9)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@docusaurus/preset-classic':
+        specifier: 3.8.1
+        version: 3.8.1(@algolia/client-search@5.35.0)(@mdx-js/react@3.1.0(@types/react@19.1.9)(react@19.1.1))(@types/react@19.1.9)(acorn@8.15.0)(bufferutil@4.0.9)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(search-insights@2.17.3)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@mdx-js/react':
+        specifier: ^3.0.0
+        version: 3.1.0(@types/react@19.1.9)(react@19.1.1)
+      clsx:
+        specifier: ^2.0.0
+        version: 2.1.1
+      prism-react-renderer:
+        specifier: ^2.3.0
+        version: 2.4.1(react@19.1.1)
+      react:
+        specifier: ^19.1.1
+        version: 19.1.1
+      react-dom:
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
+    devDependencies:
+      '@docusaurus/module-type-aliases':
+        specifier: 3.8.1
+        version: 3.8.1(acorn@8.15.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@docusaurus/types':
+        specifier: 3.8.1
+        version: 3.8.1(acorn@8.15.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      docusaurus-plugin-llms:
+        specifier: ^0.1.5
+        version: 0.1.5(@docusaurus/core@3.8.1(@mdx-js/react@3.1.0(@types/react@19.1.9)(react@19.1.1))(acorn@8.15.0)(bufferutil@4.0.9)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10))
+
+  packages/create-hypergraph:
+    devDependencies:
+      '@effect/cli':
+        specifier: ^0.69.0
+        version: 0.69.0(@effect/platform@0.90.0(effect@3.17.6))(@effect/printer-ansi@0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6))(@effect/printer@0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6))(effect@3.17.6)
+      '@effect/language-service':
+        specifier: ^0.34.0
+        version: 0.34.0
+      '@effect/platform':
+        specifier: ^0.90.0
+        version: 0.90.0(effect@3.17.6)
+      '@effect/platform-node':
+        specifier: ^0.94.1
+        version: 0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
+      '@effect/printer-ansi':
+        specifier: ^0.45.0
+        version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6)
+      '@effect/vitest':
+        specifier: ^0.25.0
+        version: 0.25.0(effect@3.17.6)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.2.0)(jiti@2.5.1)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.7.0))
+      '@types/node':
+        specifier: ^24.2.0
+        version: 24.2.0
+      effect:
+        specifier: ^3.17.6
+        version: 3.17.6
+      execa:
+        specifier: ^9.6.0
+        version: 9.6.0
+      tsdown:
+        specifier: ^0.13.3
+        version: 0.13.3(typescript@5.8.3)
+      tsx:
+        specifier: ^4.20.3
+        version: 4.20.3
+    publishDirectory: dist
 
   packages/hypergraph:
     dependencies:
@@ -754,120 +752,6 @@ importers:
         specifier: ^19.1.1
         version: 19.1.1
     publishDirectory: publish
-
-  packages/hypergraph-react/publish:
-    dependencies:
-      '@automerge/automerge':
-        specifier: ^3.1.1
-        version: 3.1.1
-      '@automerge/automerge-repo':
-        specifier: ^2.2.0
-        version: 2.2.0
-      '@automerge/automerge-repo-react-hooks':
-        specifier: ^2.2.0
-        version: 2.2.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@graphprotocol/grc-20':
-        specifier: ^0.24.1
-        version: 0.24.1(bufferutil@4.0.9)(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@graphprotocol/hypergraph':
-        specifier: '*'
-        version: 0.3.0(@effect/platform@0.90.0(effect@3.17.6))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(react@19.1.1)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@noble/hashes':
-        specifier: ^1.8.0
-        version: 1.8.0
-      '@tanstack/react-query':
-        specifier: ^5.75.5
-        version: 5.84.1(react@19.1.1)
-      effect:
-        specifier: ^3.17.6
-        version: 3.17.6
-      graphql-request:
-        specifier: ^7.1.2
-        version: 7.2.0(graphql@16.11.0)
-      react:
-        specifier: ^18.0.0 || ^19.0.0
-        version: 19.1.1
-      siwe:
-        specifier: ^3.0.0
-        version: 3.0.0(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
-      viem:
-        specifier: ^2.29.0
-        version: 2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-
-  packages/hypergraph/publish:
-    dependencies:
-      '@automerge/automerge':
-        specifier: ^3.1.1
-        version: 3.1.1
-      '@automerge/automerge-repo':
-        specifier: ^2.2.0
-        version: 2.2.0
-      '@effect/cli':
-        specifier: ^0.69.0
-        version: 0.69.0(@effect/platform@0.90.0(effect@3.17.6))(@effect/printer-ansi@0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6))(@effect/printer@0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6))(effect@3.17.6)
-      '@effect/experimental':
-        specifier: ^0.54.3
-        version: 0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@effect/platform':
-        specifier: ^0.90.0
-        version: 0.90.0(effect@3.17.6)
-      '@effect/platform-node':
-        specifier: ^0.94.1
-        version: 0.94.1(@effect/cluster@0.37.2(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/workflow@0.1.2(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(@effect/rpc@0.61.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/sql@0.44.0(@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6))(bufferutil@4.0.9)(effect@3.17.6)(utf-8-validate@5.0.10)
-      '@effect/printer':
-        specifier: ^0.45.0
-        version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6)
-      '@effect/printer-ansi':
-        specifier: ^0.45.0
-        version: 0.45.0(@effect/typeclass@0.31.10(effect@3.17.6))(effect@3.17.6)
-      '@graphprotocol/grc-20':
-        specifier: ^0.24.1
-        version: 0.24.1(bufferutil@4.0.9)(ox@0.6.9(typescript@5.8.3)(zod@3.25.76))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@noble/ciphers':
-        specifier: ^1.3.0
-        version: 1.3.0
-      '@noble/curves':
-        specifier: ^1.9.0
-        version: 1.9.2
-      '@noble/hashes':
-        specifier: ^1.8.0
-        version: 1.8.0
-      '@noble/secp256k1':
-        specifier: ^2.2.3
-        version: 2.2.3
-      '@rhinestone/module-sdk':
-        specifier: ^0.2.8
-        version: 0.2.8(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))
-      '@serenity-kit/noble-sodium':
-        specifier: ^0.2.1
-        version: 0.2.1
-      '@xstate/store':
-        specifier: ^3.5.1
-        version: 3.5.1(react@19.1.1)(solid-js@1.9.5)
-      bs58check:
-        specifier: ^4.0.0
-        version: 4.0.0
-      effect:
-        specifier: ^3.17.6
-        version: 3.17.6
-      open:
-        specifier: ^10.2.0
-        version: 10.2.0
-      permissionless:
-        specifier: ^0.2.47
-        version: 0.2.52(ox@0.6.9(typescript@5.8.3)(zod@3.25.76))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))
-      siwe:
-        specifier: ^3.0.0
-        version: 3.0.0(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
-      viem:
-        specifier: ^2.30.6
-        version: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
 
   packages/typesync-studio:
     dependencies:
@@ -1096,9 +980,6 @@ packages:
 
   '@automerge/automerge-repo@2.2.0':
     resolution: {integrity: sha512-/4cAxnUDPykqdSMJJiJvPlR2VY0JHJnvEoM7fO8qVXwQors34S0VkJEScXRJZExcVhWGhFTwCTWvUbb6hhWQIQ==}
-
-  '@automerge/automerge@2.2.9':
-    resolution: {integrity: sha512-6HM52Ops79hAQBWMg/t0MNfGOdEiXyenQjO9F1hKZq0RWDsMLpPa1SzRy/C4/4UyX67sTHuA5CwBpH34SpfZlA==}
 
   '@automerge/automerge@3.1.1':
     resolution: {integrity: sha512-x7tZiMBLk4/SKYimVEVl1/wPntT9buGvLOWCey9ZcH8JUsB0dgm49C0S7Ojzgvflcs2hc/YjiXRPcFeFkinIgw==}
@@ -2510,19 +2391,6 @@ packages:
       '@effect/workflow': ^0.1.2
       effect: ^3.16.3
 
-  '@effect/experimental@0.51.1':
-    resolution: {integrity: sha512-R+j+oI1nSigKPxDxcfDK60dASFkDQRMOfmBZCLRY7lDtK4xBeCrUK//fHX5QhO/dOpyqpTsoQsCzNPRHo+7NrQ==}
-    peerDependencies:
-      '@effect/platform': ^0.87.1
-      effect: ^3.16.10
-      ioredis: ^5
-      lmdb: ^3
-    peerDependenciesMeta:
-      ioredis:
-        optional: true
-      lmdb:
-        optional: true
-
   '@effect/experimental@0.54.3':
     resolution: {integrity: sha512-FR+4KfGxte/BwQyVvbq8boWSWyN5p69tdtUQX9Owf/JfnLmZY42d+L3nnn1Gg8EhTPiAk+hMnODWWHnV03JmbQ==}
     peerDependencies:
@@ -2915,12 +2783,6 @@ packages:
   '@ethersproject/hash@5.8.0':
     resolution: {integrity: sha512-ac/lBcTbEWW/VGJij0CNSw/wPcw9bSRgCB0AIBz8CvED/jfvDoV9hsIIiWfvWmFEi8RcXtlNwp2jv6ozWOsooA==}
 
-  '@ethersproject/hdnode@5.8.0':
-    resolution: {integrity: sha512-4bK1VF6E83/3/Im0ERnnUeWOY3P1BZml4ZD3wcH8Ys0/d1h1xaFt6Zc+Dh9zXf9TapGro0T4wvO71UTCp3/uoA==}
-
-  '@ethersproject/json-wallets@5.8.0':
-    resolution: {integrity: sha512-HxblNck8FVUtNxS3VTEYJAcwiKYsBIF77W15HufqlBF9gGfhmYOJtYZp8fSDZtn9y5EaXTE87zDwzxRoTFk11w==}
-
   '@ethersproject/keccak256@5.8.0':
     resolution: {integrity: sha512-A1pkKLZSz8pDaQ1ftutZoaN46I6+jvuqugx5KYNeQOPqq+JZ0Txm7dlWesCHB5cndJSu5vP2VKptKf7cksERng==}
 
@@ -2929,9 +2791,6 @@ packages:
 
   '@ethersproject/networks@5.8.0':
     resolution: {integrity: sha512-egPJh3aPVAzbHwq8DD7Po53J4OUSsA1MjQp8Vf/OZPav5rlmWUaFLiq8cvQiGK0Z5K6LYzm29+VA/p4RL1FzNg==}
-
-  '@ethersproject/pbkdf2@5.8.0':
-    resolution: {integrity: sha512-wuHiv97BrzCmfEaPbUFpMjlVg/IDkZThp9Ri88BpjRleg4iePJaj2SW8AIyE8cXn5V1tuAaMj6lzvsGJkGWskg==}
 
   '@ethersproject/properties@5.8.0':
     resolution: {integrity: sha512-PYuiEoQ+FMaZZNGrStmN7+lWjlsoufGIHdww7454FIaGdbe/p5rnaCXTr5MtBYl3NkeoVhHZuyzChPeGeKIpQw==}
@@ -2951,9 +2810,6 @@ packages:
   '@ethersproject/signing-key@5.8.0':
     resolution: {integrity: sha512-LrPW2ZxoigFi6U6aVkFN/fa9Yx/+4AtIUe4/HACTvKJdhm0eeb107EVCIQcrLZkxaSIgc/eCrX8Q1GtbH+9n3w==}
 
-  '@ethersproject/solidity@5.8.0':
-    resolution: {integrity: sha512-4CxFeCgmIWamOHwYN9d+QWGxye9qQLilpgTU0XhYs1OahkclF+ewO+3V1U0mvpiuQxm5EHHmv8f7ClVII8EHsA==}
-
   '@ethersproject/strings@5.8.0':
     resolution: {integrity: sha512-qWEAk0MAvl0LszjdfnZ2uC8xbR2wdv4cDabyHiBh3Cldq/T8dPH3V4BbBsAYJUeonwD+8afVXld274Ls+Y1xXg==}
 
@@ -2963,14 +2819,8 @@ packages:
   '@ethersproject/units@5.8.0':
     resolution: {integrity: sha512-lxq0CAnc5kMGIiWW4Mr041VT8IhNM+Pn5T3haO74XZWFulk7wH1Gv64HqE96hT4a7iiNMdOCFEBgaxWuk8ETKQ==}
 
-  '@ethersproject/wallet@5.8.0':
-    resolution: {integrity: sha512-G+jnzmgg6UxurVKRKvw27h0kvG75YKXZKdlLYmAHeF32TGUzHkOFd7Zn6QHOTYRFWnfjtSSFjBowKo7vfrXzPA==}
-
   '@ethersproject/web@5.8.0':
     resolution: {integrity: sha512-j7+Ksi/9KfGviws6Qtf9Q7KCqRhpwrYKQPs+JBA/rKVFF/yaWLHJEH3zfVP2plVu+eys0d2DlFmhoQJayFewcw==}
-
-  '@ethersproject/wordlists@5.8.0':
-    resolution: {integrity: sha512-2df9bbXicZws2Sb5S6ET493uJ0Z84Fjr3pC4tu/qlnZERibZCeUVuqdtt+7Tv9xxhUxHoIekIA7avrKUWHrezg==}
 
   '@fastify/busboy@3.1.1':
     resolution: {integrity: sha512-5DGmA8FTdB2XbDeEwc/5ZXBl6UbBAyBOOLlPuBnZ/N1SwdH9Ii+cOX3tBROlDgcTXxjOYnLMVoKk9+FXAw0CJw==}
@@ -3011,14 +2861,8 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@graphprotocol/grc-20@0.21.6':
-    resolution: {integrity: sha512-xN8kejQfRdeC5LsantOD9aajwR+/JHnsK5IUEE7rMJbbHGeRTzAhWGike8k1+nIPRKooOyrocgly24KXxChcgw==}
-
   '@graphprotocol/grc-20@0.24.1':
     resolution: {integrity: sha512-oP8E4GmqSIM3hYzRTIhPtUS0Szg1wdzo1AUtLTTZazWoUycMm+K2FgfwANpN7q3CzOyuVtBeEhmdogw74q/0jw==}
-
-  '@graphprotocol/hypergraph@0.3.0':
-    resolution: {integrity: sha512-nLM5+pg5TyMJ+NdXZ3OxMcJz+JmRQ3p+Q1t/s8Ut2WDXbMFU/Fs9kWLaIgEqAB85B0/cCCn6K1M6d2NhNN2w4g==}
 
   '@graphql-codegen/add@5.0.3':
     resolution: {integrity: sha512-SxXPmramkth8XtBlAHu4H4jYcYXM/o3p01+psU+0NADQowA8jtYkK6MW5rV6T+CxkEaNZItfSmZRPgIuypcqnA==}
@@ -5409,11 +5253,6 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
-  '@tanstack/react-query@5.84.1':
-    resolution: {integrity: sha512-zo7EUygcWJMQfFNWDSG7CBhy8irje/XY0RDVKKV4IQJAysb+ZJkkJPcnQi+KboyGUgT+SQebRFoTqLuTtfoDLw==}
-    peerDependencies:
-      react: ^18 || ^19
-
   '@tanstack/react-query@5.85.0':
     resolution: {integrity: sha512-t1HMfToVMGfwEJRya6GG7gbK0luZJd+9IySFNePL1BforU1F3LqQ3tBC2Rpvr88bOrlU6PXyMLgJD0Yzn4ztUw==}
     peerDependencies:
@@ -6306,9 +6145,6 @@ packages:
   address@1.2.2:
     resolution: {integrity: sha512-4B/qKCfeE/ODUaAUpSwfzazo5x29WD4r3vXiWsB7I2mSDAihwEqKO+g8GELZUQSSAo5e1XTYh3ZVfLyxBc12nA==}
     engines: {node: '>= 10.0.0'}
-
-  aes-js@3.0.0:
-    resolution: {integrity: sha512-H7wUZRn8WpTq9jocdxQ2c8x2sKo9ZVmzfRE13GiNJXfp7NcKYEdvl3vspKjXox6RIG2VtaRe4JFvxG4rqp2Zuw==}
 
   aes-js@4.0.0-beta.5:
     resolution: {integrity: sha512-G965FqalsNyrPqgEGON7nIx1e/OVENSgiEIzyC63haUMuvNnwIgIjMs52hlTCKhkBny7A2ORNlfY9Zu+jmGk1Q==}
@@ -8053,9 +7889,6 @@ packages:
 
   ethereum-cryptography@2.2.1:
     resolution: {integrity: sha512-r/W8lkHSiTLxUxW8Rf3u4HGB0xQweG2RyETjywylKZSzLWoWAijRz8WCuOtJ6wah+avllXBqZuk29HCCvhEIRg==}
-
-  ethers@5.8.0:
-    resolution: {integrity: sha512-DUq+7fHrCg1aPDFCHx6UIPb3nmt2XMpM7Y/g2gLhsl3lIBqeAfOJIl1qEvRf2uq3BiKxmh6Fh5pfp2ieyek7Kg==}
 
   ethers@6.13.5:
     resolution: {integrity: sha512-+knKNieu5EKRThQJWwqaJ10a6HE9sSehGeqWN65//wE7j47ZpFhKAnHB/JJFibwwg61I/koxaPsXbXpD/skNOQ==}
@@ -11747,9 +11580,6 @@ packages:
     resolution: {integrity: sha512-Gn/JaSk/Mt9gYubxTtSn/QCV4em9mpAPiR1rqy/Ocu19u/G9J5WWdNoUT4SiV6mFC3y6cxyFcFwdzPM3FgxGAQ==}
     engines: {node: '>= 10.13.0'}
 
-  scrypt-js@3.0.1:
-    resolution: {integrity: sha512-cdwTTnqPu0Hyvf5in5asVdZocVDTNRmR7XEcJuIzMjJeSHybHl7vpB66AzwTaIg6CLSbtjcxc8fqcySfnTkccA==}
-
   scuid@1.1.0:
     resolution: {integrity: sha512-MuCAyrGZcTLfQoH2XoBlQ8C6bzwN88XT/0slOGz0pn8+gIP85BOAfYa44ZXQUTOwRwPU0QvgU+V+OSajl/59Xg==}
 
@@ -13703,10 +13533,6 @@ snapshots:
       xstate: 5.18.1
     transitivePeerDependencies:
       - supports-color
-
-  '@automerge/automerge@2.2.9':
-    dependencies:
-      uuid: 9.0.1
 
   '@automerge/automerge@3.1.1': {}
 
@@ -15989,12 +15815,6 @@ snapshots:
       '@effect/workflow': 0.1.2(effect@3.17.6)
       effect: 3.17.6
 
-  '@effect/experimental@0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
-    dependencies:
-      '@effect/platform': 0.90.0(effect@3.17.6)
-      effect: 3.17.6
-      uuid: 11.1.0
-
   '@effect/experimental@0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
     dependencies:
       '@effect/platform': 0.90.0(effect@3.17.6)
@@ -16412,37 +16232,6 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
 
-  '@ethersproject/hdnode@5.8.0':
-    dependencies:
-      '@ethersproject/abstract-signer': 5.8.0
-      '@ethersproject/basex': 5.8.0
-      '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/pbkdf2': 5.8.0
-      '@ethersproject/properties': 5.8.0
-      '@ethersproject/sha2': 5.8.0
-      '@ethersproject/signing-key': 5.8.0
-      '@ethersproject/strings': 5.8.0
-      '@ethersproject/transactions': 5.8.0
-      '@ethersproject/wordlists': 5.8.0
-
-  '@ethersproject/json-wallets@5.8.0':
-    dependencies:
-      '@ethersproject/abstract-signer': 5.8.0
-      '@ethersproject/address': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/hdnode': 5.8.0
-      '@ethersproject/keccak256': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/pbkdf2': 5.8.0
-      '@ethersproject/properties': 5.8.0
-      '@ethersproject/random': 5.8.0
-      '@ethersproject/strings': 5.8.0
-      '@ethersproject/transactions': 5.8.0
-      aes-js: 3.0.0
-      scrypt-js: 3.0.1
-
   '@ethersproject/keccak256@5.8.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
@@ -16453,11 +16242,6 @@ snapshots:
   '@ethersproject/networks@5.8.0':
     dependencies:
       '@ethersproject/logger': 5.8.0
-
-  '@ethersproject/pbkdf2@5.8.0':
-    dependencies:
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/sha2': 5.8.0
 
   '@ethersproject/properties@5.8.0':
     dependencies:
@@ -16514,15 +16298,6 @@ snapshots:
       elliptic: 6.6.1
       hash.js: 1.1.7
 
-  '@ethersproject/solidity@5.8.0':
-    dependencies:
-      '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/keccak256': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/sha2': 5.8.0
-      '@ethersproject/strings': 5.8.0
-
   '@ethersproject/strings@5.8.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
@@ -16547,36 +16322,10 @@ snapshots:
       '@ethersproject/constants': 5.8.0
       '@ethersproject/logger': 5.8.0
 
-  '@ethersproject/wallet@5.8.0':
-    dependencies:
-      '@ethersproject/abstract-provider': 5.8.0
-      '@ethersproject/abstract-signer': 5.8.0
-      '@ethersproject/address': 5.8.0
-      '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/hash': 5.8.0
-      '@ethersproject/hdnode': 5.8.0
-      '@ethersproject/json-wallets': 5.8.0
-      '@ethersproject/keccak256': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/properties': 5.8.0
-      '@ethersproject/random': 5.8.0
-      '@ethersproject/signing-key': 5.8.0
-      '@ethersproject/transactions': 5.8.0
-      '@ethersproject/wordlists': 5.8.0
-
   '@ethersproject/web@5.8.0':
     dependencies:
       '@ethersproject/base64': 5.8.0
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/properties': 5.8.0
-      '@ethersproject/strings': 5.8.0
-
-  '@ethersproject/wordlists@5.8.0':
-    dependencies:
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/hash': 5.8.0
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
@@ -16625,27 +16374,6 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@graphprotocol/grc-20@0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
-    dependencies:
-      '@bufbuild/protobuf': 1.10.1
-      '@changesets/cli': 2.29.5
-      effect: 3.17.6
-      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      fflate: 0.8.2
-      fractional-indexing-jittered: 1.0.0
-      graphql-request: 7.2.0(graphql@16.11.0)
-      image-size: 2.0.2
-      permissionless: 0.2.52(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))
-      uuid: 11.1.0
-      viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-    transitivePeerDependencies:
-      - bufferutil
-      - graphql
-      - ox
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@graphprotocol/grc-20@0.24.1(bufferutil@4.0.9)(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
@@ -16693,40 +16421,6 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - ox
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@graphprotocol/hypergraph@0.3.0(@effect/platform@0.90.0(effect@3.17.6))(bufferutil@4.0.9)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(react@19.1.1)(solid-js@1.9.5)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
-    dependencies:
-      '@automerge/automerge': 2.2.9
-      '@automerge/automerge-repo': 2.2.0
-      '@effect/experimental': 0.51.1(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
-      '@graphprotocol/grc-20': 0.21.6(bufferutil@4.0.9)(graphql@16.11.0)(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@noble/ciphers': 1.3.0
-      '@noble/curves': 1.9.1
-      '@noble/hashes': 1.8.0
-      '@noble/secp256k1': 2.2.3
-      '@rhinestone/module-sdk': 0.2.8(viem@2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))
-      '@serenity-kit/noble-sodium': 0.2.1
-      '@xstate/store': 3.5.1(react@19.1.1)(solid-js@1.9.5)
-      bs58check: 4.0.0
-      effect: 3.17.6
-      permissionless: 0.2.47(ox@0.6.7(typescript@5.8.3)(zod@3.25.76))(viem@2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))
-      siwe: 3.0.0(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      uuid: 11.1.0
-      viem: 2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-    transitivePeerDependencies:
-      - '@effect/platform'
-      - bufferutil
-      - ethers
-      - graphql
-      - ioredis
-      - lmdb
-      - ox
-      - react
-      - solid-js
-      - supports-color
       - typescript
       - utf-8-validate
       - zod
@@ -18971,12 +18665,6 @@ snapshots:
       tslib: 2.8.1
       viem: 2.30.6(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
 
-  '@rhinestone/module-sdk@0.2.8(viem@2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))':
-    dependencies:
-      solady: 0.0.235
-      tslib: 2.8.1
-      viem: 2.33.2(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-
   '@rolldown/binding-android-arm64@1.0.0-beta.31':
     optional: true
 
@@ -19707,11 +19395,6 @@ snapshots:
   '@tanstack/react-query@5.75.5(react@19.1.1)':
     dependencies:
       '@tanstack/query-core': 5.75.5
-      react: 19.1.1
-
-  '@tanstack/react-query@5.84.1(react@19.1.1)':
-    dependencies:
-      '@tanstack/query-core': 5.83.1
       react: 19.1.1
 
   '@tanstack/react-query@5.85.0(react@19.1.1)':
@@ -21224,8 +20907,6 @@ snapshots:
   acorn@8.15.0: {}
 
   address@1.2.2: {}
-
-  aes-js@3.0.0: {}
 
   aes-js@4.0.0-beta.5: {}
 
@@ -23312,42 +22993,6 @@ snapshots:
       '@noble/hashes': 1.4.0
       '@scure/bip32': 1.4.0
       '@scure/bip39': 1.3.0
-
-  ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10):
-    dependencies:
-      '@ethersproject/abi': 5.8.0
-      '@ethersproject/abstract-provider': 5.8.0
-      '@ethersproject/abstract-signer': 5.8.0
-      '@ethersproject/address': 5.8.0
-      '@ethersproject/base64': 5.8.0
-      '@ethersproject/basex': 5.8.0
-      '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/constants': 5.8.0
-      '@ethersproject/contracts': 5.8.0
-      '@ethersproject/hash': 5.8.0
-      '@ethersproject/hdnode': 5.8.0
-      '@ethersproject/json-wallets': 5.8.0
-      '@ethersproject/keccak256': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/networks': 5.8.0
-      '@ethersproject/pbkdf2': 5.8.0
-      '@ethersproject/properties': 5.8.0
-      '@ethersproject/providers': 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@ethersproject/random': 5.8.0
-      '@ethersproject/rlp': 5.8.0
-      '@ethersproject/sha2': 5.8.0
-      '@ethersproject/signing-key': 5.8.0
-      '@ethersproject/solidity': 5.8.0
-      '@ethersproject/strings': 5.8.0
-      '@ethersproject/transactions': 5.8.0
-      '@ethersproject/units': 5.8.0
-      '@ethersproject/wallet': 5.8.0
-      '@ethersproject/web': 5.8.0
-      '@ethersproject/wordlists': 5.8.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
@@ -27756,8 +27401,6 @@ snapshots:
       ajv: 8.17.1
       ajv-formats: 2.1.1(ajv@8.17.1)
       ajv-keywords: 5.1.0(ajv@8.17.1)
-
-  scrypt-js@3.0.1: {}
 
   scuid@1.1.0: {}
 
