@@ -28,10 +28,11 @@ class CopyTemplateDirService extends Effect.Service<CopyTemplateDirService>()(
       const path = yield* Path.Path;
 
       const cwd = process.cwd();
+      const appsDir = path.join(cwd, '..', '..', 'apps');
 
       const getTemplateDirectories = () =>
         Effect.gen(function* () {
-          return yield* Stream.fromIterable(readdirSync(cwd, { withFileTypes: true })).pipe(
+          return yield* Stream.fromIterable(readdirSync(appsDir, { withFileTypes: true })).pipe(
             Stream.filter((entry) => entry.name.startsWith('template-') && entry.isDirectory()),
             Stream.map((entry) => entry.name),
             Stream.runCollect,
@@ -122,7 +123,7 @@ class CopyTemplateDirService extends Effect.Service<CopyTemplateDirService>()(
                   Effect.gen(function* () {
                     yield* Console.info('Copying template:', template, 'into dist');
 
-                    const templateDir = path.resolve(process.cwd(), template);
+                    const templateDir = path.resolve(appsDir, template);
                     const templateDirExists = yield* fs.exists(templateDir);
                     if (!templateDirExists) {
                       throw new TemplateDirDoesNotExistError({ template: templateDir });

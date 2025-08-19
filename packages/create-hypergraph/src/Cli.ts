@@ -127,7 +127,7 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
 
     const isDev = process.env.NODE_ENV === 'development' || __dirname.includes('/src/');
     const templateDir = isDev
-      ? path.resolve(__dirname, '..', framework.directory)
+      ? path.resolve(__dirname, '..', '..', '..', 'apps', framework.directory)
       : path.resolve(__dirname, framework.directory);
     const templatDirExists = yield* fs.exists(templateDir);
     if (!templatDirExists) {
