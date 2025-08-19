@@ -34,7 +34,7 @@ const sidebars = {
     { type: 'doc', id: 'filtering-query-results', label: '🔍 Filtering Query Results' },
     { type: 'doc', id: 'space-invitations', label: '🔗 Space Invitations' },
     { type: 'doc', id: 'inboxes', label: '🔍 Inboxes' },
-    // { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
+    { type: 'doc', id: 'api-reference/index', label: '📚 API Reference' },
     { type: 'doc', id: 'troubleshooting', label: '🛠️ Troubleshooting' },
     { type: 'doc', id: 'faq', label: '❓ FAQ' },
     {

@@ -1,0 +1,5 @@
+# Variable: SpaceState
+
+> `const` **SpaceState**: `Struct`\<\{ `id`: *typeof* `String$`; `inboxes`: `Record$`\<*typeof* `String$`, `Struct`\<\{ `authPolicy`: `Union`\<\[`Literal`\<\[`"anonymous"`\]\>, `Literal`\<\[`"optional_auth"`\]\>, `Literal`\<\[`"requires_auth"`\]\>\]\>; `encryptionPublicKey`: *typeof* `String$`; `inboxId`: *typeof* `String$`; `isPublic`: *typeof* `Boolean$`; `secretKey`: *typeof* `String$`; \}\>\>; `invitations`: `Record$`\<*typeof* `String$`, `Struct`\<\{ `inviteeAccountAddress`: *typeof* `String$`; \}\>\>; `lastEventHash`: *typeof* `String$`; `members`: `Record$`\<*typeof* `String$`, `Struct`\<\{ `accountAddress`: *typeof* `String$`; `role`: `Union`\<\[`Literal`\<\[`"admin"`\]\>, `Literal`\<\[`"member"`\]\>\]\>; \}\>\>; `removedMembers`: `Record$`\<*typeof* `String$`, `Struct`\<\{ `accountAddress`: *typeof* `String$`; `role`: `Union`\<\[`Literal`\<\[`"admin"`\]\>, `Literal`\<\[`"member"`\]\>\]\>; \}\>\>; \}\>
+
+Defined in: [packages/hypergraph/src/space-events/types.ts:37](https://github.com/hashirpm/hypergraph/blob/ab4ea1cdb9430798142e0d735aac9d31c2cf0ae0/packages/hypergraph/src/space-events/types.ts#L37)

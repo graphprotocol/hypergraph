@@ -91,6 +91,21 @@ const config = {
         ],
       },
     ],
+    [
+      'docusaurus-plugin-typedoc',
+      {
+        id: 'api-reference',
+        entryPoints: ['../packages/hypergraph/src/index.ts'],
+        tsconfig: '../packages/hypergraph/tsconfig.json',
+        out: 'docs/api-reference',
+        readme: 'none',
+        name: '📚 API Reference',
+        categorizeByGroup: false,
+        excludeExternals: true,
+        excludePrivate: true,
+        excludeProtected: true,
+      },
+    ],
   ],
 
   presets: [
