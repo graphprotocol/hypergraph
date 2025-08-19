@@ -10,7 +10,7 @@ type Params =
       connectSignaturePublicKey: string;
     };
 
-export type GetIdentityResult = {
+export type GetConnectIdentityResult = {
   accountAddress: string;
   ciphertext: string;
   nonce: string;
@@ -20,7 +20,7 @@ export type GetIdentityResult = {
   keyProof: string;
 };
 
-export const getConnectIdentity = async (params: Params): Promise<GetIdentityResult> => {
+export const getConnectIdentity = async (params: Params): Promise<GetConnectIdentityResult> => {
   if (!params.accountAddress && !params.connectSignaturePublicKey) {
     throw new Error('Either accountAddress or connectSignaturePublicKey must be provided');
   }

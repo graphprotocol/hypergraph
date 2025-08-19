@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
   PublishDiff,
@@ -12,7 +13,6 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import { cn } from '@/lib/utils';
 import { Todo2, User } from '../schema';
 import { Spinner } from './spinner';
 import { TodosLocal } from './todo/todos-local';
@@ -170,7 +170,7 @@ export const Todos2 = () => {
               due: new Date('2025-08-20'),
               amount: 100,
               point: [12.34, 56.78],
-              website: new URL('https://example.com'),
+              website: 'https://example.com',
             });
             setNewTodoName('');
           }}

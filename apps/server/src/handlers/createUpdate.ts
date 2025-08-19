@@ -36,6 +36,7 @@ export const createUpdate = async ({
 
   while (!success && retries < maxRetries) {
     try {
+      // @ts-expect-error - fix it
       result = await prisma.$transaction(async (prisma) => {
         const lastUpdate = await prisma.update.findFirst({
           where: { spaceId },

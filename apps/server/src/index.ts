@@ -1,9 +1,9 @@
-import { parse } from 'node:url';
 import { Connect, Identity, Inboxes, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import cors from 'cors';
 import { Effect, Exit, Schema } from 'effect';
-import express, { type Request, type Response } from 'express';
+import express, { type Request } from 'express';
+import { parse } from 'node:url';
 import WebSocket, { WebSocketServer } from 'ws';
 import { addAppIdentityToSpaces } from './handlers/add-app-identity-to-spaces.js';
 import { applySpaceEvent } from './handlers/applySpaceEvent.js';
@@ -17,8 +17,8 @@ import { createUpdate } from './handlers/createUpdate.js';
 import { findAppIdentity } from './handlers/find-app-identity.js';
 import { getAppIdentityBySessionToken } from './handlers/get-app-identity-by-session-token.js';
 import { getAccountInbox } from './handlers/getAccountInbox.js';
-import { getAppOrConnectIdentity } from './handlers/getAppOrConnectIdentity.js';
-import { type GetIdentityResult, getConnectIdentity } from './handlers/getConnectIdentity.js';
+import { type GetAppOrConnectIdentityResult, getAppOrConnectIdentity } from './handlers/getAppOrConnectIdentity.js';
+import { getConnectIdentity } from './handlers/getConnectIdentity.js';
 import { getLatestAccountInboxMessages } from './handlers/getLatestAccountInboxMessages.js';
 import { getLatestSpaceInboxMessages } from './handlers/getLatestSpaceInboxMessages.js';
 import { getSpace } from './handlers/getSpace.js';
@@ -45,25 +45,6 @@ const PORT = process.env.PORT !== undefined ? Number.parseInt(process.env.PORT) 
 const app = express();
 const CHAIN = process.env.HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const RPC_URL = process.env.HYPERGRAPH_RPC_URL ?? CHAIN.rpcUrls.default.http[0];
-
-type AuthenticatedRequest = Request & { accountAddress?: string };
-
-async function _verifyAuth(req: AuthenticatedRequest, res: Response, next: (err?: Error) => void) {
-  const auth = req.headers.authorization;
-  if (!auth) {
-    res.status(401).send('Unauthorized');
-    return;
-  }
-  try {
-    const sessionToken = auth.split(' ')[1];
-    const { accountAddress } = await getAppIdentityBySessionToken({ sessionToken });
-    req.accountAddress = accountAddress;
-    next();
-  } catch (_error) {
-    res.status(401).send('Unauthorized');
-    return;
-  }
-}
 
 app.use(express.json({ limit: '2mb' }));
 
@@ -516,7 +497,7 @@ app.post('/spaces/:spaceId/inboxes/:inboxId/messages', async (req, res) => {
       const authorPublicKey = Inboxes.recoverSpaceInboxMessageSigner(message, spaceId, inboxId);
 
       // Check if this public key corresponds to a user's identity
-      let authorIdentity: GetIdentityResult;
+      let authorIdentity: GetAppOrConnectIdentityResult;
       try {
         authorIdentity = await getAppOrConnectIdentity({
           accountAddress: message.authorAccountAddress,
@@ -617,7 +598,7 @@ app.post('/accounts/:accountAddress/inboxes/:inboxId/messages', async (req, res)
       const authorPublicKey = Inboxes.recoverAccountInboxMessageSigner(message, accountAddress, inboxId);
 
       // Check if this public key corresponds to a user's identity
-      let authorIdentity: GetIdentityResult;
+      let authorIdentity: GetAppOrConnectIdentityResult;
       try {
         authorIdentity = await getAppOrConnectIdentity({
           accountAddress: message.authorAccountAddress,
