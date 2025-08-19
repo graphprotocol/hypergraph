@@ -1,12 +1,12 @@
+import { Args, Command, HelpDoc, Options, Prompt } from '@effect/cli';
+import { FileSystem, Path } from '@effect/platform';
+import { NodeFileSystem } from '@effect/platform-node';
+import type { PlatformError } from '@effect/platform/Error';
+import { Ansi, AnsiDoc } from '@effect/printer-ansi';
+import { Cause, Data, Effect, Array as EffectArray, Option } from 'effect';
 import { execSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Args, Command, HelpDoc, Options, Prompt } from '@effect/cli';
-import { FileSystem, Path } from '@effect/platform';
-import type { PlatformError } from '@effect/platform/Error';
-import { NodeFileSystem } from '@effect/platform-node';
-import { Ansi, AnsiDoc } from '@effect/printer-ansi';
-import { Cause, Data, Effect, Array as EffectArray, Option } from 'effect';
 
 import * as Domain from './Domain.js';
 import * as Utils from './Utils.js';
@@ -127,7 +127,7 @@ function scaffoldHypergraphApp(config: Readonly<ResolvedConfig>) {
 
     const isDev = process.env.NODE_ENV === 'development' || __dirname.includes('/src/');
     const templateDir = isDev
-      ? path.resolve(__dirname, '..', framework.directory)
+      ? path.resolve(__dirname, '..', '..', '..', 'apps', framework.directory)
       : path.resolve(__dirname, framework.directory);
     const templatDirExists = yield* fs.exists(templateDir);
     if (!templatDirExists) {
