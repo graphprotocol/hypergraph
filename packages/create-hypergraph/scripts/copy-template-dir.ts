@@ -1,10 +1,10 @@
-import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
-import * as NodePath from '@effect/platform-node/NodePath';
+import { readdirSync } from 'node:fs';
 import type { PlatformError } from '@effect/platform/Error';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
+import * as NodePath from '@effect/platform-node/NodePath';
 import { Cause, Chunk, Console, Data, Effect, pipe, Stream } from 'effect';
-import { readdirSync } from 'node:fs';
 
 const workspaceDepsToReplace = {
   '@graphprotocol/hypergraph': {
