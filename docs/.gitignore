@@ -7,6 +7,9 @@
 # Should be generated on build by the plugin
 /static/llms.txt
 
+# Typedoc generated folder
+/docs/api-reference
+
 # Generated files
 .docusaurus
 .cache-loader
