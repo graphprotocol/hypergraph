@@ -170,7 +170,7 @@ export const Todos2 = () => {
               due: new Date('2025-08-20'),
               amount: 100,
               point: [12.34, 56.78],
-              website: new URL('https://example.com'),
+              website: 'https://example.com',
             });
             setNewTodoName('');
           }}

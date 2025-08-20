@@ -327,7 +327,7 @@ function AuthenticateComponent() {
 
     try {
       const privyProvider = await embeddedWallet.getEthereumProvider();
-      const _walletClient = createWalletClient({
+      createWalletClient({
         account: embeddedWallet.address as `0x${string}`,
         chain: CHAIN,
         transport: custom(privyProvider),

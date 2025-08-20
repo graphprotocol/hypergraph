@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -19,6 +19,10 @@
       }
     ],
     "paths": {
+      "@graphprotocol/hypergraph": ["../../packages/hypergraph/src/index.js"],
+      "@graphprotocol/hypergraph/*": ["../../packages/hypergraph/src/*.js"],
+      "@graphprotocol/hypergraph-react": ["../../packages/hypergraph-react/src/index.js"],
+      "@graphprotocol/hypergraph-react/*": ["../../packages/hypergraph-react/src/*.js"],
       "@/*": ["./*"]
     }
   },

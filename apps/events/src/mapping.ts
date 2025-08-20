@@ -1,7 +1,7 @@
+import type { Mapping } from '@graphprotocol/hypergraph';
 import { Id } from '@graphprotocol/hypergraph';
-import type { Mapping } from '@graphprotocol/hypergraph/mapping';
 
-export const mapping: Mapping = {
+export const mapping: Mapping.Mapping = {
   User: {
     typeIds: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
     properties: {

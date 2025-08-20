@@ -16,7 +16,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticateSuccessImport } from './routes/authenticate-success'
 import { Route as IndexImport } from './routes/index'
 import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
-import { Route as FriendsAccountIdImport } from './routes/friends/$accountId'
+import { Route as FriendsAccountAddressImport } from './routes/friends/$accountAddress'
 import { Route as AccountInboxInboxIdImport } from './routes/account-inbox/$inboxId'
 import { Route as SpaceSpaceIdIndexImport } from './routes/space/$spaceId/index'
 import { Route as SpaceSpaceIdUsersImport } from './routes/space/$spaceId/users'
@@ -62,9 +62,9 @@ const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const FriendsAccountIdRoute = FriendsAccountIdImport.update({
-  id: '/friends/$accountId',
-  path: '/friends/$accountId',
+const FriendsAccountAddressRoute = FriendsAccountAddressImport.update({
+  id: '/friends/$accountAddress',
+  path: '/friends/$accountAddress',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -150,11 +150,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountInboxInboxIdImport
       parentRoute: typeof rootRoute
     }
-    '/friends/$accountId': {
-      id: '/friends/$accountId'
-      path: '/friends/$accountId'
-      fullPath: '/friends/$accountId'
-      preLoaderRoute: typeof FriendsAccountIdImport
+    '/friends/$accountAddress': {
+      id: '/friends/$accountAddress'
+      path: '/friends/$accountAddress'
+      fullPath: '/friends/$accountAddress'
+      preLoaderRoute: typeof FriendsAccountAddressImport
       parentRoute: typeof rootRoute
     }
     '/space/$spaceId': {
@@ -239,7 +239,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
-  '/friends/$accountId': typeof FriendsAccountIdRoute
+  '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
   '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
@@ -255,7 +255,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
-  '/friends/$accountId': typeof FriendsAccountIdRoute
+  '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
   '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
   '/space/$spaceId/playground': typeof SpaceSpaceIdPlaygroundRoute
@@ -271,7 +271,7 @@ export interface FileRoutesById {
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
-  '/friends/$accountId': typeof FriendsAccountIdRoute
+  '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
   '/space/$spaceId/events': typeof SpaceSpaceIdEventsRoute
@@ -289,7 +289,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/playground'
     | '/account-inbox/$inboxId'
-    | '/friends/$accountId'
+    | '/friends/$accountAddress'
     | '/space/$spaceId'
     | '/space/$spaceId/chat'
     | '/space/$spaceId/events'
@@ -304,7 +304,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/playground'
     | '/account-inbox/$inboxId'
-    | '/friends/$accountId'
+    | '/friends/$accountAddress'
     | '/space/$spaceId/chat'
     | '/space/$spaceId/events'
     | '/space/$spaceId/playground'
@@ -318,7 +318,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/playground'
     | '/account-inbox/$inboxId'
-    | '/friends/$accountId'
+    | '/friends/$accountAddress'
     | '/space/$spaceId'
     | '/space/$spaceId/chat'
     | '/space/$spaceId/events'
@@ -335,7 +335,7 @@ export interface RootRouteChildren {
   LoginLazyRoute: typeof LoginLazyRoute
   PlaygroundLazyRoute: typeof PlaygroundLazyRoute
   AccountInboxInboxIdRoute: typeof AccountInboxInboxIdRoute
-  FriendsAccountIdRoute: typeof FriendsAccountIdRoute
+  FriendsAccountAddressRoute: typeof FriendsAccountAddressRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRouteWithChildren
 }
 
@@ -345,7 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginLazyRoute: LoginLazyRoute,
   PlaygroundLazyRoute: PlaygroundLazyRoute,
   AccountInboxInboxIdRoute: AccountInboxInboxIdRoute,
-  FriendsAccountIdRoute: FriendsAccountIdRoute,
+  FriendsAccountAddressRoute: FriendsAccountAddressRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRouteWithChildren,
 }
 
@@ -364,7 +364,7 @@ export const routeTree = rootRoute
         "/login",
         "/playground",
         "/account-inbox/$inboxId",
-        "/friends/$accountId",
+        "/friends/$accountAddress",
         "/space/$spaceId"
       ]
     },
@@ -383,8 +383,8 @@ export const routeTree = rootRoute
     "/account-inbox/$inboxId": {
       "filePath": "account-inbox/$inboxId.tsx"
     },
-    "/friends/$accountId": {
-      "filePath": "friends/$accountId.tsx"
+    "/friends/$accountAddress": {
+      "filePath": "friends/$accountAddress.tsx"
     },
     "/space/$spaceId": {
       "filePath": "space/$spaceId.tsx",

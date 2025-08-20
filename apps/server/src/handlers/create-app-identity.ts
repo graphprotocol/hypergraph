@@ -5,7 +5,6 @@ type Params = {
   address: string;
   appId: string;
   ciphertext: string;
-  nonce: string;
   signaturePublicKey: string;
   encryptionPublicKey: string;
   accountProof: string;

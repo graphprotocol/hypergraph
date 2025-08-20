@@ -9,7 +9,7 @@ type Params = {
 export const listUpdates = async ({ spaceId, accountAddress, after }: Params) => {
   // throw error if account is not a member of the space
   await prisma.space.findUniqueOrThrow({
-    where: { id: spaceId, members: { some: { id: accountAddress } } },
+    where: { id: spaceId, members: { some: { address: accountAddress } } },
   });
 
   return await prisma.update.findMany({
