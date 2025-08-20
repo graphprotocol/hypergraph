@@ -14,7 +14,9 @@
 
  @type {import('@docusaurus/plugin-content-docs').SidebarsConfig}
  */
-import typedocSidebar from './docs/api-reference/hypergraph/typedoc-sidebar.cjs';
+import typedocSidebarHypergraph from './docs/api-reference/hypergraph/typedoc-sidebar.cjs';
+import typedocSidebarHypergraphReact from './docs/api-reference/hypergraph-react/typedoc-sidebar.cjs';
+
 const sidebars = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   docs: [
@@ -43,7 +45,13 @@ const sidebars = {
           type: 'category',
           label: 'Hypergraph',
           link: { type: 'doc', id: 'api-reference/hypergraph/index' },
-          items: typedocSidebar,
+          items: typedocSidebarHypergraph,
+        },
+        {
+          type: 'category',
+          label: 'Hypergraph React',
+          link: { type: 'doc', id: 'api-reference/hypergraph-react/index' },
+          items: typedocSidebarHypergraphReact,
         },
       ],
     },
