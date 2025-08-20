@@ -37,8 +37,16 @@
     "noUncheckedIndexedAccess": false,
     "baseUrl": ".",
     "paths": {
+      "@graphprotocol/hypergraph": ["../../packages/hypergraph/src/index.js"],
+      "@graphprotocol/hypergraph/*": ["../../packages/hypergraph/src/*.js"],
+      "@graphprotocol/hypergraph-react": ["../../packages/hypergraph-react/src/index.js"],
+      "@graphprotocol/hypergraph-react/*": ["../../packages/hypergraph-react/src/*.js"],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../packages/hypergraph/src/**/*",
+    "../../packages/hypergraph-react/src/**/*"
+  ],
 }
