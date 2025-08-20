@@ -1,8 +1,3 @@
-import { CreateSpaceCard } from '@/components/CreateSpaceCard';
-import { SpacesCard } from '@/components/SpacesCard';
-import { Loading } from '@/components/ui/Loading';
-import { usePrivateSpaces } from '@/hooks/use-private-spaces';
-import { usePublicSpaces } from '@/hooks/use-public-spaces';
 import { Graph } from '@graphprotocol/grc-20';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
@@ -14,6 +9,11 @@ import { Effect, Schema } from 'effect';
 import { useEffect, useState } from 'react';
 import { createWalletClient, custom } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { CreateSpaceCard } from '@/components/CreateSpaceCard';
+import { SpacesCard } from '@/components/SpacesCard';
+import { Loading } from '@/components/ui/Loading';
+import { usePrivateSpaces } from '@/hooks/use-private-spaces';
+import { usePublicSpaces } from '@/hooks/use-public-spaces';
 
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const API_URL =
