@@ -162,3 +162,191 @@ body {
 .plugin-blog.plugin-id-default.docs-version-current.docs-blog-page {
   background: #0b0b13 !important;
 }
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] blockquote,
+blockquote {
+  background: #2b2d42;
+  border-left: 4px solid var(--graph-purple);
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-family: "Fira Code", "Monaco", "Consolas", monospace;
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] blockquote code,
+.plugin-docs .plugin-id-default [data-path*="api-reference"] code,
+.markdown blockquote code {
+  background: transparent;
+  color: #e6e6e6;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9em;
+  font-family: "Fira Code", "Monaco", "Consolas", monospace;
+  font-weight: 400;
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  blockquote
+  code
+  .token.keyword,
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .token.keyword {
+  color: #c792ea; 
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  blockquote
+  code
+  .token.type,
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .token.type {
+  color: #82aaff; 
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  blockquote
+  code
+  .token.string,
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .token.string {
+  color: #c3e88d; 
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  blockquote
+  code
+  .token.property,
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .token.property {
+  color: #ff9cac; 
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  code:not(.token):not([class*="language-"]) {
+  background: #2b2d42;
+  color: #e6e6e6;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-weight: 400;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: "Fira Code", "Monaco", "Consolas", monospace;
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] blockquote {
+  color: #e6e6e6;
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] blockquote code {
+  background: transparent;
+  padding: 0;
+  border: none;
+  color: inherit;
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] blockquote {
+  white-space: pre-wrap;
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .tsd-signature,
+.plugin-docs .plugin-id-default [data-path*="api-reference"] blockquote {
+  background: #1e1e2e !important;
+  border: 1px solid #313244;
+  color: #cdd6f4;
+  font-family: "Fira Code", "JetBrains Mono", "Monaco", "Consolas", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid var(--graph-purple);
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  .tsd-signature
+  code,
+.plugin-docs .plugin-id-default [data-path*="api-reference"] blockquote code {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+  border: none !important;
+  font-size: inherit !important;
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  blockquote::before {
+  content: "";
+  display: block;
+  font-family: inherit;
+  white-space: pre-wrap;
+  color: inherit;
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .tsd-signature {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-family: "Fira Code", "Monaco", "Consolas", monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  .tsd-signature-type {
+  color: var(--starfield-green);
+  font-weight: 500;
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  .tsd-signature-parameter {
+  color: var(--nebula-pink);
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  .tsd-signature-keyword {
+  color: var(--astro-blue);
+  font-weight: 600;
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .tsd-table {
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.plugin-docs .plugin-id-default [data-path*="api-reference"] .tsd-table th {
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+  color: var(--galactic-aqua);
+}
+
+.plugin-docs
+  .plugin-id-default
+  [data-path*="api-reference"]
+  .tsd-table
+  td
+  code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.2rem;
+}
