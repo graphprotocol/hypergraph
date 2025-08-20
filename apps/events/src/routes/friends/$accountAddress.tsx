@@ -2,7 +2,7 @@ import { usePublicAccountInboxes } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { InboxCard } from '../../components/InboxCard';
 
-export const Route = createFileRoute('/friends/$accountId')({
+export const Route = createFileRoute('/friends/$accountAddress')({
   component: RouteComponent,
 });
 

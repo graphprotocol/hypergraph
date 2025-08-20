@@ -12,10 +12,10 @@ type Params =
       spaceId?: string;
     };
 
-export type GetIdentityResult = {
+export type GetAppOrConnectIdentityResult = {
   accountAddress: string;
   ciphertext: string;
-  nonce: string;
+  nonce?: string;
   signaturePublicKey: string;
   encryptionPublicKey: string;
   accountProof: string;
@@ -23,7 +23,7 @@ export type GetIdentityResult = {
   appId: string | null;
 };
 
-export const getAppOrConnectIdentity = async (params: Params): Promise<GetIdentityResult> => {
+export const getAppOrConnectIdentity = async (params: Params): Promise<GetAppOrConnectIdentityResult> => {
   if (!('appId' in params)) {
     const where: { address: string; connectSignaturePublicKey?: string } = { address: params.accountAddress };
     if ('signaturePublicKey' in params) {
@@ -70,7 +70,6 @@ export const getAppOrConnectIdentity = async (params: Params): Promise<GetIdenti
     return {
       accountAddress: appIdentity.accountAddress,
       ciphertext: appIdentity.ciphertext,
-      nonce: appIdentity.nonce,
       signaturePublicKey: appIdentity.signaturePublicKey,
       encryptionPublicKey: appIdentity.encryptionPublicKey,
       accountProof: appIdentity.accountProof,

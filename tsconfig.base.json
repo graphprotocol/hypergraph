@@ -41,7 +41,6 @@
       "@graphprotocol/hypergraph/*": ["./packages/hypergraph/src/*.js"],
       "@graphprotocol/hypergraph-react": ["./packages/hypergraph-react/src/index.js"],
       "@graphprotocol/hypergraph-react/*": ["./packages/hypergraph-react/src/*.js"]
-
     }
   }
 }

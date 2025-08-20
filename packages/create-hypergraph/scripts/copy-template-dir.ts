@@ -78,6 +78,42 @@ class CopyTemplateDirService extends Effect.Service<CopyTemplateDirService>()(
           yield* fs.writeFileString(destPackageJsonPath, JSON.stringify(packageJson, null, 2));
         });
 
+      const updateTsconfigJsonWorkspaceDeps = (tsconfigJsonPath: string, destTsconfigJsonPath: string) =>
+        Effect.gen(function* () {
+          // read the tsconfig.json
+          const tsconfigJson = yield* fs.readFileString(tsconfigJsonPath).pipe(Effect.map(JSON.parse));
+
+          // remove the paths for the hypergraph workspace deps
+          tsconfigJson.compilerOptions.paths = Object.fromEntries(
+            Object.entries(tsconfigJson.compilerOptions.paths).filter(
+              ([key]) => !key.startsWith('@graphprotocol/hypergraph'),
+            ),
+          );
+
+          // remove hypergraph paths from the include array
+          if (tsconfigJson.include && Array.isArray(tsconfigJson.include)) {
+            tsconfigJson.include = tsconfigJson.include.filter(
+              (path: string) => !path.startsWith('../../packages/hypergraph'),
+            );
+          }
+
+          yield* fs.writeFileString(destTsconfigJsonPath, JSON.stringify(tsconfigJson, null, 2));
+        });
+
+      const updateViteConfigAliases = (viteConfigPath: string, destViteConfigPath: string) =>
+        Effect.gen(function* () {
+          // read the vite.config.ts
+          const viteConfig = yield* fs.readFileString(viteConfigPath);
+
+          // Remove the hypergraph aliases from the Vite config using line-based filtering
+          const updatedViteConfig = viteConfig
+            .split('\n')
+            .filter((line) => !line.match(/['"]@graphprotocol\/hypergraph(-react)?[^'"]*['"]\s*:/))
+            .join('\n');
+
+          yield* fs.writeFileString(destViteConfigPath, updatedViteConfig);
+        });
+
       const copy = (src: string, dest: string, replaced: Record<string, string>): Effect.Effect<void, PlatformError> =>
         Effect.gen(function* () {
           yield* fs.makeDirectory(dest, { recursive: true });
@@ -95,6 +131,14 @@ class CopyTemplateDirService extends Effect.Service<CopyTemplateDirService>()(
               // update the package.json
               if (entry.name === 'package.json') {
                 yield* updatePackageJsonWorkspaceDeps(srcPath, destPath, replaced);
+                continue;
+              }
+              if (entry.name === 'tsconfig.app.json' || entry.name === 'tsconfig.json') {
+                yield* updateTsconfigJsonWorkspaceDeps(srcPath, destPath);
+                continue;
+              }
+              if (entry.name === 'vite.config.ts') {
+                yield* updateViteConfigAliases(srcPath, destPath);
                 continue;
               }
               yield* fs.copyFile(srcPath, destPath);

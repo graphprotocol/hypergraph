@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsdown';
 
-export default defineConfig(() => ({
+export default defineConfig({
   entry: ['src/bin.ts'],
   target: 'node20',
   minify: true,
@@ -13,4 +13,4 @@ export default defineConfig(() => ({
   env: {
     NODE_ENV: 'production',
   },
-}));
+});

@@ -30,5 +30,5 @@
 
 # Workspace package dependencies.
 !packages/hypergraph
-
 !packages/hypergraph-react
+!packages/typesync-studio
