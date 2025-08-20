@@ -9,7 +9,7 @@
     { "path": "apps/server" },
     { "path": "apps/connect" },
     { "path": "apps/events" },
-    // { "path": "apps/template-nextjs" },
+    { "path": "apps/template-nextjs" },
     // { "path": "apps/template-vite-react" },
     { "path": "apps/next-example" },
   ]
