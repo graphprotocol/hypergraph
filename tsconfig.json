@@ -11,6 +11,6 @@
     { "path": "apps/events" },
     // { "path": "apps/template-nextjs" },
     // { "path": "apps/template-vite-react" },
-    // { "path": "apps/next-example" },
+    { "path": "apps/next-example" },
   ]
 }

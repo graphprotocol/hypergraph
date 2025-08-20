@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext", "ES2022"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,8 +20,10 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      // "@graphprotocol/hypergraph": ["../../packages/hypergraph/src"],
-      // "@graphprotocol/hypergraph-react": ["../../packages/hypergraph-react/src"]
+      "@graphprotocol/hypergraph": ["../../packages/hypergraph/src/index.js"],
+      "@graphprotocol/hypergraph/*": ["../../packages/hypergraph/src/*.js"],
+      "@graphprotocol/hypergraph-react": ["../../packages/hypergraph-react/src/index.js"],
+      "@graphprotocol/hypergraph-react/*": ["../../packages/hypergraph-react/src/*.js"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
