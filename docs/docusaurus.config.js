@@ -91,6 +91,45 @@ const config = {
         ],
       },
     ],
+    [
+      'docusaurus-plugin-typedoc',
+      {
+        id: 'api-hypergraph',
+        entryPoints: ['../packages/hypergraph/src/index.ts'],
+        tsconfig: '../packages/hypergraph/tsconfig.json',
+        out: 'docs/api-reference/hypergraph',
+        readme: 'none',
+        name: 'Hypergraph',
+        categorizeByGroup: false,
+        excludeExternals: true,
+        excludePrivate: true,
+        excludeProtected: true,
+        sidebar: {
+          autoConfiguration: true,
+          pretty: true,
+        },
+      },
+    ],
+    [
+      'docusaurus-plugin-typedoc',
+      {
+        id: 'api-hypergraph-react',
+        entryPoints: ['../packages/hypergraph-react/src/index.ts'],
+        tsconfig: '../packages/hypergraph-react/tsconfig.json',
+        out: 'docs/api-reference/hypergraph-react',
+        readme: 'none',
+        name: 'Hypergraph React',
+        categorizeByGroup: false,
+        excludeExternals: true,
+        excludePrivate: true,
+        excludeProtected: true,
+        skipErrorChecking: true,
+        sidebar: {
+          autoConfiguration: true,
+          pretty: true,
+        },
+      },
+    ],
   ],
 
   presets: [

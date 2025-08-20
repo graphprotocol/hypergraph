@@ -25,7 +25,8 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.8.1",
     "@docusaurus/types": "3.8.1",
-    "docusaurus-plugin-llms": "^0.1.5"
+    "docusaurus-plugin-llms": "^0.1.5",
+    "docusaurus-plugin-typedoc": "^1.4.2"
   },
   "browserslist": {
     "production": [

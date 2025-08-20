@@ -14,6 +14,9 @@
 
  @type {import('@docusaurus/plugin-content-docs').SidebarsConfig}
  */
+import typedocSidebarHypergraph from './docs/api-reference/hypergraph/typedoc-sidebar.cjs';
+import typedocSidebarHypergraphReact from './docs/api-reference/hypergraph-react/typedoc-sidebar.cjs';
+
 const sidebars = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   docs: [
@@ -34,7 +37,24 @@ const sidebars = {
     { type: 'doc', id: 'filtering-query-results', label: '🔍 Filtering Query Results' },
     { type: 'doc', id: 'space-invitations', label: '🔗 Space Invitations' },
     { type: 'doc', id: 'inboxes', label: '🔍 Inboxes' },
-    // { type: 'doc', id: 'api-reference', label: '📚 API Reference' },
+    {
+      type: 'category',
+      label: '📚 API Reference',
+      items: [
+        {
+          type: 'category',
+          label: 'Hypergraph',
+          link: { type: 'doc', id: 'api-reference/hypergraph/index' },
+          items: typedocSidebarHypergraph,
+        },
+        {
+          type: 'category',
+          label: 'Hypergraph React',
+          link: { type: 'doc', id: 'api-reference/hypergraph-react/index' },
+          items: typedocSidebarHypergraphReact,
+        },
+      ],
+    },
     { type: 'doc', id: 'troubleshooting', label: '🛠️ Troubleshooting' },
     { type: 'doc', id: 'faq', label: '❓ FAQ' },
     {
