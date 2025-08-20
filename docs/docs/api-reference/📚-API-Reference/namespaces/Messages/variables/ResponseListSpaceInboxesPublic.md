@@ -1,5 +1,0 @@
-# Variable: ResponseListSpaceInboxesPublic
-
-> `const` **ResponseListSpaceInboxesPublic**: `Struct`\<\{ `inboxes`: `Array$`\<`Struct`\<\{ `authPolicy`: `Union`\<\[`Literal`\<\[`"anonymous"`\]\>, `Literal`\<\[`"optional_auth"`\]\>, `Literal`\<\[`"requires_auth"`\]\>\]\>; `creationEvent`: `Struct`\<\{ `author`: `Struct`\<\{ `accountAddress`: *typeof* `String$`; `signature`: `Struct`\<\{ `hex`: ...; `recovery`: ...; \}\>; \}\>; `transaction`: `Struct`\<\{ `authPolicy`: `Union`\<\[..., ..., ...\]\>; `encryptionPublicKey`: *typeof* `String$`; `id`: *typeof* `String$`; `inboxId`: *typeof* `String$`; `isPublic`: *typeof* `Boolean$`; `previousEventHash`: *typeof* `String$`; `secretKey`: *typeof* `String$`; `spaceId`: *typeof* `String$`; `type`: `Literal`\<\[...\]\>; \}\>; \}\>; `encryptionPublicKey`: *typeof* `String$`; `inboxId`: *typeof* `String$`; `isPublic`: *typeof* `Boolean$`; \}\>\>; \}\>
-
-Defined in: [packages/hypergraph/src/messages/types.ts:473](https://github.com/hashirpm/hypergraph/blob/ab4ea1cdb9430798142e0d735aac9d31c2cf0ae0/packages/hypergraph/src/messages/types.ts#L473)
