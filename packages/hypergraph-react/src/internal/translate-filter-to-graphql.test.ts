@@ -346,3 +346,53 @@ describe('translateFilterToGraphql with complex nested filters', () => {
     });
   });
 });
+
+describe('translateFilterToGraphql date/point filters', () => {
+  class Event extends Entity.Class<Event>('Event')({
+    name: Type.String,
+    when: Type.Date,
+    location: Type.Point,
+  }) {}
+
+  const eventMapping: Mapping.Mapping = {
+    Event: {
+      typeIds: [Id('a288444f-06a3-4037-9ace-66fe325864d0')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        when: Id('9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f'),
+        location: Id('45e707a5-4364-42fb-bb0b-927a5a8bc061'),
+      },
+    },
+  };
+
+  it('should translate Date `is` filter correctly', () => {
+    const dt = new Date('2024-01-01T00:00:00Z');
+    const filter: Entity.EntityFilter<Event> = { when: { is: dt } };
+
+    const result = translateFilterToGraphql(filter, Event, eventMapping);
+
+    expect(result).toEqual({
+      values: {
+        some: {
+          propertyId: { is: '9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f' },
+          time: { is: Graph.serializeDate(dt) },
+        },
+      },
+    });
+  });
+
+  it('should translate Point `is` filter correctly', () => {
+    const filter: Entity.EntityFilter<Event> = { location: { is: [1, 2] as const } };
+
+    const result = translateFilterToGraphql(filter, Event, eventMapping);
+
+    expect(result).toEqual({
+      values: {
+        some: {
+          propertyId: { is: '45e707a5-4364-42fb-bb0b-927a5a8bc061' },
+          point: { is: Graph.serializePoint([1, 2]) },
+        },
+      },
+    });
+  });
+});
