@@ -15,15 +15,15 @@
     "graph": "pnpm --filter server-logic-ts graph"
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.0",
-    "@babel/core": "^7.28.0",
-    "@biomejs/biome": "^2.1.2",
-    "@changesets/cli": "^2.29.5",
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.3",
+    "@biomejs/biome": "^2.2.0",
+    "@changesets/cli": "^2.29.6",
     "@graphprotocol/grc-20": "^0.24.1",
     "babel-plugin-annotate-pure-calls": "^0.5.0",
     "glob": "^11.0.3",
-    "pkg-pr-new": "^0.0.54",
-    "typescript": "^5.8.3",
+    "pkg-pr-new": "^0.0.56",
+    "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }
 }
