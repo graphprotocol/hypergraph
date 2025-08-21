@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.6.2
+### Patch Changes
+
+- internal restructurings
+- Updated dependencies
+  - @graphprotocol/hypergraph@0.6.2
+
 ## 0.6.1
 ### Patch Changes
 
