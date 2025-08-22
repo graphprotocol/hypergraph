@@ -24,6 +24,7 @@ export const parseAuthParams = (
   }
 
   try {
+    console.log('data', data);
     const result = decodePayload(data as ConnectAuthPayload);
 
     if (Either.isLeft(result)) {

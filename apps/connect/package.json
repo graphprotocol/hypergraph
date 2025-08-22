@@ -23,7 +23,7 @@
     "@tanstack/react-query": "^5.85.5",
     "@tanstack/react-router": "^1.131.27",
     "@tanstack/react-router-devtools": "^1.131.27",
-    "@xstate/store": "^3.9.1",
+    "@xstate/store": "^3.9.2",
     "clsx": "^2.1.1",
     "effect": "^3.17.8",
     "graphql-request": "^7.2.0",

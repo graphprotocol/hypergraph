@@ -78,7 +78,7 @@
     "@noble/secp256k1": "^2.3.0",
     "@rhinestone/module-sdk": "^0.2.8",
     "@serenity-kit/noble-sodium": "^0.2.1",
-    "@xstate/store": "^3.9.1",
+    "@xstate/store": "^3.9.2",
     "bs58check": "^4.0.0",
     "effect": "^3.17.8",
     "open": "^10.2.0",
