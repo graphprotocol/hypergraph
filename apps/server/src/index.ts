@@ -41,7 +41,7 @@ interface CustomWebSocket extends WebSocket {
 const decodeRequestMessage = Schema.decodeUnknownEither(Messages.RequestMessage);
 
 const webSocketServer = new WebSocketServer({ noServer: true });
-const PORT = process.env.PORT !== undefined ? Number.parseInt(process.env.PORT) : 3030;
+const PORT = process.env.PORT !== undefined ? Number.parseInt(process.env.PORT, 10) : 3030;
 const app = express();
 const CHAIN = process.env.HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const RPC_URL = process.env.HYPERGRAPH_RPC_URL ?? CHAIN.rpcUrls.default.http[0];

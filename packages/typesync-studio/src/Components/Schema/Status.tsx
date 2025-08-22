@@ -59,6 +59,7 @@ function UIRequiresSyncingLight(props: React.ComponentProps<'svg'>) {
         <path d="M8.01689 0L8.00154 4.99847C8.00069 5.27521 8.2248 5.5 8.50154 5.5H14" stroke="#2A2A2A" />
       </g>
       <defs>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: fine to have it hardcoded */}
         <clipPath id="clip0_59285_4556">
           <rect width="16" height="16" fill="white" />
         </clipPath>
@@ -78,6 +79,7 @@ function UIRequiresSyncingDark(props: React.ComponentProps<'svg'>) {
         <path d="M8.01689 0L8.00154 4.99847C8.00069 5.27521 8.2248 5.5 8.50154 5.5H14" stroke="white" />
       </g>
       <defs>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: fine to have it hardcoded */}
         <clipPath id="clip0_59284_4447">
           <rect width="16" height="16" fill="white" />
         </clipPath>
@@ -119,6 +121,7 @@ function SyncedRequiresPublishingLight(props: React.ComponentProps<'svg'>) {
         <path d="M8.01689 0L8.00169 4.49831C8.00076 4.77511 8.22489 5 8.50169 5H13.75" stroke="#2A2A2A" />
       </g>
       <defs>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: fine to have it hardcoded */}
         <clipPath id="clip0_59285_4566">
           <rect width="16" height="16" fill="white" />
         </clipPath>
@@ -147,6 +150,7 @@ function SyncedRequiresPublishingDark(props: React.ComponentProps<'svg'>) {
         <path d="M8.01689 0L8.00169 4.49831C8.00076 4.77511 8.22489 5 8.50169 5H13.75" stroke="white" />
       </g>
       <defs>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: fine to have it hardcoded */}
         <clipPath id="clip0_59288_4647">
           <rect width="16" height="16" fill="white" />
         </clipPath>
