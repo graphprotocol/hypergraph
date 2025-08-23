@@ -23,6 +23,7 @@ export function PublishedToKnowledgeGraphDark(props: React.ComponentProps<'svg'>
           <path d="M3.45564 5.61662L12.5498 10.875" stroke="white" />
         </g>
         <defs>
+          {/* biome-ignore lint/correctness/useUniqueElementIds: fine to have it hardcoded */}
           <clipPath id="clip0_59284_4458">
             <rect width="16" height="16" fill="white" />
           </clipPath>
@@ -56,6 +57,7 @@ export function PublishedToKnowledgeGraphLight(props: React.ComponentProps<'svg'
           <path d="M3.45564 5.61662L12.5498 10.875" stroke="#2A2A2A" />
         </g>
         <defs>
+          {/* biome-ignore lint/correctness/useUniqueElementIds: fine to have it hardcoded */}
           <clipPath id="clip0_59285_4572">
             <rect width="16" height="16" fill="white" />
           </clipPath>

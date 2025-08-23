@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -16,7 +16,7 @@
       "!**/tsconfig.json",
       "!**/tsconfig.*.json",
       "!**/variant-schema.ts",
-      "!**/apps/template-*/**",
+      "!**/apps/template-*",
       "!**/*.css",
       "!**/packages/typesync-studio/src/generated/**/*.ts"
     ]

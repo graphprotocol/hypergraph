@@ -30,10 +30,11 @@ type AuthenticateSearch = {
 export const Route = createFileRoute('/authenticate')({
   component: RouteComponent,
   validateSearch: (search: Record<string, unknown>): AuthenticateSearch => {
+    const decodedData = typeof search.data === 'string' ? JSON.parse(decodeURIComponent(search.data)) : search.data;
     return {
-      data: search.data,
-      redirect: search.redirect as string,
-      nonce: search.nonce as string,
+      data: decodedData,
+      redirect: typeof search.redirect === 'string' ? decodeURIComponent(search.redirect) : '',
+      nonce: typeof search.nonce === 'string' ? decodeURIComponent(search.nonce) : '',
     };
   },
 });

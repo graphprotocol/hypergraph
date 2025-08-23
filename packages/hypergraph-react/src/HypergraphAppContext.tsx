@@ -752,7 +752,7 @@ export function HypergraphAppProvider({
             break;
           }
           case 'account-inboxes': {
-            response.inboxes.map((inbox) => {
+            response.inboxes.forEach((inbox) => {
               store.send({
                 type: 'setAccountInbox',
                 inbox: {

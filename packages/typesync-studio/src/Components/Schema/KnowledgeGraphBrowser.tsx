@@ -4,7 +4,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react
 import { CaretDownIcon, CaretRightIcon, PlusIcon } from '@phosphor-icons/react';
 import { createFormHook } from '@tanstack/react-form';
 import { Array as EffectArray, String as EffectString } from 'effect';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { fieldContext, formContext } from '@/Components/Form/form.ts';
 import { TextField } from '@/Components/Form/TextField.tsx';
@@ -47,6 +47,8 @@ export function KnowledgeGraphBrowser({ typeSelected }: KnowledgeGraphBrowserPro
     },
   );
 
+  const htmlSearchId = useId();
+
   return (
     <div className="flex flex-col gap-y-6">
       <div className="border-b border-gray-200 dark:border-white/20 pb-5 h-20">
@@ -72,7 +74,12 @@ export function KnowledgeGraphBrowser({ typeSelected }: KnowledgeGraphBrowserPro
             }}
           >
             {(field) => (
-              <field.TextField id="search" name="search" type="search" placeholder="Search Knowledge Graph types..." />
+              <field.TextField
+                id={htmlSearchId}
+                name="search"
+                type="search"
+                placeholder="Search Knowledge Graph types..."
+              />
             )}
           </schemaBrowserForm.AppField>
         </div>

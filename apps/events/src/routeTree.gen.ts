@@ -10,228 +10,88 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthenticateSuccessRouteImport } from './routes/authenticate-success'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SpaceSpaceIdRouteImport } from './routes/space/$spaceId'
+import { Route as FriendsAccountAddressRouteImport } from './routes/friends/$accountAddress'
+import { Route as AccountInboxInboxIdRouteImport } from './routes/account-inbox/$inboxId'
+import { Route as SpaceSpaceIdIndexRouteImport } from './routes/space/$spaceId/index'
+import { Route as SpaceSpaceIdUsersRouteImport } from './routes/space/$spaceId/users'
+import { Route as SpaceSpaceIdPublicIntegrationRouteImport } from './routes/space/$spaceId/public-integration'
+import { Route as SpaceSpaceIdPlaygroundRouteImport } from './routes/space/$spaceId/playground'
+import { Route as SpaceSpaceIdEventsRouteImport } from './routes/space/$spaceId/events'
+import { Route as SpaceSpaceIdChatRouteImport } from './routes/space/$spaceId/chat'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as AuthenticateSuccessImport } from './routes/authenticate-success'
-import { Route as IndexImport } from './routes/index'
-import { Route as SpaceSpaceIdImport } from './routes/space/$spaceId'
-import { Route as FriendsAccountAddressImport } from './routes/friends/$accountAddress'
-import { Route as AccountInboxInboxIdImport } from './routes/account-inbox/$inboxId'
-import { Route as SpaceSpaceIdIndexImport } from './routes/space/$spaceId/index'
-import { Route as SpaceSpaceIdUsersImport } from './routes/space/$spaceId/users'
-import { Route as SpaceSpaceIdPublicIntegrationImport } from './routes/space/$spaceId/public-integration'
-import { Route as SpaceSpaceIdPlaygroundImport } from './routes/space/$spaceId/playground'
-import { Route as SpaceSpaceIdEventsImport } from './routes/space/$spaceId/events'
-import { Route as SpaceSpaceIdChatImport } from './routes/space/$spaceId/chat'
+const PlaygroundLazyRouteImport = createFileRoute('/playground')()
+const LoginLazyRouteImport = createFileRoute('/login')()
 
-// Create Virtual Routes
-
-const PlaygroundLazyImport = createFileRoute('/playground')()
-const LoginLazyImport = createFileRoute('/login')()
-
-// Create/Update Routes
-
-const PlaygroundLazyRoute = PlaygroundLazyImport.update({
+const PlaygroundLazyRoute = PlaygroundLazyRouteImport.update({
   id: '/playground',
   path: '/playground',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/playground.lazy').then((d) => d.Route))
-
-const LoginLazyRoute = LoginLazyImport.update({
+const LoginLazyRoute = LoginLazyRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
-
-const AuthenticateSuccessRoute = AuthenticateSuccessImport.update({
+const AuthenticateSuccessRoute = AuthenticateSuccessRouteImport.update({
   id: '/authenticate-success',
   path: '/authenticate-success',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const SpaceSpaceIdRoute = SpaceSpaceIdImport.update({
+const SpaceSpaceIdRoute = SpaceSpaceIdRouteImport.update({
   id: '/space/$spaceId',
   path: '/space/$spaceId',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const FriendsAccountAddressRoute = FriendsAccountAddressImport.update({
+const FriendsAccountAddressRoute = FriendsAccountAddressRouteImport.update({
   id: '/friends/$accountAddress',
   path: '/friends/$accountAddress',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AccountInboxInboxIdRoute = AccountInboxInboxIdImport.update({
+const AccountInboxInboxIdRoute = AccountInboxInboxIdRouteImport.update({
   id: '/account-inbox/$inboxId',
   path: '/account-inbox/$inboxId',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const SpaceSpaceIdIndexRoute = SpaceSpaceIdIndexImport.update({
+const SpaceSpaceIdIndexRoute = SpaceSpaceIdIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SpaceSpaceIdRoute,
 } as any)
-
-const SpaceSpaceIdUsersRoute = SpaceSpaceIdUsersImport.update({
+const SpaceSpaceIdUsersRoute = SpaceSpaceIdUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => SpaceSpaceIdRoute,
 } as any)
-
 const SpaceSpaceIdPublicIntegrationRoute =
-  SpaceSpaceIdPublicIntegrationImport.update({
+  SpaceSpaceIdPublicIntegrationRouteImport.update({
     id: '/public-integration',
     path: '/public-integration',
     getParentRoute: () => SpaceSpaceIdRoute,
   } as any)
-
-const SpaceSpaceIdPlaygroundRoute = SpaceSpaceIdPlaygroundImport.update({
+const SpaceSpaceIdPlaygroundRoute = SpaceSpaceIdPlaygroundRouteImport.update({
   id: '/playground',
   path: '/playground',
   getParentRoute: () => SpaceSpaceIdRoute,
 } as any)
-
-const SpaceSpaceIdEventsRoute = SpaceSpaceIdEventsImport.update({
+const SpaceSpaceIdEventsRoute = SpaceSpaceIdEventsRouteImport.update({
   id: '/events',
   path: '/events',
   getParentRoute: () => SpaceSpaceIdRoute,
 } as any)
-
-const SpaceSpaceIdChatRoute = SpaceSpaceIdChatImport.update({
+const SpaceSpaceIdChatRoute = SpaceSpaceIdChatRouteImport.update({
   id: '/chat',
   path: '/chat',
   getParentRoute: () => SpaceSpaceIdRoute,
 } as any)
-
-// Populate the FileRoutesByPath interface
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/authenticate-success': {
-      id: '/authenticate-success'
-      path: '/authenticate-success'
-      fullPath: '/authenticate-success'
-      preLoaderRoute: typeof AuthenticateSuccessImport
-      parentRoute: typeof rootRoute
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/playground': {
-      id: '/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof PlaygroundLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/account-inbox/$inboxId': {
-      id: '/account-inbox/$inboxId'
-      path: '/account-inbox/$inboxId'
-      fullPath: '/account-inbox/$inboxId'
-      preLoaderRoute: typeof AccountInboxInboxIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/friends/$accountAddress': {
-      id: '/friends/$accountAddress'
-      path: '/friends/$accountAddress'
-      fullPath: '/friends/$accountAddress'
-      preLoaderRoute: typeof FriendsAccountAddressImport
-      parentRoute: typeof rootRoute
-    }
-    '/space/$spaceId': {
-      id: '/space/$spaceId'
-      path: '/space/$spaceId'
-      fullPath: '/space/$spaceId'
-      preLoaderRoute: typeof SpaceSpaceIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/space/$spaceId/chat': {
-      id: '/space/$spaceId/chat'
-      path: '/chat'
-      fullPath: '/space/$spaceId/chat'
-      preLoaderRoute: typeof SpaceSpaceIdChatImport
-      parentRoute: typeof SpaceSpaceIdImport
-    }
-    '/space/$spaceId/events': {
-      id: '/space/$spaceId/events'
-      path: '/events'
-      fullPath: '/space/$spaceId/events'
-      preLoaderRoute: typeof SpaceSpaceIdEventsImport
-      parentRoute: typeof SpaceSpaceIdImport
-    }
-    '/space/$spaceId/playground': {
-      id: '/space/$spaceId/playground'
-      path: '/playground'
-      fullPath: '/space/$spaceId/playground'
-      preLoaderRoute: typeof SpaceSpaceIdPlaygroundImport
-      parentRoute: typeof SpaceSpaceIdImport
-    }
-    '/space/$spaceId/public-integration': {
-      id: '/space/$spaceId/public-integration'
-      path: '/public-integration'
-      fullPath: '/space/$spaceId/public-integration'
-      preLoaderRoute: typeof SpaceSpaceIdPublicIntegrationImport
-      parentRoute: typeof SpaceSpaceIdImport
-    }
-    '/space/$spaceId/users': {
-      id: '/space/$spaceId/users'
-      path: '/users'
-      fullPath: '/space/$spaceId/users'
-      preLoaderRoute: typeof SpaceSpaceIdUsersImport
-      parentRoute: typeof SpaceSpaceIdImport
-    }
-    '/space/$spaceId/': {
-      id: '/space/$spaceId/'
-      path: '/'
-      fullPath: '/space/$spaceId/'
-      preLoaderRoute: typeof SpaceSpaceIdIndexImport
-      parentRoute: typeof SpaceSpaceIdImport
-    }
-  }
-}
-
-// Create and export the route tree
-
-interface SpaceSpaceIdRouteChildren {
-  SpaceSpaceIdChatRoute: typeof SpaceSpaceIdChatRoute
-  SpaceSpaceIdEventsRoute: typeof SpaceSpaceIdEventsRoute
-  SpaceSpaceIdPlaygroundRoute: typeof SpaceSpaceIdPlaygroundRoute
-  SpaceSpaceIdPublicIntegrationRoute: typeof SpaceSpaceIdPublicIntegrationRoute
-  SpaceSpaceIdUsersRoute: typeof SpaceSpaceIdUsersRoute
-  SpaceSpaceIdIndexRoute: typeof SpaceSpaceIdIndexRoute
-}
-
-const SpaceSpaceIdRouteChildren: SpaceSpaceIdRouteChildren = {
-  SpaceSpaceIdChatRoute: SpaceSpaceIdChatRoute,
-  SpaceSpaceIdEventsRoute: SpaceSpaceIdEventsRoute,
-  SpaceSpaceIdPlaygroundRoute: SpaceSpaceIdPlaygroundRoute,
-  SpaceSpaceIdPublicIntegrationRoute: SpaceSpaceIdPublicIntegrationRoute,
-  SpaceSpaceIdUsersRoute: SpaceSpaceIdUsersRoute,
-  SpaceSpaceIdIndexRoute: SpaceSpaceIdIndexRoute,
-}
-
-const SpaceSpaceIdRouteWithChildren = SpaceSpaceIdRoute._addFileChildren(
-  SpaceSpaceIdRouteChildren,
-)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -248,7 +108,6 @@ export interface FileRoutesByFullPath {
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
   '/space/$spaceId/': typeof SpaceSpaceIdIndexRoute
 }
-
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
@@ -263,9 +122,8 @@ export interface FileRoutesByTo {
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
   '/space/$spaceId': typeof SpaceSpaceIdIndexRoute
 }
-
 export interface FileRoutesById {
-  __root__: typeof rootRoute
+  __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
   '/login': typeof LoginLazyRoute
@@ -280,7 +138,6 @@ export interface FileRoutesById {
   '/space/$spaceId/users': typeof SpaceSpaceIdUsersRoute
   '/space/$spaceId/': typeof SpaceSpaceIdIndexRoute
 }
-
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
@@ -328,7 +185,6 @@ export interface FileRouteTypes {
     | '/space/$spaceId/'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticateSuccessRoute: typeof AuthenticateSuccessRoute
@@ -339,6 +195,124 @@ export interface RootRouteChildren {
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRouteWithChildren
 }
 
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/playground': {
+      id: '/playground'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof PlaygroundLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/authenticate-success': {
+      id: '/authenticate-success'
+      path: '/authenticate-success'
+      fullPath: '/authenticate-success'
+      preLoaderRoute: typeof AuthenticateSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/space/$spaceId': {
+      id: '/space/$spaceId'
+      path: '/space/$spaceId'
+      fullPath: '/space/$spaceId'
+      preLoaderRoute: typeof SpaceSpaceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/friends/$accountAddress': {
+      id: '/friends/$accountAddress'
+      path: '/friends/$accountAddress'
+      fullPath: '/friends/$accountAddress'
+      preLoaderRoute: typeof FriendsAccountAddressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-inbox/$inboxId': {
+      id: '/account-inbox/$inboxId'
+      path: '/account-inbox/$inboxId'
+      fullPath: '/account-inbox/$inboxId'
+      preLoaderRoute: typeof AccountInboxInboxIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/space/$spaceId/': {
+      id: '/space/$spaceId/'
+      path: '/'
+      fullPath: '/space/$spaceId/'
+      preLoaderRoute: typeof SpaceSpaceIdIndexRouteImport
+      parentRoute: typeof SpaceSpaceIdRoute
+    }
+    '/space/$spaceId/users': {
+      id: '/space/$spaceId/users'
+      path: '/users'
+      fullPath: '/space/$spaceId/users'
+      preLoaderRoute: typeof SpaceSpaceIdUsersRouteImport
+      parentRoute: typeof SpaceSpaceIdRoute
+    }
+    '/space/$spaceId/public-integration': {
+      id: '/space/$spaceId/public-integration'
+      path: '/public-integration'
+      fullPath: '/space/$spaceId/public-integration'
+      preLoaderRoute: typeof SpaceSpaceIdPublicIntegrationRouteImport
+      parentRoute: typeof SpaceSpaceIdRoute
+    }
+    '/space/$spaceId/playground': {
+      id: '/space/$spaceId/playground'
+      path: '/playground'
+      fullPath: '/space/$spaceId/playground'
+      preLoaderRoute: typeof SpaceSpaceIdPlaygroundRouteImport
+      parentRoute: typeof SpaceSpaceIdRoute
+    }
+    '/space/$spaceId/events': {
+      id: '/space/$spaceId/events'
+      path: '/events'
+      fullPath: '/space/$spaceId/events'
+      preLoaderRoute: typeof SpaceSpaceIdEventsRouteImport
+      parentRoute: typeof SpaceSpaceIdRoute
+    }
+    '/space/$spaceId/chat': {
+      id: '/space/$spaceId/chat'
+      path: '/chat'
+      fullPath: '/space/$spaceId/chat'
+      preLoaderRoute: typeof SpaceSpaceIdChatRouteImport
+      parentRoute: typeof SpaceSpaceIdRoute
+    }
+  }
+}
+
+interface SpaceSpaceIdRouteChildren {
+  SpaceSpaceIdChatRoute: typeof SpaceSpaceIdChatRoute
+  SpaceSpaceIdEventsRoute: typeof SpaceSpaceIdEventsRoute
+  SpaceSpaceIdPlaygroundRoute: typeof SpaceSpaceIdPlaygroundRoute
+  SpaceSpaceIdPublicIntegrationRoute: typeof SpaceSpaceIdPublicIntegrationRoute
+  SpaceSpaceIdUsersRoute: typeof SpaceSpaceIdUsersRoute
+  SpaceSpaceIdIndexRoute: typeof SpaceSpaceIdIndexRoute
+}
+
+const SpaceSpaceIdRouteChildren: SpaceSpaceIdRouteChildren = {
+  SpaceSpaceIdChatRoute: SpaceSpaceIdChatRoute,
+  SpaceSpaceIdEventsRoute: SpaceSpaceIdEventsRoute,
+  SpaceSpaceIdPlaygroundRoute: SpaceSpaceIdPlaygroundRoute,
+  SpaceSpaceIdPublicIntegrationRoute: SpaceSpaceIdPublicIntegrationRoute,
+  SpaceSpaceIdUsersRoute: SpaceSpaceIdUsersRoute,
+  SpaceSpaceIdIndexRoute: SpaceSpaceIdIndexRoute,
+}
+
+const SpaceSpaceIdRouteWithChildren = SpaceSpaceIdRoute._addFileChildren(
+  SpaceSpaceIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticateSuccessRoute: AuthenticateSuccessRoute,
@@ -348,79 +322,6 @@ const rootRouteChildren: RootRouteChildren = {
   FriendsAccountAddressRoute: FriendsAccountAddressRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRouteWithChildren,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/authenticate-success",
-        "/login",
-        "/playground",
-        "/account-inbox/$inboxId",
-        "/friends/$accountAddress",
-        "/space/$spaceId"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/authenticate-success": {
-      "filePath": "authenticate-success.tsx"
-    },
-    "/login": {
-      "filePath": "login.lazy.tsx"
-    },
-    "/playground": {
-      "filePath": "playground.lazy.tsx"
-    },
-    "/account-inbox/$inboxId": {
-      "filePath": "account-inbox/$inboxId.tsx"
-    },
-    "/friends/$accountAddress": {
-      "filePath": "friends/$accountAddress.tsx"
-    },
-    "/space/$spaceId": {
-      "filePath": "space/$spaceId.tsx",
-      "children": [
-        "/space/$spaceId/chat",
-        "/space/$spaceId/events",
-        "/space/$spaceId/playground",
-        "/space/$spaceId/public-integration",
-        "/space/$spaceId/users",
-        "/space/$spaceId/"
-      ]
-    },
-    "/space/$spaceId/chat": {
-      "filePath": "space/$spaceId/chat.tsx",
-      "parent": "/space/$spaceId"
-    },
-    "/space/$spaceId/events": {
-      "filePath": "space/$spaceId/events.tsx",
-      "parent": "/space/$spaceId"
-    },
-    "/space/$spaceId/playground": {
-      "filePath": "space/$spaceId/playground.tsx",
-      "parent": "/space/$spaceId"
-    },
-    "/space/$spaceId/public-integration": {
-      "filePath": "space/$spaceId/public-integration.tsx",
-      "parent": "/space/$spaceId"
-    },
-    "/space/$spaceId/users": {
-      "filePath": "space/$spaceId/users.tsx",
-      "parent": "/space/$spaceId"
-    },
-    "/space/$spaceId/": {
-      "filePath": "space/$spaceId/index.tsx",
-      "parent": "/space/$spaceId"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
