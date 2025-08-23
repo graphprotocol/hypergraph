@@ -109,8 +109,7 @@ export function AppSchemaSpaceDialog({
                   <selectAppSchemaSpaceForm.AppField name="spaceId">
                     {(field) => (
                       <field.SchemaSpaceSelect
-                        id={htmlSpaceId}
-                        name={htmlSpaceId}
+                        name="spaceId"
                         spaceSelected={(space) => {
                           selectAppSchemaSpaceForm.setFieldValue('name', space.name || space.id);
                           selectAppSchemaSpaceForm.setFieldValue('spaceId', space.id);
