@@ -11,5 +11,5 @@ const hypergraph = Command.make('hypergraph').pipe(
 
 export const run = Command.run(hypergraph, {
   name: 'hypergraph',
-  version: '0.6.0',
+  version: '0.6.2',
 });

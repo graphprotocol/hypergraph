@@ -21,7 +21,6 @@ const typeOptions: ReadonlyArray<TypeOption> = [
   TypeOption.make({ id: 'DefaultEntityNumber', name: 'Number' }),
   TypeOption.make({ id: 'DefaultEntityBoolean', name: 'Boolean' }),
   TypeOption.make({ id: 'DefaultEntityDate', name: 'Date' }),
-  TypeOption.make({ id: 'DefaultEntityUrl', name: 'Url' }),
   TypeOption.make({ id: 'DefaultEntityPoint', name: 'Point' }),
 ];
 
