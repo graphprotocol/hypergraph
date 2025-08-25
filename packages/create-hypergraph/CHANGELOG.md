@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.5.3
+### Patch Changes
+
+- 0546a02: upgrade dependencies
+
 ## 0.5.2
 ### Patch Changes
 

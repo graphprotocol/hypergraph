@@ -1,5 +1,11 @@
 # @graphprotocol/hypergraph
 
+## 0.6.3
+### Patch Changes
+
+- 0546a02: upgrade dependencies
+- 2baa671: Removed Url from the TypeSelect in typesync-studio
+
 ## 0.6.2
 ### Patch Changes
 
