@@ -16,7 +16,7 @@ import {
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, pipe, Schema } from 'effect';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 import { Arrow } from '@/Components/Arrow.tsx';
 import { Checkbox } from '@/Components/Form/Checkbox.tsx';
@@ -386,18 +386,6 @@ function SchemaBuilderComponent() {
     return propRelationSchemaTypes;
   };
 
-  // Effect to scroll to the newly added type
-  useEffect(() => {
-    if (newTypeIndex !== null) {
-      const element = typeRefs.current.get(newTypeIndex);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      // Reset newTypeIndex after scrolling
-      setNewTypeIndex(null);
-    }
-  }, [newTypeIndex]);
-
   return (
     <form
       noValidate
@@ -505,7 +493,12 @@ function SchemaBuilderComponent() {
                       newIndex = field.state.value.length - 1;
                     },
                   });
-
+                  setTimeout(() => {
+                    const element = typeRefs.current.get(newIndex);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }, 0);
                   setNewTypeIndex(newIndex);
                   toastManager.add({
                     title:'Type added to schema',
