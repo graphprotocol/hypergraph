@@ -16,7 +16,7 @@ import {
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, pipe, Schema } from 'effect';
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { Arrow } from '@/Components/Arrow.tsx';
 import { Checkbox } from '@/Components/Form/Checkbox.tsx';
@@ -114,11 +114,10 @@ function SchemaBuilderComponent() {
     },
   });
 
-
   // Create a ref to store DOM references for each type
   const typeRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   // State to track the index of the newly added type
-  const [newTypeIndex, setNewTypeIndex] = useState<number | null>(null);
+  const [_newTypeIndex, setNewTypeIndex] = useState<number | null>(null);
 
   const appTypes = useStore(createSchemaForm.store, (state) =>
     pipe(
@@ -464,7 +463,7 @@ function SchemaBuilderComponent() {
                               return;
                             }
                             field.pushValue(mapped as never);
-                            newIndex =idx;
+                            newIndex = idx;
                           });
                           // push selected type
                           field.pushValue(selectedMappedToType as never);
@@ -501,10 +500,10 @@ function SchemaBuilderComponent() {
                   }, 0);
                   setNewTypeIndex(newIndex);
                   toastManager.add({
-                    title:'Type added to schema',
+                    title: 'Type added to schema',
                     description: selected.name,
-                    type: 'success',                  
-                  })
+                    type: 'success',
+                  });
                   return;
                 }}
               />
@@ -898,9 +897,11 @@ function SchemaBuilderComponent() {
             toast={t}
             className={classnames(
               'pointer-events-auto w-full max-w-md rounded-lg shadow-lg outline-1 transition data-closed:opacity-0 data-enter:transform data-enter:duration-300 data-enter:ease-out data-closed:data-enter:translate-y-2 data-leave:duration-100 data-leave:ease-in data-closed:data-enter:sm:translate-x-2 data-closed:data-enter:sm:translate-y-0 p-4',
-              t.type === 'success' ? 'bg-green-50 dark:bg-green-900 outline-green-500/20' : 
-              t.type === 'error' ? 'bg-red-50 dark:bg-red-900 outline-red-500/20' :
-              'bg-white dark:bg-gray-800 outline-black/5 dark:outline-white/10'
+              t.type === 'success'
+                ? 'bg-green-50 dark:bg-green-900 outline-green-500/20'
+                : t.type === 'error'
+                  ? 'bg-red-50 dark:bg-red-900 outline-red-500/20'
+                  : 'bg-white dark:bg-gray-800 outline-black/5 dark:outline-white/10',
             )}
           >
             <div className="p-4">
@@ -923,9 +924,11 @@ function SchemaBuilderComponent() {
                     aria-label="Close"
                     className={classnames(
                       'inline-flex rounded-md focus:outline-2 focus:outline-offset-2',
-                      t.type === 'success' ? 'text-green-400 hover:text-green-500 focus:outline-green-600 dark:focus:outline-green-500' :
-                      t.type === 'error' ? 'text-red-400 hover:text-red-500 focus:outline-red-600 dark:focus:outline-red-500' :
-                      'text-gray-400 hover:text-gray-500 focus:outline-gray-600 dark:hover:text-white dark:focus:outline-gray-500'
+                      t.type === 'success'
+                        ? 'text-green-400 hover:text-green-500 focus:outline-green-600 dark:focus:outline-green-500'
+                        : t.type === 'error'
+                          ? 'text-red-400 hover:text-red-500 focus:outline-red-600 dark:focus:outline-red-500'
+                          : 'text-gray-400 hover:text-gray-500 focus:outline-gray-600 dark:hover:text-white dark:focus:outline-gray-500',
                     )}
                   >
                     <XIcon className="size-4" aria-hidden="true" />
