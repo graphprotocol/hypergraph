@@ -1,12 +1,16 @@
+import { createServer } from 'node:http';
 import { HttpApiBuilder, HttpServer } from '@effect/platform';
 import { NodeHttpServer } from '@effect/platform-node';
 import { Effect, Layer } from 'effect';
-import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
+import { AppIdentityServiceLive } from './services/app-identity.ts';
+import { DatabaseServiceLive } from './services/database.ts';
 
-const apiLive = HttpApiBuilder.api(hypergraphApi).pipe(Layer.provide(HandlersLive));
+const ServicesLive = Layer.mergeAll(DatabaseServiceLive, Layer.provide(AppIdentityServiceLive, DatabaseServiceLive));
+
+const apiLive = HttpApiBuilder.api(hypergraphApi).pipe(Layer.provide(HandlersLive), Layer.provide(ServicesLive));
 
 export const server = Layer.unwrapEffect(
   Effect.gen(function* () {

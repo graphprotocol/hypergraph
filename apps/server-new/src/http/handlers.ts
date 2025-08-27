@@ -1,5 +1,6 @@
 import { HttpApiBuilder } from '@effect/platform';
 import { Effect, Layer } from 'effect';
+import { AppIdentityService } from '../services/app-identity.js';
 import * as Api from './api.js';
 import * as Errors from './errors.js';
 
@@ -82,11 +83,20 @@ const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (h
   return handlers
     .handle(
       'getWhoami',
-      Effect.fn(function* () {
-        yield* Effect.log('Getting whoami');
-        yield* Effect.sleep('1 second').pipe(Effect.withSpan('sleeping'));
-        yield* Effect.sleep('2 second').pipe(Effect.withSpan('sleeping again'));
-        return 'Hypergraph Server v3';
+      Effect.fn(function* ({ headers }) {
+        yield* Effect.logInfo('GET /whoami');
+
+        const authHeader = headers.authorization;
+        const sessionToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+
+        if (!sessionToken) {
+          yield* new Errors.AuthenticationError({ message: 'No session token provided' });
+        }
+
+        const appIdentityService = yield* AppIdentityService;
+        const { accountAddress } = yield* appIdentityService.getBySessionToken(sessionToken);
+
+        return accountAddress;
       }),
     )
     .handle(

@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { Context, Effect, Layer } from 'effect';
+import { Config, Context, Effect, Layer } from 'effect';
+import { PrismaClient } from '../../prisma/generated/client/client';
 
 /**
  * Database service interface
@@ -17,7 +17,12 @@ export const DatabaseService = Context.GenericTag<DatabaseService>('DatabaseServ
  * Database service implementation
  */
 export const makeDatabaseService = Effect.fn(function* () {
-  const client = new PrismaClient();
+  // Get the DATABASE_URL from config
+  const databaseUrl = yield* Config.string('DATABASE_URL').pipe(Config.withDefault('file:./dev.db'));
+
+  const client = new PrismaClient({
+    datasourceUrl: databaseUrl,
+  });
 
   // Connect to database
   yield* Effect.tryPromise({
@@ -41,7 +46,12 @@ export const DatabaseServiceLive = Layer.effect(DatabaseService, makeDatabaseSer
 export const DatabaseServiceLiveWithCleanup = Layer.scoped(
   DatabaseService,
   Effect.fn(function* () {
-    const client = new PrismaClient();
+    // Get the DATABASE_URL from config
+    const databaseUrl = yield* Config.string('DATABASE_URL').pipe(Config.withDefault('file:./dev.db'));
+
+    const client = new PrismaClient({
+      datasourceUrl: databaseUrl,
+    });
 
     // Connect to database
     yield* Effect.tryPromise({

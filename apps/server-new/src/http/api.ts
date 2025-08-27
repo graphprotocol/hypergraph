@@ -131,8 +131,12 @@ export const connectGroup = HttpApiGroup.make('Connect')
  * Identity endpoints
  */
 export const getWhoamiEndpoint = HttpApiEndpoint.get('getWhoami')`/whoami`
+  .setHeaders(Schema.Struct({ authorization: Schema.String }))
   .addSuccess(Schema.String)
-  .addError(Errors.AuthenticationError, { status: 401 });
+  .addError(Errors.AuthenticationError, { status: 401 })
+  .addError(Errors.InvalidTokenError, { status: 401 })
+  .addError(Errors.TokenExpiredError, { status: 401 })
+  .addError(Errors.ResourceNotFoundError, { status: 404 });
 
 export const getConnectIdentityEndpoint = HttpApiEndpoint.get('getConnectIdentity')`/connect/identity`
   .setUrlParams(ConnectIdentityQuery)
