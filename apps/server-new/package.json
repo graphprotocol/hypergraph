@@ -16,21 +16,21 @@
     "prebuild": "prisma generate"
   },
   "dependencies": {
-    "@effect/opentelemetry": "^0.56.0",
+    "@effect/opentelemetry": "^0.56.4",
     "@effect/platform": "^0.90.0",
-    "@effect/platform-node": "^0.94.0",
+    "@effect/platform-node": "^0.96.0",
     "@graphprotocol/hypergraph": "workspace:*",
-    "@prisma/client": "^6.7.0",
-    "@privy-io/server-auth": "^1.26.0",
+    "@prisma/client": "^6.14.0",
+    "@privy-io/server-auth": "^1.32.0",
     "cors": "^2.8.5",
-    "effect": "^3.17.3"
+    "effect": "^3.17.9"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/node": "^24.1.0",
-    "prisma": "^6.7.0",
+    "prisma": "^6.14.0",
     "tsup": "^8.4.0",
-    "tsx": "^4.19.0",
+    "tsx": "^4.20.5",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }
