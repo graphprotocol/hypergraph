@@ -73,8 +73,14 @@ export const healthGroup = HttpApiGroup.make('Health').add(statusEndpoint);
  * Connect API endpoints (Privy authentication)
  */
 export const getConnectSpacesEndpoint = HttpApiEndpoint.get('getConnectSpaces')`/connect/spaces`
+  .setHeaders(Schema.Struct({
+    'privy-id-token': Schema.String,
+    'account-address': Schema.String,
+  }))
   .addSuccess(ConnectSpacesResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
+  .addError(Errors.AuthorizationError, { status: 401 })
+  .addError(Errors.PrivyTokenError, { status: 401 })
   .addError(Errors.PrivyConfigError, { status: 500 });
 
 export const postConnectSpacesEndpoint = HttpApiEndpoint.post('postConnectSpaces')`/connect/spaces`
@@ -140,7 +146,8 @@ export const getWhoamiEndpoint = HttpApiEndpoint.get('getWhoami')`/whoami`
 
 export const getConnectIdentityEndpoint = HttpApiEndpoint.get('getConnectIdentity')`/connect/identity`
   .setUrlParams(ConnectIdentityQuery)
-  // .addSuccess(Messages.ResponseIdentity)
+  .addSuccess(Messages.ResponseIdentity)
+  .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.ResourceNotFoundError, { status: 404 });
 
 export const getIdentityEndpoint = HttpApiEndpoint.get('getIdentity')`/identity`

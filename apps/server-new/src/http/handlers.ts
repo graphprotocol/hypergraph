@@ -1,6 +1,10 @@
 import { HttpApiBuilder } from '@effect/platform';
+import { Messages } from '@graphprotocol/hypergraph';
 import { Effect, Layer } from 'effect';
 import { AppIdentityService } from '../services/app-identity.js';
+import { ConnectIdentityService } from '../services/connect-identity.js';
+import { PrivyAuthService } from '../services/privy-auth.js';
+import { SpacesService } from '../services/spaces.js';
 import * as Api from './api.js';
 import * as Errors from './errors.js';
 
@@ -18,9 +22,17 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
   return handlers
     .handle(
       'getConnectSpaces',
-      Effect.fn(function* ({ request }) {
-        yield* Effect.logInfo('Getting connect spaces');
-        return { spaces: [] };
+      Effect.fn(function* ({ headers }) {
+        yield* Effect.logInfo('GET /connect/spaces');
+
+        const privyAuthService = yield* PrivyAuthService;
+        const spacesService = yield* SpacesService;
+
+        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], headers['account-address']);
+
+        const spaces = yield* spacesService.listByAccount(headers['account-address']);
+
+        return { spaces };
       }),
     )
     .handle(
@@ -102,8 +114,27 @@ const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (h
     .handle(
       'getConnectIdentity',
       Effect.fn(function* ({ urlParams }) {
-        yield* Effect.logInfo('Getting connect identity', urlParams);
-        yield* new Errors.ResourceNotFoundError({ resource: 'Identity', id: 'connect' });
+        yield* Effect.logInfo('GET /connect/identity', { accountAddress: urlParams.accountAddress });
+
+        if (!urlParams.accountAddress) {
+          yield* new Errors.ValidationError({
+            field: 'accountAddress',
+            message: 'accountAddress is required',
+          });
+        }
+
+        const connectIdentityService = yield* ConnectIdentityService;
+        const identity = yield* connectIdentityService.getByAccountAddress(urlParams.accountAddress);
+
+        const response: Messages.ResponseIdentity = {
+          accountAddress: identity.accountAddress,
+          signaturePublicKey: identity.signaturePublicKey,
+          encryptionPublicKey: identity.encryptionPublicKey,
+          accountProof: identity.accountProof,
+          keyProof: identity.keyProof,
+        };
+
+        return response;
       }),
     )
     .handle(
