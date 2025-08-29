@@ -128,21 +128,45 @@ export const postConnectIdentityEndpoint = HttpApiEndpoint.post('postConnectIden
 export const getConnectIdentityEncryptedEndpoint = HttpApiEndpoint.get(
   'getConnectIdentityEncrypted',
 )`/connect/identity/encrypted`
-  // .addSuccess(Messages.ResponseIdentityEncrypted)
-  .addError(Errors.AuthenticationError, { status: 401 });
+  .setHeaders(Schema.Struct({
+    'privy-id-token': Schema.String,
+    'account-address': Schema.String,
+  }))
+  .addSuccess(Messages.ResponseIdentityEncrypted)
+  .addError(Errors.AuthenticationError, { status: 401 })
+  .addError(Errors.AuthorizationError, { status: 401 })
+  .addError(Errors.ResourceNotFoundError, { status: 404 })
+  .addError(Errors.PrivyTokenError, { status: 401 })
+  .addError(Errors.PrivyConfigError, { status: 500 });
 
 export const getConnectAppIdentityEndpoint = HttpApiEndpoint.get(
   'getConnectAppIdentity',
 )`/connect/app-identity/${appId}`
-  // .addSuccess(AppIdentityResponse)
+  .setHeaders(Schema.Struct({
+    'privy-id-token': Schema.String,
+    'account-address': Schema.String,
+  }))
+  .addSuccess(AppIdentityResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
-  .addError(Errors.ResourceNotFoundError, { status: 404 });
+  .addError(Errors.AuthorizationError, { status: 401 })
+  .addError(Errors.ResourceNotFoundError, { status: 404 })
+  .addError(Errors.PrivyTokenError, { status: 401 })
+  .addError(Errors.PrivyConfigError, { status: 500 })
+  .addError(Errors.DatabaseError, { status: 500 });
 
 export const postConnectAppIdentityEndpoint = HttpApiEndpoint.post('postConnectAppIdentity')`/connect/app-identity`
+  .setHeaders(Schema.Struct({
+    'privy-id-token': Schema.String,
+  }))
   .setPayload(Messages.RequestConnectCreateAppIdentity)
-  // .addSuccess(AppIdentityResponse)
+  .addSuccess(AppIdentityResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
-  .addError(Errors.OwnershipProofError, { status: 401 });
+  .addError(Errors.AuthorizationError, { status: 401 })
+  .addError(Errors.ResourceAlreadyExistsError, { status: 400 })
+  .addError(Errors.OwnershipProofError, { status: 401 })
+  .addError(Errors.PrivyTokenError, { status: 401 })
+  .addError(Errors.PrivyConfigError, { status: 500 })
+  .addError(Errors.DatabaseError, { status: 500 });
 
 export const connectGroup = HttpApiGroup.make('Connect')
   .add(getConnectSpacesEndpoint)
@@ -172,7 +196,7 @@ export const getConnectIdentityEndpoint = HttpApiEndpoint.get('getConnectIdentit
 
 export const getIdentityEndpoint = HttpApiEndpoint.get('getIdentity')`/identity`
   .setUrlParams(IdentityQuery)
-  // .addSuccess(Messages.ResponseIdentity)
+  .addSuccess(Messages.ResponseIdentity)
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.ResourceNotFoundError, { status: 404 });
 

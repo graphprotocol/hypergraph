@@ -14,10 +14,10 @@ export interface IdentityResult {
 }
 
 export interface IdentityService {
-  readonly getAppOrConnectIdentity: (params: {
-    accountAddress: string;
-    signaturePublicKey: string;
-  }) => Effect.Effect<IdentityResult, ResourceNotFoundError>;
+  readonly getAppOrConnectIdentity: (params:
+    | { accountAddress: string; signaturePublicKey: string }
+    | { accountAddress: string; appId: string }
+  ) => Effect.Effect<IdentityResult, ResourceNotFoundError>;
 }
 
 export const IdentityService = Context.GenericTag<IdentityService>('IdentityService');
@@ -25,44 +25,86 @@ export const IdentityService = Context.GenericTag<IdentityService>('IdentityServ
 export const makeIdentityService = Effect.fn(function* () {
   const { client } = yield* DatabaseService;
 
-  const getAppOrConnectIdentity = (params: { accountAddress: string; signaturePublicKey: string }) =>
+  const getAppOrConnectIdentity = (params:
+    | { accountAddress: string; signaturePublicKey: string }
+    | { accountAddress: string; appId: string }
+  ) =>
     Effect.fn(function* () {
-      // First try to find Connect identity
-      const account = yield* Effect.tryPromise({
-        try: () =>
-          client.account.findFirst({
-            where: {
-              address: params.accountAddress,
-              connectSignaturePublicKey: params.signaturePublicKey,
-            },
-          }),
-        catch: () =>
-          new ResourceNotFoundError({
-            resource: 'Identity',
-            id: params.accountAddress,
-          }),
-      });
+      // If we have signaturePublicKey, search by that
+      if ('signaturePublicKey' in params) {
+        // First try to find Connect identity
+        const account = yield* Effect.tryPromise({
+          try: () =>
+            client.account.findFirst({
+              where: {
+                address: params.accountAddress,
+                connectSignaturePublicKey: params.signaturePublicKey,
+              },
+            }),
+          catch: () =>
+            new ResourceNotFoundError({
+              resource: 'Identity',
+              id: params.accountAddress,
+            }),
+        });
 
-      if (account) {
+        if (account) {
+          return {
+            accountAddress: account.address,
+            ciphertext: account.connectCiphertext,
+            nonce: account.connectNonce,
+            signaturePublicKey: account.connectSignaturePublicKey,
+            encryptionPublicKey: account.connectEncryptionPublicKey,
+            accountProof: account.connectAccountProof,
+            keyProof: account.connectKeyProof,
+            appId: null,
+          };
+        }
+
+        // Try to find App identity by signaturePublicKey
+        const appIdentity = yield* Effect.tryPromise({
+          try: () =>
+            client.appIdentity.findFirst({
+              where: {
+                accountAddress: params.accountAddress,
+                signaturePublicKey: params.signaturePublicKey,
+              },
+            }),
+          catch: () =>
+            new ResourceNotFoundError({
+              resource: 'Identity',
+              id: params.accountAddress,
+            }),
+        });
+
+        if (!appIdentity) {
+          return yield* Effect.fail(
+            new ResourceNotFoundError({
+              resource: 'Identity',
+              id: params.accountAddress,
+            }),
+          );
+        }
+
         return {
-          accountAddress: account.address,
-          ciphertext: account.connectCiphertext,
-          nonce: account.connectNonce,
-          signaturePublicKey: account.connectSignaturePublicKey,
-          encryptionPublicKey: account.connectEncryptionPublicKey,
-          accountProof: account.connectAccountProof,
-          keyProof: account.connectKeyProof,
-          appId: null,
+          accountAddress: appIdentity.accountAddress,
+          ciphertext: appIdentity.ciphertext,
+          nonce: undefined,
+          signaturePublicKey: appIdentity.signaturePublicKey,
+          encryptionPublicKey: appIdentity.encryptionPublicKey,
+          accountProof: appIdentity.accountProof,
+          keyProof: appIdentity.keyProof,
+          appId: appIdentity.appId,
         };
       }
 
-      // Try to find App identity
+      // If we have appId, search by that
       const appIdentity = yield* Effect.tryPromise({
         try: () =>
           client.appIdentity.findFirst({
             where: {
               accountAddress: params.accountAddress,
-              signaturePublicKey: params.signaturePublicKey,
+              appId: params.appId,
             },
           }),
         catch: () =>

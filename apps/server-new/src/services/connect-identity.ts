@@ -10,6 +10,12 @@ export interface ConnectIdentityResult {
   keyProof: string;
 }
 
+export interface ConnectIdentityEncrypted {
+  accountAddress: string;
+  ciphertext: string;
+  nonce: string;
+}
+
 export interface CreateConnectIdentityParams {
   signerAddress: string;
   accountAddress: string;
@@ -23,7 +29,12 @@ export interface CreateConnectIdentityParams {
 
 export interface ConnectIdentityService {
   readonly getByAccountAddress: (accountAddress: string) => Effect.Effect<ConnectIdentityResult, ResourceNotFoundError>;
-  readonly createIdentity: (params: CreateConnectIdentityParams) => Effect.Effect<void, ResourceAlreadyExistsError | DatabaseError>;
+  readonly getIdentityEncrypted: (
+    accountAddress: string,
+  ) => Effect.Effect<ConnectIdentityEncrypted, ResourceNotFoundError>;
+  readonly createIdentity: (
+    params: CreateConnectIdentityParams,
+  ) => Effect.Effect<void, ResourceAlreadyExistsError | DatabaseError>;
 }
 
 export const ConnectIdentityService = Context.GenericTag<ConnectIdentityService>('ConnectIdentityService');
@@ -118,8 +129,44 @@ export const makeConnectIdentityService = Effect.fn(function* () {
       });
     })();
 
+  const getIdentityEncrypted = (accountAddress: string) =>
+    Effect.fn(function* () {
+      const account = yield* Effect.tryPromise({
+        try: () =>
+          client.account.findFirst({
+            where: { address: accountAddress },
+            select: {
+              address: true,
+              connectCiphertext: true,
+              connectNonce: true,
+            },
+          }),
+        catch: () =>
+          new ResourceNotFoundError({
+            resource: 'ConnectIdentity',
+            id: accountAddress,
+          }),
+      });
+
+      if (!account) {
+        return yield* Effect.fail(
+          new ResourceNotFoundError({
+            resource: 'ConnectIdentity',
+            id: accountAddress,
+          }),
+        );
+      }
+
+      return {
+        accountAddress: account.address,
+        ciphertext: account.connectCiphertext,
+        nonce: account.connectNonce,
+      };
+    })();
+
   return {
     getByAccountAddress,
+    getIdentityEncrypted,
     createIdentity,
   } as const;
 })();

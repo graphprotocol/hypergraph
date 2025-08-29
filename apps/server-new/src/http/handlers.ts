@@ -1,9 +1,11 @@
 import { HttpApiBuilder } from '@effect/platform';
 import { Identity, Messages, Utils } from '@graphprotocol/hypergraph';
+import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import { Effect, Layer } from 'effect';
 import { hypergraphChainConfig, hypergraphRpcUrlConfig } from '../config/hypergraph.js';
 import { AppIdentityService } from '../services/app-identity.js';
 import { ConnectIdentityService } from '../services/connect-identity.js';
+import { IdentityService } from '../services/identity.js';
 import { PrivyAuthService } from '../services/privy-auth.js';
 import { SpacesService } from '../services/spaces.js';
 import * as Api from './api.js';
@@ -154,26 +156,122 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'getConnectIdentityEncrypted',
-      Effect.fn(function* ({ request }) {
-        yield* Effect.logInfo('Getting encrypted identity');
-        yield* new Errors.ResourceNotFoundError({
-          resource: 'getConnectIdentityEncrypted',
-          id: 'getConnectIdentityEncrypted',
-        });
+      Effect.fn(function* ({ headers }) {
+        yield* Effect.logInfo('GET /connect/identity/encrypted');
+
+        const privyAuthService = yield* PrivyAuthService;
+        const connectIdentityService = yield* ConnectIdentityService;
+
+        // Authenticate the request with Privy token
+        const signerAddress = yield* privyAuthService.verifyPrivyToken(headers['privy-id-token']);
+        const accountAddress = headers['account-address'];
+
+        // Verify the signer is authorized for this account
+        yield* privyAuthService.isSignerForAccount(signerAddress, accountAddress);
+
+        // Get the encrypted identity
+        const identity = yield* connectIdentityService.getIdentityEncrypted(accountAddress);
+
+        const response: Messages.ResponseIdentityEncrypted = {
+          keyBox: {
+            accountAddress,
+            ciphertext: identity.ciphertext,
+            nonce: identity.nonce,
+            signer: signerAddress,
+          },
+        };
+
+        return response;
       }),
     )
     .handle(
       'getConnectAppIdentity',
-      Effect.fn(function* ({ path: { appId } }) {
-        yield* Effect.logInfo(`Getting app identity for appId: ${appId}`);
-        yield* new Errors.ResourceNotFoundError({ resource: 'getConnectAppIdentity', id: 'getConnectAppIdentity' });
+      Effect.fn(function* ({ headers, path: { appId } }) {
+        yield* Effect.logInfo(`GET /connect/app-identity/${appId}`);
+
+        const privyAuthService = yield* PrivyAuthService;
+        const appIdentityService = yield* AppIdentityService;
+
+        // Authenticate the request with Privy token
+        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], headers['account-address']);
+
+        // Find the app identity
+        const appIdentity = yield* appIdentityService.findByAppId({
+          accountAddress: headers['account-address'],
+          appId,
+        });
+
+        if (!appIdentity) {
+          return yield* new Errors.ResourceNotFoundError({
+            resource: 'AppIdentity',
+            id: appId,
+          });
+        }
+
+        return { appIdentity };
       }),
     )
     .handle(
       'postConnectAppIdentity',
-      Effect.fn(function* ({ payload }) {
-        yield* Effect.logInfo('Creating app identity', payload);
-        yield* new Errors.ResourceNotFoundError({ resource: 'postConnectAppIdentity', id: 'postConnectAppIdentity' });
+      Effect.fn(function* ({ headers, payload }) {
+        yield* Effect.logInfo('POST /connect/app-identity');
+
+        const privyAuthService = yield* PrivyAuthService;
+        const appIdentityService = yield* AppIdentityService;
+        const chain = yield* hypergraphChainConfig;
+        const rpcUrl = yield* hypergraphRpcUrlConfig;
+
+        // Verify the Privy token and get signer address
+        const signerAddress = yield* privyAuthService.verifyPrivyToken(headers['privy-id-token']);
+        const accountAddress = payload.accountAddress;
+
+        // Verify signer is authorized for this account
+        yield* privyAuthService.isSignerForAccount(signerAddress, accountAddress);
+
+        // Verify identity ownership proof
+        const isValid = yield* Effect.tryPromise({
+          try: () =>
+            Identity.verifyIdentityOwnership(
+              accountAddress,
+              payload.signaturePublicKey,
+              payload.accountProof,
+              payload.keyProof,
+              chain,
+              rpcUrl,
+            ),
+          catch: () =>
+            new Errors.OwnershipProofError({
+              accountAddress,
+              reason: 'Failed to verify identity ownership',
+            }),
+        });
+
+        if (!isValid) {
+          yield* new Errors.OwnershipProofError({
+            accountAddress,
+            reason: 'Invalid ownership proof',
+          });
+        }
+
+        // Generate session token
+        const sessionToken = bytesToHex(randomBytes(32));
+        const sessionTokenExpires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
+
+        // Create the app identity
+        const appIdentity = yield* appIdentityService.createAppIdentity({
+          accountAddress,
+          appId: payload.appId,
+          address: payload.address,
+          ciphertext: payload.ciphertext,
+          signaturePublicKey: payload.signaturePublicKey,
+          encryptionPublicKey: payload.encryptionPublicKey,
+          accountProof: payload.accountProof,
+          keyProof: payload.keyProof,
+          sessionToken,
+          sessionTokenExpires,
+        });
+
+        return { appIdentity };
       }),
     );
 });
@@ -230,8 +328,42 @@ const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (h
     .handle(
       'getIdentity',
       Effect.fn(function* ({ urlParams }) {
-        yield* Effect.logInfo('Getting identity', urlParams);
-        yield* new Errors.ResourceNotFoundError({ resource: 'Identity', id: 'general' });
+        yield* Effect.logInfo('GET /identity', urlParams);
+
+        const identityService = yield* IdentityService;
+
+        // Validate required parameters
+        if (!urlParams.accountAddress) {
+          yield* new Errors.ValidationError({
+            field: 'accountAddress',
+            message: 'accountAddress is required',
+          });
+        }
+
+        if (!urlParams.signaturePublicKey && !urlParams.appId) {
+          yield* new Errors.ValidationError({
+            field: 'signaturePublicKey or appId',
+            message: 'Either signaturePublicKey or appId is required',
+          });
+        }
+
+        // Build params based on what's provided
+        const params = urlParams.signaturePublicKey
+          ? { accountAddress: urlParams.accountAddress, signaturePublicKey: urlParams.signaturePublicKey }
+          : { accountAddress: urlParams.accountAddress, appId: urlParams.appId! };
+
+        const identity = yield* identityService.getAppOrConnectIdentity(params);
+
+        const response: Messages.ResponseIdentity = {
+          accountAddress: urlParams.accountAddress,
+          signaturePublicKey: identity.signaturePublicKey,
+          encryptionPublicKey: identity.encryptionPublicKey,
+          accountProof: identity.accountProof,
+          keyProof: identity.keyProof,
+          appId: identity.appId ?? undefined,
+        };
+
+        return response;
       }),
     );
 });
