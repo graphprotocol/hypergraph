@@ -7,6 +7,8 @@ import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
 import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
+import * as Schedule from 'effect/Schedule';
+import * as Stream from 'effect/Stream';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
@@ -26,13 +28,14 @@ const ApiLayer = HttpLayerRouter.addHttpApi(hypergraphApi, {
 const WebSocketLayer = HttpLayerRouter.add(
   'GET',
   '/ws',
-  Effect.gen(function* () {
-    // TODO: Implement websocket logic here.
-    const socket = yield* HttpServerRequest.upgrade;
-    const write = yield* socket.writer;
-    yield* socket.run(write);
-    return HttpServerResponse.empty();
-  }),
+  // TODO: Implement actual websocket logic here.
+  Stream.fromSchedule(Schedule.spaced(1000)).pipe(
+    Stream.map(JSON.stringify),
+    Stream.pipeThroughChannel(HttpServerRequest.upgradeChannel()),
+    Stream.decodeText(),
+    Stream.runForEach((_) => Effect.log(_)),
+    Effect.as(HttpServerResponse.empty()),
+  ),
 );
 
 // Merge router layers together and add the cors middleware layer.
