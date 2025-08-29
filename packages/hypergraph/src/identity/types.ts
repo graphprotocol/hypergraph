@@ -1,4 +1,5 @@
-import { Schema } from 'effect';
+import * as Data from 'effect/Data';
+import * as Schema from 'effect/Schema';
 
 export type Storage = {
   getItem: (key: string) => string | null;
@@ -39,6 +40,4 @@ export type PublicIdentity = {
   signaturePublicKey: string;
 };
 
-export class InvalidIdentityError {
-  readonly _tag = 'InvalidIdentityError';
-}
+export class InvalidIdentityError extends Data.TaggedError('InvalidIdentityError') {}

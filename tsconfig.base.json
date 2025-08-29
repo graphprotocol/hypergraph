@@ -41,6 +41,10 @@
       "@graphprotocol/hypergraph/*": ["./packages/hypergraph/src/*.js"],
       "@graphprotocol/hypergraph-react": ["./packages/hypergraph-react/src/index.js"],
       "@graphprotocol/hypergraph-react/*": ["./packages/hypergraph-react/src/*.js"]
-    }
+    },
+    "plugins": [{
+      "name": "@effect/language-service",
+      "namespaceImportPackages": ["effect", "@effect/*"]
+    }]
   }
 }
