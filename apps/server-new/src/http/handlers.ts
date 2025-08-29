@@ -27,7 +27,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
   return handlers
     .handle(
       'getConnectSpaces',
-      Effect.fn(function* ({ headers }) {
+      Effect.fn('getConnectSpaces')(function* ({ headers }) {
         yield* Effect.logInfo('GET /connect/spaces');
 
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
@@ -43,7 +43,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'postConnectSpaces',
-      Effect.fn(function* ({ headers, payload }) {
+      Effect.fn('postConnectSpaces')(function* ({ headers, payload }) {
         yield* Effect.logInfo('POST /connect/spaces');
 
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
@@ -72,7 +72,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'postConnectAddAppIdentityToSpaces',
-      Effect.fn(function* ({ headers, payload }) {
+      Effect.fn('postConnectAddAppIdentityToSpaces')(function* ({ headers, payload }) {
         yield* Effect.logInfo('POST /connect/add-app-identity-to-spaces');
 
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
@@ -95,7 +95,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'postConnectIdentity',
-      Effect.fn(function* ({ headers, payload }) {
+      Effect.fn('postConnectIdentity')(function* ({ headers, payload }) {
         yield* Effect.logInfo('POST /connect/identity');
 
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
@@ -165,7 +165,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'getConnectIdentityEncrypted',
-      Effect.fn(function* ({ headers }) {
+      Effect.fn('getConnectIdentityEncrypted')(function* ({ headers }) {
         yield* Effect.logInfo('GET /connect/identity/encrypted');
 
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
@@ -195,7 +195,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'getConnectAppIdentity',
-      Effect.fn(function* ({ headers, path: { appId } }) {
+      Effect.fn('getConnectAppIdentity')(function* ({ headers, path: { appId } }) {
         yield* Effect.logInfo(`GET /connect/app-identity/${appId}`);
 
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
@@ -226,7 +226,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'postConnectAppIdentity',
-      Effect.fn(function* ({ headers, payload }) {
+      Effect.fn('postConnectAppIdentity')(function* ({ headers, payload }) {
         yield* Effect.logInfo('POST /connect/app-identity');
 
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
@@ -301,7 +301,7 @@ const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (h
   return handlers
     .handle(
       'getWhoami',
-      Effect.fn(function* ({ headers }) {
+      Effect.fn('getWhoami')(function* ({ headers }) {
         yield* Effect.logInfo('GET /whoami');
 
         const authHeader = headers.authorization;
@@ -319,7 +319,7 @@ const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (h
     )
     .handle(
       'getConnectIdentity',
-      Effect.fn(function* ({ urlParams }) {
+      Effect.fn('getConnectIdentity')(function* ({ urlParams }) {
         yield* Effect.logInfo('GET /connect/identity', { accountAddress: urlParams.accountAddress });
 
         if (!urlParams.accountAddress) {
@@ -345,7 +345,7 @@ const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (h
     )
     .handle(
       'getIdentity',
-      Effect.fn(function* ({ urlParams }) {
+      Effect.fn('getIdentity')(function* ({ urlParams }) {
         yield* Effect.logInfo('GET /identity', urlParams);
 
         const identityService = yield* IdentityService.IdentityService;
@@ -368,7 +368,7 @@ const IdentityGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Identity', (h
         // Build params based on what's provided
         const params = urlParams.signaturePublicKey
           ? { accountAddress: urlParams.accountAddress, signaturePublicKey: urlParams.signaturePublicKey }
-          : { accountAddress: urlParams.accountAddress, appId: urlParams.appId! };
+          : { accountAddress: urlParams.accountAddress, appId: urlParams.appId as string };
 
         const identity = yield* identityService.getAppOrConnectIdentity(params).pipe(Effect.orDie);
 
@@ -397,7 +397,7 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
   return handlers
     .handle(
       'getSpaceInboxes',
-      Effect.fn(function* ({ path: { spaceId } }) {
+      Effect.fn('getSpaceInboxes')(function* ({ path: { spaceId } }) {
         yield* Effect.logInfo(`GET /spaces/${spaceId}/inboxes`);
 
         const spaceInboxService = yield* SpaceInboxService.SpaceInboxService;
@@ -409,7 +409,7 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
     )
     .handle(
       'getSpaceInbox',
-      Effect.fn(function* ({ path: { spaceId, inboxId } }) {
+      Effect.fn('getSpaceInbox')(function* ({ path: { spaceId, inboxId } }) {
         yield* Effect.logInfo(`GET /spaces/${spaceId}/inboxes/${inboxId}`);
 
         const spaceInboxService = yield* SpaceInboxService.SpaceInboxService;
@@ -421,7 +421,7 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
     )
     .handle(
       'postSpaceInboxMessage',
-      Effect.fn(function* ({ path: { spaceId, inboxId }, payload }) {
+      Effect.fn('postSpaceInboxMessage')(function* ({ path: { spaceId, inboxId }, payload }) {
         yield* Effect.logInfo(`POST /spaces/${spaceId}/inboxes/${inboxId}/messages`);
 
         const spaceInboxService = yield* SpaceInboxService.SpaceInboxService;
@@ -439,7 +439,7 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
     )
     .handle(
       'getAccountInboxes',
-      Effect.fn(function* ({ path: { accountAddress } }) {
+      Effect.fn('getAccountInboxes')(function* ({ path: { accountAddress } }) {
         yield* Effect.logInfo(`GET /accounts/${accountAddress}/inboxes`);
 
         const accountInboxService = yield* AccountInboxService.AccountInboxService;
@@ -451,7 +451,7 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
     )
     .handle(
       'getAccountInbox',
-      Effect.fn(function* ({ path: { accountAddress, inboxId } }) {
+      Effect.fn('getAccountInbox')(function* ({ path: { accountAddress, inboxId } }) {
         yield* Effect.logInfo(`GET /accounts/${accountAddress}/inboxes/${inboxId}`);
 
         const accountInboxService = yield* AccountInboxService.AccountInboxService;
@@ -463,7 +463,7 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
     )
     .handle(
       'postAccountInboxMessage',
-      Effect.fn(function* ({ path: { accountAddress, inboxId }, payload }) {
+      Effect.fn('postAccountInboxMessage')(function* ({ path: { accountAddress, inboxId }, payload }) {
         yield* Effect.logInfo(`POST /accounts/${accountAddress}/inboxes/${inboxId}/messages`);
 
         const accountInboxService = yield* AccountInboxService.AccountInboxService;

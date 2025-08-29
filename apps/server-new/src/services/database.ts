@@ -40,12 +40,12 @@ export const layer = Layer.scoped(
       (client) => Effect.tryPromise(() => client.$disconnect()).pipe(Effect.ignore),
     );
 
-    const use = Effect.fn(function* <T>(fn: (client: PrismaClient, signal: AbortSignal) => Promise<T>) {
+    const use = Effect.fn('databaseUse')(function* <T>(fn: (client: PrismaClient, signal: AbortSignal) => Promise<T>) {
       return yield* Effect.tryPromise({
         try: (signal) => fn(client, signal),
         catch: (cause) => new DatabaseError({ cause }),
       }) as Effect.Effect<T, DatabaseError>;
-    }) as any;
+    });
 
     return {
       client,

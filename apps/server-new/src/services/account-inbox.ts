@@ -44,7 +44,11 @@ export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
   const { getAppOrConnectIdentity } = yield* IdentityService.IdentityService;
 
-  const listPublicAccountInboxes = Effect.fn(function* ({ accountAddress }: { accountAddress: string }) {
+  const listPublicAccountInboxes = Effect.fn('listPublicAccountInboxes')(function* ({
+    accountAddress,
+  }: {
+    accountAddress: string;
+  }) {
     const inboxes = yield* use((client) =>
       client.accountInbox.findMany({
         where: { accountAddress, isPublic: true },
@@ -77,7 +81,7 @@ export const layer = Effect.gen(function* () {
     }));
   });
 
-  const getAccountInbox = Effect.fn(function* ({
+  const getAccountInbox = Effect.fn('getAccountInbox')(function* ({
     accountAddress,
     inboxId,
   }: {
@@ -125,7 +129,7 @@ export const layer = Effect.gen(function* () {
     };
   });
 
-  const postAccountInboxMessage = Effect.fn(function* ({
+  const postAccountInboxMessage = Effect.fn('postAccountInboxMessage')(function* ({
     accountAddress,
     inboxId,
     message,
@@ -140,22 +144,18 @@ export const layer = Effect.gen(function* () {
     switch (accountInbox.authPolicy) {
       case 'requires_auth':
         if (!message.signature || !message.authorAccountAddress) {
-          return yield* Effect.fail(
-            new ValidationError({
-              field: 'signature and authorAccountAddress',
-              message: 'Signature and authorAccountAddress required',
-            }),
-          );
+          return yield* new ValidationError({
+            field: 'signature and authorAccountAddress',
+            message: 'Signature and authorAccountAddress required',
+          });
         }
         break;
       case 'anonymous':
         if (message.signature || message.authorAccountAddress) {
-          return yield* Effect.fail(
-            new ValidationError({
-              field: 'signature and authorAccountAddress',
-              message: 'Signature and authorAccountAddress not allowed',
-            }),
-          );
+          return yield* new ValidationError({
+            field: 'signature and authorAccountAddress',
+            message: 'Signature and authorAccountAddress not allowed',
+          });
         }
         break;
       case 'optional_auth':
@@ -163,21 +163,17 @@ export const layer = Effect.gen(function* () {
           (message.signature && !message.authorAccountAddress) ||
           (!message.signature && message.authorAccountAddress)
         ) {
-          return yield* Effect.fail(
-            new ValidationError({
-              field: 'signature and authorAccountAddress',
-              message: 'Signature and authorAccountAddress must be provided together',
-            }),
-          );
+          return yield* new ValidationError({
+            field: 'signature and authorAccountAddress',
+            message: 'Signature and authorAccountAddress must be provided together',
+          });
         }
         break;
       default:
-        return yield* Effect.fail(
-          new ValidationError({
-            field: 'authPolicy',
-            message: 'Unknown auth policy',
-          }),
-        );
+        return yield* new ValidationError({
+          field: 'authPolicy',
+          message: 'Unknown auth policy',
+        });
     }
 
     // If signature and account provided, verify authorization
@@ -208,12 +204,10 @@ export const layer = Effect.gen(function* () {
       );
 
       if (authorIdentity.accountAddress !== message.authorAccountAddress) {
-        return yield* Effect.fail(
-          new AuthorizationError({
-            message: 'Not authorized to post to this inbox',
-            accountAddress: message.authorAccountAddress,
-          }),
-        );
+        return yield* new AuthorizationError({
+          message: 'Not authorized to post to this inbox',
+          accountAddress: message.authorAccountAddress,
+        });
       }
     }
 

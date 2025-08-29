@@ -26,7 +26,7 @@ export class IdentityService extends Context.Tag('IdentityService')<
 export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
 
-  const getAppOrConnectIdentity = Effect.fn(function* (
+  const getAppOrConnectIdentity = Effect.fn('getAppOrConnectIdentity')(function* (
     params: { accountAddress: string; signaturePublicKey: string } | { accountAddress: string; appId: string },
   ) {
     // If we have signaturePublicKey, search by that

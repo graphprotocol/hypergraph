@@ -3,6 +3,7 @@ import * as Schema from 'effect/Schema';
 import type { InvalidIdentityError } from '../identity/types.js';
 import { InboxSenderAuthPolicy } from '../inboxes/types.js';
 import { SignatureWithRecovery } from '../types.js';
+import * as Data from "effect/Data";
 
 export const EventAuthor = Schema.Struct({
   accountAddress: Schema.String,
@@ -126,12 +127,8 @@ export const Author = Schema.Struct({
 
 export type Author = Schema.Schema.Type<typeof Author>;
 
-export class VerifySignatureError {
-  readonly _tag = 'VerifySignatureError';
-}
+export class VerifySignatureError extends Data.TaggedError('VerifySignatureError') {}
 
-export class InvalidEventError {
-  readonly _tag = 'InvalidEventError';
-}
+export class InvalidEventError extends Data.TaggedError('InvalidEventError') {}
 
 export type ApplyError = ParseError | VerifySignatureError | InvalidEventError | InvalidIdentityError;

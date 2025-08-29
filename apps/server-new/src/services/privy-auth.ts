@@ -44,7 +44,7 @@ export const layer = Effect.gen(function* () {
     });
 
     if (!user) {
-      return yield* Effect.fail(new PrivyTokenError({ message: 'Invalid Privy user' }));
+      return yield* new PrivyTokenError({ message: 'Invalid Privy user' });
     }
 
     const wallet = user.linkedAccounts.find(
@@ -52,7 +52,7 @@ export const layer = Effect.gen(function* () {
     ) as Wallet | undefined;
 
     if (!wallet) {
-      return yield* Effect.fail(new PrivyTokenError({ message: 'No Privy wallet found' }));
+      return yield* new PrivyTokenError({ message: 'No Privy wallet found' });
     }
 
     return wallet.address;
@@ -92,7 +92,7 @@ export const layer = Effect.gen(function* () {
     accountAddress: string,
   ) {
     if (!idToken) {
-      return yield* Effect.fail(new AuthenticationError({ message: 'No Privy ID token provided' }));
+      return yield* new AuthenticationError({ message: 'No Privy ID token provided' });
     }
 
     const signerAddress = yield* verifyPrivyToken(idToken);

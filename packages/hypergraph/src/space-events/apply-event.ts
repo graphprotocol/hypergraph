@@ -55,7 +55,7 @@ export const applyEvent = ({
   return Effect.gen(function* () {
     const identity = yield* getVerifiedIdentity(event.author.accountAddress, authorPublicKey);
     if (authorPublicKey !== identity.signaturePublicKey) {
-      return yield* Effect.fail(new VerifySignatureError());
+      return yield* new VerifySignatureError();
     }
 
     let id = '';
@@ -78,7 +78,7 @@ export const applyEvent = ({
       if (event.transaction.type === 'accept-invitation') {
         // is already a member
         if (members[event.author.accountAddress] !== undefined) {
-          return yield* Effect.fail(new InvalidEventError());
+          return yield* new InvalidEventError();
         }
 
         // find the invitation
@@ -86,7 +86,7 @@ export const applyEvent = ({
           ([, invitation]) => invitation.inviteeAccountAddress === event.author.accountAddress,
         );
         if (!result) {
-          return yield* Effect.fail(new InvalidEventError());
+          return yield* new InvalidEventError();
         }
 
         const [id, invitation] = result;
@@ -102,7 +102,7 @@ export const applyEvent = ({
       } else {
         // check if the author is an admin
         if (members[event.author.accountAddress]?.role !== 'admin') {
-          return yield* Effect.fail(new InvalidEventError());
+          return yield* new InvalidEventError();
         }
 
         if (event.transaction.type === 'delete-space') {
@@ -111,11 +111,11 @@ export const applyEvent = ({
           invitations = {};
         } else if (event.transaction.type === 'create-invitation') {
           if (members[event.transaction.inviteeAccountAddress] !== undefined) {
-            return yield* Effect.fail(new InvalidEventError());
+            return yield* new InvalidEventError();
           }
           for (const invitation of Object.values(invitations)) {
             if (invitation.inviteeAccountAddress === event.transaction.inviteeAccountAddress) {
-              return yield* Effect.fail(new InvalidEventError());
+              return yield* new InvalidEventError();
             }
           }
 
@@ -124,7 +124,7 @@ export const applyEvent = ({
           };
         } else if (event.transaction.type === 'create-space-inbox') {
           if (inboxes[event.transaction.inboxId] !== undefined) {
-            return yield* Effect.fail(new InvalidEventError());
+            return yield* new InvalidEventError();
           }
           inboxes[event.transaction.inboxId] = {
             inboxId: event.transaction.inboxId,
@@ -135,7 +135,7 @@ export const applyEvent = ({
           };
         } else {
           // state is required for all events except create-space
-          return yield* Effect.fail(new InvalidEventError());
+          return yield* new InvalidEventError();
         }
       }
     }

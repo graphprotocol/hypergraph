@@ -20,11 +20,11 @@ export class AuthService extends Context.Tag('AuthService')<
 /**
  * Auth service implementation
  */
-export const makeAuthService = Effect.fn(function* () {
+export const makeAuthService = Effect.fn('makeAuthService')(function* () {
   const config = yield* Config.privyConfig;
   const privy = new PrivyClient(config.appId, Redacted.value(config.appSecret));
 
-  const verifyAuthToken = Effect.fn(function* (token: string) {
+  const verifyAuthToken = Effect.fn('verifyAuthToken')(function* (token: string) {
     const user = yield* Effect.tryPromise({
       try: () => privy.getUser({ idToken: token }),
       catch: (error) => new Error(`Failed to verify auth token: ${error}`),
@@ -37,7 +37,7 @@ export const makeAuthService = Effect.fn(function* () {
     return { userId: user.id };
   });
 
-  const verifySessionToken = Effect.fn(function* (_token: string) {
+  const verifySessionToken = Effect.fn('verifySessionToken')((_token: string) => {
     // TODO: Implement session token verification logic
     // This would typically involve:
     // 1. Decoding the JWT token
@@ -46,14 +46,14 @@ export const makeAuthService = Effect.fn(function* () {
     // 4. Extracting the address
 
     // For now, return a placeholder
-    return { address: 'placeholder' };
+    return Effect.succeed({ address: 'placeholder' });
   });
 
   return {
     privy,
     verifyAuthToken,
     verifySessionToken,
-  } as const;
+  };
 });
 
 /**

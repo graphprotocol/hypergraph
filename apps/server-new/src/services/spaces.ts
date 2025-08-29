@@ -55,7 +55,7 @@ export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
   const { getAppOrConnectIdentity } = yield* IdentityService.IdentityService;
 
-  const listByAccount = Effect.fn(function* (accountAddress: string) {
+  const listByAccount = Effect.fn('listByAccount')(function* (accountAddress: string) {
     const spaces = yield* use((client) =>
       client.space.findMany({
         where: {
@@ -107,11 +107,14 @@ export const layer = Effect.gen(function* () {
     }));
   });
 
-  const createSpace = Effect.fn(function* (params: CreateSpaceParams) {
+  const createSpace = Effect.fn('createSpace')(function* (params: CreateSpaceParams) {
     const { accountAddress, event, keyBox, infoContent, infoSignatureHex, infoSignatureRecovery, name } = params;
 
     // Create the getVerifiedIdentity function for space event validation
-    const getVerifiedIdentity = Effect.fn(function* (accountAddressToFetch: string, publicKey: string) {
+    const getVerifiedIdentity = Effect.fn('getVerifiedIdentity')(function* (
+      accountAddressToFetch: string,
+      publicKey: string,
+    ) {
       // applySpaceEvent is only allowed to be called by the account that is applying the event
       if (accountAddressToFetch !== accountAddress) {
         return yield* new Identity.InvalidIdentityError();
@@ -182,7 +185,7 @@ export const layer = Effect.gen(function* () {
     return { id: spaceEvent.id };
   });
 
-  const addAppIdentityToSpaces = Effect.fn(function* (params: AddAppIdentityToSpacesParams) {
+  const addAppIdentityToSpaces = Effect.fn('addAppIdentityToSpaces')(function* (params: AddAppIdentityToSpacesParams) {
     const { appIdentityAddress, accountAddress, spacesInput } = params;
 
     yield* use((client) =>
