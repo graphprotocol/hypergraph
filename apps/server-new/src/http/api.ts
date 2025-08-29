@@ -209,11 +209,12 @@ export const identityGroup = HttpApiGroup.make('Identity')
  * Inbox endpoints
  */
 export const getSpaceInboxesEndpoint = HttpApiEndpoint.get('getSpaceInboxes')`/spaces/${spaceId}/inboxes`
-  // .addSuccess(Messages.ResponseListSpaceInboxesPublic)
+  .addSuccess(Messages.ResponseListSpaceInboxesPublic)
   .addError(Errors.DatabaseError, { status: 500 });
 
 export const getSpaceInboxEndpoint = HttpApiEndpoint.get('getSpaceInbox')`/spaces/${spaceId}/inboxes/${inboxId}`
-  // .addSuccess(Messages.ResponseSpaceInboxPublic)
+  .addSuccess(Messages.ResponseSpaceInboxPublic)
+  .addError(Errors.ResourceNotFoundError, { status: 404 })
   .addError(Errors.DatabaseError, { status: 500 });
 
 export const postSpaceInboxMessageEndpoint = HttpApiEndpoint.post(
@@ -223,16 +224,18 @@ export const postSpaceInboxMessageEndpoint = HttpApiEndpoint.post(
   .addSuccess(Schema.Void)
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.AuthorizationError, { status: 403 })
-  .addError(Errors.ResourceNotFoundError, { status: 404 });
+  .addError(Errors.ResourceNotFoundError, { status: 404 })
+  .addError(Errors.DatabaseError, { status: 500 });
 
 export const getAccountInboxesEndpoint = HttpApiEndpoint.get('getAccountInboxes')`/accounts/${accountAddress}/inboxes`
-  // .addSuccess(Messages.ResponseListAccountInboxesPublic)
+  .addSuccess(Messages.ResponseListAccountInboxesPublic)
   .addError(Errors.DatabaseError, { status: 500 });
 
 export const getAccountInboxEndpoint = HttpApiEndpoint.get(
   'getAccountInbox',
 )`/accounts/${accountAddress}/inboxes/${inboxId}`
-  // .addSuccess(Messages.ResponseAccountInboxPublic)
+  .addSuccess(Messages.ResponseAccountInboxPublic)
+  .addError(Errors.ResourceNotFoundError, { status: 404 })
   .addError(Errors.DatabaseError, { status: 500 });
 
 export const postAccountInboxMessageEndpoint = HttpApiEndpoint.post(
@@ -242,7 +245,8 @@ export const postAccountInboxMessageEndpoint = HttpApiEndpoint.post(
   .addSuccess(Schema.Void)
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.AuthorizationError, { status: 403 })
-  .addError(Errors.ResourceNotFoundError, { status: 404 });
+  .addError(Errors.ResourceNotFoundError, { status: 404 })
+  .addError(Errors.DatabaseError, { status: 500 });
 
 export const inboxGroup = HttpApiGroup.make('Inbox')
   .add(getSpaceInboxesEndpoint)

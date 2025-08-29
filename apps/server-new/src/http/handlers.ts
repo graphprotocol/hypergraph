@@ -3,10 +3,12 @@ import { Identity, Messages, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import { Effect, Layer } from 'effect';
 import { hypergraphChainConfig, hypergraphRpcUrlConfig } from '../config/hypergraph.js';
+import { AccountInboxService } from '../services/account-inbox.js';
 import { AppIdentityService } from '../services/app-identity.js';
 import { ConnectIdentityService } from '../services/connect-identity.js';
 import { IdentityService } from '../services/identity.js';
 import { PrivyAuthService } from '../services/privy-auth.js';
+import { SpaceInboxService } from '../services/space-inbox.js';
 import { SpacesService } from '../services/spaces.js';
 import * as Api from './api.js';
 import * as Errors from './errors.js';
@@ -376,49 +378,81 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
     .handle(
       'getSpaceInboxes',
       Effect.fn(function* ({ path: { spaceId } }) {
-        yield* Effect.logInfo(`Getting space inboxes: ${spaceId}`);
-        yield* new Errors.ResourceNotFoundError({
-          resource: 'getSpaceInboxes',
-          id: 'getSpaceInboxes',
-        });
+        yield* Effect.logInfo(`GET /spaces/${spaceId}/inboxes`);
+
+        const spaceInboxService = yield* SpaceInboxService;
+
+        const inboxes = yield* spaceInboxService.listPublicSpaceInboxes({ spaceId });
+
+        return { inboxes };
       }),
     )
     .handle(
       'getSpaceInbox',
       Effect.fn(function* ({ path: { spaceId, inboxId } }) {
-        yield* Effect.logInfo(`Getting space inbox: ${spaceId}/${inboxId}`);
-        yield* new Errors.ResourceNotFoundError({ resource: 'SpaceInbox', id: inboxId });
+        yield* Effect.logInfo(`GET /spaces/${spaceId}/inboxes/${inboxId}`);
+
+        const spaceInboxService = yield* SpaceInboxService;
+
+        const inbox = yield* spaceInboxService.getSpaceInbox({ spaceId, inboxId });
+
+        return { inbox };
       }),
     )
     .handle(
       'postSpaceInboxMessage',
       Effect.fn(function* ({ path: { spaceId, inboxId }, payload }) {
-        yield* Effect.logInfo(`Posting message to space inbox: ${spaceId}/${inboxId}`, payload);
-        return { success: true };
+        yield* Effect.logInfo(`POST /spaces/${spaceId}/inboxes/${inboxId}/messages`);
+
+        const spaceInboxService = yield* SpaceInboxService;
+
+        yield* spaceInboxService.postSpaceInboxMessage({
+          spaceId,
+          inboxId,
+          message: payload,
+        });
+
+        // Return void as per the API endpoint definition
       }),
     )
     .handle(
       'getAccountInboxes',
       Effect.fn(function* ({ path: { accountAddress } }) {
-        yield* Effect.logInfo(`Getting account inboxes: ${accountAddress}`);
-        yield* new Errors.ResourceNotFoundError({
-          resource: 'getAccountInboxes',
-          id: 'getAccountInboxes',
-        });
+        yield* Effect.logInfo(`GET /accounts/${accountAddress}/inboxes`);
+
+        const accountInboxService = yield* AccountInboxService;
+
+        const inboxes = yield* accountInboxService.listPublicAccountInboxes({ accountAddress });
+
+        return { inboxes };
       }),
     )
     .handle(
       'getAccountInbox',
       Effect.fn(function* ({ path: { accountAddress, inboxId } }) {
-        yield* Effect.logInfo(`Getting account inbox: ${accountAddress}/${inboxId}`);
-        yield* new Errors.ResourceNotFoundError({ resource: 'AccountInbox', id: inboxId });
+        yield* Effect.logInfo(`GET /accounts/${accountAddress}/inboxes/${inboxId}`);
+
+        const accountInboxService = yield* AccountInboxService;
+
+        const inbox = yield* accountInboxService.getAccountInbox({ accountAddress, inboxId });
+
+        return { inbox };
       }),
     )
     .handle(
       'postAccountInboxMessage',
       Effect.fn(function* ({ path: { accountAddress, inboxId }, payload }) {
-        yield* Effect.logInfo(`Posting message to account inbox: ${accountAddress}/${inboxId}`, payload);
-        return { success: true };
+        yield* Effect.logInfo(`POST /accounts/${accountAddress}/inboxes/${inboxId}/messages`);
+
+        const accountInboxService = yield* AccountInboxService;
+
+        yield* accountInboxService.postAccountInboxMessage({
+          accountAddress,
+          inboxId,
+          message: payload,
+        });
+
+        // Return void as per the API endpoint definition
       }),
     );
 });
@@ -426,4 +460,7 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
 /**
  * All handlers combined
  */
-export const HandlersLive = Layer.mergeAll(HealthGroupLive, ConnectGroupLive, IdentityGroupLive, InboxGroupLive);
+export const HandlersLive = Layer.mergeAll(
+  HealthGroupLive,
+  // ConnectGroupLive, IdentityGroupLive, InboxGroupLive
+);

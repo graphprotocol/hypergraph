@@ -1,6 +1,6 @@
-import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
+import { Identity, type Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { Context, Effect, Layer } from 'effect';
-import { DatabaseError, ValidationError } from '../http/errors.js';
+import { DatabaseError, type ValidationError } from '../http/errors.js';
 import { DatabaseService } from './database.js';
 import { IdentityService } from './identity.js';
 

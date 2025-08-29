@@ -14,9 +14,8 @@ export interface IdentityResult {
 }
 
 export interface IdentityService {
-  readonly getAppOrConnectIdentity: (params:
-    | { accountAddress: string; signaturePublicKey: string }
-    | { accountAddress: string; appId: string }
+  readonly getAppOrConnectIdentity: (
+    params: { accountAddress: string; signaturePublicKey: string } | { accountAddress: string; appId: string },
   ) => Effect.Effect<IdentityResult, ResourceNotFoundError>;
 }
 
@@ -25,9 +24,8 @@ export const IdentityService = Context.GenericTag<IdentityService>('IdentityServ
 export const makeIdentityService = Effect.fn(function* () {
   const { client } = yield* DatabaseService;
 
-  const getAppOrConnectIdentity = (params:
-    | { accountAddress: string; signaturePublicKey: string }
-    | { accountAddress: string; appId: string }
+  const getAppOrConnectIdentity = (
+    params: { accountAddress: string; signaturePublicKey: string } | { accountAddress: string; appId: string },
   ) =>
     Effect.fn(function* () {
       // If we have signaturePublicKey, search by that

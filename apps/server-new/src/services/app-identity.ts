@@ -1,10 +1,10 @@
 import { Context, Effect, Layer } from 'effect';
-import { 
-  DatabaseError, 
-  InvalidTokenError, 
-  ResourceAlreadyExistsError, 
-  ResourceNotFoundError, 
-  TokenExpiredError 
+import {
+  DatabaseError,
+  InvalidTokenError,
+  ResourceAlreadyExistsError,
+  ResourceNotFoundError,
+  TokenExpiredError,
 } from '../http/errors.js';
 import { DatabaseService } from './database.js';
 
@@ -49,7 +49,7 @@ export interface AppIdentityService {
     appId: string;
   }) => Effect.Effect<AppIdentityResult | null, DatabaseError>;
   readonly createAppIdentity: (
-    params: CreateAppIdentityParams
+    params: CreateAppIdentityParams,
   ) => Effect.Effect<AppIdentityResult, ResourceAlreadyExistsError | DatabaseError>;
 }
 
@@ -76,7 +76,7 @@ export const makeAppIdentityService = Effect.fn(function* () {
       });
 
       if (!appIdentity) {
-        yield* new ResourceNotFoundError({
+        return yield* new ResourceNotFoundError({
           resource: 'AppIdentity',
           id: 'session-token',
         });
@@ -124,11 +124,11 @@ export const makeAppIdentityService = Effect.fn(function* () {
                 appId: params.appId,
               },
             });
-            
+
             if (existingIdentity) {
               throw new Error('App identity already exists');
             }
-            
+
             // Create the new app identity
             return await prisma.appIdentity.create({
               data: {
