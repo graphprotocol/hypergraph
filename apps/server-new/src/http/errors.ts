@@ -1,13 +1,19 @@
 import { HttpApiSchema } from '@effect/platform';
 import { Schema } from 'effect';
 
-export class InternalServerError extends Schema.TaggedError<InternalServerError>()('InternalServerError', {
-  message: Schema.String.pipe(Schema.optionalWith({
-    default: () => 'Internal server error',
-  })),
-}, {
-  [HttpApiSchema.AnnotationStatus]: 500,
-}) {}
+export class InternalServerError extends Schema.TaggedError<InternalServerError>()(
+  'InternalServerError',
+  {
+    message: Schema.String.pipe(
+      Schema.optionalWith({
+        default: () => 'Internal server error',
+      }),
+    ),
+  },
+  {
+    [HttpApiSchema.AnnotationStatus]: 500,
+  },
+) {}
 
 /**
  * Authentication-related errors

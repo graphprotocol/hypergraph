@@ -1,11 +1,11 @@
 import { Inboxes, type Messages } from '@graphprotocol/hypergraph';
+import * as Context from 'effect/Context';
+import * as Effect from 'effect/Effect';
+import * as Layer from 'effect/Layer';
+import * as Predicate from 'effect/Predicate';
 import { AuthorizationError, ResourceNotFoundError, ValidationError } from '../http/errors.js';
 import * as DatabaseService from './database.js';
 import * as IdentityService from './identity.js';
-import * as Predicate from "effect/Predicate";
-import * as Context from "effect/Context";
-import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
 
 export interface AccountInboxResult {
   inboxId: string;
@@ -19,23 +19,26 @@ export interface AccountInboxResult {
   };
 }
 
-export class AccountInboxService extends Context.Tag('AccountInboxService')<AccountInboxService, {
-  readonly listPublicAccountInboxes: (params: {
-    accountAddress: string;
-  }) => Effect.Effect<AccountInboxResult[], DatabaseService.DatabaseError>;
-  readonly getAccountInbox: (params: {
-    accountAddress: string;
-    inboxId: string;
-  }) => Effect.Effect<AccountInboxResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
-  readonly postAccountInboxMessage: (params: {
-    accountAddress: string;
-    inboxId: string;
-    message: Messages.RequestCreateAccountInboxMessage;
-  }) => Effect.Effect<
-    Messages.InboxMessage,
-    ResourceNotFoundError | ValidationError | AuthorizationError | DatabaseService.DatabaseError
-  >;
-}>() {}
+export class AccountInboxService extends Context.Tag('AccountInboxService')<
+  AccountInboxService,
+  {
+    readonly listPublicAccountInboxes: (params: {
+      accountAddress: string;
+    }) => Effect.Effect<AccountInboxResult[], DatabaseService.DatabaseError>;
+    readonly getAccountInbox: (params: {
+      accountAddress: string;
+      inboxId: string;
+    }) => Effect.Effect<AccountInboxResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
+    readonly postAccountInboxMessage: (params: {
+      accountAddress: string;
+      inboxId: string;
+      message: Messages.RequestCreateAccountInboxMessage;
+    }) => Effect.Effect<
+      Messages.InboxMessage,
+      ResourceNotFoundError | ValidationError | AuthorizationError | DatabaseService.DatabaseError
+    >;
+  }
+>() {}
 
 export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
@@ -58,7 +61,8 @@ export const layer = Effect.gen(function* () {
           signatureHex: true,
           signatureRecovery: true,
         },
-      }))
+      }),
+    );
 
     return inboxes.map((inbox) => ({
       inboxId: inbox.id,
@@ -73,46 +77,63 @@ export const layer = Effect.gen(function* () {
     }));
   });
 
-  const getAccountInbox = Effect.fn(function* ({ accountAddress, inboxId }: { accountAddress: string; inboxId: string }) {
-      const inbox = yield* use((client) =>
-        client.accountInbox.findUnique({
-          where: { id: inboxId, accountAddress },
-          select: {
-            id: true,
-            account: {
-              select: {
-                address: true,
-              },
+  const getAccountInbox = Effect.fn(function* ({
+    accountAddress,
+    inboxId,
+  }: {
+    accountAddress: string;
+    inboxId: string;
+  }) {
+    const inbox = yield* use((client) =>
+      client.accountInbox.findUnique({
+        where: { id: inboxId, accountAddress },
+        select: {
+          id: true,
+          account: {
+            select: {
+              address: true,
             },
-            isPublic: true,
-            authPolicy: true,
-            encryptionPublicKey: true,
-            signatureHex: true,
-            signatureRecovery: true,
           },
-      })).pipe(Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({
-        id: inboxId,
-        resource: 'AccountInbox',
-      })))
-
-      return {
-        inboxId: inbox.id,
-        accountAddress: inbox.account.address,
-        isPublic: inbox.isPublic,
-        authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
-        encryptionPublicKey: inbox.encryptionPublicKey,
-        signature: {
-          hex: inbox.signatureHex,
-          recovery: inbox.signatureRecovery,
+          isPublic: true,
+          authPolicy: true,
+          encryptionPublicKey: true,
+          signatureHex: true,
+          signatureRecovery: true,
         },
-      };
-    });
+      }),
+    ).pipe(
+      Effect.filterOrFail(
+        Predicate.isNotNull,
+        () =>
+          new ResourceNotFoundError({
+            id: inboxId,
+            resource: 'AccountInbox',
+          }),
+      ),
+    );
+
+    return {
+      inboxId: inbox.id,
+      accountAddress: inbox.account.address,
+      isPublic: inbox.isPublic,
+      authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
+      encryptionPublicKey: inbox.encryptionPublicKey,
+      signature: {
+        hex: inbox.signatureHex,
+        recovery: inbox.signatureRecovery,
+      },
+    };
+  });
 
   const postAccountInboxMessage = Effect.fn(function* ({
     accountAddress,
     inboxId,
     message,
-  }: { accountAddress: string; inboxId: string; message: Messages.RequestCreateAccountInboxMessage }) {
+  }: {
+    accountAddress: string;
+    inboxId: string;
+    message: Messages.RequestCreateAccountInboxMessage;
+  }) {
     const accountInbox = yield* getAccountInbox({ accountAddress, inboxId });
 
     // Validate auth policy requirements
@@ -173,19 +194,18 @@ export const layer = Effect.gen(function* () {
 
       // Check if this public key corresponds to a user's identity
       const authorIdentity = yield* getAppOrConnectIdentity({
-          accountAddress: message.authorAccountAddress,
-          signaturePublicKey: authorPublicKey,
-        })
-        .pipe(
-          Effect.catchAll(() =>
-            Effect.fail(
-              new AuthorizationError({
-                message: 'Not authorized to post to this inbox',
-                accountAddress: message.authorAccountAddress,
-              }),
-            ),
+        accountAddress: message.authorAccountAddress,
+        signaturePublicKey: authorPublicKey,
+      }).pipe(
+        Effect.catchAll(() =>
+          Effect.fail(
+            new AuthorizationError({
+              message: 'Not authorized to post to this inbox',
+              accountAddress: message.authorAccountAddress,
+            }),
           ),
-        );
+        ),
+      );
 
       if (authorIdentity.accountAddress !== message.authorAccountAddress) {
         return yield* Effect.fail(
@@ -235,7 +255,7 @@ export const layer = Effect.gen(function* () {
           authorAccountAddress: created.authorAccountAddress ?? undefined,
           createdAt: created.createdAt,
         } as Messages.InboxMessage;
-      })
+      }),
     );
 
     // TODO: Broadcast the message (WebSocket functionality would go here)
@@ -249,8 +269,4 @@ export const layer = Effect.gen(function* () {
     getAccountInbox,
     postAccountInboxMessage,
   } as const;
-}).pipe(
-  Layer.effect(AccountInboxService),
-  Layer.provide(DatabaseService.layer),
-  Layer.provide(IdentityService.layer)
-);
+}).pipe(Layer.effect(AccountInboxService), Layer.provide(DatabaseService.layer), Layer.provide(IdentityService.layer));

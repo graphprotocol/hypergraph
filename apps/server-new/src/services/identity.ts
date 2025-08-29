@@ -1,7 +1,7 @@
 import { Context, Effect, Layer } from 'effect';
+import * as Predicate from 'effect/Predicate';
 import { ResourceNotFoundError } from '../http/errors.js';
 import * as DatabaseService from './database.js';
-import * as Predicate from "effect/Predicate";
 
 export interface IdentityResult {
   accountAddress: string;
@@ -14,11 +14,14 @@ export interface IdentityResult {
   appId: string | null;
 }
 
-export class IdentityService extends Context.Tag('IdentityService')<IdentityService, {
-  readonly getAppOrConnectIdentity: (
-    params: { accountAddress: string; signaturePublicKey: string } | { accountAddress: string; appId: string },
-  ) => Effect.Effect<IdentityResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
-}>() {}
+export class IdentityService extends Context.Tag('IdentityService')<
+  IdentityService,
+  {
+    readonly getAppOrConnectIdentity: (
+      params: { accountAddress: string; signaturePublicKey: string } | { accountAddress: string; appId: string },
+    ) => Effect.Effect<IdentityResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
+  }
+>() {}
 
 export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
@@ -59,10 +62,16 @@ export const layer = Effect.gen(function* () {
             signaturePublicKey: params.signaturePublicKey,
           },
         }),
-      ).pipe(Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({
-        resource: 'Identity',
-        id: params.accountAddress,
-      })));
+      ).pipe(
+        Effect.filterOrFail(
+          Predicate.isNotNull,
+          () =>
+            new ResourceNotFoundError({
+              resource: 'Identity',
+              id: params.accountAddress,
+            }),
+        ),
+      );
 
       return {
         accountAddress: appIdentity.accountAddress,
@@ -84,10 +93,16 @@ export const layer = Effect.gen(function* () {
           appId: params.appId,
         },
       }),
-    ).pipe(Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({
-      resource: 'Identity',
-      id: params.accountAddress,
-    })));
+    ).pipe(
+      Effect.filterOrFail(
+        Predicate.isNotNull,
+        () =>
+          new ResourceNotFoundError({
+            resource: 'Identity',
+            id: params.accountAddress,
+          }),
+      ),
+    );
 
     return {
       accountAddress: appIdentity.accountAddress,
@@ -104,7 +119,4 @@ export const layer = Effect.gen(function* () {
   return {
     getAppOrConnectIdentity,
   } as const;
-}).pipe(
-  Layer.effect(IdentityService),
-  Layer.provide(DatabaseService.layer)
-) ;
+}).pipe(Layer.effect(IdentityService), Layer.provide(DatabaseService.layer));

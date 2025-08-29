@@ -73,10 +73,12 @@ export const healthGroup = HttpApiGroup.make('Health').add(statusEndpoint);
  * Connect API endpoints (Privy authentication)
  */
 export const getConnectSpacesEndpoint = HttpApiEndpoint.get('getConnectSpaces')`/connect/spaces`
-  .setHeaders(Schema.Struct({
-    'privy-id-token': Schema.String,
-    'account-address': Schema.String,
-  }))
+  .setHeaders(
+    Schema.Struct({
+      'privy-id-token': Schema.String,
+      'account-address': Schema.String,
+    }),
+  )
   .addSuccess(ConnectSpacesResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
@@ -84,9 +86,11 @@ export const getConnectSpacesEndpoint = HttpApiEndpoint.get('getConnectSpaces')`
   .addError(Errors.InternalServerError);
 
 export const postConnectSpacesEndpoint = HttpApiEndpoint.post('postConnectSpaces')`/connect/spaces`
-  .setHeaders(Schema.Struct({
-    'privy-id-token': Schema.String,
-  }))
+  .setHeaders(
+    Schema.Struct({
+      'privy-id-token': Schema.String,
+    }),
+  )
   .setPayload(Messages.RequestConnectCreateSpaceEvent)
   .addSuccess(SpaceCreationResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
@@ -98,9 +102,11 @@ export const postConnectSpacesEndpoint = HttpApiEndpoint.post('postConnectSpaces
 export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
   'postConnectAddAppIdentityToSpaces',
 )`/connect/add-app-identity-to-spaces`
-  .setHeaders(Schema.Struct({
-    'privy-id-token': Schema.String,
-  }))
+  .setHeaders(
+    Schema.Struct({
+      'privy-id-token': Schema.String,
+    }),
+  )
   .setPayload(Messages.RequestConnectAddAppIdentityToSpaces)
   .addSuccess(Schema.Void)
   .addError(Errors.AuthenticationError, { status: 401 })
@@ -110,9 +116,11 @@ export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
   .addError(Errors.InternalServerError);
 
 export const postConnectIdentityEndpoint = HttpApiEndpoint.post('postConnectIdentity')`/connect/identity`
-  .setHeaders(Schema.Struct({
-    'privy-id-token': Schema.String,
-  }))
+  .setHeaders(
+    Schema.Struct({
+      'privy-id-token': Schema.String,
+    }),
+  )
   .setPayload(Messages.RequestConnectCreateIdentity)
   .addSuccess(Messages.ResponseConnectCreateIdentity)
   .addError(Errors.AuthenticationError, { status: 401 })
@@ -125,10 +133,12 @@ export const postConnectIdentityEndpoint = HttpApiEndpoint.post('postConnectIden
 export const getConnectIdentityEncryptedEndpoint = HttpApiEndpoint.get(
   'getConnectIdentityEncrypted',
 )`/connect/identity/encrypted`
-  .setHeaders(Schema.Struct({
-    'privy-id-token': Schema.String,
-    'account-address': Schema.String,
-  }))
+  .setHeaders(
+    Schema.Struct({
+      'privy-id-token': Schema.String,
+      'account-address': Schema.String,
+    }),
+  )
   .addSuccess(Messages.ResponseIdentityEncrypted)
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
@@ -139,10 +149,12 @@ export const getConnectIdentityEncryptedEndpoint = HttpApiEndpoint.get(
 export const getConnectAppIdentityEndpoint = HttpApiEndpoint.get(
   'getConnectAppIdentity',
 )`/connect/app-identity/${appId}`
-  .setHeaders(Schema.Struct({
-    'privy-id-token': Schema.String,
-    'account-address': Schema.String,
-  }))
+  .setHeaders(
+    Schema.Struct({
+      'privy-id-token': Schema.String,
+      'account-address': Schema.String,
+    }),
+  )
   .addSuccess(AppIdentityResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
@@ -151,9 +163,11 @@ export const getConnectAppIdentityEndpoint = HttpApiEndpoint.get(
   .addError(Errors.InternalServerError);
 
 export const postConnectAppIdentityEndpoint = HttpApiEndpoint.post('postConnectAppIdentity')`/connect/app-identity`
-  .setHeaders(Schema.Struct({
-    'privy-id-token': Schema.String,
-  }))
+  .setHeaders(
+    Schema.Struct({
+      'privy-id-token': Schema.String,
+    }),
+  )
   .setPayload(Messages.RequestConnectCreateAppIdentity)
   .addSuccess(Schema.Void)
   .addError(Errors.AuthenticationError, { status: 401 })
@@ -258,5 +272,4 @@ export const hypergraphApi = HttpApi.make('HypergraphApi')
   .add(healthGroup)
   .add(connectGroup)
   .add(identityGroup)
-  .add(inboxGroup)
-  .addError(Errors.ResourceNotFoundError, { status: 500 });
+  .add(inboxGroup);

@@ -1,5 +1,5 @@
 import { HttpApiBuilder } from '@effect/platform';
-import { Identity, Messages, Utils } from '@graphprotocol/hypergraph';
+import { Identity, type Messages, Utils } from '@graphprotocol/hypergraph';
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import { Effect, Layer } from 'effect';
 import { hypergraphChainConfig, hypergraphRpcUrlConfig } from '../config/hypergraph.js';
@@ -33,11 +33,13 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
         const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
         const spacesService = yield* SpacesService.SpacesService;
 
-        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], headers['account-address']).pipe(Effect.orDie);
+        yield* privyAuthService
+          .authenticateRequest(headers['privy-id-token'], headers['account-address'])
+          .pipe(Effect.orDie);
         const spaces = yield* spacesService.listByAccount(headers['account-address']).pipe(Effect.orDie);
 
         return { spaces };
-      })
+      }),
     )
     .handle(
       'postConnectSpaces',
@@ -48,18 +50,22 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
         const spacesService = yield* SpacesService.SpacesService;
 
         // Authenticate the request with Privy token
-        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], payload.accountAddress).pipe(Effect.orDie);
+        yield* privyAuthService
+          .authenticateRequest(headers['privy-id-token'], payload.accountAddress)
+          .pipe(Effect.orDie);
 
         // Create the space
-        const space = yield* spacesService.createSpace({
-          accountAddress: payload.accountAddress,
-          event: payload.event,
-          keyBox: payload.keyBox,
-          infoContent: Utils.hexToBytes(payload.infoContent),
-          infoSignatureHex: payload.infoSignature.hex,
-          infoSignatureRecovery: payload.infoSignature.recovery,
-          name: payload.name,
-        }).pipe(Effect.orDie);
+        const space = yield* spacesService
+          .createSpace({
+            accountAddress: payload.accountAddress,
+            event: payload.event,
+            keyBox: payload.keyBox,
+            infoContent: Utils.hexToBytes(payload.infoContent),
+            infoSignatureHex: payload.infoSignature.hex,
+            infoSignatureRecovery: payload.infoSignature.recovery,
+            name: payload.name,
+          })
+          .pipe(Effect.orDie);
 
         return { space };
       }),
@@ -73,14 +79,18 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
         const spacesService = yield* SpacesService.SpacesService;
 
         // Authenticate the request with Privy token
-        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], payload.accountAddress).pipe(Effect.orDie);
+        yield* privyAuthService
+          .authenticateRequest(headers['privy-id-token'], payload.accountAddress)
+          .pipe(Effect.orDie);
 
         // Add app identity to spaces
-        yield* spacesService.addAppIdentityToSpaces({
-          appIdentityAddress: payload.appIdentityAddress,
-          accountAddress: payload.accountAddress,
-          spacesInput: payload.spacesInput,
-        }).pipe(Effect.orDie);
+        yield* spacesService
+          .addAppIdentityToSpaces({
+            appIdentityAddress: payload.appIdentityAddress,
+            accountAddress: payload.accountAddress,
+            spacesInput: payload.spacesInput,
+          })
+          .pipe(Effect.orDie);
       }),
     )
     .handle(
@@ -127,22 +137,24 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
           return yield* new Errors.OwnershipProofError({
             accountAddress,
             reason: 'Invalid ownership proof',
-          })
+          });
         }
 
         yield* Effect.logInfo('Ownership proof is valid');
 
         // Create the identity
-        yield* connectIdentityService.createIdentity({
-          signerAddress,
-          accountAddress,
-          ciphertext: payload.keyBox.ciphertext,
-          nonce: payload.keyBox.nonce,
-          signaturePublicKey: payload.signaturePublicKey,
-          encryptionPublicKey: payload.encryptionPublicKey,
-          accountProof: payload.accountProof,
-          keyProof: payload.keyProof,
-        }).pipe(Effect.orDie);
+        yield* connectIdentityService
+          .createIdentity({
+            signerAddress,
+            accountAddress,
+            ciphertext: payload.keyBox.ciphertext,
+            nonce: payload.keyBox.nonce,
+            signaturePublicKey: payload.signaturePublicKey,
+            encryptionPublicKey: payload.encryptionPublicKey,
+            accountProof: payload.accountProof,
+            keyProof: payload.keyProof,
+          })
+          .pipe(Effect.orDie);
 
         const response: Messages.ResponseConnectCreateIdentity = {
           success: true,
@@ -190,13 +202,17 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
         const appIdentityService = yield* AppIdentityService.AppIdentityService;
 
         // Authenticate the request with Privy token
-        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], headers['account-address']).pipe(Effect.orDie);
+        yield* privyAuthService
+          .authenticateRequest(headers['privy-id-token'], headers['account-address'])
+          .pipe(Effect.orDie);
 
         // Find the app identity
-        const appIdentity = yield* appIdentityService.findByAppId({
-          accountAddress: headers['account-address'],
-          appId,
-        }).pipe(Effect.orDie);
+        const appIdentity = yield* appIdentityService
+          .findByAppId({
+            accountAddress: headers['account-address'],
+            appId,
+          })
+          .pipe(Effect.orDie);
 
         if (!appIdentity) {
           return yield* new Errors.ResourceNotFoundError({
@@ -247,7 +263,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
           return yield* new Errors.OwnershipProofError({
             accountAddress,
             reason: 'Invalid ownership proof',
-          })
+          });
         }
 
         // Generate session token
@@ -255,18 +271,20 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
         const sessionTokenExpires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
 
         // Create the app identity
-        yield* appIdentityService.createAppIdentity({
-          accountAddress,
-          appId: payload.appId,
-          address: payload.address,
-          ciphertext: payload.ciphertext,
-          signaturePublicKey: payload.signaturePublicKey,
-          encryptionPublicKey: payload.encryptionPublicKey,
-          accountProof: payload.accountProof,
-          keyProof: payload.keyProof,
-          sessionToken,
-          sessionTokenExpires,
-        }).pipe(Effect.orDie);
+        yield* appIdentityService
+          .createAppIdentity({
+            accountAddress,
+            appId: payload.appId,
+            address: payload.address,
+            ciphertext: payload.ciphertext,
+            signaturePublicKey: payload.signaturePublicKey,
+            encryptionPublicKey: payload.encryptionPublicKey,
+            accountProof: payload.accountProof,
+            keyProof: payload.keyProof,
+            sessionToken,
+            sessionTokenExpires,
+          })
+          .pipe(Effect.orDie);
       }),
     );
 }).pipe(
@@ -408,11 +426,13 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
 
         const spaceInboxService = yield* SpaceInboxService.SpaceInboxService;
 
-        yield* spaceInboxService.postSpaceInboxMessage({
-          spaceId,
-          inboxId,
-          message: payload,
-        }).pipe(Effect.orDie);
+        yield* spaceInboxService
+          .postSpaceInboxMessage({
+            spaceId,
+            inboxId,
+            message: payload,
+          })
+          .pipe(Effect.orDie);
 
         // Return void as per the API endpoint definition
       }),
@@ -448,24 +468,20 @@ const InboxGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Inbox', (handler
 
         const accountInboxService = yield* AccountInboxService.AccountInboxService;
 
-        yield* accountInboxService.postAccountInboxMessage({
-          accountAddress,
-          inboxId,
-          message: payload,
-        }).pipe(Effect.orDie);
+        yield* accountInboxService
+          .postAccountInboxMessage({
+            accountAddress,
+            inboxId,
+            message: payload,
+          })
+          .pipe(Effect.orDie);
 
         // Return void as per the API endpoint definition
       }),
     );
-}).pipe(
-  Layer.provide(AccountInboxService.layer),
-  Layer.provide(SpaceInboxService.layer),
-);
+}).pipe(Layer.provide(AccountInboxService.layer), Layer.provide(SpaceInboxService.layer));
 
 /**
  * All handlers combined
  */
-export const HandlersLive = Layer.mergeAll(
-  HealthGroupLive,
-  ConnectGroupLive, IdentityGroupLive, InboxGroupLive
-);
+export const HandlersLive = Layer.mergeAll(HealthGroupLive, ConnectGroupLive, IdentityGroupLive, InboxGroupLive);

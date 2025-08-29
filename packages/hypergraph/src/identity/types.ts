@@ -1,5 +1,5 @@
-import * as Schema from "effect/Schema";
-import * as Data from "effect/Data";
+import * as Data from 'effect/Data';
+import * as Schema from 'effect/Schema';
 
 export type Storage = {
   getItem: (key: string) => string | null;

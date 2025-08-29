@@ -7,9 +7,5 @@ export const hypergraphChainConfig = Config.string('HYPERGRAPH_CHAIN').pipe(
 );
 
 export const hypergraphRpcUrlConfig = Config.string('HYPERGRAPH_RPC_URL').pipe(
-  Config.orElse(() =>
-    hypergraphChainConfig.pipe(
-      Config.map((chain) => chain.rpcUrls.default.http[0]),
-    ),
-  ),
+  Config.orElse(() => hypergraphChainConfig.pipe(Config.map((chain) => chain.rpcUrls.default.http[0]))),
 );

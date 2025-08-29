@@ -1,18 +1,21 @@
 import { PrivyClient } from '@privy-io/server-auth';
+import * as Context from 'effect/Context';
+import * as Effect from 'effect/Effect';
+import * as Layer from 'effect/Layer';
+import * as Redacted from 'effect/Redacted';
 import * as Config from '../config/privy.js';
-import * as Effect from "effect/Effect";
-import * as Redacted from "effect/Redacted";
-import * as Context from "effect/Context";
-import * as Layer from "effect/Layer";
 
 /**
  * Auth service tag
  */
-export class AuthService extends Context.Tag("AuthService")<AuthService, {
-  readonly privy: PrivyClient;
-  readonly verifyAuthToken: (token: string) => Effect.Effect<{ userId: string }, Error>;
-  readonly verifySessionToken: (token: string) => Effect.Effect<{ address: string }, Error>;
-}>() {}
+export class AuthService extends Context.Tag('AuthService')<
+  AuthService,
+  {
+    readonly privy: PrivyClient;
+    readonly verifyAuthToken: (token: string) => Effect.Effect<{ userId: string }, Error>;
+    readonly verifySessionToken: (token: string) => Effect.Effect<{ address: string }, Error>;
+  }
+>() {}
 
 /**
  * Auth service implementation
