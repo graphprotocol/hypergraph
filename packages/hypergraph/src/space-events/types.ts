@@ -1,9 +1,9 @@
+import * as Data from 'effect/Data';
 import type { ParseError } from 'effect/ParseResult';
 import * as Schema from 'effect/Schema';
 import type { InvalidIdentityError } from '../identity/types.js';
 import { InboxSenderAuthPolicy } from '../inboxes/types.js';
 import { SignatureWithRecovery } from '../types.js';
-import * as Data from "effect/Data";
 
 export const EventAuthor = Schema.Struct({
   accountAddress: Schema.String,
