@@ -1,21 +1,50 @@
 import { createServer } from 'node:http';
-import { HttpApiBuilder, HttpServer } from '@effect/platform';
-import { NodeHttpServer } from '@effect/platform-node';
-import { Effect, Layer } from 'effect';
+import * as HttpApiScalar from '@effect/platform/HttpApiScalar';
+import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
+import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
+import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
+import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
+import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
+import * as Effect from 'effect/Effect';
+import * as Layer from 'effect/Layer';
+import * as Schedule from 'effect/Schedule';
+import * as Stream from 'effect/Stream';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
 
-const apiLive = HttpApiBuilder.api(hypergraphApi).pipe(Layer.provide(HandlersLive));
+// Create scalar openapi browser layer at /docs.
+const DocsLayer = HttpApiScalar.layerHttpLayerRouter({
+  api: hypergraphApi,
+  path: '/docs',
+});
 
-export const server = Layer.unwrapEffect(
-  Effect.gen(function* () {
-    const port = yield* serverPortConfig;
-    return HttpApiBuilder.serve().pipe(
-      Layer.provide(HttpApiBuilder.middlewareCors()),
-      Layer.provide(apiLive),
-      HttpServer.withLogAddress,
-      Layer.provide(NodeHttpServer.layer(createServer, { port })),
-    );
-  }),
+// Create api layer with openapi.json documentation generated at /docs/openapi.json.
+const ApiLayer = HttpLayerRouter.addHttpApi(hypergraphApi, {
+  openapiPath: '/docs/openapi.json',
+}).pipe(Layer.provide(HandlersLive));
+
+// Create websocket layer at /ws.
+const WebSocketLayer = HttpLayerRouter.add(
+  'GET',
+  '/ws',
+  // TODO: Implement actual websocket logic here.
+  Stream.fromSchedule(Schedule.spaced(1000)).pipe(
+    Stream.map(JSON.stringify),
+    Stream.pipeThroughChannel(HttpServerRequest.upgradeChannel()),
+    Stream.decodeText(),
+    Stream.runForEach((_) => Effect.log(_)),
+    Effect.as(HttpServerResponse.empty()),
+  ),
 );
+
+// Merge router layers together and add the cors middleware layer.
+const CorsMiddleware = HttpLayerRouter.middleware(HttpMiddleware.cors());
+const AppLayer = Layer.mergeAll(ApiLayer, DocsLayer, WebSocketLayer).pipe(Layer.provide(CorsMiddleware.layer));
+
+const HttpServerLayer = serverPortConfig.pipe(
+  Effect.map((port) => NodeHttpServer.layer(createServer, { port })),
+  Layer.unwrapEffect,
+);
+
+export const server = HttpLayerRouter.serve(AppLayer).pipe(Layer.provide(HttpServerLayer));
