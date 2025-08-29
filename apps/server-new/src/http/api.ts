@@ -81,7 +81,7 @@ export const getConnectSpacesEndpoint = HttpApiEndpoint.get('getConnectSpaces')`
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.PrivyTokenError, { status: 401 })
-  .addError(Errors.PrivyConfigError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const postConnectSpacesEndpoint = HttpApiEndpoint.post('postConnectSpaces')`/connect/spaces`
   .setHeaders(Schema.Struct({
@@ -93,8 +93,7 @@ export const postConnectSpacesEndpoint = HttpApiEndpoint.post('postConnectSpaces
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.PrivyTokenError, { status: 401 })
-  .addError(Errors.PrivyConfigError, { status: 500 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
   'postConnectAddAppIdentityToSpaces',
@@ -108,8 +107,7 @@ export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.PrivyTokenError, { status: 401 })
-  .addError(Errors.PrivyConfigError, { status: 500 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const postConnectIdentityEndpoint = HttpApiEndpoint.post('postConnectIdentity')`/connect/identity`
   .setHeaders(Schema.Struct({
@@ -122,8 +120,7 @@ export const postConnectIdentityEndpoint = HttpApiEndpoint.post('postConnectIden
   .addError(Errors.ResourceAlreadyExistsError, { status: 400 })
   .addError(Errors.OwnershipProofError, { status: 401 })
   .addError(Errors.PrivyTokenError, { status: 401 })
-  .addError(Errors.PrivyConfigError, { status: 500 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const getConnectIdentityEncryptedEndpoint = HttpApiEndpoint.get(
   'getConnectIdentityEncrypted',
@@ -137,7 +134,7 @@ export const getConnectIdentityEncryptedEndpoint = HttpApiEndpoint.get(
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ResourceNotFoundError, { status: 404 })
   .addError(Errors.PrivyTokenError, { status: 401 })
-  .addError(Errors.PrivyConfigError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const getConnectAppIdentityEndpoint = HttpApiEndpoint.get(
   'getConnectAppIdentity',
@@ -151,22 +148,20 @@ export const getConnectAppIdentityEndpoint = HttpApiEndpoint.get(
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ResourceNotFoundError, { status: 404 })
   .addError(Errors.PrivyTokenError, { status: 401 })
-  .addError(Errors.PrivyConfigError, { status: 500 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const postConnectAppIdentityEndpoint = HttpApiEndpoint.post('postConnectAppIdentity')`/connect/app-identity`
   .setHeaders(Schema.Struct({
     'privy-id-token': Schema.String,
   }))
   .setPayload(Messages.RequestConnectCreateAppIdentity)
-  .addSuccess(AppIdentityResponse)
+  .addSuccess(Schema.Void)
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ResourceAlreadyExistsError, { status: 400 })
   .addError(Errors.OwnershipProofError, { status: 401 })
   .addError(Errors.PrivyTokenError, { status: 401 })
-  .addError(Errors.PrivyConfigError, { status: 500 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const connectGroup = HttpApiGroup.make('Connect')
   .add(getConnectSpacesEndpoint)
@@ -210,12 +205,12 @@ export const identityGroup = HttpApiGroup.make('Identity')
  */
 export const getSpaceInboxesEndpoint = HttpApiEndpoint.get('getSpaceInboxes')`/spaces/${spaceId}/inboxes`
   .addSuccess(Messages.ResponseListSpaceInboxesPublic)
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const getSpaceInboxEndpoint = HttpApiEndpoint.get('getSpaceInbox')`/spaces/${spaceId}/inboxes/${inboxId}`
   .addSuccess(Messages.ResponseSpaceInboxPublic)
   .addError(Errors.ResourceNotFoundError, { status: 404 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const postSpaceInboxMessageEndpoint = HttpApiEndpoint.post(
   'postSpaceInboxMessage',
@@ -225,18 +220,18 @@ export const postSpaceInboxMessageEndpoint = HttpApiEndpoint.post(
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.AuthorizationError, { status: 403 })
   .addError(Errors.ResourceNotFoundError, { status: 404 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const getAccountInboxesEndpoint = HttpApiEndpoint.get('getAccountInboxes')`/accounts/${accountAddress}/inboxes`
   .addSuccess(Messages.ResponseListAccountInboxesPublic)
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const getAccountInboxEndpoint = HttpApiEndpoint.get(
   'getAccountInbox',
 )`/accounts/${accountAddress}/inboxes/${inboxId}`
   .addSuccess(Messages.ResponseAccountInboxPublic)
   .addError(Errors.ResourceNotFoundError, { status: 404 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const postAccountInboxMessageEndpoint = HttpApiEndpoint.post(
   'postAccountInboxMessage',
@@ -246,7 +241,7 @@ export const postAccountInboxMessageEndpoint = HttpApiEndpoint.post(
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.AuthorizationError, { status: 403 })
   .addError(Errors.ResourceNotFoundError, { status: 404 })
-  .addError(Errors.DatabaseError, { status: 500 });
+  .addError(Errors.InternalServerError);
 
 export const inboxGroup = HttpApiGroup.make('Inbox')
   .add(getSpaceInboxesEndpoint)

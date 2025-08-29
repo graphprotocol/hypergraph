@@ -1,74 +1,49 @@
 import { Config, Context, Effect, Layer } from 'effect';
 import { PrismaClient } from '../../prisma/generated/client/client';
+import * as Data from "effect/Data";
 
-/**
- * Database service interface
- */
-export interface DatabaseService {
-  readonly client: PrismaClient;
-}
+export class DatabaseError extends Data.TaggedError('DatabaseError')<{
+  readonly cause: unknown;
+}> {}
 
 /**
  * Database service tag
  */
-export const DatabaseService = Context.GenericTag<DatabaseService>('DatabaseService');
-
-/**
- * Database service implementation
- */
-export const makeDatabaseService = Effect.fn(function* () {
-  // Get the DATABASE_URL from config
-  const databaseUrl = yield* Config.string('DATABASE_URL').pipe(Config.withDefault('file:./dev.db'));
-
-  const client = new PrismaClient({
-    datasourceUrl: databaseUrl,
-  });
-
-  // Connect to database
-  yield* Effect.tryPromise({
-    try: () => client.$connect(),
-    catch: (error) => new Error(`Failed to connect to database: ${error}`),
-  });
-
-  return {
-    client,
-  } as const;
-});
-
-/**
- * Database service layer
- */
-export const DatabaseServiceLive = Layer.effect(DatabaseService, makeDatabaseService());
+export class DatabaseService extends Context.Tag('DatabaseService')<DatabaseService, {
+  readonly client: PrismaClient;
+  readonly use: <T>(fn: (client: PrismaClient, signal: AbortSignal) => Promise<T>) => Effect.Effect<T, DatabaseError>;
+}>() {}
 
 /**
  * Database service layer with resource management
  */
-export const DatabaseServiceLiveWithCleanup = Layer.scoped(
+export const layer = Layer.scoped(
   DatabaseService,
-  Effect.fn(function* () {
-    // Get the DATABASE_URL from config
+  Effect.gen(function* () {
     const databaseUrl = yield* Config.string('DATABASE_URL').pipe(Config.withDefault('file:./dev.db'));
+    const client = yield* Effect.acquireRelease(Effect.tryPromise({
+      try: async () => {
+        const client = new PrismaClient({
+          datasourceUrl: databaseUrl,
+        });
 
-    const client = new PrismaClient({
-      datasourceUrl: databaseUrl,
-    });
+        await client.$connect();
 
-    // Connect to database
-    yield* Effect.tryPromise({
-      try: () => client.$connect(),
-      catch: (error) => new Error(`Failed to connect to database: ${error}`),
-    });
+        return client;
+      },
+      catch: (cause) => new DatabaseError({ cause }),
+    }), (client) => Effect.tryPromise(() => client.$disconnect()).pipe(Effect.ignore));
 
-    // Register cleanup
-    yield* Effect.addFinalizer(() =>
-      Effect.tryPromise({
-        try: () => client.$disconnect(),
-        catch: (error) => new Error(`Failed to disconnect from database: ${error}`),
-      }).pipe(Effect.ignore),
-    );
+    const use = Effect.fn(function* <T>(fn: (client: PrismaClient, signal: AbortSignal) => Promise<T>) {
+      return yield* Effect.tryPromise({
+        try: (signal) => fn(client, signal),
+        catch: (cause) => new DatabaseError({ cause }),
+      }) as Effect.Effect<T, DatabaseError>;
+    }) as any;
 
     return {
       client,
-    } as const;
-  })(),
+      use,
+    };
+  }),
 );

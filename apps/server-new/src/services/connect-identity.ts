@@ -1,6 +1,9 @@
-import { Context, Effect, Layer } from 'effect';
-import { DatabaseError, ResourceAlreadyExistsError, ResourceNotFoundError } from '../http/errors.js';
-import { DatabaseService } from './database.js';
+import * as Effect from "effect/Effect";
+import { ResourceAlreadyExistsError, ResourceNotFoundError } from '../http/errors.js';
+import * as DatabaseService from './database.js';
+import * as Predicate from "effect/Predicate";
+import * as Context from "effect/Context";
+import * as Layer from "effect/Layer";
 
 export interface ConnectIdentityResult {
   accountAddress: string;
@@ -27,113 +30,79 @@ export interface CreateConnectIdentityParams {
   keyProof: string;
 }
 
-export interface ConnectIdentityService {
-  readonly getByAccountAddress: (accountAddress: string) => Effect.Effect<ConnectIdentityResult, ResourceNotFoundError>;
+export class ConnectIdentityService extends Context.Tag('ConnectIdentityService')<ConnectIdentityService, {
+  readonly getByAccountAddress: (accountAddress: string) => Effect.Effect<ConnectIdentityResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
   readonly getIdentityEncrypted: (
     accountAddress: string,
-  ) => Effect.Effect<ConnectIdentityEncrypted, ResourceNotFoundError>;
+  ) => Effect.Effect<ConnectIdentityEncrypted, ResourceNotFoundError | DatabaseService.DatabaseError>;
   readonly createIdentity: (
     params: CreateConnectIdentityParams,
-  ) => Effect.Effect<void, ResourceAlreadyExistsError | DatabaseError>;
-}
+  ) => Effect.Effect<void, ResourceAlreadyExistsError | DatabaseService.DatabaseError>;
+}>() {}
 
-export const ConnectIdentityService = Context.GenericTag<ConnectIdentityService>('ConnectIdentityService');
+export const layer = Effect.gen(function* () {
+  const { use } = yield* DatabaseService.DatabaseService;
 
-export const makeConnectIdentityService = Effect.fn(function* () {
-  const { client } = yield* DatabaseService;
+  const getByAccountAddress = Effect.fn("getByAccountAddress")(function* (accountAddress: string) {
+    const account = yield* use((client) =>
+      client.account.findFirst({
+        where: { address: accountAddress },
+        select: {
+          address: true,
+          connectSignaturePublicKey: true,
+          connectEncryptionPublicKey: true,
+          connectAccountProof: true,
+          connectKeyProof: true,
+        },
+      })
+    ).pipe(Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({
+      resource: 'ConnectIdentity',
+      id: accountAddress,
+    })));
 
-  const getByAccountAddress = (accountAddress: string) =>
-    Effect.fn(function* () {
-      const account = yield* Effect.tryPromise({
-        try: () =>
-          client.account.findFirst({
-            where: { address: accountAddress },
-            select: {
-              address: true,
-              connectSignaturePublicKey: true,
-              connectEncryptionPublicKey: true,
-              connectAccountProof: true,
-              connectKeyProof: true,
-            },
-          }),
-        catch: () =>
-          new ResourceNotFoundError({
-            resource: 'ConnectIdentity',
-            id: accountAddress,
-          }),
-      });
+    return {
+      accountAddress: account.address,
+      signaturePublicKey: account.connectSignaturePublicKey,
+      encryptionPublicKey: account.connectEncryptionPublicKey,
+      accountProof: account.connectAccountProof,
+      keyProof: account.connectKeyProof,
+    };
+  });
 
-      if (!account) {
-        return yield* Effect.fail(
-          new ResourceNotFoundError({
-            resource: 'ConnectIdentity',
-            id: accountAddress,
-          }),
-        );
-      }
+  const createIdentity = Effect.fn("createIdentity")(function* (params: CreateConnectIdentityParams) {
+    // Check if identity already exists for this account
+    yield* use((client) =>
+      client.account.findFirst({
+        where: {
+          address: params.accountAddress,
+        },
+      }),
+    ).pipe(Effect.filterOrFail(Predicate.isNull, () => new ResourceAlreadyExistsError({
+      resource: 'ConnectIdentity',
+      id: params.accountAddress,
+    })));
 
-      return {
-        accountAddress: account.address,
-        signaturePublicKey: account.connectSignaturePublicKey,
-        encryptionPublicKey: account.connectEncryptionPublicKey,
-        accountProof: account.connectAccountProof,
-        keyProof: account.connectKeyProof,
-      };
-    })();
+    // Create the new identity
+    yield* use((client) =>
+      client.account.create({
+          data: {
+            connectSignerAddress: params.signerAddress,
+            address: params.accountAddress,
+            connectAccountProof: params.accountProof,
+            connectKeyProof: params.keyProof,
+            connectSignaturePublicKey: params.signaturePublicKey,
+            connectEncryptionPublicKey: params.encryptionPublicKey,
+            connectCiphertext: params.ciphertext,
+            connectNonce: params.nonce,
+            connectAddress: params.accountAddress,
+          },
+        }),
+    );
+  });
 
-  const createIdentity = (params: CreateConnectIdentityParams) =>
-    Effect.fn(function* () {
-      // Check if identity already exists for this account
-      const existingIdentity = yield* Effect.tryPromise({
-        try: () =>
-          client.account.findFirst({
-            where: {
-              address: params.accountAddress,
-            },
-          }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'createIdentity',
-            cause: error,
-          }),
-      });
-
-      if (existingIdentity) {
-        yield* new ResourceAlreadyExistsError({
-          resource: 'ConnectIdentity',
-          id: params.accountAddress,
-        });
-      }
-
-      // Create the new identity
-      yield* Effect.tryPromise({
-        try: () =>
-          client.account.create({
-            data: {
-              connectSignerAddress: params.signerAddress,
-              address: params.accountAddress,
-              connectAccountProof: params.accountProof,
-              connectKeyProof: params.keyProof,
-              connectSignaturePublicKey: params.signaturePublicKey,
-              connectEncryptionPublicKey: params.encryptionPublicKey,
-              connectCiphertext: params.ciphertext,
-              connectNonce: params.nonce,
-              connectAddress: params.accountAddress,
-            },
-          }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'createIdentity',
-            cause: error,
-          }),
-      });
-    })();
-
-  const getIdentityEncrypted = (accountAddress: string) =>
-    Effect.fn(function* () {
-      const account = yield* Effect.tryPromise({
-        try: () =>
-          client.account.findFirst({
+  const getIdentityEncrypted = Effect.fn("getIdentityEncrypted")(function*  (accountAddress: string) {
+      const account = yield* use((client) =>
+        client.account.findFirst({
             where: { address: accountAddress },
             select: {
               address: true,
@@ -141,34 +110,24 @@ export const makeConnectIdentityService = Effect.fn(function* () {
               connectNonce: true,
             },
           }),
-        catch: () =>
-          new ResourceNotFoundError({
-            resource: 'ConnectIdentity',
-            id: accountAddress,
-          }),
-      });
-
-      if (!account) {
-        return yield* Effect.fail(
-          new ResourceNotFoundError({
-            resource: 'ConnectIdentity',
-            id: accountAddress,
-          }),
-        );
-      }
+      ).pipe(Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({
+        resource: 'ConnectIdentity',
+        id: accountAddress,
+      })));
 
       return {
         accountAddress: account.address,
         ciphertext: account.connectCiphertext,
         nonce: account.connectNonce,
       };
-    })();
+    });
 
   return {
     getByAccountAddress,
     getIdentityEncrypted,
     createIdentity,
-  } as const;
-})();
-
-export const ConnectIdentityServiceLive = Layer.effect(ConnectIdentityService, makeConnectIdentityService);
+  };
+}).pipe(
+  Layer.effect(ConnectIdentityService),
+  Layer.provide(DatabaseService.layer)
+)

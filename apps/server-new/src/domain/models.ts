@@ -41,8 +41,8 @@ export const AppIdentity = Schema.Struct({
   keyProof: Schema.String,
   accountAddress: Schema.String,
   appId: Schema.String,
-  sessionToken: Schema.String,
-  sessionTokenExpires: Schema.DateFromSelf,
+  sessionToken: Schema.String.pipe(Schema.NullOr),
+  sessionTokenExpires: Schema.DateFromSelf.pipe(Schema.NullOr),
 });
 
 export const Space = Schema.Struct({

@@ -55,13 +55,12 @@
   "homepage": "https://github.com/graphprotocol/hypergraph/tree/main/packages/create-hypergraph-app#readme",
   "devDependencies": {
     "@effect/cli": "^0.69.2",
-    "@effect/language-service": "^0.35.2",
     "@effect/platform": "^0.90.6",
     "@effect/platform-node": "^0.96.0",
     "@effect/printer-ansi": "^0.45.0",
     "@effect/vitest": "^0.25.1",
     "@types/node": "^24.3.0",
-    "effect": "^3.17.8",
+    "effect": "^3.17.9",
     "execa": "^9.6.0",
     "tsdown": "^0.14.1",
     "tsx": "^4.20.4"

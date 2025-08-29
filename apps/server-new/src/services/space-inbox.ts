@@ -1,44 +1,43 @@
 import { Inboxes, type Messages, type SpaceEvents } from '@graphprotocol/hypergraph';
-import { Context, Effect, Layer } from 'effect';
-import { AuthorizationError, DatabaseError, ResourceNotFoundError, ValidationError } from '../http/errors.js';
-import { DatabaseService } from './database.js';
-import { IdentityService } from './identity.js';
+import { AuthorizationError, ResourceNotFoundError, ValidationError } from '../http/errors.js';
+import * as DatabaseService from './database.js';
+import * as IdentityService from './identity.js';
+import * as Predicate from "effect/Predicate";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 
 export interface SpaceInboxResult {
   inboxId: string;
   isPublic: boolean;
   authPolicy: Inboxes.InboxSenderAuthPolicy;
-  encryptionPublicKey: string | null;
+  encryptionPublicKey: string;
   creationEvent: SpaceEvents.CreateSpaceInboxEvent;
 }
 
-export interface SpaceInboxService {
-  readonly listPublicSpaceInboxes: (params: { spaceId: string }) => Effect.Effect<SpaceInboxResult[], DatabaseError>;
+export class SpaceInboxService extends Context.Tag('SpaceInboxService')<SpaceInboxService, {
+  readonly listPublicSpaceInboxes: (params: { spaceId: string }) => Effect.Effect<SpaceInboxResult[], DatabaseService.DatabaseError>;
   readonly getSpaceInbox: (params: {
     spaceId: string;
     inboxId: string;
-  }) => Effect.Effect<SpaceInboxResult, ResourceNotFoundError | DatabaseError>;
+  }) => Effect.Effect<SpaceInboxResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
   readonly postSpaceInboxMessage: (params: {
     spaceId: string;
     inboxId: string;
     message: Messages.RequestCreateSpaceInboxMessage;
   }) => Effect.Effect<
     Messages.InboxMessage,
-    ResourceNotFoundError | ValidationError | AuthorizationError | DatabaseError
+    ResourceNotFoundError | ValidationError | AuthorizationError | DatabaseService.DatabaseError
   >;
-}
+}>() {}
 
-export const SpaceInboxService = Context.GenericTag<SpaceInboxService>('SpaceInboxService');
+export const layer = Effect.gen(function* () {
+  const { use } = yield* DatabaseService.DatabaseService;
+  const { getAppOrConnectIdentity } = yield* IdentityService.IdentityService;
 
-export const makeSpaceInboxService = Effect.fn(function* () {
-  const { client } = yield* DatabaseService;
-  const identityService = yield* IdentityService;
-
-  const listPublicSpaceInboxes = ({ spaceId }: { spaceId: string }) =>
-    Effect.fn(function* () {
-      const inboxes = yield* Effect.tryPromise({
-        try: () =>
-          client.spaceInbox.findMany({
+  const listPublicSpaceInboxes = Effect.fn("listPublicSpaceInboxes")(function* ({ spaceId }: { spaceId: string }) {
+      const inboxes = yield* use((client) =>
+        client.spaceInbox.findMany({
             where: { spaceId, isPublic: true },
             select: {
               id: true,
@@ -52,12 +51,7 @@ export const makeSpaceInboxService = Effect.fn(function* () {
               },
             },
           }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'listPublicSpaceInboxes',
-            cause: error,
-          }),
-      });
+      );
 
       return inboxes.map((inbox) => ({
         inboxId: inbox.id,
@@ -66,41 +60,28 @@ export const makeSpaceInboxService = Effect.fn(function* () {
         encryptionPublicKey: inbox.encryptionPublicKey,
         creationEvent: JSON.parse(inbox.spaceEvent.event) as SpaceEvents.CreateSpaceInboxEvent,
       }));
-    })();
+    });
 
-  const getSpaceInbox = ({ spaceId, inboxId }: { spaceId: string; inboxId: string }) =>
-    Effect.fn(function* () {
-      const inbox = yield* Effect.tryPromise({
-        try: () =>
-          client.spaceInbox.findUnique({
-            where: { id: inboxId, spaceId },
-            select: {
-              id: true,
-              isPublic: true,
-              authPolicy: true,
-              encryptionPublicKey: true,
-              spaceEvent: {
-                select: {
-                  event: true,
-                },
+  const getSpaceInbox = Effect.fn("getSpaceInbox")(function* ({ spaceId, inboxId }: { spaceId: string; inboxId: string }) {
+    const inbox = yield* use((client) =>
+      client.spaceInbox.findUnique({
+          where: { id: inboxId, spaceId },
+          select: {
+            id: true,
+            isPublic: true,
+            authPolicy: true,
+            encryptionPublicKey: true,
+            spaceEvent: {
+              select: {
+                event: true,
               },
             },
-          }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'getSpaceInbox',
-            cause: error,
-          }),
-      });
-
-      if (!inbox) {
-        return yield* Effect.fail(
-          new ResourceNotFoundError({
-            resource: 'SpaceInbox',
-            id: inboxId,
-          }),
-        );
-      }
+          },
+        }),
+      ).pipe(Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({
+        resource: 'SpaceInbox',
+        id: inboxId,
+      })));
 
       return {
         inboxId: inbox.id,
@@ -109,9 +90,9 @@ export const makeSpaceInboxService = Effect.fn(function* () {
         encryptionPublicKey: inbox.encryptionPublicKey,
         creationEvent: JSON.parse(inbox.spaceEvent.event) as SpaceEvents.CreateSpaceInboxEvent,
       };
-    })();
+    });
 
-  const postSpaceInboxMessage = ({
+  const postSpaceInboxMessage = Effect.fn(function* ({
     spaceId,
     inboxId,
     message,
@@ -119,8 +100,7 @@ export const makeSpaceInboxService = Effect.fn(function* () {
     spaceId: string;
     inboxId: string;
     message: Messages.RequestCreateSpaceInboxMessage;
-  }) =>
-    Effect.fn(function* () {
+  }) {
       // First get the inbox to validate it exists and get auth policy
       const spaceInbox = yield* getSpaceInbox({ spaceId, inboxId });
 
@@ -181,8 +161,7 @@ export const makeSpaceInboxService = Effect.fn(function* () {
         });
 
         // Check if this public key corresponds to a user's identity
-        const authorIdentity = yield* identityService
-          .getAppOrConnectIdentity({
+        const authorIdentity = yield* getAppOrConnectIdentity({
             accountAddress: message.authorAccountAddress,
             signaturePublicKey: authorPublicKey,
           })
@@ -208,9 +187,8 @@ export const makeSpaceInboxService = Effect.fn(function* () {
       }
 
       // Create the message in the database
-      const createdMessage = yield* Effect.tryPromise({
-        try: () =>
-          client.$transaction(async (prisma) => {
+      const createdMessage = yield* use((client) =>
+        client.$transaction(async (prisma) => {
             // Double-check the inbox exists and belongs to the correct space
             const inbox = await prisma.spaceInbox.findUnique({
               where: { id: inboxId },
@@ -251,24 +229,21 @@ export const makeSpaceInboxService = Effect.fn(function* () {
               createdAt: created.createdAt,
             } as Messages.InboxMessage;
           }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'postSpaceInboxMessage',
-            cause: error,
-          }),
-      });
+        )
 
       // TODO: Broadcast the message (WebSocket functionality would go here)
       // broadcastSpaceInboxMessage({ spaceId, inboxId, message: createdMessage });
 
       return createdMessage;
-    })();
+    });
 
   return {
     listPublicSpaceInboxes,
     getSpaceInbox,
     postSpaceInboxMessage,
   } as const;
-})();
-
-export const SpaceInboxServiceLive = Layer.effect(SpaceInboxService, makeSpaceInboxService);
+}).pipe(
+  Layer.effect(SpaceInboxService),
+  Layer.provide(DatabaseService.layer),
+  Layer.provide(IdentityService.layer)
+);

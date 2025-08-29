@@ -1,8 +1,7 @@
 import { Identity, type Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { Context, Effect, Layer } from 'effect';
-import { DatabaseError, type ValidationError } from '../http/errors.js';
-import { DatabaseService } from './database.js';
-import { IdentityService } from './identity.js';
+import * as DatabaseService from './database.js';
+import * as IdentityService from './identity.js';
 
 export interface SpaceInfo {
   id: string;
@@ -39,54 +38,44 @@ export interface AddAppIdentityToSpacesParams {
   spacesInput: Messages.RequestConnectAddAppIdentityToSpaces['spacesInput'];
 }
 
-export interface SpacesService {
-  readonly listByAccount: (accountAddress: string) => Effect.Effect<SpaceInfo[], never>;
-  readonly createSpace: (params: CreateSpaceParams) => Effect.Effect<{ id: string }, ValidationError | DatabaseError>;
-  readonly addAppIdentityToSpaces: (params: AddAppIdentityToSpacesParams) => Effect.Effect<void, DatabaseError>;
-}
+export class SpacesService extends Context.Tag('SpacesService')<SpacesService, {
+  readonly listByAccount: (accountAddress: string) => Effect.Effect<SpaceInfo[], DatabaseService.DatabaseError>;
+  readonly createSpace: (params: CreateSpaceParams) => Effect.Effect<{ id: string }, SpaceEvents.ApplyError | DatabaseService.DatabaseError>;
+  readonly addAppIdentityToSpaces: (params: AddAppIdentityToSpacesParams) => Effect.Effect<void, DatabaseService.DatabaseError>;
+}>() {}
 
-export const SpacesService = Context.GenericTag<SpacesService>('SpacesService');
+export const layer = Effect.gen(function* () {
+  const { use } = yield* DatabaseService.DatabaseService;
+  const { getAppOrConnectIdentity } = yield* IdentityService.IdentityService;
 
-export const makeSpacesService = Effect.fn(function* () {
-  const { client } = yield* DatabaseService;
-  const identityService = yield* IdentityService;
-
-  const listByAccount = (accountAddress: string) =>
-    Effect.fn(function* () {
-      const spaces = yield* Effect.tryPromise({
-        try: () =>
-          client.space.findMany({
-            where: {
-              members: {
-                some: {
-                  address: accountAddress,
-                },
-              },
+  const listByAccount = Effect.fn(function* (accountAddress: string) {
+    const spaces = yield* use((client) =>
+      client.space.findMany({
+        where: {
+          members: {
+            some: {
+              address: accountAddress,
             },
+          },
+        },
+        include: {
+          appIdentities: {
+            select: {
+              address: true,
+              appId: true,
+            },
+          },
+          keys: {
             include: {
-              appIdentities: {
-                select: {
-                  address: true,
-                  appId: true,
-                },
-              },
-              keys: {
-                include: {
-                  keyBoxes: {
-                    where: {
-                      accountAddress,
-                    },
-                  },
+              keyBoxes: {
+                where: {
+                  accountAddress,
                 },
               },
             },
-          }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'listSpacesByAccount',
-            cause: error,
-          }),
-      });
+          },
+        },
+      }));
 
       return spaces.map((space) => ({
         id: space.id,
@@ -108,29 +97,25 @@ export const makeSpacesService = Effect.fn(function* () {
             authorPublicKey: key.keyBoxes[0].authorPublicKey,
           })),
       }));
-    })();
+    });
 
-  const createSpace = (params: CreateSpaceParams) =>
-    Effect.fn(function* () {
+  const createSpace = Effect.fn(function* (params: CreateSpaceParams) {
       const { accountAddress, event, keyBox, infoContent, infoSignatureHex, infoSignatureRecovery, name } = params;
 
       // Create the getVerifiedIdentity function for space event validation
-      const getVerifiedIdentity = (accountAddressToFetch: string, publicKey: string) => {
+      const getVerifiedIdentity = Effect.fn(function* (accountAddressToFetch: string, publicKey: string) {
         // applySpaceEvent is only allowed to be called by the account that is applying the event
         if (accountAddressToFetch !== accountAddress) {
-          return Effect.fail(new Identity.InvalidIdentityError());
+          return yield* new Identity.InvalidIdentityError();
         }
 
-        return Effect.fn(function* () {
-          const identity = yield* identityService
-            .getAppOrConnectIdentity({
-              accountAddress: accountAddressToFetch,
-              signaturePublicKey: publicKey,
-            })
-            .pipe(Effect.mapError(() => new Identity.InvalidIdentityError()));
-          return identity;
-        })();
-      };
+        const identity = yield* getAppOrConnectIdentity({
+          accountAddress: accountAddressToFetch,
+          signaturePublicKey: publicKey,
+        }).pipe(Effect.mapError(() => new Identity.InvalidIdentityError()));
+
+        return identity;
+      });
 
       // Validate the space event
       const result = yield* SpaceEvents.applyEvent({
@@ -142,9 +127,8 @@ export const makeSpacesService = Effect.fn(function* () {
       const keyBoxId = `${keyBox.id}-${accountAddress}`;
 
       // Create the space in the database
-      const spaceEvent = yield* Effect.tryPromise({
-        try: () =>
-          client.spaceEvent.create({
+      const spaceEvent = yield* use((client) =>
+        client.spaceEvent.create({
             data: {
               event: JSON.stringify(event),
               id: event.transaction.id,
@@ -185,23 +169,16 @@ export const makeSpacesService = Effect.fn(function* () {
               },
             },
           }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'createSpace',
-            cause: error,
-          }),
-      });
+      );
 
       return { id: spaceEvent.id };
-    })();
+    });
 
-  const addAppIdentityToSpaces = (params: AddAppIdentityToSpacesParams) =>
-    Effect.fn(function* () {
+  const addAppIdentityToSpaces = Effect.fn(function* (params: AddAppIdentityToSpacesParams) {
       const { appIdentityAddress, accountAddress, spacesInput } = params;
 
-      yield* Effect.tryPromise({
-        try: () =>
-          client.$transaction(async (prisma) => {
+      yield* use((client) =>
+        client.$transaction(async (prisma) => {
             // Update app identity to connect it to spaces
             await prisma.appIdentity.update({
               where: {
@@ -236,19 +213,16 @@ export const makeSpacesService = Effect.fn(function* () {
               data: keyBoxes,
             });
           }),
-        catch: (error) =>
-          new DatabaseError({
-            operation: 'addAppIdentityToSpaces',
-            cause: error,
-          }),
-      });
-    })();
+      );
+    });
 
   return {
     listByAccount,
     createSpace,
     addAppIdentityToSpaces,
   } as const;
-})();
-
-export const SpacesServiceLive = Layer.effect(SpacesService, makeSpacesService);
+}).pipe(
+  Layer.effect(SpacesService),
+  Layer.provide(DatabaseService.layer),
+  Layer.provide(IdentityService.layer)
+);

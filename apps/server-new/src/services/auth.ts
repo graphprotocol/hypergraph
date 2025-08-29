@@ -1,20 +1,18 @@
 import { PrivyClient } from '@privy-io/server-auth';
-import { Context, Effect, Layer, Redacted } from 'effect';
 import * as Config from '../config/privy.js';
-
-/**
- * Auth service interface
- */
-export interface AuthService {
-  readonly privy: PrivyClient;
-  readonly verifyAuthToken: (token: string) => Effect.Effect<{ userId: string }, Error>;
-  readonly verifySessionToken: (token: string) => Effect.Effect<{ address: string }, Error>;
-}
+import * as Effect from "effect/Effect";
+import * as Redacted from "effect/Redacted";
+import * as Context from "effect/Context";
+import * as Layer from "effect/Layer";
 
 /**
  * Auth service tag
  */
-export const AuthService = Context.GenericTag<AuthService>('AuthService');
+export class AuthService extends Context.Tag("AuthService")<AuthService, {
+  readonly privy: PrivyClient;
+  readonly verifyAuthToken: (token: string) => Effect.Effect<{ userId: string }, Error>;
+  readonly verifySessionToken: (token: string) => Effect.Effect<{ address: string }, Error>;
+}>() {}
 
 /**
  * Auth service implementation
@@ -30,7 +28,7 @@ export const makeAuthService = Effect.fn(function* () {
     });
 
     if (!user) {
-      yield* Effect.fail(new Error('User not found'));
+      return yield* Effect.fail(new Error('User not found'));
     }
 
     return { userId: user.id };

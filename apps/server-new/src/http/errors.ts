@@ -1,4 +1,13 @@
+import { HttpApiSchema } from '@effect/platform';
 import { Schema } from 'effect';
+
+export class InternalServerError extends Schema.TaggedError<InternalServerError>()('InternalServerError', {
+  message: Schema.String.pipe(Schema.optionalWith({
+    default: () => 'Internal server error',
+  })),
+}, {
+  [HttpApiSchema.AnnotationStatus]: 500,
+}) {}
 
 /**
  * Authentication-related errors
@@ -62,19 +71,6 @@ export class PrivyConfigError extends Schema.TaggedError<PrivyConfigError>()('Pr
 
 export class PrivyTokenError extends Schema.TaggedError<PrivyTokenError>()('PrivyTokenError', {
   message: Schema.String,
-}) {}
-
-/**
- * Database errors
- */
-export class DatabaseError extends Schema.TaggedError<DatabaseError>()('DatabaseError', {
-  operation: Schema.String,
-  cause: Schema.Unknown,
-}) {}
-
-export class TransactionError extends Schema.TaggedError<TransactionError>()('TransactionError', {
-  message: Schema.String,
-  cause: Schema.Unknown,
 }) {}
 
 /**
