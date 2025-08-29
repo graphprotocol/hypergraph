@@ -112,11 +112,18 @@ export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
   .addError(Errors.DatabaseError, { status: 500 });
 
 export const postConnectIdentityEndpoint = HttpApiEndpoint.post('postConnectIdentity')`/connect/identity`
+  .setHeaders(Schema.Struct({
+    'privy-id-token': Schema.String,
+  }))
   .setPayload(Messages.RequestConnectCreateIdentity)
-  // .addSuccess(Messages.ResponseConnectCreateIdentity)
+  .addSuccess(Messages.ResponseConnectCreateIdentity)
   .addError(Errors.AuthenticationError, { status: 401 })
+  .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ResourceAlreadyExistsError, { status: 400 })
-  .addError(Errors.OwnershipProofError, { status: 401 });
+  .addError(Errors.OwnershipProofError, { status: 401 })
+  .addError(Errors.PrivyTokenError, { status: 401 })
+  .addError(Errors.PrivyConfigError, { status: 500 })
+  .addError(Errors.DatabaseError, { status: 500 });
 
 export const getConnectIdentityEncryptedEndpoint = HttpApiEndpoint.get(
   'getConnectIdentityEncrypted',

@@ -1,5 +1,5 @@
 import { Context, Effect, Layer } from 'effect';
-import { ResourceNotFoundError } from '../http/errors.js';
+import { DatabaseError, ResourceAlreadyExistsError, ResourceNotFoundError } from '../http/errors.js';
 import { DatabaseService } from './database.js';
 
 export interface ConnectIdentityResult {
@@ -10,8 +10,20 @@ export interface ConnectIdentityResult {
   keyProof: string;
 }
 
+export interface CreateConnectIdentityParams {
+  signerAddress: string;
+  accountAddress: string;
+  ciphertext: string;
+  nonce: string;
+  signaturePublicKey: string;
+  encryptionPublicKey: string;
+  accountProof: string;
+  keyProof: string;
+}
+
 export interface ConnectIdentityService {
   readonly getByAccountAddress: (accountAddress: string) => Effect.Effect<ConnectIdentityResult, ResourceNotFoundError>;
+  readonly createIdentity: (params: CreateConnectIdentityParams) => Effect.Effect<void, ResourceAlreadyExistsError | DatabaseError>;
 }
 
 export const ConnectIdentityService = Context.GenericTag<ConnectIdentityService>('ConnectIdentityService');
@@ -58,8 +70,57 @@ export const makeConnectIdentityService = Effect.fn(function* () {
       };
     })();
 
+  const createIdentity = (params: CreateConnectIdentityParams) =>
+    Effect.fn(function* () {
+      // Check if identity already exists for this account
+      const existingIdentity = yield* Effect.tryPromise({
+        try: () =>
+          client.account.findFirst({
+            where: {
+              address: params.accountAddress,
+            },
+          }),
+        catch: (error) =>
+          new DatabaseError({
+            operation: 'createIdentity',
+            cause: error,
+          }),
+      });
+
+      if (existingIdentity) {
+        yield* new ResourceAlreadyExistsError({
+          resource: 'ConnectIdentity',
+          id: params.accountAddress,
+        });
+      }
+
+      // Create the new identity
+      yield* Effect.tryPromise({
+        try: () =>
+          client.account.create({
+            data: {
+              connectSignerAddress: params.signerAddress,
+              address: params.accountAddress,
+              connectAccountProof: params.accountProof,
+              connectKeyProof: params.keyProof,
+              connectSignaturePublicKey: params.signaturePublicKey,
+              connectEncryptionPublicKey: params.encryptionPublicKey,
+              connectCiphertext: params.ciphertext,
+              connectNonce: params.nonce,
+              connectAddress: params.accountAddress,
+            },
+          }),
+        catch: (error) =>
+          new DatabaseError({
+            operation: 'createIdentity',
+            cause: error,
+          }),
+      });
+    })();
+
   return {
     getByAccountAddress,
+    createIdentity,
   } as const;
 })();
 

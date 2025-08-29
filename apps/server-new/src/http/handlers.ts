@@ -1,6 +1,7 @@
 import { HttpApiBuilder } from '@effect/platform';
-import { Messages, Utils } from '@graphprotocol/hypergraph';
+import { Identity, Messages, Utils } from '@graphprotocol/hypergraph';
 import { Effect, Layer } from 'effect';
+import { hypergraphChainConfig, hypergraphRpcUrlConfig } from '../config/hypergraph.js';
 import { AppIdentityService } from '../services/app-identity.js';
 import { ConnectIdentityService } from '../services/connect-identity.js';
 import { PrivyAuthService } from '../services/privy-auth.js';
@@ -81,9 +82,74 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'postConnectIdentity',
-      Effect.fn(function* ({ payload }) {
-        yield* Effect.logInfo('Creating connect identity', payload);
-        yield* new Errors.ResourceNotFoundError({ resource: 'postConnectIdentity', id: 'postConnectIdentity' });
+      Effect.fn(function* ({ headers, payload }) {
+        yield* Effect.logInfo('POST /connect/identity');
+
+        const privyAuthService = yield* PrivyAuthService;
+        const connectIdentityService = yield* ConnectIdentityService;
+        const chain = yield* hypergraphChainConfig;
+        const rpcUrl = yield* hypergraphRpcUrlConfig;
+
+        // Verify the Privy token and get signer address
+        const signerAddress = yield* privyAuthService.verifyPrivyToken(headers['privy-id-token']);
+        const accountAddress = payload.keyBox.accountAddress;
+
+        // Verify that the signer matches the one in the keyBox
+        if (signerAddress !== payload.keyBox.signer) {
+          return yield* Effect.fail(
+            new Errors.AuthorizationError({
+              message: 'Signer mismatch',
+              accountAddress,
+            }),
+          );
+        }
+
+        // Verify identity ownership proof
+        const isValid = yield* Effect.tryPromise({
+          try: () =>
+            Identity.verifyIdentityOwnership(
+              accountAddress,
+              payload.signaturePublicKey,
+              payload.accountProof,
+              payload.keyProof,
+              chain,
+              rpcUrl,
+            ),
+          catch: () =>
+            new Errors.OwnershipProofError({
+              accountAddress,
+              reason: 'Failed to verify identity ownership',
+            }),
+        });
+
+        if (!isValid) {
+          return yield* Effect.fail(
+            new Errors.OwnershipProofError({
+              accountAddress,
+              reason: 'Invalid ownership proof',
+            }),
+          );
+        }
+
+        yield* Effect.logInfo('Ownership proof is valid');
+
+        // Create the identity
+        yield* connectIdentityService.createIdentity({
+          signerAddress,
+          accountAddress,
+          ciphertext: payload.keyBox.ciphertext,
+          nonce: payload.keyBox.nonce,
+          signaturePublicKey: payload.signaturePublicKey,
+          encryptionPublicKey: payload.encryptionPublicKey,
+          accountProof: payload.accountProof,
+          keyProof: payload.keyProof,
+        });
+
+        const response: Messages.ResponseConnectCreateIdentity = {
+          success: true,
+        };
+
+        return response;
       }),
     )
     .handle(
