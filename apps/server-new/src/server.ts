@@ -8,6 +8,7 @@ import { HandlersLive } from './http/handlers.ts';
 import { AppIdentityServiceLive } from './services/app-identity.ts';
 import { ConnectIdentityServiceLive } from './services/connect-identity.ts';
 import { DatabaseServiceLive } from './services/database.ts';
+import { IdentityServiceLive } from './services/identity.ts';
 import { PrivyAuthServiceLive } from './services/privy-auth.ts';
 import { SpacesServiceLive } from './services/spaces.ts';
 
@@ -15,8 +16,9 @@ const ServicesLive = Layer.mergeAll(
   DatabaseServiceLive,
   Layer.provide(AppIdentityServiceLive, DatabaseServiceLive),
   Layer.provide(ConnectIdentityServiceLive, DatabaseServiceLive),
+  Layer.provide(IdentityServiceLive, DatabaseServiceLive),
   Layer.provide(PrivyAuthServiceLive, DatabaseServiceLive),
-  Layer.provide(SpacesServiceLive, DatabaseServiceLive),
+  Layer.provide(SpacesServiceLive, Layer.mergeAll(DatabaseServiceLive, IdentityServiceLive)),
 );
 
 const apiLive = HttpApiBuilder.api(hypergraphApi).pipe(Layer.provide(HandlersLive), Layer.provide(ServicesLive));

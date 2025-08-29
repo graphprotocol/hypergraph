@@ -1,5 +1,5 @@
 import { HttpApiBuilder } from '@effect/platform';
-import { Messages } from '@graphprotocol/hypergraph';
+import { Messages, Utils } from '@graphprotocol/hypergraph';
 import { Effect, Layer } from 'effect';
 import { AppIdentityService } from '../services/app-identity.js';
 import { ConnectIdentityService } from '../services/connect-identity.js';
@@ -37,12 +37,27 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'postConnectSpaces',
-      Effect.fn(function* ({ payload }) {
-        yield* Effect.logInfo('Creating space', payload);
-        yield* new Errors.ResourceNotFoundError({
-          resource: 'postConnectSpaces',
-          id: 'postConnectSpaces',
+      Effect.fn(function* ({ headers, payload }) {
+        yield* Effect.logInfo('POST /connect/spaces');
+
+        const privyAuthService = yield* PrivyAuthService;
+        const spacesService = yield* SpacesService;
+
+        // Authenticate the request with Privy token
+        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], payload.accountAddress);
+
+        // Create the space
+        const space = yield* spacesService.createSpace({
+          accountAddress: payload.accountAddress,
+          event: payload.event,
+          keyBox: payload.keyBox,
+          infoContent: Utils.hexToBytes(payload.infoContent),
+          infoSignatureHex: payload.infoSignature.hex,
+          infoSignatureRecovery: payload.infoSignature.recovery,
+          name: payload.name,
         });
+
+        return { space };
       }),
     )
     .handle(

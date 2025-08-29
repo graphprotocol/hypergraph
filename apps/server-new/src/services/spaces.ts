@@ -1,7 +1,8 @@
-import { Utils } from '@graphprotocol/hypergraph';
+import { Identity, Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { Context, Effect, Layer } from 'effect';
-import { DatabaseError } from '../http/errors.js';
+import { DatabaseError, ValidationError } from '../http/errors.js';
 import { DatabaseService } from './database.js';
+import { IdentityService } from './identity.js';
 
 export interface SpaceInfo {
   id: string;
@@ -22,14 +23,26 @@ export interface SpaceInfo {
   }>;
 }
 
+export interface CreateSpaceParams {
+  accountAddress: string;
+  event: SpaceEvents.CreateSpaceEvent;
+  keyBox: Messages.KeyBoxWithKeyId;
+  infoContent: Uint8Array;
+  infoSignatureHex: string;
+  infoSignatureRecovery: number;
+  name: string;
+}
+
 export interface SpacesService {
   readonly listByAccount: (accountAddress: string) => Effect.Effect<SpaceInfo[], never>;
+  readonly createSpace: (params: CreateSpaceParams) => Effect.Effect<{ id: string }, ValidationError | DatabaseError>;
 }
 
 export const SpacesService = Context.GenericTag<SpacesService>('SpacesService');
 
 export const makeSpacesService = Effect.fn(function* () {
   const { client } = yield* DatabaseService;
+  const identityService = yield* IdentityService;
 
   const listByAccount = (accountAddress: string) =>
     Effect.fn(function* () {
@@ -90,8 +103,94 @@ export const makeSpacesService = Effect.fn(function* () {
       }));
     })();
 
+  const createSpace = (params: CreateSpaceParams) =>
+    Effect.fn(function* () {
+      const { accountAddress, event, keyBox, infoContent, infoSignatureHex, infoSignatureRecovery, name } = params;
+
+      // Create the getVerifiedIdentity function for space event validation
+      const getVerifiedIdentity = (accountAddressToFetch: string, publicKey: string) => {
+        // applySpaceEvent is only allowed to be called by the account that is applying the event
+        if (accountAddressToFetch !== accountAddress) {
+          return Effect.fail(new Identity.InvalidIdentityError());
+        }
+
+        return Effect.fn(function* () {
+          const identity = yield* identityService
+            .getAppOrConnectIdentity({
+              accountAddress: accountAddressToFetch,
+              signaturePublicKey: publicKey,
+            })
+            .pipe(Effect.mapError(() => new Identity.InvalidIdentityError()));
+          return identity;
+        })();
+      };
+
+      // Validate the space event
+      const result = yield* SpaceEvents.applyEvent({
+        event,
+        state: undefined,
+        getVerifiedIdentity,
+      });
+
+      const keyBoxId = `${keyBox.id}-${accountAddress}`;
+
+      // Create the space in the database
+      const spaceEvent = yield* Effect.tryPromise({
+        try: () =>
+          client.spaceEvent.create({
+            data: {
+              event: JSON.stringify(event),
+              id: event.transaction.id,
+              counter: 0,
+              state: JSON.stringify(result),
+              space: {
+                create: {
+                  id: event.transaction.id,
+                  infoContent,
+                  infoSignatureHex,
+                  infoSignatureRecovery,
+                  infoAuthorAddress: accountAddress,
+                  name,
+                  members: {
+                    connect: {
+                      address: accountAddress,
+                    },
+                  },
+                  keys: {
+                    create: {
+                      id: keyBox.id,
+                      keyBoxes: {
+                        create: {
+                          id: keyBoxId,
+                          nonce: keyBox.nonce,
+                          ciphertext: keyBox.ciphertext,
+                          authorPublicKey: keyBox.authorPublicKey,
+                          account: {
+                            connect: {
+                              address: accountAddress,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        catch: (error) =>
+          new DatabaseError({
+            operation: 'createSpace',
+            cause: error,
+          }),
+      });
+
+      return { id: spaceEvent.id };
+    })();
+
   return {
     listByAccount,
+    createSpace,
   } as const;
 })();
 

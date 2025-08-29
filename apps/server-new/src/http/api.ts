@@ -84,11 +84,17 @@ export const getConnectSpacesEndpoint = HttpApiEndpoint.get('getConnectSpaces')`
   .addError(Errors.PrivyConfigError, { status: 500 });
 
 export const postConnectSpacesEndpoint = HttpApiEndpoint.post('postConnectSpaces')`/connect/spaces`
+  .setHeaders(Schema.Struct({
+    'privy-id-token': Schema.String,
+  }))
   .setPayload(Messages.RequestConnectCreateSpaceEvent)
-  // .addSuccess(SpaceCreationResponse)
+  .addSuccess(SpaceCreationResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
+  .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ValidationError, { status: 400 })
-  .addError(Errors.PrivyConfigError, { status: 500 });
+  .addError(Errors.PrivyTokenError, { status: 401 })
+  .addError(Errors.PrivyConfigError, { status: 500 })
+  .addError(Errors.DatabaseError, { status: 500 });
 
 export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
   'postConnectAddAppIdentityToSpaces',
