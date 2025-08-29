@@ -62,11 +62,20 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
     )
     .handle(
       'postConnectAddAppIdentityToSpaces',
-      Effect.fn(function* ({ payload }) {
-        yield* Effect.logInfo('Adding app identity to spaces', payload);
-        yield* new Errors.ResourceNotFoundError({
-          resource: 'postConnectAddAppIdentityToSpaces',
-          id: 'postConnectAddAppIdentityToSpaces',
+      Effect.fn(function* ({ headers, payload }) {
+        yield* Effect.logInfo('POST /connect/add-app-identity-to-spaces');
+
+        const privyAuthService = yield* PrivyAuthService;
+        const spacesService = yield* SpacesService;
+
+        // Authenticate the request with Privy token
+        yield* privyAuthService.authenticateRequest(headers['privy-id-token'], payload.accountAddress);
+
+        // Add app identity to spaces
+        yield* spacesService.addAppIdentityToSpaces({
+          appIdentityAddress: payload.appIdentityAddress,
+          accountAddress: payload.accountAddress,
+          spacesInput: payload.spacesInput,
         });
       }),
     )

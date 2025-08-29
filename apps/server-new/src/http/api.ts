@@ -99,10 +99,17 @@ export const postConnectSpacesEndpoint = HttpApiEndpoint.post('postConnectSpaces
 export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
   'postConnectAddAppIdentityToSpaces',
 )`/connect/add-app-identity-to-spaces`
+  .setHeaders(Schema.Struct({
+    'privy-id-token': Schema.String,
+  }))
   .setPayload(Messages.RequestConnectAddAppIdentityToSpaces)
-  // .addSuccess(Schema.Struct({ space: Schema.Unknown }))
+  .addSuccess(Schema.Void)
   .addError(Errors.AuthenticationError, { status: 401 })
-  .addError(Errors.ValidationError, { status: 400 });
+  .addError(Errors.AuthorizationError, { status: 401 })
+  .addError(Errors.ValidationError, { status: 400 })
+  .addError(Errors.PrivyTokenError, { status: 401 })
+  .addError(Errors.PrivyConfigError, { status: 500 })
+  .addError(Errors.DatabaseError, { status: 500 });
 
 export const postConnectIdentityEndpoint = HttpApiEndpoint.post('postConnectIdentity')`/connect/identity`
   .setPayload(Messages.RequestConnectCreateIdentity)

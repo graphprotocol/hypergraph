@@ -33,9 +33,16 @@ export interface CreateSpaceParams {
   name: string;
 }
 
+export interface AddAppIdentityToSpacesParams {
+  appIdentityAddress: string;
+  accountAddress: string;
+  spacesInput: Messages.RequestConnectAddAppIdentityToSpaces['spacesInput'];
+}
+
 export interface SpacesService {
   readonly listByAccount: (accountAddress: string) => Effect.Effect<SpaceInfo[], never>;
   readonly createSpace: (params: CreateSpaceParams) => Effect.Effect<{ id: string }, ValidationError | DatabaseError>;
+  readonly addAppIdentityToSpaces: (params: AddAppIdentityToSpacesParams) => Effect.Effect<void, DatabaseError>;
 }
 
 export const SpacesService = Context.GenericTag<SpacesService>('SpacesService');
@@ -188,9 +195,59 @@ export const makeSpacesService = Effect.fn(function* () {
       return { id: spaceEvent.id };
     })();
 
+  const addAppIdentityToSpaces = (params: AddAppIdentityToSpacesParams) =>
+    Effect.fn(function* () {
+      const { appIdentityAddress, accountAddress, spacesInput } = params;
+
+      yield* Effect.tryPromise({
+        try: () =>
+          client.$transaction(async (prisma) => {
+            // Update app identity to connect it to spaces
+            await prisma.appIdentity.update({
+              where: {
+                address: appIdentityAddress,
+                accountAddress,
+              },
+              data: {
+                spaces: {
+                  connect: spacesInput.map((space) => ({ id: space.id })),
+                },
+              },
+            });
+
+            // Create key boxes for the app identity
+            const keyBoxes = spacesInput.flatMap((entry) => {
+              return entry.keyBoxes.map((keyBox) => {
+                const keyBoxId = `${keyBox.id}-${appIdentityAddress}`;
+
+                return {
+                  id: keyBoxId,
+                  spaceKeyId: keyBox.id,
+                  ciphertext: keyBox.ciphertext,
+                  nonce: keyBox.nonce,
+                  authorPublicKey: keyBox.authorPublicKey,
+                  accountAddress,
+                  appIdentityAddress,
+                };
+              });
+            });
+
+            await prisma.spaceKeyBox.createMany({
+              data: keyBoxes,
+            });
+          }),
+        catch: (error) =>
+          new DatabaseError({
+            operation: 'addAppIdentityToSpaces',
+            cause: error,
+          }),
+      });
+    })();
+
   return {
     listByAccount,
     createSpace,
+    addAppIdentityToSpaces,
   } as const;
 })();
 
