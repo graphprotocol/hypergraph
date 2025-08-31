@@ -20,7 +20,7 @@ export const InboxSenderAuthPolicy = Schema.Literal('requires_auth', 'anonymous'
 /**
  * Database entity schemas (Prisma-based)
  */
-export const Account = Schema.Struct({
+export class Account extends Schema.Class<Account>('Account')({
   address: Schema.String,
   connectAddress: Schema.String,
   connectCiphertext: Schema.String,
@@ -30,9 +30,9 @@ export const Account = Schema.Struct({
   connectAccountProof: Schema.String,
   connectKeyProof: Schema.String,
   connectSignerAddress: Schema.String,
-});
+}) {}
 
-export const AppIdentity = Schema.Struct({
+export class AppIdentity extends Schema.Class<AppIdentity>('AppIdentity')({
   address: Schema.String,
   ciphertext: Schema.String,
   signaturePublicKey: Schema.String,
@@ -42,34 +42,34 @@ export const AppIdentity = Schema.Struct({
   accountAddress: Schema.String,
   appId: Schema.String,
   sessionToken: Schema.String.pipe(Schema.NullOr),
-  sessionTokenExpires: Schema.DateFromSelf.pipe(Schema.NullOr),
-});
+  sessionTokenExpires: Schema.Date.pipe(Schema.NullOr),
+}) {}
 
-export const Space = Schema.Struct({
+export class Space extends Schema.Class<Space>('Space')({
   id: Schema.String,
   name: Schema.String,
   infoContent: Schema.Uint8Array,
   infoAuthorAddress: Schema.String,
   infoSignatureHex: Schema.String,
   infoSignatureRecovery: Schema.Number,
-});
+}) {}
 
-export const SpaceEvent = Schema.Struct({
+export class SpaceEvent extends Schema.Class<SpaceEvent>('SpaceEvent')({
   id: Schema.String,
   event: Schema.String,
   state: Schema.String,
   counter: Schema.Number,
   spaceId: Schema.String,
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const SpaceKey = Schema.Struct({
+export class SpaceKey extends Schema.Class<SpaceKey>('SpaceKey')({
   id: Schema.String,
   spaceId: Schema.String,
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const SpaceKeyBox = Schema.Struct({
+export class SpaceKeyBox extends Schema.Class<SpaceKeyBox>('SpaceKeyBox')({
   id: Schema.String,
   spaceKeyId: Schema.String,
   ciphertext: Schema.String,
@@ -78,9 +78,9 @@ export const SpaceKeyBox = Schema.Struct({
   accountAddress: Schema.String,
   appIdentityAddress: Schema.optional(Schema.String),
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const Update = Schema.Struct({
+export class Update extends Schema.Class<Update>('Update')({
   spaceId: Schema.String,
   clock: Schema.Number,
   content: Schema.Uint8Array,
@@ -88,9 +88,9 @@ export const Update = Schema.Struct({
   signatureHex: Schema.String,
   signatureRecovery: Schema.Number,
   updateId: Schema.String,
-});
+}) {}
 
-export const SpaceInbox = Schema.Struct({
+export class SpaceInbox extends Schema.Class<SpaceInbox>('SpaceInbox')({
   id: Schema.String,
   spaceId: Schema.String,
   isPublic: Schema.Boolean,
@@ -99,9 +99,9 @@ export const SpaceInbox = Schema.Struct({
   encryptedSecretKey: Schema.String,
   spaceEventId: Schema.String,
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const SpaceInboxMessage = Schema.Struct({
+export class SpaceInboxMessage extends Schema.Class<SpaceInboxMessage>('SpaceInboxMessage')({
   id: Schema.String,
   spaceInboxId: Schema.String,
   ciphertext: Schema.String,
@@ -109,9 +109,9 @@ export const SpaceInboxMessage = Schema.Struct({
   signatureRecovery: Schema.optional(Schema.Number),
   authorAccountAddress: Schema.optional(Schema.String),
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const AccountInbox = Schema.Struct({
+export class AccountInbox extends Schema.Class<AccountInbox>('AccountInbox')({
   id: Schema.String,
   accountAddress: Schema.String,
   isPublic: Schema.Boolean,
@@ -120,9 +120,9 @@ export const AccountInbox = Schema.Struct({
   signatureHex: Schema.String,
   signatureRecovery: Schema.Number,
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const AccountInboxMessage = Schema.Struct({
+export class AccountInboxMessage extends Schema.Class<AccountInboxMessage>('AccountInboxMessage')({
   id: Schema.String,
   accountInboxId: Schema.String,
   ciphertext: Schema.String,
@@ -130,45 +130,45 @@ export const AccountInboxMessage = Schema.Struct({
   signatureRecovery: Schema.optional(Schema.Number),
   authorAccountAddress: Schema.optional(Schema.String),
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const Invitation = Schema.Struct({
+export class Invitation extends Schema.Class<Invitation>('Invitation')({
   id: Schema.String,
   spaceId: Schema.String,
   accountAddress: Schema.String,
   inviteeAccountAddress: Schema.String,
   createdAt: Schema.DateFromSelf,
-});
+}) {}
 
-export const InvitationTargetApp = Schema.Struct({
+export class InvitationTargetApp extends Schema.Class<InvitationTargetApp>('InvitationTargetApp')({
   id: Schema.String,
   invitationId: Schema.String,
-});
+}) {}
 
 /**
  * API response schemas
  */
-export const SpaceInboxPublic = Schema.Struct({
+export class SpaceInboxPublic extends Schema.Class<SpaceInboxPublic>('SpaceInboxPublic')({
   id: Schema.String,
   spaceId: Schema.String,
   isPublic: Schema.Boolean,
   authPolicy: InboxSenderAuthPolicy,
   encryptionPublicKey: Schema.String,
-});
+}) {}
 
-export const AccountInboxPublic = Schema.Struct({
+export class AccountInboxPublic extends Schema.Class<AccountInboxPublic>('AccountInboxPublic')({
   id: Schema.String,
   accountAddress: Schema.String,
   isPublic: Schema.Boolean,
   authPolicy: InboxSenderAuthPolicy,
   encryptionPublicKey: Schema.String,
-});
+}) {}
 
-export const PublicIdentity = Schema.Struct({
+export class PublicIdentity extends Schema.Class<PublicIdentity>('PublicIdentity')({
   accountAddress: Schema.String,
   signaturePublicKey: Schema.String,
   encryptionPublicKey: Schema.String,
   accountProof: Schema.String,
   keyProof: Schema.String,
   appId: Schema.optional(Schema.String),
-});
+}) {}
