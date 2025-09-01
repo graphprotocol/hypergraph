@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -11,17 +11,6 @@ function Index() {
   const { authenticated } = useHypergraphAuth();
 
   const handleSignIn = () => {
-    redirectToConnect({
-      storage: localStorage,
-      connectUrl: 'https://connect.geobrowser.io/',
-      successUrl: `${window.location.origin}/authenticate-success`,
-      redirectFn: (url: URL) => {
-        window.location.href = url.toString();
-      },
-    });
-  };
-
-  const handleGoToGeoConnect = () => {
     redirectToConnect({
       storage: localStorage,
       connectUrl: 'https://connect.geobrowser.io/',
@@ -52,6 +41,7 @@ function Index() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -82,6 +72,7 @@ function Index() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -97,7 +88,7 @@ function Index() {
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
                   Go to Geo Connect to manage your private data and publish it to the public Knowledge Graph.
                 </p>
-                <Button onClick={handleGoToGeoConnect} className="w-full bg-primary hover:bg-primary/90">
+                <Button onClick={handleSignIn} className="w-full bg-primary hover:bg-primary/90">
                   Go to Geo Connect
                 </Button>
               </>
@@ -124,6 +115,7 @@ function Index() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"

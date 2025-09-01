@@ -1,9 +1,8 @@
 'use client';
 
+import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 
 import { Button } from '@/Components/ui/button';
 
@@ -12,17 +11,6 @@ export default function HomePage() {
   const { authenticated } = useHypergraphAuth();
 
   const handleSignIn = () => {
-    redirectToConnect({
-      storage: localStorage,
-      connectUrl: 'https://connect.geobrowser.io/',
-      successUrl: `${window.location.origin}/authenticate-success`,
-      redirectFn: (url: URL) => {
-        window.location.href = url.toString();
-      },
-    });
-  };
-
-  const handleGoToGeoConnect = () => {
     redirectToConnect({
       storage: localStorage,
       connectUrl: 'https://connect.geobrowser.io/',
@@ -53,6 +41,7 @@ export default function HomePage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -83,6 +72,7 @@ export default function HomePage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -98,7 +88,7 @@ export default function HomePage() {
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
                   Go to Geo Connect to manage your private data and publish it to the public Knowledge Graph.
                 </p>
-                <Button onClick={handleGoToGeoConnect} className="w-full bg-primary hover:bg-primary/90">
+                <Button onClick={handleSignIn} className="w-full bg-primary hover:bg-primary/90">
                   Go to Geo Connect
                 </Button>
               </>
@@ -125,6 +115,7 @@ export default function HomePage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
