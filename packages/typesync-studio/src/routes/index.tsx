@@ -16,7 +16,7 @@ import {
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { Array as EffectArray, String as EffectString, Option, pipe, Schema } from 'effect';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { Arrow } from '@/Components/Arrow.tsx';
 import { Checkbox } from '@/Components/Form/Checkbox.tsx';
@@ -113,11 +113,6 @@ function SchemaBuilderComponent() {
       });
     },
   });
-
-  // Create a ref to store DOM references for each type
-  const typeRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  // State to track the index of the newly added type
-  const [_newTypeIndex, setNewTypeIndex] = useState<number | null>(null);
 
   const appTypes = useStore(createSchemaForm.store, (state) =>
     pipe(
@@ -493,12 +488,11 @@ function SchemaBuilderComponent() {
                     },
                   });
                   setTimeout(() => {
-                    const element = typeRefs.current.get(newIndex);
+                    const element = document.getElementById(`type-entry-${newIndex}`);
                     if (element) {
                       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                   }, 0);
-                  setNewTypeIndex(newIndex);
                   toastManager.add({
                     title: 'Type added to schema',
                     description: selected.name,
@@ -523,13 +517,7 @@ function SchemaBuilderComponent() {
                   return (
                     <div
                       key={typeEntryKey}
-                      ref={(el) => {
-                        if (el) {
-                          typeRefs.current.set(idx, el);
-                        } else {
-                          typeRefs.current.delete(idx);
-                        }
-                      }}
+                      id={`type-entry-${idx}`}
                       className="border-l-2 border-indigo-600 dark:border-indigo-400 pl-2 py-2 flex flex-col gap-y-4"
                     >
                       <div className="flex items-start justify-between gap-x-3">
