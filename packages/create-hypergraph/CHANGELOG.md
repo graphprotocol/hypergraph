@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.5.4
+### Patch Changes
+
+- de0d153: improve geo connect box based on authentication state in all templates
+
 ## 0.5.3
 ### Patch Changes
 
