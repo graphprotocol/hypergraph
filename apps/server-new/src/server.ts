@@ -7,6 +7,7 @@ import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
 import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
 import * as Mailbox from 'effect/Mailbox';
+import * as Schema from 'effect/Schema';
 import * as Stream from 'effect/Stream';
 import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
@@ -24,27 +25,37 @@ const ApiLayer = HttpLayerRouter.addHttpApi(hypergraphApi, {
   openapiPath: '/docs/openapi.json',
 }).pipe(Layer.provide(HandlersLive));
 
-type OutgoingMessage = {
-  type: 'message';
-  message: string;
+const Domain = {
+  Request: Schema.Struct({
+    type: Schema.String,
+    message: Schema.String,
+  }),
+  Response: Schema.Struct({
+    type: Schema.String,
+    message: Schema.String,
+  }),
 };
 
-// Create websocket layer at /ws.
+type Request = Schema.Schema.Type<typeof Domain.Request>;
+
 const WebSocketLayer = HttpLayerRouter.add(
   'GET',
-  '/ws',
+  '/',
   Effect.gen(function* () {
-    const outgoingMailbox = yield* Mailbox.make<OutgoingMessage>();
-    const incomingMailbox = yield* Mailbox.make<OutgoingMessage>();
+    const requests = yield* Mailbox.make<Request>();
 
-    yield* outgoingMailbox.offer({ type: 'message', message: 'Hello, world!' });
+    yield* requests.offer({ type: 'message', message: 'Hello, world!' });
 
-    // TODO: Implement actual websocket logic here.
-    return yield* Mailbox.toStream(outgoingMailbox).pipe(
+    return yield* Mailbox.toStream(requests).pipe(
       Stream.map(JSON.stringify),
       Stream.pipeThroughChannel(HttpServerRequest.upgradeChannel()),
       Stream.decodeText(),
-      Stream.runForEach((_) => Effect.log(_)),
+      Stream.runForEach((message) =>
+        Effect.gen(function* () {
+          yield* Effect.log('RECEIVED: ' + message);
+          yield* requests.offer({ type: 'message', message: 'RECEIVED' });
+        }),
+      ),
       Effect.as(HttpServerResponse.empty()),
     );
   }),
