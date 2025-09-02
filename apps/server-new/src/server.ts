@@ -1,14 +1,14 @@
-import { createServer } from 'node:http';
+import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import * as HttpApiScalar from '@effect/platform/HttpApiScalar';
 import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
-import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
-import * as Schedule from 'effect/Schedule';
+import * as Mailbox from 'effect/Mailbox';
 import * as Stream from 'effect/Stream';
+import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
@@ -24,18 +24,30 @@ const ApiLayer = HttpLayerRouter.addHttpApi(hypergraphApi, {
   openapiPath: '/docs/openapi.json',
 }).pipe(Layer.provide(HandlersLive));
 
+type OutgoingMessage = {
+  type: 'message';
+  message: string;
+};
+
 // Create websocket layer at /ws.
 const WebSocketLayer = HttpLayerRouter.add(
   'GET',
   '/ws',
-  // TODO: Implement actual websocket logic here.
-  Stream.fromSchedule(Schedule.spaced(1000)).pipe(
-    Stream.map(JSON.stringify),
-    Stream.pipeThroughChannel(HttpServerRequest.upgradeChannel()),
-    Stream.decodeText(),
-    Stream.runForEach((_) => Effect.log(_)),
-    Effect.as(HttpServerResponse.empty()),
-  ),
+  Effect.gen(function* () {
+    const outgoingMailbox = yield* Mailbox.make<OutgoingMessage>();
+    const incomingMailbox = yield* Mailbox.make<OutgoingMessage>();
+
+    yield* outgoingMailbox.offer({ type: 'message', message: 'Hello, world!' });
+
+    // TODO: Implement actual websocket logic here.
+    return yield* Mailbox.toStream(outgoingMailbox).pipe(
+      Stream.map(JSON.stringify),
+      Stream.pipeThroughChannel(HttpServerRequest.upgradeChannel()),
+      Stream.decodeText(),
+      Stream.runForEach((_) => Effect.log(_)),
+      Effect.as(HttpServerResponse.empty()),
+    );
+  }),
 );
 
 // Merge router layers together and add the cors middleware layer.
