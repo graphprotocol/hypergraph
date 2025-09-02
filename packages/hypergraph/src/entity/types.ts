@@ -88,6 +88,14 @@ export type EntityFieldFilter<T> = {
           endsWith?: string;
           contains?: string;
         }
-      : Record<string, never>);
+      : T extends Date
+        ? {
+            is?: Date;
+          }
+        : T extends ReadonlyArray<number>
+          ? {
+              is?: ReadonlyArray<number>;
+            }
+          : Record<string, never>);
 
 export type EntityFilter<T> = CrossFieldFilter<T>;
