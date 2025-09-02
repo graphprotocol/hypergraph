@@ -22,6 +22,11 @@ export interface SpaceInfo {
   }>;
 }
 
+export interface SpaceListEntry {
+  id: string;
+  name: string;
+}
+
 export interface CreateSpaceParams {
   accountAddress: string;
   event: SpaceEvents.CreateSpaceEvent;
@@ -48,6 +53,9 @@ export class SpacesService extends Context.Tag('SpacesService')<
     readonly addAppIdentityToSpaces: (
       params: AddAppIdentityToSpacesParams,
     ) => Effect.Effect<void, DatabaseService.DatabaseError>;
+    readonly listByAppIdentity: (
+      appIdentityAddress: string,
+    ) => Effect.Effect<SpaceListEntry[], DatabaseService.DatabaseError>;
   }
 >() {}
 
@@ -105,6 +113,37 @@ export const layer = Effect.gen(function* () {
           authorPublicKey: key.keyBoxes[0].authorPublicKey,
         })),
     }));
+  });
+
+  const listByAppIdentity = Effect.fn('listByAppIdentity')(function* (appIdentityAddress: string) {
+    return yield* use((client) =>
+      client.space.findMany({
+        where: {
+          appIdentities: {
+            some: {
+              address: appIdentityAddress,
+            },
+          },
+        },
+        include: {
+          appIdentities: {
+            select: {
+              address: true,
+              appId: true,
+            },
+          },
+          keys: {
+            include: {
+              keyBoxes: {
+                where: {
+                  appIdentityAddress,
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
   });
 
   const createSpace = Effect.fn('createSpace')(function* (params: CreateSpaceParams) {
@@ -229,6 +268,7 @@ export const layer = Effect.gen(function* () {
 
   return {
     listByAccount,
+    listByAppIdentity,
     createSpace,
     addAppIdentityToSpaces,
   } as const;

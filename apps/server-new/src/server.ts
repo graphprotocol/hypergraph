@@ -4,6 +4,7 @@ import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
+import { Messages } from '@graphprotocol/hypergraph';
 import { isArray } from 'effect/Array';
 import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
@@ -15,6 +16,7 @@ import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
 import * as AppIdentityService from './services/app-identity.ts';
+import * as SpacesService from './services/spaces.ts';
 
 // Create scalar openapi browser layer at /docs.
 const DocsLayer = HttpApiScalar.layerHttpLayerRouter({
@@ -27,24 +29,16 @@ const ApiLayer = HttpLayerRouter.addHttpApi(hypergraphApi, {
   openapiPath: '/docs/openapi.json',
 }).pipe(Layer.provide(HandlersLive));
 
-const Domain = {
-  Request: Schema.Struct({
-    type: Schema.String,
-    message: Schema.String,
-  }),
-  Response: Schema.Struct({
-    type: Schema.String,
-    message: Schema.String,
-  }),
-};
-
-type Request = Schema.Schema.Type<typeof Domain.Request>;
+const decodeJson = Schema.decodeUnknownSync(Schema.parseJson());
+const decodeRequestMessage = Schema.decodeUnknownEither(Messages.RequestMessage);
 
 const WebSocketLayer = HttpLayerRouter.add(
   'GET',
   '/',
   Effect.gen(function* () {
     const request = yield* HttpServerRequest.HttpServerRequest;
+    const spacesService = yield* SpacesService.SpacesService;
+    const responseMailbox = yield* Mailbox.make<Messages.ResponseMessage>();
 
     const searchParams = HttpServerRequest.searchParamsFromURL(new URL(request.url, 'http://localhost'));
     const token = isArray(searchParams.token) ? searchParams.token[0] : searchParams.token;
@@ -54,27 +48,36 @@ const WebSocketLayer = HttpLayerRouter.add(
     }
 
     const appIdentityService = yield* AppIdentityService.AppIdentityService;
-    const { accountAddress } = yield* appIdentityService.getBySessionToken(token).pipe(Effect.orDie);
+    const { accountAddress, address } = yield* appIdentityService.getBySessionToken(token).pipe(Effect.orDie);
 
-    yield* Effect.log(accountAddress);
+    // yield* responseMailbox.offer(JSON.stringify({ type: 'message', message: 'Hello, world!' }));
 
-    const requests = yield* Mailbox.make<Request>();
-
-    yield* requests.offer({ type: 'message', message: 'Hello, world!' });
-
-    return yield* Mailbox.toStream(requests).pipe(
+    return yield* Mailbox.toStream(responseMailbox).pipe(
       Stream.map(JSON.stringify),
       Stream.pipeThroughChannel(HttpServerRequest.upgradeChannel()),
       Stream.decodeText(),
       Stream.runForEach((message) =>
         Effect.gen(function* () {
-          yield* Effect.log('RECEIVED: ' + message);
-          yield* requests.offer({ type: 'message', message: 'RECEIVED' });
+          const json = decodeJson(message);
+          const request = yield* decodeRequestMessage(json);
+          yield* Effect.log('RECEIVED: ' + request);
+          switch (request.type) {
+            case 'list-spaces': {
+              const spaces = yield* spacesService.listByAppIdentity(address);
+              const outgoingMessage: Messages.ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
+              // TODO: fix Messages.serialize
+              yield* responseMailbox.offer(outgoingMessage);
+              break;
+            }
+          }
+          // yield* responseMailbox.offer(Messages.serialize({ type: 'message', message: 'RECEIVED' }));
         }),
       ),
       Effect.as(HttpServerResponse.empty()),
     );
-  }).pipe(Effect.provide(AppIdentityService.layer)),
+  })
+    .pipe(Effect.provide(AppIdentityService.layer))
+    .pipe(Effect.provide(SpacesService.layer)),
 );
 
 // Merge router layers together and add the cors middleware layer.
