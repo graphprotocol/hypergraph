@@ -16,6 +16,7 @@ import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
 import * as AppIdentityService from './services/app-identity.ts';
+import * as InvitationsService from './services/invitations.ts';
 import * as SpacesService from './services/spaces.ts';
 
 // Create scalar openapi browser layer at /docs.
@@ -38,6 +39,7 @@ const WebSocketLayer = HttpLayerRouter.add(
   Effect.gen(function* () {
     const request = yield* HttpServerRequest.HttpServerRequest;
     const spacesService = yield* SpacesService.SpacesService;
+    const invitationsService = yield* InvitationsService.InvitationsService;
     const responseMailbox = yield* Mailbox.make<Messages.ResponseMessage>();
 
     const searchParams = HttpServerRequest.searchParamsFromURL(new URL(request.url, 'http://localhost'));
@@ -69,6 +71,16 @@ const WebSocketLayer = HttpLayerRouter.add(
               yield* responseMailbox.offer(outgoingMessage);
               break;
             }
+            case 'list-invitations': {
+              const invitations = yield* invitationsService.listByAppIdentity(accountAddress);
+              const outgoingMessage: Messages.ResponseListInvitations = {
+                type: 'list-invitations',
+                invitations,
+              };
+              // TODO: fix Messages.serialize
+              yield* responseMailbox.offer(outgoingMessage);
+              break;
+            }
           }
           // yield* responseMailbox.offer(Messages.serialize({ type: 'message', message: 'RECEIVED' }));
         }),
@@ -77,7 +89,8 @@ const WebSocketLayer = HttpLayerRouter.add(
     );
   })
     .pipe(Effect.provide(AppIdentityService.layer))
-    .pipe(Effect.provide(SpacesService.layer)),
+    .pipe(Effect.provide(SpacesService.layer))
+    .pipe(Effect.provide(InvitationsService.layer)),
 );
 
 // Merge router layers together and add the cors middleware layer.
