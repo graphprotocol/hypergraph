@@ -4,6 +4,7 @@ import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
+import { isArray } from 'effect/Array';
 import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
 import * as Mailbox from 'effect/Mailbox';
@@ -13,6 +14,7 @@ import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
+import * as AppIdentityService from './services/app-identity.ts';
 
 // Create scalar openapi browser layer at /docs.
 const DocsLayer = HttpApiScalar.layerHttpLayerRouter({
@@ -42,6 +44,20 @@ const WebSocketLayer = HttpLayerRouter.add(
   'GET',
   '/',
   Effect.gen(function* () {
+    const request = yield* HttpServerRequest.HttpServerRequest;
+
+    const searchParams = HttpServerRequest.searchParamsFromURL(new URL(request.url, 'http://localhost'));
+    const token = isArray(searchParams.token) ? searchParams.token[0] : searchParams.token;
+
+    if (!token) {
+      return yield* HttpServerResponse.empty({ status: 400 });
+    }
+
+    const appIdentityService = yield* AppIdentityService.AppIdentityService;
+    const { accountAddress } = yield* appIdentityService.getBySessionToken(token).pipe(Effect.orDie);
+
+    yield* Effect.log(accountAddress);
+
     const requests = yield* Mailbox.make<Request>();
 
     yield* requests.offer({ type: 'message', message: 'Hello, world!' });
@@ -58,7 +74,7 @@ const WebSocketLayer = HttpLayerRouter.add(
       ),
       Effect.as(HttpServerResponse.empty()),
     );
-  }),
+  }).pipe(Effect.provide(AppIdentityService.layer)),
 );
 
 // Merge router layers together and add the cors middleware layer.
