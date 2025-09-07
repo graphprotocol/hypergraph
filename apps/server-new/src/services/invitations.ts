@@ -18,7 +18,7 @@ const decodeSpaceState = Schema.decodeUnknownEither(SpaceEvents.SpaceState);
 export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
 
-  const listByAppIdentity = Effect.fn('listByAccount')(function* (accountAddress: string) {
+  const listByAppIdentity = Effect.fn('listByAppIdentity')(function* (accountAddress: string) {
     const invitations = yield* use((client) =>
       client.invitation.findMany({
         where: {
