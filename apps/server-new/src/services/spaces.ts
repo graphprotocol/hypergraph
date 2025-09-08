@@ -1,5 +1,7 @@
-import { Identity, type Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
+import { Identity, type Inboxes, type Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
 import { Context, Effect, Layer } from 'effect';
+import * as Predicate from 'effect/Predicate';
+import { ResourceNotFoundError } from '../http/errors.js';
 import * as DatabaseService from './database.js';
 import * as IdentityService from './identity.js';
 
@@ -22,6 +24,41 @@ export interface SpaceInfo {
   }>;
 }
 
+export interface GetSpaceResult {
+  id: string;
+  name: string;
+  events: SpaceEvents.SpaceEvent[];
+  keyBoxes: Array<{
+    id: string;
+    ciphertext: string;
+    nonce: string;
+    authorPublicKey: string;
+    accountAddress: string;
+  }>;
+  inboxes: Array<{
+    inboxId: string;
+    isPublic: boolean;
+    authPolicy: Inboxes.InboxSenderAuthPolicy;
+    encryptionPublicKey: string;
+    secretKey: string;
+  }>;
+  updates:
+    | {
+        updates: Array<{
+          accountAddress: string;
+          update: Uint8Array;
+          signature: {
+            hex: string;
+            recovery: number;
+          };
+          updateId: string;
+        }>;
+        firstUpdateClock: number;
+        lastUpdateClock: number;
+      }
+    | undefined;
+}
+
 export interface SpaceListEntry {
   id: string;
   name: string;
@@ -35,6 +72,12 @@ export interface CreateSpaceParams {
   infoSignatureHex: string;
   infoSignatureRecovery: number;
   name: string;
+}
+
+export interface GetSpaceParams {
+  spaceId: string;
+  accountAddress: string;
+  appIdentityAddress: string;
 }
 
 export interface AddAppIdentityToSpacesParams {
@@ -56,6 +99,9 @@ export class SpacesService extends Context.Tag('SpacesService')<
     readonly listByAppIdentity: (
       appIdentityAddress: string,
     ) => Effect.Effect<SpaceListEntry[], DatabaseService.DatabaseError>;
+    readonly getSpace: (
+      params: GetSpaceParams,
+    ) => Effect.Effect<GetSpaceResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
   }
 >() {}
 
@@ -144,6 +190,101 @@ export const layer = Effect.gen(function* () {
         },
       }),
     );
+  });
+
+  const getSpace = Effect.fn('getSpace')(function* (params: GetSpaceParams) {
+    const { spaceId, accountAddress, appIdentityAddress } = params;
+
+    const space = yield* use((client) =>
+      client.space.findUnique({
+        where: {
+          id: spaceId,
+          members: {
+            some: {
+              address: accountAddress,
+            },
+          },
+        },
+        include: {
+          events: {
+            orderBy: {
+              counter: 'asc',
+            },
+          },
+          keys: {
+            include: {
+              keyBoxes: {
+                where: {
+                  accountAddress,
+                  appIdentityAddress,
+                },
+                select: {
+                  nonce: true,
+                  ciphertext: true,
+                  authorPublicKey: true,
+                },
+              },
+            },
+          },
+          updates: {
+            orderBy: {
+              clock: 'asc',
+            },
+          },
+          inboxes: {
+            select: {
+              id: true,
+              isPublic: true,
+              authPolicy: true,
+              encryptionPublicKey: true,
+              encryptedSecretKey: true,
+            },
+          },
+        },
+      }),
+    ).pipe(
+      Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({ resource: 'Space', id: spaceId })),
+    );
+
+    const keyBoxes = space.keys.flatMap((key) => {
+      return {
+        id: key.id,
+        nonce: key.keyBoxes[0].nonce,
+        ciphertext: key.keyBoxes[0].ciphertext,
+        accountAddress,
+        authorPublicKey: key.keyBoxes[0].authorPublicKey,
+      };
+    });
+
+    return {
+      id: space.id,
+      name: space.name,
+      events: space.events.map((wrapper) => JSON.parse(wrapper.event)),
+      keyBoxes,
+      inboxes: space.inboxes.map((inbox) => ({
+        inboxId: inbox.id,
+        isPublic: inbox.isPublic,
+        authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
+        encryptionPublicKey: inbox.encryptionPublicKey,
+        secretKey: inbox.encryptedSecretKey,
+      })),
+      updates:
+        space.updates.length > 0
+          ? {
+              updates: space.updates.map((update) => ({
+                accountAddress: update.accountAddress,
+                update: new Uint8Array(update.content),
+                signature: {
+                  hex: update.signatureHex,
+                  recovery: update.signatureRecovery,
+                },
+                updateId: update.updateId,
+              })),
+              firstUpdateClock: space.updates[0].clock,
+              lastUpdateClock: space.updates[space.updates.length - 1].clock,
+            }
+          : undefined,
+    };
   });
 
   const createSpace = Effect.fn('createSpace')(function* (params: CreateSpaceParams) {
@@ -269,6 +410,7 @@ export const layer = Effect.gen(function* () {
   return {
     listByAccount,
     listByAppIdentity,
+    getSpace,
     createSpace,
     addAppIdentityToSpaces,
   } as const;
