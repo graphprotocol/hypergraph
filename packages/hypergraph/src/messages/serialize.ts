@@ -11,6 +11,7 @@ export function serialize(obj: any): string {
   });
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: same as stringify and parse
 export function serializeV2(obj: any): any {
   return JSON.parse(
     JSON.stringify(obj, (_key, value) => {
