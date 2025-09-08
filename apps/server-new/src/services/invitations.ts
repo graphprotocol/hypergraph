@@ -39,21 +39,21 @@ export const layer = Effect.gen(function* () {
       }),
     );
 
-    return invitations
-      .map((invitation) => {
-        const result = decodeSpaceState(JSON.parse(invitation.space.events[0].state));
-        if (result._tag === 'Right') {
-          const state = result.right;
-          return {
-            id: invitation.id,
-            previousEventHash: state.lastEventHash,
-            spaceId: invitation.spaceId,
-          };
-        }
-        console.error('Invalid space state from the DB', result.left);
-        return null;
-      })
-      .filter((invitation) => invitation !== null);
+    const processedInvitations = [];
+    for (const invitation of invitations) {
+      const result = decodeSpaceState(JSON.parse(invitation.space.events[0].state));
+      if (result._tag === 'Right') {
+        const state = result.right;
+        processedInvitations.push({
+          id: invitation.id,
+          previousEventHash: state.lastEventHash,
+          spaceId: invitation.spaceId,
+        });
+      } else {
+        yield* Effect.logError('Invalid space state from the DB', { error: result.left });
+      }
+    }
+    return processedInvitations;
   });
 
   return {
