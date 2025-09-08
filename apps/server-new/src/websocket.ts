@@ -335,6 +335,8 @@ export const WebSocketLayer = HttpLayerRouter.add(
                 excludeConnectionId: connectionId,
               });
 
+              yield* responseMailbox.offer(Messages.serializeV2(inboxMessage));
+
               break;
             }
             case 'get-latest-space-inbox-messages': {
