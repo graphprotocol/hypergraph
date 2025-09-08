@@ -25,7 +25,9 @@ const Observability = Layer.unwrapEffect(
 );
 
 const layer = server.pipe(
-  Layer.provide(Logger.structured),
+  // TODO: add structured logger back in
+  // Layer.provide(Logger.structured),
+  Layer.provide(Logger.pretty),
   Layer.provide(Observability),
   Layer.provide(PlatformConfigProvider.layerDotEnvAdd('.env')),
   Layer.provide(NodeContext.layer),

@@ -1,10 +1,11 @@
-import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
+import { createServer } from 'node:http';
 import * as HttpApiScalar from '@effect/platform/HttpApiScalar';
 import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
 import * as Socket from '@effect/platform/Socket';
+import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import { Messages } from '@graphprotocol/hypergraph';
 import { isArray } from 'effect/Array';
 import * as Effect from 'effect/Effect';
@@ -12,11 +13,11 @@ import * as Layer from 'effect/Layer';
 import * as Mailbox from 'effect/Mailbox';
 import * as Schema from 'effect/Schema';
 import * as Stream from 'effect/Stream';
-import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
 import * as AppIdentityService from './services/app-identity.ts';
+import * as ConnectionsService from './services/connections.ts';
 import * as IdentityService from './services/identity.ts';
 import * as InvitationsService from './services/invitations.ts';
 import * as SpacesService from './services/spaces.ts';
@@ -43,6 +44,7 @@ const WebSocketLayer = HttpLayerRouter.add(
     const spacesService = yield* SpacesService.SpacesService;
     const invitationsService = yield* InvitationsService.InvitationsService;
     const updatesService = yield* UpdatesService.UpdatesService;
+    const connectionsService = yield* ConnectionsService.ConnectionsService;
     const responseMailbox = yield* Mailbox.make<Messages.ResponseMessage>();
 
     const searchParams = HttpServerRequest.searchParamsFromURL(new URL(request.url, 'http://localhost'));
@@ -55,6 +57,13 @@ const WebSocketLayer = HttpLayerRouter.add(
     const appIdentityService = yield* AppIdentityService.AppIdentityService;
     const identityService = yield* IdentityService.IdentityService;
     const { accountAddress, address } = yield* appIdentityService.getBySessionToken(token).pipe(Effect.orDie);
+
+    // Register this connection
+    const connectionId = yield* connectionsService.registerConnection({
+      accountAddress,
+      appIdentityAddress: address,
+      mailbox: responseMailbox,
+    });
 
     return yield* Mailbox.toStream(responseMailbox).pipe(
       Stream.map(JSON.stringify),
@@ -87,6 +96,10 @@ const WebSocketLayer = HttpLayerRouter.add(
                 accountAddress,
                 appIdentityAddress: address,
               });
+
+              // Track this subscription
+              yield* connectionsService.subscribeToSpace(connectionId, request.id);
+
               const outgoingMessage: Messages.ResponseSpace = {
                 type: 'space',
                 ...space,
@@ -121,7 +134,32 @@ const WebSocketLayer = HttpLayerRouter.add(
               };
               yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
 
-              // TODO: broadcast updates
+              // Broadcast the update to all subscribed clients
+              const updates: Messages.Updates = {
+                updates: [
+                  {
+                    update: update.content,
+                    accountAddress: update.accountAddress,
+                    signature: { hex: update.signatureHex, recovery: update.signatureRecovery },
+                    updateId: update.updateId,
+                  },
+                ],
+                firstUpdateClock: update.clock,
+                lastUpdateClock: update.clock,
+              };
+
+              const broadcastMessage: Messages.ResponseUpdatesNotification = {
+                type: 'updates-notification',
+                updates,
+                spaceId: request.spaceId,
+              };
+
+              yield* connectionsService.broadcastToSpace({
+                spaceId: request.spaceId,
+                message: broadcastMessage,
+                excludeConnectionId: connectionId,
+              });
+
               break;
             }
           }
@@ -141,6 +179,8 @@ const WebSocketLayer = HttpLayerRouter.add(
       ),
       Effect.ensuring(
         Effect.gen(function* () {
+          // Clean up the connection when it closes
+          yield* connectionsService.removeConnection(connectionId);
           yield* Effect.logInfo('WebSocket connection closed', {
             accountAddress,
             appIdentityAddress: address,
@@ -166,4 +206,7 @@ const HttpServerLayer = serverPortConfig.pipe(
   Layer.unwrapEffect,
 );
 
-export const server = HttpLayerRouter.serve(AppLayer).pipe(Layer.provide(HttpServerLayer));
+export const server = HttpLayerRouter.serve(AppLayer).pipe(
+  Layer.provide(HttpServerLayer),
+  Layer.provide(ConnectionsService.layer),
+);
