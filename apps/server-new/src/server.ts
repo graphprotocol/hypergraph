@@ -1,11 +1,10 @@
-import { createServer } from 'node:http';
+import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import * as HttpApiScalar from '@effect/platform/HttpApiScalar';
 import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
 import * as Socket from '@effect/platform/Socket';
-import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import { Messages } from '@graphprotocol/hypergraph';
 import { isArray } from 'effect/Array';
 import * as Effect from 'effect/Effect';
@@ -13,6 +12,7 @@ import * as Layer from 'effect/Layer';
 import * as Mailbox from 'effect/Mailbox';
 import * as Schema from 'effect/Schema';
 import * as Stream from 'effect/Stream';
+import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
@@ -159,6 +159,33 @@ const WebSocketLayer = HttpLayerRouter.add(
                 message: broadcastMessage,
                 excludeConnectionId: connectionId,
               });
+
+              break;
+            }
+            case 'create-space-event': {
+              // Create the new space
+              const spaceResult = yield* spacesService.createSpace({
+                accountAddress,
+                event: request.event,
+                keyBox: request.keyBox,
+                infoContent: new Uint8Array(), // TODO: Get from request when available
+                infoSignatureHex: '',
+                infoSignatureRecovery: 0,
+                name: request.name,
+              });
+
+              // Get the full space data to send back
+              const space = yield* spacesService.getSpace({
+                spaceId: spaceResult.id,
+                accountAddress,
+                appIdentityAddress: address,
+              });
+
+              const outgoingMessage: Messages.ResponseSpace = {
+                type: 'space',
+                ...space,
+              };
+              yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
 
               break;
             }
