@@ -37,6 +37,16 @@ export class AccountInboxService extends Context.Tag('AccountInboxService')<
       Messages.InboxMessage,
       ResourceNotFoundError | ValidationError | AuthorizationError | DatabaseService.DatabaseError
     >;
+    readonly createAccountInbox: (
+      data: Messages.RequestCreateAccountInbox,
+    ) => Effect.Effect<AccountInboxResult, ValidationError | AuthorizationError | DatabaseService.DatabaseError>;
+    readonly getLatestAccountInboxMessages: (params: {
+      inboxId: string;
+      since: Date;
+    }) => Effect.Effect<Messages.InboxMessage[], DatabaseService.DatabaseError>;
+    readonly listAccountInboxes: (params: {
+      accountAddress: string;
+    }) => Effect.Effect<Messages.AccountInbox[], DatabaseService.DatabaseError>;
   }
 >() {}
 
@@ -258,9 +268,131 @@ export const layer = Effect.gen(function* () {
     return createdMessage;
   });
 
+  const createAccountInbox = Effect.fn('createAccountInbox')(function* (data: Messages.RequestCreateAccountInbox) {
+    const { accountAddress, inboxId, isPublic, authPolicy, encryptionPublicKey, signature } = data;
+
+    // Verify the signature is valid for the corresponding accountAddress
+    const signer = Inboxes.recoverAccountInboxCreatorKey(data);
+    const signerAccount = yield* getAppOrConnectIdentity({
+      accountAddress: data.accountAddress,
+      signaturePublicKey: signer,
+    }).pipe(Effect.mapError(() => new AuthorizationError({ message: 'Invalid signature' })));
+
+    if (signerAccount.accountAddress !== accountAddress) {
+      return yield* Effect.fail(new AuthorizationError({ message: 'Invalid signature' }));
+    }
+
+    // Create the inbox (will throw an error if it already exists)
+    const inbox = yield* use((client) =>
+      client.accountInbox.create({
+        data: {
+          id: inboxId,
+          isPublic,
+          authPolicy,
+          encryptionPublicKey,
+          signatureHex: signature.hex,
+          signatureRecovery: signature.recovery,
+          account: { connect: { address: accountAddress } },
+        },
+      }),
+    );
+
+    return {
+      inboxId: inbox.id,
+      accountAddress,
+      isPublic: inbox.isPublic,
+      authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
+      encryptionPublicKey: inbox.encryptionPublicKey,
+      signature: {
+        hex: inbox.signatureHex,
+        recovery: inbox.signatureRecovery,
+      },
+    };
+  });
+
+  const getLatestAccountInboxMessages = Effect.fn('getLatestAccountInboxMessages')(function* ({
+    inboxId,
+    since,
+  }: {
+    inboxId: string;
+    since: Date;
+  }) {
+    const messages = yield* use((client) =>
+      client.accountInboxMessage.findMany({
+        where: {
+          accountInboxId: inboxId,
+          createdAt: {
+            gte: since,
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      }),
+    );
+
+    return messages.map(
+      (msg): Messages.InboxMessage => ({
+        id: msg.id,
+        ciphertext: msg.ciphertext,
+        signature:
+          msg.signatureHex != null && msg.signatureRecovery != null
+            ? {
+                hex: msg.signatureHex,
+                recovery: msg.signatureRecovery,
+              }
+            : undefined,
+        authorAccountAddress: msg.authorAccountAddress ?? undefined,
+        createdAt: msg.createdAt,
+      }),
+    );
+  });
+
+  const listAccountInboxes = Effect.fn('listAccountInboxes')(function* ({
+    accountAddress,
+  }: {
+    accountAddress: string;
+  }) {
+    const inboxes = yield* use((client) =>
+      client.accountInbox.findMany({
+        where: { accountAddress },
+        select: {
+          id: true,
+          isPublic: true,
+          authPolicy: true,
+          encryptionPublicKey: true,
+          account: {
+            select: {
+              address: true,
+            },
+          },
+          signatureHex: true,
+          signatureRecovery: true,
+        },
+      }),
+    );
+
+    return inboxes.map(
+      (inbox): Messages.AccountInbox => ({
+        inboxId: inbox.id,
+        accountAddress: inbox.account.address,
+        isPublic: inbox.isPublic,
+        authPolicy: inbox.authPolicy as Inboxes.InboxSenderAuthPolicy,
+        encryptionPublicKey: inbox.encryptionPublicKey,
+        signature: {
+          hex: inbox.signatureHex,
+          recovery: inbox.signatureRecovery,
+        },
+      }),
+    );
+  });
+
   return {
     listPublicAccountInboxes,
     getAccountInbox,
     postAccountInboxMessage,
+    createAccountInbox,
+    getLatestAccountInboxMessages,
+    listAccountInboxes,
   } as const;
 }).pipe(Layer.effect(AccountInboxService), Layer.provide(DatabaseService.layer), Layer.provide(IdentityService.layer));

@@ -1,10 +1,11 @@
-import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
+import { createServer } from 'node:http';
 import * as HttpApiScalar from '@effect/platform/HttpApiScalar';
 import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
 import * as Socket from '@effect/platform/Socket';
+import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import { Messages } from '@graphprotocol/hypergraph';
 import { isArray } from 'effect/Array';
 import * as Effect from 'effect/Effect';
@@ -12,14 +13,15 @@ import * as Layer from 'effect/Layer';
 import * as Mailbox from 'effect/Mailbox';
 import * as Schema from 'effect/Schema';
 import * as Stream from 'effect/Stream';
-import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
+import * as AccountInboxService from './services/account-inbox.ts';
 import * as AppIdentityService from './services/app-identity.ts';
 import * as ConnectionsService from './services/connections.ts';
 import * as IdentityService from './services/identity.ts';
 import * as InvitationsService from './services/invitations.ts';
+import * as SpaceInboxService from './services/space-inbox.ts';
 import * as SpacesService from './services/spaces.ts';
 import * as UpdatesService from './services/updates.ts';
 
@@ -45,6 +47,8 @@ const WebSocketLayer = HttpLayerRouter.add(
     const invitationsService = yield* InvitationsService.InvitationsService;
     const updatesService = yield* UpdatesService.UpdatesService;
     const connectionsService = yield* ConnectionsService.ConnectionsService;
+    const accountInboxService = yield* AccountInboxService.AccountInboxService;
+    const spaceInboxService = yield* SpaceInboxService.SpaceInboxService;
     const responseMailbox = yield* Mailbox.make<Messages.ResponseMessage>();
 
     const searchParams = HttpServerRequest.searchParamsFromURL(new URL(request.url, 'http://localhost'));
@@ -189,6 +193,197 @@ const WebSocketLayer = HttpLayerRouter.add(
 
               break;
             }
+            case 'create-invitation-event': {
+              // Apply the invitation event to the space
+              yield* spacesService.applySpaceEvent({
+                accountAddress,
+                spaceId: request.spaceId,
+                event: request.event,
+                keyBoxes: [...request.keyBoxes], // Convert readonly array to mutable
+              });
+
+              // Get the updated space data
+              const space = yield* spacesService.getSpace({
+                spaceId: request.spaceId,
+                accountAddress,
+                appIdentityAddress: address,
+              });
+
+              // Send the updated space back to the client
+              const outgoingMessage: Messages.ResponseSpace = {
+                type: 'space',
+                ...space,
+              };
+              yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
+
+              // Broadcast the space event to other subscribers
+              const spaceEventMessage: Messages.ResponseSpaceEvent = {
+                type: 'space-event',
+                spaceId: request.spaceId,
+                event: request.event,
+              };
+
+              yield* connectionsService.broadcastToSpace({
+                spaceId: request.spaceId,
+                message: spaceEventMessage,
+                excludeConnectionId: connectionId,
+              });
+
+              // Note: Invitee notification would require adding a method to ConnectionsService
+              // to find connections by account address and broadcast to them
+
+              break;
+            }
+            case 'accept-invitation-event': {
+              // Apply the invitation acceptance event to the space
+              yield* spacesService.applySpaceEvent({
+                accountAddress,
+                spaceId: request.spaceId,
+                event: request.event,
+                keyBoxes: [], // No keyBoxes needed for accepting invitations
+              });
+
+              // Get the updated space data
+              const space = yield* spacesService.getSpace({
+                spaceId: request.spaceId,
+                accountAddress,
+                appIdentityAddress: address,
+              });
+
+              // Send the updated space back to the client
+              const outgoingMessage: Messages.ResponseSpace = {
+                type: 'space',
+                ...space,
+              };
+              yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
+
+              // Broadcast the space event to other subscribers
+              const spaceEventMessage: Messages.ResponseSpaceEvent = {
+                type: 'space-event',
+                spaceId: request.spaceId,
+                event: request.event,
+              };
+
+              yield* connectionsService.broadcastToSpace({
+                spaceId: request.spaceId,
+                message: spaceEventMessage,
+                excludeConnectionId: connectionId,
+              });
+
+              break;
+            }
+            case 'create-space-inbox-event': {
+              // Apply the space inbox creation event to the space
+              yield* spacesService.applySpaceEvent({
+                accountAddress,
+                spaceId: request.spaceId,
+                event: request.event,
+                keyBoxes: [], // No keyBoxes needed for creating space inboxes
+              });
+
+              // Get the updated space data
+              const space = yield* spacesService.getSpace({
+                spaceId: request.spaceId,
+                accountAddress,
+                appIdentityAddress: address,
+              });
+
+              // Send the updated space back to the client
+              const outgoingMessage: Messages.ResponseSpace = {
+                type: 'space',
+                ...space,
+              };
+              yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
+
+              // Broadcast the space event to other subscribers
+              const spaceEventMessage: Messages.ResponseSpaceEvent = {
+                type: 'space-event',
+                spaceId: request.spaceId,
+                event: request.event,
+              };
+
+              yield* connectionsService.broadcastToSpace({
+                spaceId: request.spaceId,
+                message: spaceEventMessage,
+                excludeConnectionId: connectionId,
+              });
+
+              break;
+            }
+            case 'create-account-inbox': {
+              // Validate that the account matches the authenticated user
+              if (request.accountAddress !== accountAddress) {
+                // TODO: Better error handling
+                return yield* Effect.fail(new Error('Invalid accountAddress'));
+              }
+
+              // Create the account inbox
+              yield* accountInboxService.createAccountInbox(request);
+
+              // TODO: Broadcast the inbox to other clients from the same account
+              // This would require adding a method to ConnectionsService to broadcast by account
+
+              break;
+            }
+            case 'get-latest-space-inbox-messages': {
+              // Check that the user has access to this space
+              yield* spacesService.getSpace({
+                spaceId: request.spaceId,
+                accountAddress,
+                appIdentityAddress: address,
+              });
+
+              // Get the latest messages from the space inbox
+              const messages = yield* spaceInboxService.getLatestSpaceInboxMessages({
+                inboxId: request.inboxId,
+                since: request.since,
+              });
+
+              const outgoingMessage: Messages.ResponseSpaceInboxMessages = {
+                type: 'space-inbox-messages',
+                spaceId: request.spaceId,
+                inboxId: request.inboxId,
+                messages,
+              };
+              yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
+
+              break;
+            }
+            case 'get-latest-account-inbox-messages': {
+              // Check that the user has access to this inbox
+              yield* accountInboxService.getAccountInbox({
+                accountAddress,
+                inboxId: request.inboxId,
+              });
+
+              // Get the latest messages from the account inbox
+              const messages = yield* accountInboxService.getLatestAccountInboxMessages({
+                inboxId: request.inboxId,
+                since: request.since,
+              });
+
+              const outgoingMessage: Messages.ResponseAccountInboxMessages = {
+                type: 'account-inbox-messages',
+                accountAddress,
+                inboxId: request.inboxId,
+                messages,
+              };
+              yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
+
+              break;
+            }
+            case 'get-account-inboxes': {
+              // List all inboxes for the authenticated account
+              const inboxes = yield* accountInboxService.listAccountInboxes({ accountAddress });
+
+              const outgoingMessage: Messages.ResponseAccountInboxes = {
+                type: 'account-inboxes',
+                inboxes,
+              };
+              yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
+
+              break;
+            }
           }
         }),
       ),
@@ -221,7 +416,9 @@ const WebSocketLayer = HttpLayerRouter.add(
     .pipe(Effect.provide(SpacesService.layer))
     .pipe(Effect.provide(InvitationsService.layer))
     .pipe(Effect.provide(IdentityService.layer))
-    .pipe(Effect.provide(UpdatesService.layer)),
+    .pipe(Effect.provide(UpdatesService.layer))
+    .pipe(Effect.provide(AccountInboxService.layer))
+    .pipe(Effect.provide(SpaceInboxService.layer)),
 );
 
 // Merge router layers together and add the cors middleware layer.

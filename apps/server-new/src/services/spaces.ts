@@ -1,5 +1,5 @@
 import { Identity, type Inboxes, type Messages, SpaceEvents, Utils } from '@graphprotocol/hypergraph';
-import { Context, Effect, Layer } from 'effect';
+import { Context, Effect, Exit, Layer } from 'effect';
 import * as Predicate from 'effect/Predicate';
 import { ResourceNotFoundError } from '../http/errors.js';
 import * as DatabaseService from './database.js';
@@ -86,6 +86,13 @@ export interface AddAppIdentityToSpacesParams {
   spacesInput: Messages.RequestConnectAddAppIdentityToSpaces['spacesInput'];
 }
 
+export interface ApplySpaceEventParams {
+  accountAddress: string;
+  spaceId: string;
+  event: SpaceEvents.SpaceEvent;
+  keyBoxes: Messages.KeyBoxWithKeyId[];
+}
+
 export class SpacesService extends Context.Tag('SpacesService')<
   SpacesService,
   {
@@ -102,6 +109,9 @@ export class SpacesService extends Context.Tag('SpacesService')<
     readonly getSpace: (
       params: GetSpaceParams,
     ) => Effect.Effect<GetSpaceResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
+    readonly applySpaceEvent: (
+      params: ApplySpaceEventParams,
+    ) => Effect.Effect<void, Error | DatabaseService.DatabaseError>;
   }
 >() {}
 
@@ -407,11 +417,127 @@ export const layer = Effect.gen(function* () {
     );
   });
 
+  const applySpaceEvent = Effect.fn('applySpaceEvent')(function* (params: ApplySpaceEventParams) {
+    const { accountAddress, spaceId, event, keyBoxes } = params;
+
+    if (event.transaction.type === 'create-space') {
+      return yield* Effect.fail(new Error('applySpaceEvent does not support create-space events.'));
+    }
+
+    yield* use((client) =>
+      client.$transaction(async (transaction) => {
+        if (event.transaction.type === 'accept-invitation') {
+          // verify that the account is the invitee
+          await transaction.invitation.findFirstOrThrow({
+            where: { inviteeAccountAddress: event.author.accountAddress },
+          });
+        } else {
+          // verify that the account is a member of the space
+          // TODO verify that the account is an admin of the space
+          await transaction.space.findUniqueOrThrow({
+            where: {
+              id: spaceId,
+              members: { some: { address: accountAddress } },
+            },
+          });
+        }
+
+        const lastEvent = await transaction.spaceEvent.findFirstOrThrow({
+          where: { spaceId },
+          orderBy: { counter: 'desc' },
+        });
+
+        // Create the getVerifiedIdentity function for event validation
+        const getVerifiedIdentity = (accountAddressToFetch: string, publicKey: string) => {
+          // applySpaceEvent is only allowed to be called by the account that is applying the event
+          if (accountAddressToFetch !== accountAddress) {
+            return Effect.fail(new Identity.InvalidIdentityError());
+          }
+
+          return getAppOrConnectIdentity({
+            accountAddress: accountAddressToFetch,
+            signaturePublicKey: publicKey,
+          }).pipe(Effect.mapError(() => new Identity.InvalidIdentityError()));
+        };
+
+        const result = await Effect.runPromiseExit(
+          SpaceEvents.applyEvent({
+            event,
+            state: JSON.parse(lastEvent.state),
+            getVerifiedIdentity,
+          }),
+        );
+
+        if (Exit.isFailure(result)) {
+          throw new Error('Invalid event');
+        }
+
+        if (event.transaction.type === 'create-invitation') {
+          const inviteeAccountAddress = event.transaction.inviteeAccountAddress;
+          await transaction.invitation.create({
+            data: {
+              id: event.transaction.id,
+              spaceId,
+              accountAddress: event.author.accountAddress,
+              inviteeAccountAddress,
+            },
+          });
+          await transaction.spaceKeyBox.createMany({
+            data: keyBoxes.map((keyBox) => ({
+              id: `${keyBox.id}-${inviteeAccountAddress}`,
+              nonce: keyBox.nonce,
+              ciphertext: keyBox.ciphertext,
+              accountAddress: inviteeAccountAddress,
+              authorPublicKey: keyBox.authorPublicKey,
+              spaceKeyId: keyBox.id,
+            })),
+          });
+        }
+
+        if (event.transaction.type === 'accept-invitation') {
+          await transaction.invitation.delete({
+            where: { spaceId_inviteeAccountAddress: { spaceId, inviteeAccountAddress: event.author.accountAddress } },
+          });
+
+          await transaction.space.update({
+            where: { id: spaceId },
+            data: { members: { connect: { address: event.author.accountAddress } } },
+          });
+        }
+
+        await transaction.spaceEvent.create({
+          data: {
+            spaceId,
+            counter: lastEvent.counter + 1,
+            event: JSON.stringify(event),
+            id: event.transaction.id,
+            state: JSON.stringify(result.value),
+          },
+        });
+
+        if (event.transaction.type === 'create-space-inbox') {
+          await transaction.spaceInbox.create({
+            data: {
+              id: event.transaction.inboxId,
+              isPublic: event.transaction.isPublic,
+              authPolicy: event.transaction.authPolicy,
+              encryptionPublicKey: event.transaction.encryptionPublicKey,
+              encryptedSecretKey: event.transaction.secretKey,
+              space: { connect: { id: spaceId } },
+              spaceEvent: { connect: { id: event.transaction.id } },
+            },
+          });
+        }
+      }),
+    );
+  });
+
   return {
     listByAccount,
     listByAppIdentity,
     getSpace,
     createSpace,
     addAppIdentityToSpaces,
+    applySpaceEvent,
   } as const;
 }).pipe(Layer.effect(SpacesService), Layer.provide(DatabaseService.layer), Layer.provide(IdentityService.layer));
