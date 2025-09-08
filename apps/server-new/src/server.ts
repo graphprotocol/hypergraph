@@ -4,6 +4,7 @@ import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest';
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse';
+import * as Socket from '@effect/platform/Socket';
 import { Messages } from '@graphprotocol/hypergraph';
 import { isArray } from 'effect/Array';
 import * as Effect from 'effect/Effect';
@@ -124,6 +125,26 @@ const WebSocketLayer = HttpLayerRouter.add(
               break;
             }
           }
+        }),
+      ),
+      Effect.catchAll((error) =>
+        Effect.gen(function* () {
+          // Only log error if it's not a SocketCloseError
+          if (!Socket.SocketCloseError.is(error)) {
+            yield* Effect.logInfo('WebSocket disconnected due to error', {
+              error: error.message || String(error),
+              accountAddress,
+              appIdentityAddress: address,
+            });
+          }
+        }),
+      ),
+      Effect.ensuring(
+        Effect.gen(function* () {
+          yield* Effect.logInfo('WebSocket connection closed', {
+            accountAddress,
+            appIdentityAddress: address,
+          });
         }),
       ),
       Effect.as(HttpServerResponse.empty()),
