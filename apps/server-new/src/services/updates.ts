@@ -1,4 +1,5 @@
-import { Context, Effect, Layer } from 'effect';
+import { Context, Effect, Layer, Predicate, Schedule } from 'effect';
+import { ResourceNotFoundError } from '../http/errors.js';
 import * as DatabaseService from './database.js';
 
 type CreateUpdateParams = {
@@ -25,9 +26,23 @@ export class UpdatesService extends Context.Tag('UpdatesService')<
   {
     readonly createUpdate: (
       params: CreateUpdateParams,
-    ) => Effect.Effect<CreateUpdateResult, DatabaseService.DatabaseError>;
+    ) => Effect.Effect<CreateUpdateResult, DatabaseService.DatabaseError | ResourceNotFoundError, never>;
   }
 >() {}
+
+// Retry with Effect's built-in retry mechanism for database lock errors
+const retrySchedule = Schedule.exponential('100 millis').pipe(
+  Schedule.intersect(Schedule.recurs(5)),
+  Schedule.whileInput((error: DatabaseService.DatabaseError) => {
+    // Check if it's a database lock error that should trigger retry
+    const cause = error.cause as { code?: string; message?: string };
+    const shouldRetry =
+      cause?.code === 'P2034' || // Prisma transaction conflict
+      cause?.code === 'P1008' || // Prisma connection timeout
+      Boolean(cause?.message?.includes('database is locked'));
+    return shouldRetry;
+  }),
+);
 
 export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
@@ -40,9 +55,17 @@ export const layer = Effect.gen(function* () {
     signatureRecovery,
     updateId,
   }: CreateUpdateParams) {
-    // TODO: implement retries
-    const result = yield* use((client) => {
-      return client.$transaction(async (prisma) => {
+    // First verify the account is a member of the space
+    yield* use((client) =>
+      client.space.findUnique({
+        where: { id: spaceId, members: { some: { address: accountAddress } } },
+      }),
+    ).pipe(
+      Effect.filterOrFail(Predicate.isNotNull, () => new ResourceNotFoundError({ resource: 'Space', id: spaceId })),
+    );
+
+    const result = yield* use((client) =>
+      client.$transaction(async (prisma) => {
         const lastUpdate = await prisma.update.findFirst({
           where: { spaceId },
           orderBy: { clock: 'desc' },
@@ -61,10 +84,29 @@ export const layer = Effect.gen(function* () {
             account: { connect: { address: accountAddress } },
           },
         });
-      });
-    });
+      }),
+    ).pipe(
+      Effect.retry(retrySchedule),
+      Effect.tapError((error) => {
+        const cause = error.cause as { code?: string; message?: string };
+        return Effect.logError('Failed to create update after retries', {
+          error: cause?.message || String(error),
+          code: cause?.code,
+          spaceId,
+          updateId,
+        });
+      }),
+    );
 
-    return result;
+    return {
+      clock: result.clock,
+      content: new Uint8Array(result.content),
+      signatureHex: result.signatureHex,
+      signatureRecovery: result.signatureRecovery,
+      updateId: result.updateId,
+      accountAddress: result.accountAddress,
+      spaceId: result.spaceId,
+    };
   });
 
   return {
