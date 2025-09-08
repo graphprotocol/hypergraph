@@ -25,6 +25,11 @@ export class ConnectionsService extends Context.Tag('ConnectionsService')<
       message: Messages.ResponseMessage;
       excludeConnectionId?: string;
     }) => Effect.Effect<void>;
+    readonly broadcastToAccount: (params: {
+      accountAddress: string;
+      message: Messages.ResponseMessage;
+      excludeConnectionId?: string;
+    }) => Effect.Effect<void>;
     readonly getConnection: (connectionId: string) => Effect.Effect<Connection | undefined>;
   }
 >() {}
@@ -153,6 +158,30 @@ export const layer = Effect.gen(function* () {
     }
   });
 
+  const broadcastToAccount = Effect.fn('broadcastToAccount')(function* ({
+    accountAddress,
+    message,
+    excludeConnectionId,
+  }: {
+    accountAddress: string;
+    message: Messages.ResponseMessage;
+    excludeConnectionId?: string;
+  }) {
+    const currentConnections = yield* Ref.get(connections);
+
+    for (const [connectionId, connection] of currentConnections) {
+      // Skip if this is the excluded connection (sender)
+      if (excludeConnectionId && connectionId === excludeConnectionId) {
+        continue;
+      }
+
+      // Only send to connections from the same account
+      if (connection.accountAddress === accountAddress) {
+        yield* connection.mailbox.offer(Messages.serializeV2(message));
+      }
+    }
+  });
+
   const getConnection = Effect.fn('getConnection')(function* (connectionId: string) {
     const currentConnections = yield* Ref.get(connections);
     return currentConnections.get(connectionId);
@@ -164,6 +193,7 @@ export const layer = Effect.gen(function* () {
     subscribeToSpace,
     unsubscribeFromSpace,
     broadcastToSpace,
+    broadcastToAccount,
     getConnection,
   } as const;
 }).pipe(Layer.effect(ConnectionsService));

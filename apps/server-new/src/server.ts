@@ -318,10 +318,26 @@ const WebSocketLayer = HttpLayerRouter.add(
               }
 
               // Create the account inbox
-              yield* accountInboxService.createAccountInbox(request);
+              const inbox = yield* accountInboxService.createAccountInbox(request);
 
-              // TODO: Broadcast the inbox to other clients from the same account
-              // This would require adding a method to ConnectionsService to broadcast by account
+              // Broadcast the new inbox to other clients from the same account
+              const inboxMessage: Messages.ResponseAccountInbox = {
+                type: 'account-inbox',
+                inbox: {
+                  accountAddress: inbox.accountAddress,
+                  inboxId: inbox.inboxId,
+                  isPublic: inbox.isPublic,
+                  authPolicy: inbox.authPolicy,
+                  encryptionPublicKey: inbox.encryptionPublicKey,
+                  signature: inbox.signature,
+                },
+              };
+
+              yield* connectionsService.broadcastToAccount({
+                accountAddress,
+                message: inboxMessage,
+                excludeConnectionId: connectionId,
+              });
 
               break;
             }
