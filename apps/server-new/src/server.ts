@@ -229,8 +229,23 @@ const WebSocketLayer = HttpLayerRouter.add(
                 excludeConnectionId: connectionId,
               });
 
-              // Note: Invitee notification would require adding a method to ConnectionsService
-              // to find connections by account address and broadcast to them
+              // Notify the invitee if they're connected
+              if (request.event.transaction.type === 'create-invitation') {
+                const inviteeAccountAddress = request.event.transaction.inviteeAccountAddress;
+
+                // Get the updated invitation list for the invitee
+                const invitations = yield* invitationsService.listByAppIdentity(inviteeAccountAddress);
+                const invitationMessage: Messages.ResponseListInvitations = {
+                  type: 'list-invitations',
+                  invitations,
+                };
+
+                // Broadcast to all connections for the invitee account
+                yield* connectionsService.broadcastToAccount({
+                  accountAddress: inviteeAccountAddress,
+                  message: invitationMessage,
+                });
+              }
 
               break;
             }
