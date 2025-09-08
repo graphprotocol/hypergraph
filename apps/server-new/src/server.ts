@@ -1,10 +1,10 @@
-import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
+import { createServer } from 'node:http';
 import * as HttpApiScalar from '@effect/platform/HttpApiScalar';
 import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter';
 import * as HttpMiddleware from '@effect/platform/HttpMiddleware';
+import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer';
 import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
-import { createServer } from 'node:http';
 import { serverPortConfig } from './config/server.ts';
 import { hypergraphApi } from './http/api.ts';
 import { HandlersLive } from './http/handlers.ts';
