@@ -65,7 +65,7 @@ export class IdentityQuery extends Schema.Class<IdentityQuery>('IdentityQuery')(
 /**
  * Health endpoints
  */
-export const statusEndpoint = HttpApiEndpoint.get('status')`/`.addSuccess(Schema.String);
+export const statusEndpoint = HttpApiEndpoint.get('status')`/status`.addSuccess(Schema.String);
 
 export const healthGroup = HttpApiGroup.make('Health').add(statusEndpoint);
 

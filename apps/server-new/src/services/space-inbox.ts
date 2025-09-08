@@ -33,6 +33,10 @@ export class SpaceInboxService extends Context.Tag('SpaceInboxService')<
       Messages.InboxMessage,
       ResourceNotFoundError | ValidationError | AuthorizationError | DatabaseService.DatabaseError
     >;
+    readonly getLatestSpaceInboxMessages: (params: {
+      inboxId: string;
+      since: Date;
+    }) => Effect.Effect<Messages.InboxMessage[], DatabaseService.DatabaseError>;
   }
 >() {}
 
@@ -242,9 +246,48 @@ export const layer = Effect.gen(function* () {
     return createdMessage;
   });
 
+  const getLatestSpaceInboxMessages = Effect.fn('getLatestSpaceInboxMessages')(function* ({
+    inboxId,
+    since,
+  }: {
+    inboxId: string;
+    since: Date;
+  }) {
+    const messages = yield* use((client) =>
+      client.spaceInboxMessage.findMany({
+        where: {
+          spaceInboxId: inboxId,
+          createdAt: {
+            gte: since,
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      }),
+    );
+
+    return messages.map(
+      (msg): Messages.InboxMessage => ({
+        id: msg.id,
+        ciphertext: msg.ciphertext,
+        signature:
+          msg.signatureHex != null && msg.signatureRecovery != null
+            ? {
+                hex: msg.signatureHex,
+                recovery: msg.signatureRecovery,
+              }
+            : undefined,
+        authorAccountAddress: msg.authorAccountAddress ?? undefined,
+        createdAt: msg.createdAt,
+      }),
+    );
+  });
+
   return {
     listPublicSpaceInboxes,
     getSpaceInbox,
     postSpaceInboxMessage,
+    getLatestSpaceInboxMessages,
   } as const;
 }).pipe(Layer.effect(SpaceInboxService), Layer.provide(DatabaseService.layer), Layer.provide(IdentityService.layer));
