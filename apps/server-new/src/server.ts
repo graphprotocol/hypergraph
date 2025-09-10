@@ -23,8 +23,8 @@ const ApiLayer = HttpLayerRouter.addHttpApi(hypergraphApi, {
 }).pipe(Layer.provide(HandlersLive));
 
 // Merge router layers together and add the cors middleware layer.
-const CorsMiddleware = HttpLayerRouter.middleware(HttpMiddleware.cors());
-const AppLayer = Layer.mergeAll(ApiLayer, DocsLayer, WebSocketLayer).pipe(Layer.provide(CorsMiddleware.layer));
+const CorsMiddlewareLayer = HttpLayerRouter.middleware(HttpMiddleware.cors(), { global: true });
+const AppLayer = Layer.mergeAll(ApiLayer, DocsLayer, WebSocketLayer).pipe(Layer.provide(CorsMiddlewareLayer));
 
 const HttpServerLayer = serverPortConfig.pipe(
   Effect.map((port) => NodeHttpServer.layer(createServer, { port })),
