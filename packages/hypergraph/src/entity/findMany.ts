@@ -307,7 +307,19 @@ export function findMany<const S extends AnyNoContext>(
         }
       }
     }
+    if (fieldValue instanceof Date && 'is' in fieldFilter) {
+      const target = (fieldFilter as { is?: Date }).is;
+      if (target instanceof Date) {
+        return fieldValue.getTime() === target.getTime();
+      }
+    }
 
+    if (Array.isArray(fieldValue) && fieldValue.length === 2 && 'is' in fieldFilter) {
+      const target = (fieldFilter as { is?: ReadonlyArray<number> }).is;
+      if (Array.isArray(target) && target.length === 2) {
+        return fieldValue[0] === target[0] && fieldValue[1] === target[1];
+      }
+    }
     return true;
   };
 
