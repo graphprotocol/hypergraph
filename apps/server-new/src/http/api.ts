@@ -169,7 +169,7 @@ export const postConnectAppIdentityEndpoint = HttpApiEndpoint.post('postConnectA
     }),
   )
   .setPayload(Messages.RequestConnectCreateAppIdentity)
-  .addSuccess(Schema.Void)
+  .addSuccess(AppIdentityResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ResourceAlreadyExistsError, { status: 400 })
