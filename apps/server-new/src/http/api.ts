@@ -251,7 +251,7 @@ export const postAccountInboxMessageEndpoint = HttpApiEndpoint.post(
   'postAccountInboxMessage',
 )`/accounts/${accountAddress}/inboxes/${inboxId}/messages`
   .setPayload(Messages.RequestCreateAccountInboxMessage)
-  .addSuccess(Schema.Void)
+  .addSuccess(Schema.Void, { status: 200 })
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.AuthorizationError, { status: 403 })
   .addError(Errors.ResourceNotFoundError, { status: 404 })
