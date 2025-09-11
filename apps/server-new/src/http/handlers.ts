@@ -271,7 +271,7 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
         const sessionTokenExpires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
 
         // Create the app identity
-        yield* appIdentityService
+        const appIdentity = yield* appIdentityService
           .createAppIdentity({
             accountAddress,
             appId: payload.appId,
@@ -285,6 +285,8 @@ const ConnectGroupLive = HttpApiBuilder.group(Api.hypergraphApi, 'Connect', (han
             sessionTokenExpires,
           })
           .pipe(Effect.orDie);
+
+        return { appIdentity };
       }),
     );
 }).pipe(

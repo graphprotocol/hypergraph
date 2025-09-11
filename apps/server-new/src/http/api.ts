@@ -108,7 +108,7 @@ export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
     }),
   )
   .setPayload(Messages.RequestConnectAddAppIdentityToSpaces)
-  .addSuccess(Schema.Void)
+  .addSuccess(Schema.Void, { status: 200 })
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ValidationError, { status: 400 })
@@ -169,7 +169,7 @@ export const postConnectAppIdentityEndpoint = HttpApiEndpoint.post('postConnectA
     }),
   )
   .setPayload(Messages.RequestConnectCreateAppIdentity)
-  .addSuccess(Schema.Void)
+  .addSuccess(AppIdentityResponse)
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ResourceAlreadyExistsError, { status: 400 })
@@ -230,7 +230,7 @@ export const postSpaceInboxMessageEndpoint = HttpApiEndpoint.post(
   'postSpaceInboxMessage',
 )`/spaces/${spaceId}/inboxes/${inboxId}/messages`
   .setPayload(Messages.RequestCreateSpaceInboxMessage)
-  .addSuccess(Schema.Void)
+  .addSuccess(Schema.Void, { status: 200 })
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.AuthorizationError, { status: 403 })
   .addError(Errors.ResourceNotFoundError, { status: 404 })
@@ -251,7 +251,7 @@ export const postAccountInboxMessageEndpoint = HttpApiEndpoint.post(
   'postAccountInboxMessage',
 )`/accounts/${accountAddress}/inboxes/${inboxId}/messages`
   .setPayload(Messages.RequestCreateAccountInboxMessage)
-  .addSuccess(Schema.Void)
+  .addSuccess(Schema.Void, { status: 200 })
   .addError(Errors.ValidationError, { status: 400 })
   .addError(Errors.AuthorizationError, { status: 403 })
   .addError(Errors.ResourceNotFoundError, { status: 404 })

@@ -20,10 +20,7 @@ export interface AppIdentityResult {
   accountProof: string;
   keyProof: string;
   sessionToken: string | null;
-  sessionNonce: string | null;
   sessionTokenExpires: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface CreateAppIdentityParams {
@@ -54,7 +51,7 @@ export class AppIdentityService extends Context.Tag('AppIdentityService')<
     }) => Effect.Effect<AppIdentityResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
     readonly createAppIdentity: (
       params: CreateAppIdentityParams,
-    ) => Effect.Effect<void, ResourceAlreadyExistsError | DatabaseService.DatabaseError>;
+    ) => Effect.Effect<AppIdentityResult, ResourceAlreadyExistsError | DatabaseService.DatabaseError>;
   }
 >() {}
 
