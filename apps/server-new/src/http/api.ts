@@ -108,7 +108,7 @@ export const postConnectAddAppIdentityToSpacesEndpoint = HttpApiEndpoint.post(
     }),
   )
   .setPayload(Messages.RequestConnectAddAppIdentityToSpaces)
-  .addSuccess(Schema.Void)
+  .addSuccess(Schema.Void, { status: 200 })
   .addError(Errors.AuthenticationError, { status: 401 })
   .addError(Errors.AuthorizationError, { status: 401 })
   .addError(Errors.ValidationError, { status: 400 })
