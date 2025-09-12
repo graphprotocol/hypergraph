@@ -7,17 +7,11 @@ import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
-import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
-import type { QueryPublicParams } from './types.js';
 
-const entitiesQueryDocumentLevel0 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!) {
-  entities(
-    filter: { and: [{
-      relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
-      spaceIds: {in: [$spaceId]},
-    }, $filter]}
-    first: $first
+const entityQueryDocumentLevel0 = gql`
+query entity($id: UUID!, $spaceId: UUID!) {
+  entity(
+    id: $id,
   ) {
     id
     name
@@ -33,14 +27,10 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: Entity
 }
 `;
 
-const entitiesQueryDocumentLevel1 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!) {
-  entities(
-    first: $first
-    filter: { and: [{
-    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
-    spaceIds: {in: [$spaceId]},
-  }, $filter]}
+const entityQueryDocumentLevel1 = gql`
+query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!) {
+  entity(
+    id: $id,
   ) {
     id
     name
@@ -73,14 +63,10 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 }
 `;
 
-const entitiesQueryDocumentLevel2 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!) {
-  entities(
-    first: $first
-    filter: { and: [{
-    relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
-    spaceIds: {in: [$spaceId]},
-  }, $filter]}
+const entityQueryDocumentLevel2 = gql`
+query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!) {
+  entity(
+    id: $id,
   ) {
     id
     name
@@ -108,7 +94,6 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
         }
         relationsList(
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
-          # filter: {spaceId: {is: $spaceId}, toEntity: {relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $relationTypeIdsLevel2}}}}}
         ) {
           toEntity {
             id
@@ -132,7 +117,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 `;
 
 type EntityQueryResult = {
-  entities: {
+  entity: {
     id: string;
     name: string;
     valuesList: {
@@ -143,7 +128,7 @@ type EntityQueryResult = {
       time: string;
       point: string;
     }[];
-    relationsList: {
+    relationsList?: {
       toEntity: {
         id: string;
         name: string;
@@ -155,7 +140,7 @@ type EntityQueryResult = {
           time: string;
           point: string;
         }[];
-        relationsList: {
+        relationsList?: {
           toEntity: {
             id: string;
             name: string;
@@ -173,7 +158,7 @@ type EntityQueryResult = {
       };
       typeId: string;
     }[];
-  }[];
+  } | null;
 };
 
 // A recursive representation of the entity structure returned by the public GraphQL
@@ -195,26 +180,6 @@ type RecursiveQueryEntity = {
     toEntity: RecursiveQueryEntity;
     typeId: string;
   }[];
-};
-
-const convertPropertyValue = (
-  property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
-  key: string,
-  type: Entity.AnyNoContext,
-) => {
-  if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.boolean !== undefined) {
-    return Boolean(property.boolean);
-  }
-  if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.point !== undefined) {
-    return property.point;
-  }
-  if (TypeUtils.isDateOrOptionalDateType(type.fields[key]) && property.time !== undefined) {
-    return property.time;
-  }
-  if (TypeUtils.isNumberOrOptionalNumberType(type.fields[key]) && property.number !== undefined) {
-    return Number(property.number);
-  }
-  return property.string;
 };
 
 const convertRelations = <S extends Entity.AnyNoContext>(
@@ -283,7 +248,11 @@ const convertRelations = <S extends Entity.AnyNoContext>(
     });
 
     if (rawEntity[key]) {
-      rawEntity[key] = [...rawEntity[key], ...newRelationEntities];
+      rawEntity[key] = [
+        // @ts-expect-error TODO: properly access the type.name
+        ...rawEntity[key],
+        ...newRelationEntities,
+      ];
     } else {
       rawEntity[key] = newRelationEntities;
     }
@@ -292,52 +261,81 @@ const convertRelations = <S extends Entity.AnyNoContext>(
   return rawEntity;
 };
 
+const convertPropertyValue = (
+  property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
+  key: string,
+  type: Entity.AnyNoContext,
+) => {
+  if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.boolean !== undefined) {
+    return Boolean(property.boolean);
+  }
+  if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.point !== undefined) {
+    return property.point;
+  }
+  if (TypeUtils.isDateOrOptionalDateType(type.fields[key]) && property.time !== undefined) {
+    return property.time;
+  }
+  if (TypeUtils.isNumberOrOptionalNumberType(type.fields[key]) && property.number !== undefined) {
+    return Number(property.number);
+  }
+  return property.string;
+};
+
 export const parseResult = <S extends Entity.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
   mappingEntry: Mapping.MappingEntry,
   mapping: Mapping.Mapping,
 ) => {
+  if (!queryData.entity) {
+    return { data: null, invalidEntity: null };
+  }
+
   const decode = Schema.decodeUnknownEither(type);
-  const data: Entity.Entity<S>[] = [];
-  const invalidEntities: Record<string, unknown>[] = [];
+  const queryEntity = queryData.entity;
+  let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
+    id: queryEntity.id,
+  };
 
-  for (const queryEntity of queryData.entities) {
-    let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
-      id: queryEntity.id,
-    };
-
-    // take the mappingEntry and assign the attributes to the rawEntity
-    for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
-      const property = queryEntity.valuesList.find((a) => a.propertyId === value);
-      if (property) {
-        rawEntity[key] = convertPropertyValue(property, key, type);
-      }
-    }
-
-    rawEntity = {
-      ...rawEntity,
-      ...convertRelations(queryEntity, type, mappingEntry, mapping),
-    };
-
-    const decodeResult = decode({
-      ...rawEntity,
-      __deleted: false,
-      // __version: queryEntity.currentVersion.versionId,
-      __version: '',
-    });
-
-    if (Either.isRight(decodeResult)) {
-      data.push({ ...decodeResult.right, __schema: type });
-    } else {
-      invalidEntities.push(rawEntity);
+  // take the mappingEntry and assign the attributes to the rawEntity
+  for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
+    const property = queryEntity.valuesList.find((a) => a.propertyId === value);
+    if (property) {
+      rawEntity[key] = convertPropertyValue(property, key, type);
     }
   }
-  return { data, invalidEntities };
+
+  rawEntity = {
+    ...rawEntity,
+    ...convertRelations(queryEntity, type, mappingEntry, mapping),
+  };
+
+  const decodeResult = decode({
+    ...rawEntity,
+    __deleted: false,
+    __version: '',
+  });
+
+  if (Either.isRight(decodeResult)) {
+    return {
+      data: { ...decodeResult.right, __schema: type } as Entity.Entity<S>,
+      invalidEntity: null,
+    };
+  }
+
+  return { data: null, invalidEntity: rawEntity };
 };
 
-export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
-  const { enabled = true, filter, include, space: spaceFromParams, first = 100 } = params ?? {};
+type UseEntityPublicParams<S extends Entity.AnyNoContext> = {
+  id: string;
+  enabled?: boolean;
+  space?: string;
+  // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
+  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
+};
+
+export const useEntityPublic = <S extends Entity.AnyNoContext>(type: S, params: UseEntityPublicParams<S>) => {
+  const { id, enabled = true, space: spaceFromParams, include } = params;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
   const mapping = useSelector(store, (state) => state.context.mapping);
@@ -368,44 +366,33 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
   }
 
   const result = useQueryTanstack({
-    queryKey: [
-      'hypergraph-public-entities',
-      typeName,
-      space,
-      mappingEntry?.typeIds,
-      relationTypeIdsLevel1,
-      relationTypeIdsLevel2,
-      filter,
-      first,
-    ],
+    queryKey: ['hypergraph-public-entity', typeName, id, space, relationTypeIdsLevel1, relationTypeIdsLevel2, include],
     queryFn: async () => {
-      let queryDocument = entitiesQueryDocumentLevel0;
+      let queryDocument = entityQueryDocumentLevel0;
       if (relationTypeIdsLevel1.length > 0) {
-        queryDocument = entitiesQueryDocumentLevel1;
+        queryDocument = entityQueryDocumentLevel1;
       }
       if (relationTypeIdsLevel2.length > 0) {
-        queryDocument = entitiesQueryDocumentLevel2;
+        queryDocument = entityQueryDocumentLevel2;
       }
 
       const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
+        id,
         spaceId: space,
-        typeIds: mappingEntry?.typeIds || [],
         relationTypeIdsLevel1,
         relationTypeIdsLevel2,
-        first,
-        filter: filter ? translateFilterToGraphql(filter, type, mapping) : {},
       });
       return result;
     },
-    enabled,
+    enabled: enabled && !!id && !!space,
   });
 
-  const { data, invalidEntities } = useMemo(() => {
+  const { data, invalidEntity } = useMemo(() => {
     if (result.data && mappingEntry) {
       return parseResult(result.data, type, mappingEntry, mapping);
     }
-    return { data: [], invalidEntities: [] };
+    return { data: null, invalidEntity: null };
   }, [result.data, type, mappingEntry, mapping]);
 
-  return { ...result, data, invalidEntities };
+  return { ...result, data, invalidEntity };
 };

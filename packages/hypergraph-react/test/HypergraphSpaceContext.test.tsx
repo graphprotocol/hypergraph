@@ -9,7 +9,7 @@ import {
   HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
-  useQueryEntity,
+  useEntity,
   useQueryLocal,
   useUpdateEntity,
 } from '../src/HypergraphSpaceContext.js';
@@ -86,9 +86,12 @@ describe('HypergraphSpaceContext', () => {
       });
 
       if (createdEntity != null) {
-        const { result: queryEntityResult } = renderHook(() => useQueryEntity(Event, createdEntity?.id || ''), {
-          wrapper,
-        });
+        const { result: queryEntityResult } = renderHook(
+          () => useEntity(Event, { id: createdEntity?.id || '', mode: 'private' }),
+          {
+            wrapper,
+          },
+        );
         expect(queryEntityResult.current).toEqual(createdEntity);
       }
 
@@ -137,7 +140,9 @@ describe('HypergraphSpaceContext', () => {
         __schema: Person,
       });
 
-      const { result: queryEntityResult } = renderHook(() => useQueryEntity(Person, id), { wrapper });
+      const { result: queryEntityResult } = renderHook(() => useEntity(Person, { id: id, mode: 'private' }), {
+        wrapper,
+      });
       expect(queryEntityResult.current).toEqual({
         // @ts-expect-error - TODO: fix the types error
         ...createdEntity,

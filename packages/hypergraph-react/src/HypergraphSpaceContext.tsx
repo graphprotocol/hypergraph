@@ -1,6 +1,6 @@
 'use client';
 
-import { Entity, store } from '@graphprotocol/hypergraph';
+import { Entity, type Id, store } from '@graphprotocol/hypergraph';
 import { useSelector } from '@xstate/store/react';
 import * as Schema from 'effect/Schema';
 import {
@@ -14,6 +14,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { useHypergraphApp } from './HypergraphAppContext.js';
+import { useEntityPublic } from './internal/use-entity-public.js';
 import { usePublicSpace } from './internal/use-public-space.js';
 
 // TODO space can be undefined
@@ -181,19 +182,28 @@ export function useQueryLocal<const S extends Entity.AnyNoContext>(type: S, para
   return { entities, deletedEntities };
 }
 
-export function useQueryEntity<const S extends Entity.AnyNoContext>(
+function useEntityPrivate<const S extends Entity.AnyNoContext>(
   type: S,
-  id: string,
-  params?: { space?: string; include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } },
+  params: {
+    id: string | Id;
+    enabled?: boolean;
+    space?: string;
+    include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
+  },
 ) {
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
-  const { space: spaceFromParams, include } = params ?? {};
-  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled: true });
-  const prevEntityRef = useRef<Entity.Entity<S> | undefined>(undefined);
+  const { space: spaceFromParams, include, id, enabled = true } = params;
+  const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled });
+  const prevEntityRef = useRef<{
+    data: Entity.Entity<S> | undefined;
+    invalidEntity: Record<string, string | boolean | number | Date> | undefined;
+    isPending: boolean;
+    isError: boolean;
+  }>({ data: undefined, invalidEntity: undefined, isPending: false, isError: false });
   const equals = Schema.equivalence(type);
 
   const subscribe = (callback: () => void) => {
-    if (!handle) {
+    if (!handle || !enabled) {
       return () => {};
     }
     const handleChange = () => {
@@ -214,7 +224,7 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
   };
 
   return useSyncExternalStore(subscribe, () => {
-    if (!handle) {
+    if (!handle || !enabled) {
       return prevEntityRef.current;
     }
     const doc = handle.doc();
@@ -223,16 +233,39 @@ export function useQueryEntity<const S extends Entity.AnyNoContext>(
     }
 
     const found = Entity.findOne(handle, type, include)(id);
-    if (found === undefined && prevEntityRef.current !== undefined) {
+    if (found === undefined && prevEntityRef.current.data !== undefined) {
       // entity was maybe deleted, delete from the ref
-      prevEntityRef.current = undefined;
-    } else if (found !== undefined && prevEntityRef.current === undefined) {
-      prevEntityRef.current = found;
-    } else if (found !== undefined && prevEntityRef.current !== undefined && !equals(found, prevEntityRef.current)) {
+      prevEntityRef.current = { data: undefined, invalidEntity: undefined, isPending: false, isError: false };
+    } else if (found !== undefined && prevEntityRef.current.data === undefined) {
+      prevEntityRef.current = { data: found, invalidEntity: undefined, isPending: false, isError: false };
+    } else if (
+      found !== undefined &&
+      prevEntityRef.current.data !== undefined &&
+      !equals(found, prevEntityRef.current.data)
+    ) {
       // found and ref have a value, compare for equality, if they are not equal, update the ref and return
-      prevEntityRef.current = found;
+      prevEntityRef.current = { data: found, invalidEntity: undefined, isPending: false, isError: false };
     }
 
     return prevEntityRef.current;
   });
+}
+
+export function useEntity<const S extends Entity.AnyNoContext>(
+  type: S,
+  params: {
+    id: string | Id;
+    space?: string;
+    mode: 'private' | 'public';
+    include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
+  },
+) {
+  const resultPublic = useEntityPublic(type, { ...params, enabled: params.mode === 'public' });
+  const resultPrivate = useEntityPrivate(type, { ...params, enabled: params.mode === 'private' });
+
+  if (params.mode === 'public') {
+    return resultPublic;
+  }
+
+  return resultPrivate;
 }

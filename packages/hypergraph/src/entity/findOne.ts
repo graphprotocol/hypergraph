@@ -10,7 +10,7 @@ import type { AnyNoContext, DocumentContent, Entity } from './types.js';
 export const findOne = <const S extends AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, never> } = {},
+  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined = undefined,
 ) => {
   const decode = Schema.decodeUnknownSync(type);
 
