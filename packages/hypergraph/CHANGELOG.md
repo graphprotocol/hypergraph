@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.6.4
+### Patch Changes
+
+- 604724b: improve include type for fineOne
+
 ## 0.6.3
 ### Patch Changes
 

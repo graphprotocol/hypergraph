@@ -1,5 +1,15 @@
 # @graphprotocol/hypergraph-react
 
+## 0.7.0
+### Minor Changes
+
+- 604724b: remove useQueryEntity and add useEntity hook
+
+### Patch Changes
+
+- Updated dependencies [604724b]
+  - @graphprotocol/hypergraph@0.6.4
+
 ## 0.6.3
 ### Patch Changes
 
