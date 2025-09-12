@@ -283,11 +283,7 @@ const convertRelations = <S extends Entity.AnyNoContext>(
     });
 
     if (rawEntity[key]) {
-      rawEntity[key] = [
-        // @ts-expect-error TODO: properly access the type.name
-        ...rawEntity[key],
-        ...newRelationEntities,
-      ];
+      rawEntity[key] = [...rawEntity[key], ...newRelationEntities];
     } else {
       rawEntity[key] = newRelationEntities;
     }
