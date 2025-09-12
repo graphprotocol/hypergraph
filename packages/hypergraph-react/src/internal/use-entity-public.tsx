@@ -316,8 +316,6 @@ export const parseResult = <S extends Entity.AnyNoContext>(
     __version: '',
   });
 
-  console.log({ component: 'parseResult', decodeResult });
-
   if (Either.isRight(decodeResult)) {
     return {
       data: { ...decodeResult.right, __schema: type } as Entity.Entity<S>,
