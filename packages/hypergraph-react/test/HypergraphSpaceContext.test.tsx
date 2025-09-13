@@ -6,12 +6,10 @@ import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  HypergraphSpaceProvider,
-  useCreateEntity,
-  useDeleteEntity,
-  useUpdateEntity,
-} from '../src/HypergraphSpaceContext.js';
+import { HypergraphSpaceProvider } from '../src/HypergraphSpaceContext.js';
+import { useCreateEntity } from '../src/hooks/use-create-entity.js';
+import { useDeleteEntity } from '../src/hooks/use-delete-entity.js';
+import { useUpdateEntity } from '../src/hooks/use-update-entity.js';
 import { useQueryPrivate } from '../src/internal/use-query-private.js';
 import { useEntity } from '../src/use-entity.js';
 

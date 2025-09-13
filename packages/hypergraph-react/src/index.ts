@@ -5,16 +5,14 @@ export {
   useHypergraphApp,
   useHypergraphAuth,
 } from './HypergraphAppContext.js';
-export {
-  HypergraphSpaceProvider,
-  useCreateEntity,
-  useDeleteEntity,
-  useHardDeleteEntity,
-  useRemoveRelation,
-  useSpace,
-  useUpdateEntity,
-} from './HypergraphSpaceContext.js';
+export { HypergraphSpaceProvider } from './HypergraphSpaceContext.js';
+export { useCreateEntity } from './hooks/use-create-entity.js';
+export { useDeleteEntity } from './hooks/use-delete-entity.js';
+export { useHardDeleteEntity } from './hooks/use-hard-delete-entity.js';
+export { useRemoveRelation } from './hooks/use-remove-relation.js';
+export { useSpace } from './hooks/use-space.js';
 export { useSpaces } from './hooks/use-spaces.js';
+export { useUpdateEntity } from './hooks/use-update-entity.js';
 export { useExternalAccountInbox } from './hooks/useExternalAccountInbox.js';
 export { useExternalSpaceInbox } from './hooks/useExternalSpaceInbox.js';
 export { useOwnAccountInbox } from './hooks/useOwnAccountInbox.js';
