@@ -1,11 +1,12 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, type Mapping, store, TypeUtils } from '@graphprotocol/hypergraph';
+import { type Entity, type Mapping, store } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
+import { convertPropertyValue } from './convert-property-value.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 
 const entityQueryDocumentLevel0 = gql`
@@ -259,26 +260,6 @@ const convertRelations = <S extends Entity.AnyNoContext>(
   }
 
   return rawEntity;
-};
-
-const convertPropertyValue = (
-  property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
-  key: string,
-  type: Entity.AnyNoContext,
-) => {
-  if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.boolean !== undefined) {
-    return Boolean(property.boolean);
-  }
-  if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.point !== undefined) {
-    return property.point;
-  }
-  if (TypeUtils.isDateOrOptionalDateType(type.fields[key]) && property.time !== undefined) {
-    return property.time;
-  }
-  if (TypeUtils.isNumberOrOptionalNumberType(type.fields[key]) && property.number !== undefined) {
-    return Number(property.number);
-  }
-  return property.string;
 };
 
 export const parseResult = <S extends Entity.AnyNoContext>(
