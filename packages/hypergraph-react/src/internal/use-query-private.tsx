@@ -1,9 +1,7 @@
-'use client';
-
 import { Entity } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
+import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 import { useSubscribeToSpaceAndGetHandle } from './use-subscribe-to-space.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {

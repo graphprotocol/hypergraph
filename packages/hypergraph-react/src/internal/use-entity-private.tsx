@@ -1,7 +1,7 @@
 import { Entity, type Id } from '@graphprotocol/hypergraph';
 import * as Schema from 'effect/Schema';
 import { useRef, useSyncExternalStore } from 'react';
-import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
+import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 import { useSubscribeToSpaceAndGetHandle } from './use-subscribe-to-space.js';
 
 export function useEntityPrivate<const S extends Entity.AnyNoContext>(

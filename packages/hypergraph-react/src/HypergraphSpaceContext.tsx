@@ -2,7 +2,8 @@
 
 import { Entity, store } from '@graphprotocol/hypergraph';
 import { useSelector } from '@xstate/store/react';
-import { createContext, type ReactNode, useContext } from 'react';
+import { createContext, type ReactNode } from 'react';
+import { useHypergraphSpaceInternal } from './internal/use-hypergraph-space-internal.js';
 import { usePublicSpace } from './internal/use-public-space.js';
 import { useSubscribeToSpaceAndGetHandle } from './internal/use-subscribe-to-space.js';
 
@@ -10,11 +11,6 @@ import { useSubscribeToSpaceAndGetHandle } from './internal/use-subscribe-to-spa
 export type HypergraphContext = { space: string };
 
 export const HypergraphReactContext = createContext<HypergraphContext | undefined>(undefined);
-
-export function useHypergraphSpaceInternal() {
-  const context = useContext(HypergraphReactContext);
-  return (context as HypergraphContext) || { space: '' };
-}
 
 export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {
   return <HypergraphReactContext.Provider value={{ space }}>{children}</HypergraphReactContext.Provider>;

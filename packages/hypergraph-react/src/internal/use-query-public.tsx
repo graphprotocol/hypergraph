@@ -6,9 +6,9 @@ import * as Either from 'effect/Either';
 import * as Schema from 'effect/Schema';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
-import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
 import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
 import type { QueryPublicParams } from './types.js';
+import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 
 const entitiesQueryDocumentLevel0 = gql`
 query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!) {
