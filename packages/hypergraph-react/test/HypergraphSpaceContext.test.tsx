@@ -1,6 +1,7 @@
 import { Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Entity, store, Type } from '@graphprotocol/hypergraph';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import type React from 'react';
@@ -36,11 +37,18 @@ describe('HypergraphSpaceContext', () => {
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
 
   let repo = new Repo({});
-  let wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-    <RepoContext.Provider value={repo}>
-      <HypergraphSpaceProvider space={spaceId}>{children}</HypergraphSpaceProvider>
-    </RepoContext.Provider>
-  );
+  const queryClient = new QueryClient();
+  const createWrapper =
+    () =>
+    ({ children }: Readonly<{ children: React.ReactNode }>) => (
+      <RepoContext.Provider value={repo}>
+        <QueryClientProvider client={queryClient}>
+          <HypergraphSpaceProvider space={spaceId}>{children}</HypergraphSpaceProvider>
+        </QueryClientProvider>
+      </RepoContext.Provider>
+    );
+
+  let wrapper = createWrapper();
 
   beforeEach(() => {
     repo = new Repo({});
@@ -63,11 +71,7 @@ describe('HypergraphSpaceContext', () => {
       keys: [],
     });
 
-    wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-      <RepoContext.Provider value={repo}>
-        <HypergraphSpaceProvider space={spaceId}>{children}</HypergraphSpaceProvider>
-      </RepoContext.Provider>
-    );
+    wrapper = createWrapper();
   });
 
   describe('useCreateEntity', () => {
@@ -92,7 +96,12 @@ describe('HypergraphSpaceContext', () => {
             wrapper,
           },
         );
-        expect(queryEntityResult.current).toEqual(createdEntity);
+        expect(queryEntityResult.current).toEqual({
+          data: createdEntity,
+          invalidEntity: undefined,
+          isPending: false,
+          isError: false,
+        });
       }
 
       rerender();
@@ -144,11 +153,16 @@ describe('HypergraphSpaceContext', () => {
         wrapper,
       });
       expect(queryEntityResult.current).toEqual({
-        // @ts-expect-error - TODO: fix the types error
-        ...createdEntity,
-        __version: '',
-        __deleted: false,
-        __schema: Person,
+        data: {
+          // @ts-expect-error - TODO: fix the types error
+          ...createdEntity,
+          __version: '',
+          __deleted: false,
+          __schema: Person,
+        },
+        invalidEntity: undefined,
+        isPending: false,
+        isError: false,
       });
 
       const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Person), { wrapper });
