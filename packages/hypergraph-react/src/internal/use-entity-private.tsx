@@ -1,5 +1,3 @@
-'use client';
-
 import { Entity, type Id, store } from '@graphprotocol/hypergraph';
 import { useSelector } from '@xstate/store/react';
 import * as Schema from 'effect/Schema';

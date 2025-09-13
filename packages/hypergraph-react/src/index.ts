@@ -9,7 +9,6 @@ export {
   HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
-  useEntity,
   useHardDeleteEntity,
   useQueryLocal as _useQueryLocal,
   useRemoveRelation,
@@ -31,4 +30,5 @@ export { useQueryPublic as _useQueryPublic } from './internal/use-query-public.j
 export { preparePublish } from './prepare-publish.js';
 export { publishOps } from './publish-ops.js';
 export type * from './types.js';
+export { useEntity } from './use-entity.js';
 export { useQuery } from './use-query.js';

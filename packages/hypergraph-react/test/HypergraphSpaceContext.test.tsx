@@ -10,10 +10,10 @@ import {
   HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
-  useEntity,
   useQueryLocal,
   useUpdateEntity,
 } from '../src/HypergraphSpaceContext.js';
+import { useEntity } from '../src/use-entity.js';
 
 afterEach(() => {
   cleanup();
