@@ -10,7 +10,7 @@ import {
   HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
-  useQueryLocal,
+  useQueryPrivate,
   useUpdateEntity,
 } from '../src/HypergraphSpaceContext.js';
 import { useEntity } from '../src/use-entity.js';
@@ -76,7 +76,7 @@ describe('HypergraphSpaceContext', () => {
 
   describe('useCreateEntity', () => {
     it('should be able to create an entity through the useCreateEntity Hook', async () => {
-      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Event), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryPrivate(Event), { wrapper });
       const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
 
       let createdEntity: Entity.Entity<typeof Event> | null = null;
@@ -165,7 +165,7 @@ describe('HypergraphSpaceContext', () => {
         isError: false,
       });
 
-      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Person), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryPrivate(Person), { wrapper });
 
       rerender();
 
@@ -194,7 +194,7 @@ describe('HypergraphSpaceContext', () => {
         );
       });
 
-      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryLocal(User), {
+      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryPrivate(User), {
         wrapper,
       });
       rerenderQueryEntities();

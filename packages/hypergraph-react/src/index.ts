@@ -10,7 +10,7 @@ export {
   useCreateEntity,
   useDeleteEntity,
   useHardDeleteEntity,
-  useQueryLocal as _useQueryLocal,
+  useQueryPrivate as _useQueryPrivate,
   useRemoveRelation,
   useSpace,
   useUpdateEntity,

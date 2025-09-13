@@ -1,6 +1,6 @@
 import type { Entity } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
-import { useQueryLocal } from './HypergraphSpaceContext.js';
+import { useQueryPrivate } from './HypergraphSpaceContext.js';
 import { useQueryPublic } from './internal/use-query-public.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {
@@ -17,7 +17,7 @@ const preparePublishDummy = () => undefined;
 export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: QueryParams<S>) {
   const { mode, filter, include, space, first } = params;
   const publicResult = useQueryPublic(type, { enabled: mode === 'public', filter, include, first, space });
-  const localResult = useQueryLocal(type, { enabled: mode === 'private', filter, include, space });
+  const localResult = useQueryPrivate(type, { enabled: mode === 'private', filter, include, space });
 
   if (mode === 'public') {
     return {
