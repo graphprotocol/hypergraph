@@ -8,7 +8,9 @@ export {
 export { HypergraphSpaceProvider } from './HypergraphSpaceContext.js';
 export { useCreateEntity } from './hooks/use-create-entity.js';
 export { useDeleteEntity } from './hooks/use-delete-entity.js';
+export { useEntity } from './hooks/use-entity.js';
 export { useHardDeleteEntity } from './hooks/use-hard-delete-entity.js';
+export { useQuery } from './hooks/use-query.js';
 export { useRemoveRelation } from './hooks/use-remove-relation.js';
 export { useSpace } from './hooks/use-space.js';
 export { useSpaces } from './hooks/use-spaces.js';
@@ -28,5 +30,3 @@ export { useQueryPublic as _useQueryPublic } from './internal/use-query-public.j
 export { preparePublish } from './prepare-publish.js';
 export { publishOps } from './publish-ops.js';
 export type * from './types.js';
-export { useEntity } from './use-entity.js';
-export { useQuery } from './use-query.js';

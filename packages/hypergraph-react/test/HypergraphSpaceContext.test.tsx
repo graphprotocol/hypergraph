@@ -9,9 +9,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { HypergraphSpaceProvider } from '../src/HypergraphSpaceContext.js';
 import { useCreateEntity } from '../src/hooks/use-create-entity.js';
 import { useDeleteEntity } from '../src/hooks/use-delete-entity.js';
+import { useEntity } from '../src/hooks/use-entity.js';
 import { useUpdateEntity } from '../src/hooks/use-update-entity.js';
 import { useQueryPrivate } from '../src/internal/use-query-private.js';
-import { useEntity } from '../src/use-entity.js';
 
 afterEach(() => {
   cleanup();
