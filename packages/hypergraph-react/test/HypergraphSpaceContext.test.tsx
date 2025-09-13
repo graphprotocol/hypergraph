@@ -10,9 +10,9 @@ import {
   HypergraphSpaceProvider,
   useCreateEntity,
   useDeleteEntity,
-  useQueryPrivate,
   useUpdateEntity,
 } from '../src/HypergraphSpaceContext.js';
+import { useQueryPrivate } from '../src/internal/use-query-private.js';
 import { useEntity } from '../src/use-entity.js';
 
 afterEach(() => {

@@ -1,6 +1,6 @@
 import type { Entity } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
-import { useQueryPrivate } from './HypergraphSpaceContext.js';
+import { useQueryPrivate } from './internal/use-query-private.js';
 import { useQueryPublic } from './internal/use-query-public.js';
 
 type QueryParams<S extends Entity.AnyNoContext> = {
