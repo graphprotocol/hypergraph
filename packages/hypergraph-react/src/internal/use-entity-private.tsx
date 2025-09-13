@@ -1,38 +1,8 @@
-import { Entity, type Id, store } from '@graphprotocol/hypergraph';
-import { useSelector } from '@xstate/store/react';
+import { Entity, type Id } from '@graphprotocol/hypergraph';
 import * as Schema from 'effect/Schema';
-import { useEffect, useRef, useSyncExternalStore } from 'react';
-import { useHypergraphApp } from '../HypergraphAppContext.js';
+import { useRef, useSyncExternalStore } from 'react';
 import { useHypergraphSpaceInternal } from '../HypergraphSpaceContext.js';
-
-const subscribeToSpaceCache = new Map<string, boolean>();
-
-function useSubscribeToSpaceAndGetHandle({ spaceId, enabled }: { spaceId: string; enabled: boolean }) {
-  const handle = useSelector(store, (state) => {
-    const space = state.context.spaces.find((space) => space.id === spaceId);
-    if (!space) {
-      return undefined;
-    }
-    return space.automergeDocHandle;
-  });
-
-  const { subscribeToSpace, isConnecting } = useHypergraphApp();
-  useEffect(() => {
-    if (!isConnecting && enabled) {
-      if (subscribeToSpaceCache.has(spaceId)) {
-        return;
-      }
-      subscribeToSpaceCache.set(spaceId, true);
-      subscribeToSpace({ spaceId });
-    }
-    return () => {
-      // TODO: unsubscribe from space in case the space ID changes
-      subscribeToSpaceCache.delete(spaceId);
-    };
-  }, [isConnecting, subscribeToSpace, spaceId, enabled]);
-
-  return handle;
-}
+import { useSubscribeToSpaceAndGetHandle } from './use-subscribe-to-space.js';
 
 export function useEntityPrivate<const S extends Entity.AnyNoContext>(
   type: S,

@@ -2,9 +2,9 @@
 
 import { Entity, store } from '@graphprotocol/hypergraph';
 import { useSelector } from '@xstate/store/react';
-import { createContext, type ReactNode, useContext, useEffect } from 'react';
-import { useHypergraphApp } from './HypergraphAppContext.js';
+import { createContext, type ReactNode, useContext } from 'react';
 import { usePublicSpace } from './internal/use-public-space.js';
+import { useSubscribeToSpaceAndGetHandle } from './internal/use-subscribe-to-space.js';
 
 // TODO space can be undefined
 export type HypergraphContext = { space: string };
@@ -18,35 +18,6 @@ export function useHypergraphSpaceInternal() {
 
 export function HypergraphSpaceProvider({ space, children }: { space: string; children: ReactNode }) {
   return <HypergraphReactContext.Provider value={{ space }}>{children}</HypergraphReactContext.Provider>;
-}
-
-const subscribeToSpaceCache = new Map<string, boolean>();
-
-function useSubscribeToSpaceAndGetHandle({ spaceId, enabled }: { spaceId: string; enabled: boolean }) {
-  const handle = useSelector(store, (state) => {
-    const space = state.context.spaces.find((space) => space.id === spaceId);
-    if (!space) {
-      return undefined;
-    }
-    return space.automergeDocHandle;
-  });
-
-  const { subscribeToSpace, isConnecting } = useHypergraphApp();
-  useEffect(() => {
-    if (!isConnecting && enabled) {
-      if (subscribeToSpaceCache.has(spaceId)) {
-        return;
-      }
-      subscribeToSpaceCache.set(spaceId, true);
-      subscribeToSpace({ spaceId });
-    }
-    return () => {
-      // TODO: unsubscribe from space in case the space ID changes
-      subscribeToSpaceCache.delete(spaceId);
-    };
-  }, [isConnecting, subscribeToSpace, spaceId, enabled]);
-
-  return handle;
 }
 
 export function useSpace(options: { space?: string; mode: 'private' | 'public' }) {
