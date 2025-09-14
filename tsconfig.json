@@ -7,7 +7,6 @@
     { "path": "packages/hypergraph-react" },
     { "path": "packages/typesync-studio" },
     { "path": "apps/server" },
-    { "path": "apps/server-new" },
     { "path": "apps/connect" },
     { "path": "apps/events" },
     { "path": "apps/template-nextjs" },

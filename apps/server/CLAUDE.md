@@ -59,7 +59,6 @@ This is non-negotiable and applies to every single file modification.
 - Strict mode enabled
 - Effect patterns preferred (Effect.fn over Effect.gen)
 - No emit configuration (build handled by tsup)
-- Path aliases configured: `server-new/*` maps to `./src/*`
 
 ### Project Structure
 - `src/` - Source code directory
