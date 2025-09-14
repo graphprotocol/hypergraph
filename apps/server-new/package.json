@@ -5,13 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch ./src/index.ts",
-    "start": "node ./dist/index.js",
     "build": "tsup",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
-    "lint": "biome check",
-    "lint:fix": "biome check --write --unsafe",
     "prisma": "prisma",
     "prebuild": "prisma generate"
   },

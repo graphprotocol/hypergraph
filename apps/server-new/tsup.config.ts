@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsup';
 
-export default defineConfig({
+export default defineConfig(() => ({
   entry: ['src/index.ts'],
   format: ['esm'],
   target: 'node22',
@@ -9,5 +9,4 @@ export default defineConfig({
   minify: false,
   splitting: false,
   dts: false,
-  external: ['@prisma/client'],
-});
+}));
