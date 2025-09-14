@@ -7,6 +7,13 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["events", "next-example", "docs", "hypergraph-vite-react-template", "hypergraph-template-nextjs"],
+  "ignore": [
+    "events",
+    "privy-login-example",
+    "next-example",
+    "docs",
+    "hypergraph-vite-react-template",
+    "hypergraph-template-nextjs"
+  ],
   "prettier": false
 }
