@@ -23,10 +23,10 @@
 !scripts/*
 
 # Server application.
-!apps/server-new/package.json
-!apps/server-new/tsup.config.ts
-!apps/server-new/src
-!apps/server-new/prisma
+!apps/server/package.json
+!apps/server/tsup.config.ts
+!apps/server/src
+!apps/server/prisma
 
 # Workspace package dependencies.
 !packages/hypergraph
