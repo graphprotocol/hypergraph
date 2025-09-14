@@ -2,8 +2,8 @@ import * as Otlp from '@effect/opentelemetry/Otlp';
 import { FetchHttpClient, PlatformConfigProvider } from '@effect/platform';
 import { NodeContext, NodeRuntime } from '@effect/platform-node';
 import { Effect, Layer, Logger, Option, Redacted } from 'effect';
-import * as Config from './config/honeycomb.ts';
-import { server } from './server.ts';
+import * as Config from './config/honeycomb';
+import { server } from './server';
 
 const Observability = Layer.unwrapEffect(
   Effect.gen(function* () {
