@@ -1,7 +1,7 @@
 import { Graph, Id } from '@graphprotocol/grc-20';
 import { Entity, type Mapping, Type } from '@graphprotocol/hypergraph';
 import { describe, expect, it } from 'vitest';
-import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
+import { translateFilterToGraphql } from '../../src/internal/translate-filter-to-graphql.js';
 
 export class Todo extends Entity.Class<Todo>('Todo')({
   name: Type.String,

@@ -6,14 +6,12 @@ import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  HypergraphSpaceProvider,
-  useCreateEntity,
-  useDeleteEntity,
-  useEntity,
-  useQueryLocal,
-  useUpdateEntity,
-} from '../src/HypergraphSpaceContext.js';
+import { HypergraphSpaceProvider } from '../src/HypergraphSpaceContext.js';
+import { useCreateEntity } from '../src/hooks/use-create-entity.js';
+import { useDeleteEntity } from '../src/hooks/use-delete-entity.js';
+import { useEntity } from '../src/hooks/use-entity.js';
+import { useUpdateEntity } from '../src/hooks/use-update-entity.js';
+import { useQueryPrivate } from '../src/internal/use-query-private.js';
 
 afterEach(() => {
   cleanup();
@@ -76,7 +74,7 @@ describe('HypergraphSpaceContext', () => {
 
   describe('useCreateEntity', () => {
     it('should be able to create an entity through the useCreateEntity Hook', async () => {
-      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Event), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryPrivate(Event), { wrapper });
       const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
 
       let createdEntity: Entity.Entity<typeof Event> | null = null;
@@ -165,7 +163,7 @@ describe('HypergraphSpaceContext', () => {
         isError: false,
       });
 
-      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryLocal(Person), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryPrivate(Person), { wrapper });
 
       rerender();
 
@@ -194,7 +192,7 @@ describe('HypergraphSpaceContext', () => {
         );
       });
 
-      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryLocal(User), {
+      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryPrivate(User), {
         wrapper,
       });
       rerenderQueryEntities();
