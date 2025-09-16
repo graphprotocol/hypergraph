@@ -13,6 +13,7 @@ import * as AppIdentityService from './services/app-identity.ts';
 import * as ConnectionsService from './services/connections.ts';
 import * as IdentityService from './services/identity.ts';
 import * as InvitationsService from './services/invitations.ts';
+import * as PrivyAuthService from './services/privy-auth.ts';
 import * as SpaceInboxService from './services/space-inbox.ts';
 import * as SpacesService from './services/spaces.ts';
 import * as UpdatesService from './services/updates.ts';
@@ -30,18 +31,34 @@ export const WebSocketLayer = HttpLayerRouter.add(
     const connectionsService = yield* ConnectionsService.ConnectionsService;
     const accountInboxService = yield* AccountInboxService.AccountInboxService;
     const spaceInboxService = yield* SpaceInboxService.SpaceInboxService;
+    const appIdentityService = yield* AppIdentityService.AppIdentityService;
+    const identityService = yield* IdentityService.IdentityService;
+    const privyAuthService = yield* PrivyAuthService.PrivyAuthService;
     const responseMailbox = yield* Mailbox.make<Messages.ResponseMessage>();
 
     const searchParams = HttpServerRequest.searchParamsFromURL(new URL(request.url, 'http://localhost'));
     const token = isArray(searchParams.token) ? searchParams.token[0] : searchParams.token;
+    const privyIdentityToken = isArray(searchParams['privy-identity-token'])
+      ? searchParams['privy-identity-token'][0]
+      : searchParams['privy-identity-token'];
+    const privyAccountAddress = isArray(searchParams['account-address'])
+      ? searchParams['account-address'][0]
+      : searchParams['account-address'];
 
-    if (!token) {
+    if (!token && (!privyIdentityToken || !privyAccountAddress)) {
       return yield* HttpServerResponse.empty({ status: 400 });
     }
 
-    const appIdentityService = yield* AppIdentityService.AppIdentityService;
-    const identityService = yield* IdentityService.IdentityService;
-    const { accountAddress, address } = yield* appIdentityService.getBySessionToken(token).pipe(Effect.orDie);
+    let accountAddress: string;
+    let address: string | undefined;
+    if (privyIdentityToken && privyAccountAddress) {
+      yield* privyAuthService.authenticateRequest(privyIdentityToken, privyAccountAddress).pipe(Effect.orDie);
+      accountAddress = privyAccountAddress;
+    } else {
+      const result = yield* appIdentityService.getBySessionToken(token).pipe(Effect.orDie);
+      accountAddress = result.accountAddress;
+      address = result.address;
+    }
 
     // Register this connection
     const connectionId = yield* connectionsService.registerConnection({
@@ -60,14 +77,17 @@ export const WebSocketLayer = HttpLayerRouter.add(
           const request = yield* decodeRequestMessage(json);
           switch (request.type) {
             case 'list-spaces': {
-              const spaces = yield* spacesService.listByAppIdentity(address);
+              const spaces = yield* spacesService.listByAppIdentityOrAccount({
+                appIdentityAddress: address,
+                accountAddress,
+              });
               const outgoingMessage: Messages.ResponseListSpaces = { type: 'list-spaces', spaces: spaces };
               // TODO: fix Messages.serialize
               yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
               break;
             }
             case 'list-invitations': {
-              const invitations = yield* invitationsService.listByAppIdentity(accountAddress);
+              const invitations = yield* invitationsService.listByAccountAddress(accountAddress);
               const outgoingMessage: Messages.ResponseListInvitations = {
                 type: 'list-invitations',
                 invitations,
@@ -215,7 +235,7 @@ export const WebSocketLayer = HttpLayerRouter.add(
                 const inviteeAccountAddress = request.event.transaction.inviteeAccountAddress;
 
                 // Get the updated invitation list for the invitee
-                const invitations = yield* invitationsService.listByAppIdentity(inviteeAccountAddress);
+                const invitations = yield* invitationsService.listByAccountAddress(inviteeAccountAddress);
                 const invitationMessage: Messages.ResponseListInvitations = {
                   type: 'list-invitations',
                   invitations,
@@ -432,5 +452,6 @@ export const WebSocketLayer = HttpLayerRouter.add(
     .pipe(Effect.provide(IdentityService.layer))
     .pipe(Effect.provide(UpdatesService.layer))
     .pipe(Effect.provide(AccountInboxService.layer))
-    .pipe(Effect.provide(SpaceInboxService.layer)),
+    .pipe(Effect.provide(SpaceInboxService.layer))
+    .pipe(Effect.provide(PrivyAuthService.layer)),
 );

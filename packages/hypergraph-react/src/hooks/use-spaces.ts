@@ -29,7 +29,11 @@ type PublicSpacesQueryResult = {
 };
 
 export const useSpaces = (params: { mode: 'public' | 'private' }) => {
-  const accountAddress = useSelector(store, (state) => state.context.identity?.accountAddress);
+  const identityAccountAddress = useSelector(store, (state) => state.context.identity?.accountAddress);
+  const privyIdentityAccountAddress = useSelector(store, (state) => state.context.privyIdentity?.accountAddress);
+
+  const accountAddress = identityAccountAddress ? identityAccountAddress : privyIdentityAccountAddress;
+
   const publicResult = useQuery({
     queryKey: ['hypergraph-spaces', params.mode],
     queryFn: async () => {

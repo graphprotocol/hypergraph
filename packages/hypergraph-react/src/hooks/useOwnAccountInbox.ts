@@ -1,4 +1,4 @@
-import { store } from '@graphprotocol/hypergraph';
+import { type Connect, store } from '@graphprotocol/hypergraph';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js';
@@ -9,8 +9,12 @@ import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js'
  */
 export function useOwnAccountInbox(inboxId: string) {
   const { getLatestAccountInboxMessages, sendAccountInboxMessage, getOwnAccountInboxes } = useHypergraphApp();
-  const { identity } = useHypergraphAuth();
-  const accountAddress = identity?.address;
+  const result = useHypergraphAuth();
+  let identity: Connect.PrivatePrivyAppIdentity | Connect.PrivateAppIdentity | null = result.identity;
+  if (!identity && result.privyIdentity) {
+    identity = result.privyIdentity;
+  }
+  const accountAddress = identity?.accountAddress;
 
   // Get own inbox from store
   const inbox = useSelectorStore(store, (state) => state.context.accountInboxes.find((i) => i.inboxId === inboxId));

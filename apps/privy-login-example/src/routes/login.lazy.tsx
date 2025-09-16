@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { Connect, type Identity } from '@graphprotocol/hypergraph';
-import { ConnectedWallet, useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
+import { Connect, type Identity, PrivyAuth } from '@graphprotocol/hypergraph';
+import { type ConnectedWallet, useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { createWalletClient, custom, type WalletClient } from 'viem';
+import { Button } from '@/components/ui/button';
 
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const syncServerUri = import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN;
@@ -23,7 +23,6 @@ function Login() {
 
   const hypergraphLogin = useCallback(
     async (walletClient: WalletClient, embeddedWallet: ConnectedWallet) => {
-      console.log('hypergraphLogin');
       if (!identityToken) {
         return;
       }
@@ -49,10 +48,7 @@ function Login() {
 
       const rpcUrl = import.meta.env.VITE_HYPERGRAPH_RPC_URL;
 
-      console.log(walletClient);
-      console.log(rpcUrl);
-      console.log(CHAIN);
-      await Connect.login({
+      await PrivyAuth.login({
         walletClient,
         signer,
         syncServerUri,
@@ -67,14 +63,12 @@ function Login() {
   );
 
   useEffect(() => {
-    console.log('useEffect in login.lazy.tsx');
     if (
       !hypergraphLoginStarted && // avoid re-running the effect too often
       privyAuthenticated && // privy must be authenticated to run it
       walletsReady && // wallets must be ready to run it
       wallets.length > 0 // wallets must have at least one wallet to run it
     ) {
-      console.log('running login effect');
       setHypergraphLoginStarted(true);
       (async () => {
         try {
@@ -100,9 +94,11 @@ function Login() {
   return (
     <div className="flex flex-1 justify-center items-center flex-col gap-4">
       <Button
+        disabled={!privyReady || privyAuthenticated}
         onClick={() => {
           privyLogin();
         }}
+        className="c-button c-button--primary sm:c-button--large mt-6"
       >
         Authenticate with Privy
       </Button>

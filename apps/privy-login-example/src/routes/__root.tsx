@@ -1,7 +1,7 @@
-import { Logout } from '@/components/logout';
 import { usePrivy } from '@privy-io/react-auth';
 import { createRootRoute, Link, Outlet, useLayoutEffect, useRouter } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { Logout } from '@/components/logout';
 
 export const Route = createRootRoute({
   component: () => {

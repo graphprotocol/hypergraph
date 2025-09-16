@@ -7,11 +7,11 @@ export const Route = createFileRoute('/account-inbox/$inboxId')({
 
 function RouteComponent() {
   const { inboxId } = Route.useParams();
-  const { identity } = useHypergraphAuth();
+  const { privyIdentity } = useHypergraphAuth();
   const { messages, loading, error } = useOwnAccountInbox(inboxId);
 
   // Ensure we have an authenticated user
-  if (!identity?.accountAddress) {
+  if (!privyIdentity?.accountAddress) {
     return <div>Please login to view your inbox</div>;
   }
 

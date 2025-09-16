@@ -63,6 +63,10 @@ export type PrivateAppIdentity = IdentityKeys & {
   accountAddress: string;
 };
 
+export type PrivatePrivyAppIdentity = IdentityKeys & {
+  accountAddress: string;
+  privyIdentityToken: string;
+};
 export class InvalidIdentityError {
   readonly _tag = 'InvalidIdentityError';
 }
