@@ -4,7 +4,7 @@ import type * as Mailbox from 'effect/Mailbox';
 
 type Connection = {
   accountAddress: string;
-  appIdentityAddress: string;
+  appIdentityAddress: string | undefined;
   mailbox: Mailbox.Mailbox<Messages.ResponseMessage>;
   subscribedSpaces: Set<string>;
 };
@@ -14,7 +14,7 @@ export class ConnectionsService extends Context.Tag('ConnectionsService')<
   {
     readonly registerConnection: (params: {
       accountAddress: string;
-      appIdentityAddress: string;
+      appIdentityAddress: string | undefined;
       mailbox: Mailbox.Mailbox<Messages.ResponseMessage>;
     }) => Effect.Effect<string>;
     readonly removeConnection: (connectionId: string) => Effect.Effect<void>;
@@ -45,7 +45,7 @@ export const layer = Effect.gen(function* () {
     mailbox,
   }: {
     accountAddress: string;
-    appIdentityAddress: string;
+    appIdentityAddress: string | undefined;
     mailbox: Mailbox.Mailbox<Messages.ResponseMessage>;
   }) {
     const nextId = yield* Ref.updateAndGet(connectionCounter, (n) => n + 1);

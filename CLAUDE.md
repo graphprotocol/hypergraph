@@ -12,6 +12,7 @@ Hypergraph is a local-first framework for building web3 consumer applications th
 ```bash
 # Run specific apps
 cd apps/events && pnpm dev      # Events demo app
+cd apps/privy-login-example && pnpm dev # Privy login example app
 cd apps/server && pnpm dev      # Backend sync server
 cd apps/connect && pnpm dev     # Geo Connect auth app
 ```
@@ -52,6 +53,7 @@ pnpm clean                      # Clean all build artifacts
 - **apps/** - Complete applications
   - `server/` - Backend sync server (Express + Prisma + SQLite/PostgreSQL)
   - `events/` - Demo app showcasing the framework (Vite + React)
+  - `privy-login-example/` - Privy login example app (Vite + React)
   - `connect/` - Geo Connect authentication app
   - `next-example/` - Next.js integration example
 - **docs/** - Docusaurus documentation site

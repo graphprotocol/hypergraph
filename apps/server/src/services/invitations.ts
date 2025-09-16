@@ -7,7 +7,7 @@ import * as IdentityService from './identity.js';
 export class InvitationsService extends Context.Tag('InvitationsService')<
   InvitationsService,
   {
-    readonly listByAppIdentity: (
+    readonly listByAccountAddress: (
       appIdentityAddress: string,
     ) => Effect.Effect<Messages.Invitation[], DatabaseService.DatabaseError>;
   }
@@ -18,7 +18,7 @@ const decodeSpaceState = Schema.decodeUnknownEither(SpaceEvents.SpaceState);
 export const layer = Effect.gen(function* () {
   const { use } = yield* DatabaseService.DatabaseService;
 
-  const listByAppIdentity = Effect.fn('listByAppIdentity')(function* (accountAddress: string) {
+  const listByAccountAddress = Effect.fn('listByAccountAddress')(function* (accountAddress: string) {
     const invitations = yield* use((client) =>
       client.invitation.findMany({
         where: {
@@ -57,6 +57,6 @@ export const layer = Effect.gen(function* () {
   });
 
   return {
-    listByAppIdentity,
+    listByAccountAddress,
   } as const;
 }).pipe(Layer.effect(InvitationsService), Layer.provide(DatabaseService.layer), Layer.provide(IdentityService.layer));

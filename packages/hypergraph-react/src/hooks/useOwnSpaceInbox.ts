@@ -1,4 +1,4 @@
-import { type Inboxes, store } from '@graphprotocol/hypergraph';
+import { type Connect, type Inboxes, store } from '@graphprotocol/hypergraph';
 import { useSelector as useSelectorStore } from '@xstate/store/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js';
@@ -21,7 +21,11 @@ export function useOwnSpaceInbox({
   authPolicy?: Inboxes.InboxSenderAuthPolicy;
 }) {
   const { getLatestSpaceInboxMessages, sendSpaceInboxMessage, ensureSpaceInbox } = useHypergraphApp();
-  const { identity } = useHypergraphAuth();
+  const result = useHypergraphAuth();
+  let identity: Connect.PrivatePrivyAppIdentity | Connect.PrivateAppIdentity | null = result.identity;
+  if (!identity && result.privyIdentity) {
+    identity = result.privyIdentity;
+  }
 
   // Get own space inbox from store
   const space = useSelectorStore(store, (state) => state.context.spaces.find((s) => s.id === spaceId));

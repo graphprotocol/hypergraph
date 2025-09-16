@@ -336,8 +336,6 @@ function AuthenticateComponent() {
 
       const newAppIdentity = Connect.createAppIdentity();
 
-      console.log('creating smart session');
-      console.log('public spaces data', publicSpacesData);
       const spaces =
         publicSpacesData
           // .filter((space) => selectedPublicSpaces.has(space.id))
@@ -348,10 +346,8 @@ function AuthenticateComponent() {
                 : (space.mainVotingAddress as `0x${string}`),
             type: space.type as 'personal' | 'public',
           })) ?? [];
-      console.log('spaces', spaces);
 
       const localAccount = privateKeyToAccount(keys.signaturePrivateKey as `0x${string}`);
-      console.log('local account', localAccount.address);
       // TODO: add additional actions (must be passed from the app)
       const permissionId = await Connect.createSmartSession(
         localAccount,
@@ -365,7 +361,6 @@ function AuthenticateComponent() {
           additionalActions: [],
         },
       );
-      console.log('smart session created');
       const smartAccountClient = await Connect.getSmartAccountWalletClient({
         owner: localAccount,
         address: accountAddress,
@@ -373,9 +368,7 @@ function AuthenticateComponent() {
         rpcUrl: import.meta.env.VITE_HYPERGRAPH_RPC_URL,
       });
 
-      console.log('encrypting app identity');
       const { ciphertext } = await Connect.encryptAppIdentity({ ...newAppIdentity, permissionId }, keys);
-      console.log('proving ownership');
       const { accountProof, keyProof } = await Identity.proveIdentityOwnership(
         smartAccountClient,
         accountAddress,

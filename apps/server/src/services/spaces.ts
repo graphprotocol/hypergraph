@@ -77,7 +77,7 @@ export interface CreateSpaceParams {
 export interface GetSpaceParams {
   spaceId: string;
   accountAddress: string;
-  appIdentityAddress: string;
+  appIdentityAddress?: string | undefined;
 }
 
 export interface AddAppIdentityToSpacesParams {
@@ -103,9 +103,13 @@ export class SpacesService extends Context.Tag('SpacesService')<
     readonly addAppIdentityToSpaces: (
       params: AddAppIdentityToSpacesParams,
     ) => Effect.Effect<void, DatabaseService.DatabaseError>;
-    readonly listByAppIdentity: (
-      appIdentityAddress: string,
-    ) => Effect.Effect<SpaceListEntry[], DatabaseService.DatabaseError>;
+    readonly listByAppIdentityOrAccount: ({
+      appIdentityAddress,
+      accountAddress,
+    }: {
+      appIdentityAddress?: string | undefined;
+      accountAddress: string;
+    }) => Effect.Effect<SpaceListEntry[], DatabaseService.DatabaseError>;
     readonly getSpace: (
       params: GetSpaceParams,
     ) => Effect.Effect<GetSpaceResult, ResourceNotFoundError | DatabaseService.DatabaseError>;
@@ -141,6 +145,7 @@ export const layer = Effect.gen(function* () {
               keyBoxes: {
                 where: {
                   accountAddress,
+                  appIdentityAddress: null,
                 },
               },
             },
@@ -171,16 +176,30 @@ export const layer = Effect.gen(function* () {
     }));
   });
 
-  const listByAppIdentity = Effect.fn('listByAppIdentity')(function* (appIdentityAddress: string) {
+  const listByAppIdentityOrAccount = Effect.fn('listByAppIdentityOrAccount')(function* ({
+    appIdentityAddress,
+    accountAddress,
+  }: {
+    appIdentityAddress?: string | undefined;
+    accountAddress: string;
+  }) {
     return yield* use((client) =>
       client.space.findMany({
-        where: {
-          appIdentities: {
-            some: {
-              address: appIdentityAddress,
+        where: appIdentityAddress
+          ? {
+              appIdentities: {
+                some: {
+                  address: appIdentityAddress,
+                },
+              },
+            }
+          : {
+              members: {
+                some: {
+                  address: accountAddress,
+                },
+              },
             },
-          },
-        },
         include: {
           appIdentities: {
             select: {
@@ -191,9 +210,15 @@ export const layer = Effect.gen(function* () {
           keys: {
             include: {
               keyBoxes: {
-                where: {
-                  appIdentityAddress,
-                },
+                where: appIdentityAddress
+                  ? {
+                      accountAddress,
+                      appIdentityAddress,
+                    }
+                  : {
+                      accountAddress,
+                      appIdentityAddress: null,
+                    },
               },
             },
           },
@@ -224,10 +249,15 @@ export const layer = Effect.gen(function* () {
           keys: {
             include: {
               keyBoxes: {
-                where: {
-                  accountAddress,
-                  appIdentityAddress,
-                },
+                where: appIdentityAddress
+                  ? {
+                      accountAddress,
+                      appIdentityAddress,
+                    }
+                  : {
+                      accountAddress,
+                      appIdentityAddress: null,
+                    },
                 select: {
                   nonce: true,
                   ciphertext: true,
@@ -534,7 +564,7 @@ export const layer = Effect.gen(function* () {
 
   return {
     listByAccount,
-    listByAppIdentity,
+    listByAppIdentityOrAccount,
     getSpace,
     createSpace,
     addAppIdentityToSpaces,

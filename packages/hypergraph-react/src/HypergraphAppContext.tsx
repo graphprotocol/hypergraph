@@ -209,8 +209,9 @@ export function useHypergraphApp() {
 export function useHypergraphAuth() {
   const authenticated = useSelectorStore(store, (state) => state.context.authenticated);
   const identity = useSelectorStore(store, (state) => state.context.identity);
+  const privyIdentity = useSelectorStore(store, (state) => state.context.privyIdentity);
 
-  return { authenticated, identity };
+  return { authenticated, identity, privyIdentity };
 }
 
 export type HypergraphAppProviderProps = Readonly<{
@@ -230,11 +231,6 @@ const mockStorage = {
   removeItem(_key: string) {},
 };
 
-// 1) a) Get session token from local storage, or
-//    b) Auth with the sync server
-// 2) a)Try to get identity from the sync server, or
-//    b) If identity is not found, create a new identity
-//      (and store it in the sync server)
 export function HypergraphAppProvider({
   storage = typeof window !== 'undefined' ? localStorage : mockStorage,
   syncServerUri = 'https://sync.geobrowser.io',
@@ -250,6 +246,10 @@ export function HypergraphAppProvider({
   const invitations = useSelectorStore(store, (state) => state.context.invitations);
   const repo = useSelectorStore(store, (state) => state.context.repo);
   const identity = useSelectorStore(store, (state) => state.context.identity);
+  const privyIdentity = useSelectorStore(store, (state) => state.context.privyIdentity);
+
+  console.log('identity', identity);
+  console.log('privyIdentity', privyIdentity);
 
   const logout = useCallback(() => {
     websocketConnection?.close();
@@ -265,7 +265,6 @@ export function HypergraphAppProvider({
         type: 'setAuth',
         identity,
       });
-      console.log('Identity set');
     },
     [storage],
   );
@@ -287,19 +286,39 @@ export function HypergraphAppProvider({
           identity,
         });
       }
-      // set render auth check to true so next potential rerender doesn't proc this
+      const privyIdentity = Identity.loadPrivyIdentity(storage);
+      if (privyIdentity) {
+        store.send({
+          type: 'setPrivyAuth',
+          identity: privyIdentity,
+        });
+      }
+
+      // set render auth check to true so next potential rerender doesn't try this again
       initialRenderAuthCheckRef.current = true;
     }
   }, [storage, mapping]);
 
   useEffect(() => {
-    if (!identity) {
+    if (identity === null && privyIdentity === null) {
       setIsConnecting(true);
       return;
     }
 
     const syncServerUrl = new URL(syncServerUri);
-    const syncServerWsUrl = new URL(`/?token=${identity.sessionToken}`, syncServerUrl.toString());
+    let syncServerWsUrl: URL;
+
+    if (identity) {
+      syncServerWsUrl = new URL(`/?token=${identity.sessionToken}`, syncServerUrl.toString());
+    } else if (privyIdentity) {
+      syncServerWsUrl = new URL(
+        `/?privy-identity-token=${privyIdentity.privyIdentityToken}&account-address=${privyIdentity.accountAddress}`,
+        syncServerUrl.toString(),
+      );
+    } else {
+      // This should never happen due to the early returns above, but TypeScript needs this
+      return;
+    }
 
     // Use 'wss:' by default, only use 'ws:' for local development
     const isLocalDev = syncServerUrl.hostname === 'localhost' || syncServerUrl.hostname === '127.0.0.1';
@@ -335,28 +354,38 @@ export function HypergraphAppProvider({
       websocketConnection.removeEventListener('close', onClose);
       websocketConnection.close();
     };
-  }, [identity, syncServerUri]);
+  }, [identity, privyIdentity, syncServerUri]);
 
   // Handle WebSocket messages in a separate effect
   useEffect(() => {
     if (!websocketConnection) return;
-    if (!identity) {
+    if (identity === null && privyIdentity === null) {
       console.error('No identity found');
       return;
     }
-    const encryptionPrivateKey = identity.encryptionPrivateKey;
+    const encryptionPrivateKey = identity?.encryptionPrivateKey || privyIdentity?.encryptionPrivateKey;
     if (!encryptionPrivateKey) {
       console.error('No encryption private key found');
       return;
     }
-    const encryptionPublicKey = identity.encryptionPublicKey;
+    const encryptionPublicKey = identity?.encryptionPublicKey || privyIdentity?.encryptionPublicKey;
     if (!encryptionPublicKey) {
       console.error('No encryption public key found');
       return;
     }
-    const signaturePrivateKey = identity.signaturePrivateKey;
+    const signaturePrivateKey = identity?.signaturePrivateKey || privyIdentity?.signaturePrivateKey;
     if (!signaturePrivateKey) {
       console.error('No signature private key found.');
+      return;
+    }
+    const signaturePublicKey = identity?.signaturePublicKey || privyIdentity?.signaturePublicKey;
+    if (!signaturePublicKey) {
+      console.error('No signature public key found');
+      return;
+    }
+    const accountAddress = identity?.accountAddress || privyIdentity?.accountAddress;
+    if (!accountAddress) {
+      console.error('No account address found');
       return;
     }
 
@@ -523,7 +552,7 @@ export function HypergraphAppProvider({
                 const updateId = uuid();
 
                 const messageToSend = Messages.signedUpdateMessage({
-                  accountAddress: identity.accountAddress,
+                  accountAddress,
                   updateId,
                   spaceId: space.id,
                   message: lastLocalChange,
@@ -630,13 +659,13 @@ export function HypergraphAppProvider({
           }
           case 'account-inbox': {
             // Validate the signature of the inbox corresponds to the current account's identity
-            if (!identity.signaturePrivateKey) {
+            if (signaturePrivateKey) {
               console.error('No signature private key found to process account inbox');
               return;
             }
             const inboxCreator = Inboxes.recoverAccountInboxCreatorKey(response.inbox);
-            if (inboxCreator !== identity.signaturePublicKey) {
-              console.error('Invalid inbox creator', response.inbox, inboxCreator, identity.signaturePublicKey);
+            if (inboxCreator !== signaturePublicKey) {
+              console.error('Invalid inbox creator', response.inbox, inboxCreator, signaturePublicKey);
               return;
             }
 
@@ -713,7 +742,7 @@ export function HypergraphAppProvider({
             const isValid = await Inboxes.validateAccountInboxMessage(
               response.message,
               inbox,
-              identity.accountAddress,
+              accountAddress,
               syncServerUri,
               CHAIN,
               RPC_URL,
@@ -767,7 +796,7 @@ export function HypergraphAppProvider({
           }
           case 'account-inbox-messages': {
             // Validate the signature of the inbox corresponds to the current account's identity
-            if (!identity.signaturePrivateKey) {
+            if (!signaturePrivateKey) {
               console.error('No signature private key found to process account inbox');
               return;
             }
@@ -783,7 +812,7 @@ export function HypergraphAppProvider({
                   return Inboxes.validateAccountInboxMessage(
                     message,
                     inbox,
-                    identity.accountAddress,
+                    accountAddress,
                     syncServerUri,
                     CHAIN,
                     RPC_URL,
@@ -903,7 +932,7 @@ export function HypergraphAppProvider({
     return () => {
       websocketConnection.removeEventListener('message', onMessage);
     };
-  }, [websocketConnection, spaces, identity, syncServerUri]);
+  }, [websocketConnection, spaces, identity, privyIdentity, syncServerUri]);
 
   const createSpaceForContext = useCallback<
     ({ name, smartSessionClient }: { name: string; smartSessionClient?: Connect.SmartSessionClient }) => Promise<string>
@@ -1285,14 +1314,21 @@ export function HypergraphAppProvider({
         accountAddress: string;
       };
     }>) => {
-      if (!identity) {
+      if (!identity && !privyIdentity) {
         throw new Error('No identity   found');
       }
-      const encryptionPrivateKey = identity.encryptionPrivateKey;
-      const encryptionPublicKey = identity.encryptionPublicKey;
-      const signaturePrivateKey = identity.signaturePrivateKey;
-      const signaturePublicKey = identity.signaturePublicKey;
-      if (!encryptionPrivateKey || !encryptionPublicKey || !signaturePrivateKey || !signaturePublicKey) {
+      const encryptionPrivateKey = identity?.encryptionPrivateKey || privyIdentity?.encryptionPrivateKey;
+      const encryptionPublicKey = identity?.encryptionPublicKey || privyIdentity?.encryptionPublicKey;
+      const signaturePrivateKey = identity?.signaturePrivateKey || privyIdentity?.signaturePrivateKey;
+      const signaturePublicKey = identity?.signaturePublicKey || privyIdentity?.signaturePublicKey;
+      const accountAddress = identity?.accountAddress || privyIdentity?.accountAddress;
+      if (
+        !encryptionPrivateKey ||
+        !encryptionPublicKey ||
+        !signaturePrivateKey ||
+        !signaturePublicKey ||
+        !accountAddress
+      ) {
         throw new Error('Missing keys');
       }
       if (!space.state) {
@@ -1310,7 +1346,7 @@ export function HypergraphAppProvider({
       const spaceEvent = await Effect.runPromiseExit(
         SpaceEvents.createInvitation({
           author: {
-            accountAddress: identity.accountAddress,
+            accountAddress,
             signaturePublicKey,
             encryptionPublicKey,
             signaturePrivateKey,
@@ -1347,7 +1383,7 @@ export function HypergraphAppProvider({
       };
       websocketConnection?.send(Messages.serialize(message));
     },
-    [identity, websocketConnection, syncServerUri, appId],
+    [identity, privyIdentity, websocketConnection, syncServerUri, appId],
   );
 
   const getVerifiedIdentityForContext = useCallback(

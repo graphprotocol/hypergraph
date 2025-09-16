@@ -1,6 +1,6 @@
 import type { AnyDocumentId, DocHandle, Repo } from '@automerge/automerge-repo';
 import { createStore, type Store } from '@xstate/store';
-import type { PrivateAppIdentity } from './connect/types.js';
+import type { PrivateAppIdentity, PrivatePrivyAppIdentity } from './connect/types.js';
 import type { DocumentContent } from './entity/types.js';
 import { mergeMessages } from './inboxes/merge-messages.js';
 import type { InboxSenderAuthPolicy } from './inboxes/types.js';
@@ -69,6 +69,7 @@ interface StoreContext {
   };
   authenticated: boolean;
   identity: PrivateAppIdentity | null;
+  privyIdentity: PrivatePrivyAppIdentity | null;
   lastUpdateClock: { [spaceId: string]: number };
   accountInboxes: AccountInboxStorageEntry[];
   mapping: Mapping;
@@ -83,6 +84,7 @@ const initialStoreContext: StoreContext = {
   identities: {},
   authenticated: false,
   identity: null,
+  privyIdentity: null,
   lastUpdateClock: {},
   accountInboxes: [],
   mapping: {},
@@ -145,6 +147,10 @@ type StoreEvent =
   | {
       type: 'setAuth';
       identity: PrivateAppIdentity;
+    }
+  | {
+      type: 'setPrivyAuth';
+      identity: PrivatePrivyAppIdentity;
     }
   | {
       type: 'resetAuth';
@@ -534,12 +540,22 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         authenticated: true,
         // TODO: remove hard-coded account address and use the one from the identity
         identity: { ...event.identity },
+        privyIdentity: null,
+      };
+    },
+    setPrivyAuth: (context, event: { identity: PrivatePrivyAppIdentity }) => {
+      return {
+        ...context,
+        authenticated: true,
+        privyIdentity: { ...event.identity },
+        identity: null,
       };
     },
     resetAuth: (context) => {
       return {
         ...context,
         identity: null,
+        privyIdentity: null,
         authenticated: false,
       };
     },
