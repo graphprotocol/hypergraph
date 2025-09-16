@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.6.5
+### Patch Changes
+
+- b780f76: add privy authentication functionality for internal apps
+
 ## 0.6.4
 ### Patch Changes
 

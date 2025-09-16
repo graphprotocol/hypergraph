@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.7.1
+### Patch Changes
+
+- b780f76: add privy authentication functionality for internal apps
+- Updated dependencies [b780f76]
+  - @graphprotocol/hypergraph@0.6.5
+
 ## 0.7.0
 ### Minor Changes
 
