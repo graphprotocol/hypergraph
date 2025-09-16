@@ -49,6 +49,7 @@ function Login() {
       const rpcUrl = import.meta.env.VITE_HYPERGRAPH_RPC_URL;
 
       await PrivyAuth.login({
+        // @ts-expect-error incompatible viem types
         walletClient,
         signer,
         syncServerUri,
