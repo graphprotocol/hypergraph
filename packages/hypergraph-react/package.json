@@ -47,7 +47,7 @@
     "@automerge/automerge": "^3.1.1",
     "@automerge/automerge-repo": "^2.2.0",
     "@automerge/automerge-repo-react-hooks": "^2.2.0",
-    "@graphprotocol/grc-20": "^0.24.1",
+    "@graphprotocol/grc-20": "^0.25.2",
     "@noble/hashes": "^1.8.0",
     "@tanstack/react-query": "^5.85.5",
     "effect": "^3.17.9",
