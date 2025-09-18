@@ -116,6 +116,7 @@ export type HypergraphAppCtx = {
     redirectFn: (url: URL) => void;
   }): void;
   processConnectAuthSuccess(params: { storage: Identity.Storage; ciphertext: string; nonce: string }): void;
+  syncServerUri: string;
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
@@ -200,6 +201,7 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
   processConnectAuthSuccess() {
     throw new Error('processConnectAuthSuccess is missing');
   },
+  syncServerUri: '',
 });
 
 export function useHypergraphApp() {
@@ -1553,6 +1555,7 @@ export function HypergraphAppProvider({
         ensureSpaceInbox: ensureSpaceInboxForContext,
         redirectToConnect: redirectToConnectForContext,
         processConnectAuthSuccess: processConnectAuthSuccessForContext,
+        syncServerUri,
       }}
     >
       <QueryClientProvider client={queryClient}>

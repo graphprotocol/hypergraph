@@ -1,5 +1,10 @@
 import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp, useSpaces } from '@graphprotocol/hypergraph-react';
+import {
+  useHypergraphApp,
+  _usePrivyAuthCreatePrivateSpace as usePrivyAuthCreatePrivateSpace,
+  _usePrivyAuthCreatePublicSpace as usePrivyAuthCreatePublicSpace,
+  useSpaces,
+} from '@graphprotocol/hypergraph-react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect, useState } from 'react';
@@ -18,17 +23,12 @@ function Index() {
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const { data: privateSpaces } = useSpaces({ mode: 'private' });
   const [spaceName, setSpaceName] = useState('');
+  const { createPrivateSpace, isLoading: isCreatingPrivateSpace } = usePrivyAuthCreatePrivateSpace();
+  const { createPublicSpace, isLoading: isCreatingPublicSpace } = usePrivyAuthCreatePublicSpace();
 
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
-  const {
-    createSpace,
-    listInvitations,
-    invitations,
-    acceptInvitation,
-    createAccountInbox,
-    getOwnAccountInboxes,
-    isConnecting,
-  } = useHypergraphApp();
+  const { listInvitations, invitations, acceptInvitation, createAccountInbox, getOwnAccountInboxes, isConnecting } =
+    useHypergraphApp();
 
   useEffect(() => {
     if (!isConnecting) {
@@ -36,6 +36,7 @@ function Index() {
       getOwnAccountInboxes();
     }
   }, [isConnecting, listInvitations, getOwnAccountInboxes]);
+  const [spaceType, setSpaceType] = useState<'private' | 'public'>('private');
 
   if (isConnecting) {
     return <div className="flex justify-center items-center h-screen">Loading …</div>;
@@ -76,15 +77,23 @@ function Index() {
       </div>
       <div className="flex flex-row gap-2 justify-between items-center">
         <Input value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
+        <select
+          className="c-input shrink-0"
+          value={spaceType}
+          onChange={(e) => setSpaceType(e.target.value as 'private' | 'public')}
+        >
+          <option value="private">Private</option>
+          <option value="public">Public</option>
+        </select>
         <Button
-          disabled={true} // disabled until we have delegation for creating a space
+          disabled={isCreatingPrivateSpace || isCreatingPublicSpace}
           onClick={async (event) => {
             event.preventDefault();
-            // const smartSessionClient = await getSmartSessionClient();
-            // if (!smartSessionClient) {
-            //   throw new Error('Missing smartSessionClient');
-            // }
-            createSpace({ name: spaceName });
+            if (spaceType === 'private') {
+              await createPrivateSpace({ name: spaceName });
+            } else {
+              await createPublicSpace({ name: spaceName });
+            }
             setSpaceName('');
           }}
         >
