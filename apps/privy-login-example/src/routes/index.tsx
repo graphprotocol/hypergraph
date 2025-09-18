@@ -25,7 +25,6 @@ function Index() {
   const [spaceName, setSpaceName] = useState('');
   const { createPrivateSpace, isLoading: isCreatingPrivateSpace } = usePrivyAuthCreatePrivateSpace();
   const { createPublicSpace, isLoading: isCreatingPublicSpace } = usePrivyAuthCreatePublicSpace();
-  console.log({ isCreatingPrivateSpace, isCreatingPublicSpace });
 
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
   const { listInvitations, invitations, acceptInvitation, createAccountInbox, getOwnAccountInboxes, isConnecting } =
