@@ -22,7 +22,7 @@
     "@tanstack/react-router": "^1.131.27",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "effect": "^3.17.9",
+    "effect": "^3.17.13",
     "lucide-react": "^0.541.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
