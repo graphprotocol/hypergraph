@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.6.6
+### Patch Changes
+
+- 55a6403: upgrade grc-20 dependency
+
 ## 0.6.5
 ### Patch Changes
 

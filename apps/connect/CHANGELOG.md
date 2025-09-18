@@ -1,5 +1,14 @@
 # connect
 
+## 0.2.11
+### Patch Changes
+
+- 55a6403: upgrade grc-20 dependency
+- Updated dependencies [55a6403]
+- Updated dependencies [b7cc2fa]
+  - @graphprotocol/hypergraph-react@0.7.2
+  - @graphprotocol/hypergraph@0.6.6
+
 ## 0.2.10
 ### Patch Changes
 

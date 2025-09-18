@@ -1,5 +1,13 @@
 # @graphprotocol/hypergraph-react
 
+## 0.7.2
+### Patch Changes
+
+- 55a6403: upgrade grc-20 dependency
+- b7cc2fa: add privy auth based createSpace hooks
+- Updated dependencies [55a6403]
+  - @graphprotocol/hypergraph@0.6.6
+
 ## 0.7.1
 ### Patch Changes
 
