@@ -50,7 +50,7 @@
     "@graphprotocol/grc-20": "^0.25.2",
     "@noble/hashes": "^1.8.0",
     "@tanstack/react-query": "^5.85.5",
-    "effect": "^3.17.9",
+    "effect": "^3.17.13",
     "graphql-request": "^7.2.0",
     "siwe": "^3.0.0",
     "uuid": "^11.1.0",

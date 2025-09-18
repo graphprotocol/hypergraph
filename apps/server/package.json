@@ -18,7 +18,7 @@
     "@prisma/client": "^6.14.0",
     "@privy-io/server-auth": "^1.32.0",
     "cors": "^2.8.5",
-    "effect": "^3.17.9",
+    "effect": "^3.17.13",
     "prisma": "^6.14.0"
   },
   "devDependencies": {
