@@ -10,9 +10,9 @@
     "prebuild": "prisma generate"
   },
   "dependencies": {
-    "@effect/opentelemetry": "^0.56.4",
-    "@effect/platform": "^0.90.0",
-    "@effect/platform-node": "^0.96.0",
+    "@effect/opentelemetry": "^0.56.6",
+    "@effect/platform": "^0.90.10",
+    "@effect/platform-node": "^0.96.1",
     "@graphprotocol/hypergraph": "workspace:*",
     "@noble/hashes": "^1.8.0",
     "@prisma/client": "^6.14.0",
