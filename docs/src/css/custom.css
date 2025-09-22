@@ -27,8 +27,9 @@
   --ifm-color-primary-darkest: #4d34c4;
 
   /* Typography */
-  --ifm-font-family-base: "Euclid Circular A", "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --ifm-font-family-base: "Euclid Circular A", "Poppins", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+    "Open Sans", "Helvetica Neue", sans-serif;
   --ifm-heading-font-weight: 700;
   --ifm-font-weight-bold: 600;
 
@@ -64,7 +65,8 @@ body {
 
 /* Smooth transition for theme switch & interactive elements */
 * {
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 /* Custom scrollbar – slim & subtle */
@@ -94,17 +96,24 @@ body {
 
 /* Buttons (using Infima classes) */
 .button--primary {
-  background: linear-gradient(135deg, var(--astro-blue) 0%, var(--graph-purple) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--astro-blue) 0%,
+    var(--graph-purple) 100%
+  );
   color: #fff;
   border: none;
 }
 .button--primary:hover {
-  background: linear-gradient(135deg, var(--astro-blue) -20%, var(--graph-purple) 120%);
+  background: linear-gradient(
+    135deg,
+    var(--astro-blue) -20%,
+    var(--graph-purple) 120%
+  );
 }
 
 /* Navbar translucency & blur */
 .navbar {
-  backdrop-filter: blur(12px);
   background-color: var(--ifm-navbar-background-color);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -194,7 +203,7 @@ blockquote {
   code
   .token.keyword,
 .plugin-docs .plugin-id-default [data-path*="api-reference"] .token.keyword {
-  color: #c792ea; 
+  color: #c792ea;
 }
 
 .plugin-docs
@@ -204,7 +213,7 @@ blockquote {
   code
   .token.type,
 .plugin-docs .plugin-id-default [data-path*="api-reference"] .token.type {
-  color: #82aaff; 
+  color: #82aaff;
 }
 
 .plugin-docs
@@ -214,7 +223,7 @@ blockquote {
   code
   .token.string,
 .plugin-docs .plugin-id-default [data-path*="api-reference"] .token.string {
-  color: #c3e88d; 
+  color: #c3e88d;
 }
 
 .plugin-docs
@@ -224,7 +233,7 @@ blockquote {
   code
   .token.property,
 .plugin-docs .plugin-id-default [data-path*="api-reference"] .token.property {
-  color: #ff9cac; 
+  color: #ff9cac;
 }
 
 .plugin-docs
