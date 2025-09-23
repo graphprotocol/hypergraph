@@ -1,15 +1,17 @@
-import { useCreateEntity, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
+import { useCreateEntityNew, useQueryNew, useSpace } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
-import { User } from '../schema.js';
+import { UserNew } from '../schema.js';
 import { Button } from './ui/button.js';
 import { Input } from './ui/input.js';
 import { UserEntry } from './user-entry.js';
 
 export const Users = () => {
-  const { data: users } = useQuery(User, { mode: 'private' });
+  const { data: users } = useQueryNew(UserNew, { mode: 'private' });
   const { ready: spaceReady } = useSpace({ mode: 'private' });
-  const createEntity = useCreateEntity(User);
+  const createEntityNew = useCreateEntityNew(UserNew);
   const [newUserName, setNewUserName] = useState('');
+
+  console.log(users);
 
   if (!spaceReady) {
     return <div>Loading space...</div>;
@@ -22,7 +24,9 @@ export const Users = () => {
         <Input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} />
         <Button
           onClick={() => {
-            createEntity({ name: newUserName });
+            // createEntity({ name: newUserName });
+            const user = createEntityNew({ name: newUserName });
+            console.log(user);
             setNewUserName('');
           }}
         >

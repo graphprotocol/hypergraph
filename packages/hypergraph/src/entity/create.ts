@@ -2,7 +2,8 @@ import type { DocHandle } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
 import { generateId } from '../utils/generateId.js';
 import { isRelationField } from '../utils/isRelationField.js';
-import { findOne } from './findOne.js';
+import { encodeToGrc20Json } from './entity-new.js';
+import { findOne, findOneNew } from './findOne.js';
 import type { AnyNoContext, DocumentContent, DocumentRelation, Entity, Insert } from './types.js';
 
 /**
@@ -54,5 +55,23 @@ export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
     });
 
     return findOne(handle, type)(entityId) as Entity<S>;
+  };
+};
+
+export const createNew = <const S extends Schema.Schema.AnyNoContext>(handle: DocHandle<DocumentContent>, type: S) => {
+  // TODO: return type
+  return (data: Readonly<Schema.Schema.Type<S>>) => {
+    const entityId = generateId();
+    const encoded = encodeToGrc20Json(type, { ...data, id: entityId });
+
+    handle.change((doc) => {
+      doc.entities ??= {};
+      doc.entities[entityId] = {
+        ...encoded,
+        __deleted: false,
+      };
+    });
+
+    return findOneNew(handle, type)(entityId);
   };
 };

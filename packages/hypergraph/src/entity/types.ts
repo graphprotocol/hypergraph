@@ -24,6 +24,10 @@ export type Entity<S extends AnyNoContext> = Schema.Schema.Type<S> & {
   // __version: string;
 };
 
+export type EntityNew<S extends Schema.Schema.AnyNoContext> = Schema.Schema.Type<S> & {
+  id: string;
+};
+
 export type EntityWithRelation<S extends AnyNoContext> = Entity<S> & {
   _relation: { id: string } | undefined;
 };
