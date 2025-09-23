@@ -1,31 +1,33 @@
 import {
-  useCreateEntity,
+  useCreateEntityNew,
   useDeleteEntity,
-  useQuery,
+  useQueryNew,
   useRemoveRelation,
   useSpace,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import { Todo, User } from '../schema';
+import { Todo, TodoNew, UserNew } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const { data: todos } = useQuery(Todo, {
+  const { data: todos } = useQueryNew(TodoNew, {
     mode: 'private',
-    include: { assignees: {} },
+    // include: { assignees: {} },
     // filter: { or: [{ name: { startsWith: 'aa' } }, { name: { is: 'sdasd' } }] },
   });
-  const { data: users } = useQuery(User, { mode: 'private' });
+  const { data: users } = useQueryNew(UserNew, { mode: 'private' });
   const { ready: spaceReady } = useSpace({ mode: 'private' });
-  const createEntity = useCreateEntity(Todo);
+  const createEntity = useCreateEntityNew(TodoNew);
   const updateEntity = useUpdateEntity(Todo);
   const deleteEntity = useDeleteEntity();
   const removeRelation = useRemoveRelation();
   const [newTodoName, setNewTodoName] = useState('');
   const [assignees, setAssignees] = useState<{ value: string; label: string }[]>([]);
+
+  console.log(todos);
 
   useEffect(() => {
     setAssignees((prevFilteredAssignees) => {
@@ -54,7 +56,7 @@ export const Todos = () => {
             createEntity({
               name: newTodoName,
               completed: false,
-              assignees: assignees.map(({ value }) => value),
+              // assignees: assignees.map(({ value }) => value),
             });
             setNewTodoName('');
           }}
@@ -65,7 +67,7 @@ export const Todos = () => {
       {todos.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
-          {todo.assignees.length > 0 && (
+          {/* {todo.assignees.length > 0 && (
             <span className="text-xs text-gray-500">
               Assigned to:{' '}
               {todo.assignees.map((assignee) => (
@@ -85,7 +87,7 @@ export const Todos = () => {
                 </span>
               ))}
             </span>
-          )}
+          )} */}
           <input
             type="checkbox"
             checked={todo.completed}

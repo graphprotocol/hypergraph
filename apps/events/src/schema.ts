@@ -1,4 +1,4 @@
-import { Entity, Type } from '@graphprotocol/hypergraph';
+import { Entity, EntityNew, Id, Type, TypeNew } from '@graphprotocol/hypergraph';
 
 export class User extends Entity.Class<User>('User')({
   name: Type.String,
@@ -41,3 +41,44 @@ export class Todo3 extends Entity.Class<Todo3>('Todo3')({
   completed: Type.Boolean,
   description: Type.String,
 }) {}
+
+export const UserNew = EntityNew(
+  {
+    name: TypeNew.String,
+  },
+  {
+    types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+    properties: {
+      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    },
+  },
+);
+
+export const TodoNew = EntityNew(
+  {
+    name: TypeNew.String,
+    completed: TypeNew.Boolean,
+    // assignees: TypeNew.Relation(UserNew),
+  },
+  {
+    types: [Id('44fe82a9-e4c2-4330-a395-ce85ed78e421')],
+    properties: {
+      name: Id('c668aa67-bbca-4b2c-908c-9c5599035eab'),
+      completed: Id('71e7654f-2623-4794-88fb-841c8f3dd9b4'),
+    },
+  },
+);
+
+export const JobOfferNew = EntityNew(
+  {
+    name: TypeNew.String,
+    salary: TypeNew.Number,
+  },
+  {
+    types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+    properties: {
+      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      salary: Id('baa36ac9-78ac-4cf7-8394-6b2d3006bebe'),
+    },
+  },
+);

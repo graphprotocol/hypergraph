@@ -1,19 +1,20 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
-import * as Schema from 'effect/Schema';
+import * as Option from 'effect/Option';
+import type * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
 import { deepMerge } from '../utils/internal/deep-merge.js';
-import { isRelationField } from '../utils/isRelationField.js';
 import { canonicalize } from '../utils/jsc.js';
-import { decodedEntitiesCache, type DecodedEntitiesCacheEntry, type QueryEntry } from './decodedEntitiesCache.js';
+import { decodedEntitiesCache, type DecodedEntitiesCacheEntry, type QueryEntry } from './decodedEntitiesCacheNew.js';
+import { decodeFromGrc20Json } from './entity-new.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
-import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
+import { TypeIdsSymbol } from './internal-new.js';
 import type {
-  AnyNoContext,
   CrossFieldFilter,
   DocumentContent,
-  Entity,
   EntityFieldFilter,
   EntityFilter,
+  EntityNew,
   EntityNumberFilter,
   EntityStringFilter,
 } from './types.js';
@@ -81,12 +82,13 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         }
 
         const oldDecodedEntry = cacheEntry.entities.get(entityId);
-        const relations = getEntityRelations(entityId, cacheEntry.type, doc, includeFromAllQueries);
+        // const relations = getEntityRelations(entityId, cacheEntry.type, doc, includeFromAllQueries);
         let decoded: unknown | undefined;
         try {
-          decoded = cacheEntry.decoder({
+          // decoded = cacheEntry.decoder({
+          decoded = decodeFromGrc20Json(cacheEntry.type, {
             ...entity,
-            ...relations,
+            // ...relations,
             id: entityId,
           });
           cacheEntry.entities.set(entityId, decoded);
@@ -97,44 +99,43 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 
         if (oldDecodedEntry) {
           // collect all the Ids for relation entries in the `oldDecodedEntry`
-          const deletedRelationIds = new Set<string>();
-          for (const [, value] of Object.entries(oldDecodedEntry)) {
-            if (Array.isArray(value)) {
-              for (const relationEntity of value) {
-                deletedRelationIds.add(relationEntity.id);
-              }
-            }
-          }
-
+          // const deletedRelationIds = new Set<string>();
+          // for (const [, value] of Object.entries(oldDecodedEntry)) {
+          //   if (Array.isArray(value)) {
+          //     for (const relationEntity of value) {
+          //       deletedRelationIds.add(relationEntity.id);
+          //     }
+          //   }
+          // }
           // it's fine to remove all of them since they are re-added below
-          for (const deletedRelationId of deletedRelationIds) {
-            const deletedRelationEntry = entityRelationParentsMap.get(deletedRelationId);
-            if (deletedRelationEntry) {
-              deletedRelationEntry.set(cacheEntry, (deletedRelationEntry.get(cacheEntry) ?? 0) - 1);
-              if (deletedRelationEntry.get(cacheEntry) === 0) {
-                deletedRelationEntry.delete(cacheEntry);
-              }
-              if (deletedRelationEntry.size === 0) {
-                entityRelationParentsMap.delete(deletedRelationId);
-              }
-            }
-          }
+          // for (const deletedRelationId of deletedRelationIds) {
+          //   const deletedRelationEntry = entityRelationParentsMap.get(deletedRelationId);
+          //   if (deletedRelationEntry) {
+          //     deletedRelationEntry.set(cacheEntry, (deletedRelationEntry.get(cacheEntry) ?? 0) - 1);
+          //     if (deletedRelationEntry.get(cacheEntry) === 0) {
+          //       deletedRelationEntry.delete(cacheEntry);
+          //     }
+          //     if (deletedRelationEntry.size === 0) {
+          //       entityRelationParentsMap.delete(deletedRelationId);
+          //     }
+          //   }
+          // }
         }
 
         if (decoded) {
           for (const [, value] of Object.entries(decoded)) {
-            if (Array.isArray(value)) {
-              for (const relationEntity of value) {
-                let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-                if (relationParentEntry) {
-                  relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
-                } else {
-                  relationParentEntry = new Map();
-                  entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-                  relationParentEntry.set(cacheEntry, 1);
-                }
-              }
-            }
+            // if (Array.isArray(value)) {
+            //   for (const relationEntity of value) {
+            //     let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+            //     if (relationParentEntry) {
+            //       relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
+            //     } else {
+            //       relationParentEntry = new Map();
+            //       entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+            //       relationParentEntry.set(cacheEntry, 1);
+            //     }
+            //   }
+            // }
           }
         }
 
@@ -235,16 +236,15 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 /**
  * Queries for a list of entities of the given type from the repo.
  */
-export function findMany<const S extends AnyNoContext>(
+export function findManyNew<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
-): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
-  const decode = Schema.decodeUnknownSync(type);
-  // TODO: what's the right way to get the name of the type?
-  // @ts-expect-error name is defined
-  const typeName = type.name;
+): { entities: Readonly<Array<EntityNew<S>>>; corruptEntityIds: Readonly<Array<string>> } {
+  const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const doc = handle.doc();
   if (!doc) {
@@ -252,7 +252,7 @@ export function findMany<const S extends AnyNoContext>(
   }
   const entities = doc.entities ?? {};
   const corruptEntityIds: string[] = [];
-  const filtered: Array<Entity<S>> = [];
+  const filtered: Array<EntityNew<S>> = [];
 
   const evaluateFilter = <T>(fieldFilter: EntityFieldFilter<T>, fieldValue: T): boolean => {
     if ('not' in fieldFilter || 'or' in fieldFilter) {
@@ -313,7 +313,7 @@ export function findMany<const S extends AnyNoContext>(
 
   const evaluateCrossFieldFilter = (
     crossFieldFilter: CrossFieldFilter<Schema.Schema.Type<S>>,
-    entity: Entity<S>,
+    entity: EntityNew<S>,
   ): boolean => {
     // evaluate regular field filters with AND semantics
     for (const fieldName in crossFieldFilter) {
@@ -340,7 +340,7 @@ export function findMany<const S extends AnyNoContext>(
     return true;
   };
 
-  const evaluateEntityFilter = (entityFilter: EntityFilter<Schema.Schema.Type<S>>, entity: Entity<S>): boolean => {
+  const evaluateEntityFilter = (entityFilter: EntityFilter<Schema.Schema.Type<S>>, entity: EntityNew<S>): boolean => {
     // handle top-level NOT operator
     if ('not' in entityFilter && entityFilter.not) {
       return !evaluateCrossFieldFilter(entityFilter.not, entity);
@@ -357,10 +357,17 @@ export function findMany<const S extends AnyNoContext>(
 
   for (const id in entities) {
     const entity = entities[id];
-    if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
-      const relations = getEntityRelations(id, type, doc, include);
+    if (
+      hasValidTypesProperty(entity) &&
+      typeIds.every((typeId) => {
+        return entity['@@types@@'].includes(typeId);
+      })
+    ) {
+      // const relations = getEntityRelations(id, type, doc, include);
       try {
-        const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
+        // const decoded = { ...decodeFromGrc20Json(type, { ...entity, ...relations, id }) };
+        const decoded = { ...decodeFromGrc20Json(type, { ...entity, id }) };
+
         if (filter) {
           if (evaluateEntityFilter(filter, decoded)) {
             // injecting the schema to the entity to be able to access it in the preparePublish function
@@ -390,25 +397,24 @@ export function findMany<const S extends AnyNoContext>(
 
 const stableEmptyArray: Array<unknown> = [];
 
-export type FindManySubscription<S extends AnyNoContext> = {
+export type FindManySubscriptionNew<S extends Schema.Schema.AnyNoContext> = {
   subscribe: (callback: () => void) => () => void;
-  getEntities: () => Readonly<Array<Entity<S>>>;
+  getEntities: () => Readonly<Array<EntityNew<S>>>;
 };
 
-export function subscribeToFindMany<const S extends AnyNoContext>(
+export function subscribeToFindManyNew<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
-): FindManySubscription<S> {
+): FindManySubscriptionNew<S> {
   const queryKey = filter ? canonicalize(filter) : 'all';
-  const decode = Schema.decodeUnknownSync(type);
-  // TODO: what's the right way to get the name of the type?
-  // @ts-expect-error name is defined
-  const typeName = type.name;
+  const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const getEntities = () => {
-    const cacheEntry = decodedEntitiesCache.get(typeName);
+    const cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
     if (!cacheEntry) return stableEmptyArray;
 
     const query = cacheEntry.queries.get(queryKey);
@@ -418,7 +424,8 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       return query.data;
     }
 
-    const { entities } = findMany(handle, type, filter, include);
+    const { entities } = findManyNew(handle, type, filter, include);
+    console.log('getEntities', entities);
 
     for (const entity of entities) {
       cacheEntry?.entities.set(entity.id, entity);
@@ -432,15 +439,15 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     return query.data;
   };
 
-  const allTypes = new Set<S>();
-  for (const [_key, field] of Object.entries(type.fields)) {
-    if (isRelationField(field)) {
-      allTypes.add(field as S);
-    }
-  }
+  // const allTypes = new Set<S>();
+  // for (const [_key, field] of Object.entries(type.fields)) {
+  //   if (isRelationField(field)) {
+  //     allTypes.add(field as S);
+  //   }
+  // }
 
   const subscribe = (callback: () => void) => {
-    let cacheEntry = decodedEntitiesCache.get(typeName);
+    let cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
 
     if (!cacheEntry) {
       const entitiesMap = new Map();
@@ -454,14 +461,13 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       });
 
       cacheEntry = {
-        decoder: decode,
         type,
         entities: entitiesMap,
         queries,
         isInvalidated: true,
       };
 
-      decodedEntitiesCache.set(typeName, cacheEntry);
+      decodedEntitiesCache.set(canonicalize(typeIds), cacheEntry);
     }
 
     let query = cacheEntry.queries.get(queryKey);
@@ -481,7 +487,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     }
 
     return () => {
-      const cacheEntry = decodedEntitiesCache.get(typeName);
+      const cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
       if (cacheEntry) {
         // first cleanup the queries
         const query = cacheEntry.queries.get(queryKey);
@@ -496,14 +502,14 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
           entityRelationParentsMap.forEach((relationCacheEntries, key) => {
             for (const [relationCacheEntry, counter] of relationCacheEntries) {
               if (relationCacheEntry === cacheEntry && counter === 0) {
-                relationCacheEntries.delete(cacheEntry);
+                // relationCacheEntries.delete(cacheEntry);
               }
             }
             if (relationCacheEntries.size === 0) {
               entityRelationParentsMap.delete(key);
             }
           });
-          decodedEntitiesCache.delete(typeName);
+          decodedEntitiesCache.delete(canonicalize(typeIds));
         }
       }
 
