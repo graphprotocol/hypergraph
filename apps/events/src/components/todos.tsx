@@ -56,7 +56,7 @@ export const Todos = () => {
             createEntity({
               name: newTodoName,
               completed: false,
-              // assignees: assignees.map(({ value }) => value),
+              assignees: assignees.map(({ value }) => value),
             });
             setNewTodoName('');
           }}

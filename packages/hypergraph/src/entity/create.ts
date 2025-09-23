@@ -7,6 +7,22 @@ import { findOne, findOneNew } from './findOne.js';
 import type { AnyNoContext, DocumentContent, DocumentRelation, Entity, Insert } from './types.js';
 
 /**
+ * Type utility to transform relation fields to accept string arrays instead of their typed values
+ * This specifically targets TypeNew.Relation fields which are arrays of objects
+ */
+type WithRelationsAsStringArrays<T> = {
+  [K in keyof T]: T[K] extends readonly (infer U)[]
+    ? U extends object
+      ? string[]
+      : T[K]
+    : T[K] extends (infer U)[]
+      ? U extends object
+        ? string[]
+        : T[K]
+      : T[K];
+};
+
+/**
  * Creates an entity model of given type and stores it in the repo.
  */
 export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentContent>, type: S) => {
@@ -60,7 +76,7 @@ export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
 
 export const createNew = <const S extends Schema.Schema.AnyNoContext>(handle: DocHandle<DocumentContent>, type: S) => {
   // TODO: return type
-  return (data: Readonly<Schema.Schema.Type<S>>) => {
+  return (data: Readonly<WithRelationsAsStringArrays<Schema.Schema.Type<S>>>) => {
     const entityId = generateId();
     const encoded = encodeToGrc20Json(type, { ...data, id: entityId });
 

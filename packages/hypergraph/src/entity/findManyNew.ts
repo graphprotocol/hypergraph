@@ -247,6 +247,7 @@ export function findManyNew<const S extends Schema.Schema.AnyNoContext>(
   );
 
   const doc = handle.doc();
+  console.log('doc', doc);
   if (!doc) {
     return { entities: [], corruptEntityIds: [] };
   }
