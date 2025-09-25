@@ -27,8 +27,6 @@ export const Todos = () => {
   const [newTodoName, setNewTodoName] = useState('');
   const [assignees, setAssignees] = useState<{ value: string; label: string }[]>([]);
 
-  console.log(todos);
-
   useEffect(() => {
     setAssignees((prevFilteredAssignees) => {
       // filter out assignees that are not in the users array whenever users change

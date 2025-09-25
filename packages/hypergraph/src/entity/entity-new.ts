@@ -19,7 +19,10 @@ import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
  * ```
  */
 export function Entity<
-  T extends Record<string, (propertyId: string) => Schema.Schema<any>>,
+  T extends Record<
+    string,
+    (propertyId: string) => Schema.Schema<any> | Schema.PropertySignature<any, any, any, any, any, any, any>
+  >,
   P extends Record<keyof T, string>,
 >(
   schemaTypes: T,
@@ -30,7 +33,8 @@ export function Entity<
 ): Schema.Struct<{
   [K in keyof T]: ReturnType<T[K]> & { id: string };
 }> {
-  const properties: Record<string, Schema.Schema<any>> = {};
+  const properties: Record<string, Schema.Schema<any> | Schema.PropertySignature<any, any, any, any, any, any, any>> =
+    {};
 
   for (const [key, schemaType] of Object.entries(schemaTypes)) {
     const propertyId = mapping.properties[key as keyof P];
