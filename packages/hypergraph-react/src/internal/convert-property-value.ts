@@ -1,9 +1,10 @@
-import { type Entity, TypeUtils } from '@graphprotocol/hypergraph';
+import { TypeUtils } from '@graphprotocol/hypergraph';
+import type * as Schema from 'effect/Schema';
 
 export const convertPropertyValue = (
   property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
   key: string,
-  type: Entity.AnyNoContext,
+  type: Schema.Schema.AnyNoContext,
 ) => {
   if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.boolean !== undefined) {
     return Boolean(property.boolean);

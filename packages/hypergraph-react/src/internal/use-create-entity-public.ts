@@ -1,5 +1,5 @@
 import { Graph, Id, type PropertiesParam, type RelationsParam } from '@graphprotocol/grc-20';
-import type { Connect, Entity } from '@graphprotocol/hypergraph';
+import type { Connect } from '@graphprotocol/hypergraph';
 import { store, TypeUtils } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
@@ -10,7 +10,7 @@ type CreateEntityPublicParams = {
   space: string;
 };
 
-export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
+export function useCreateEntityPublic<const S extends Schema.Schema.AnyNoContext>(
   type: S,
   { space }: CreateEntityPublicParams,
 ) {
@@ -18,7 +18,7 @@ export function useCreateEntityPublic<const S extends Entity.AnyNoContext>(
   const queryClient = useQueryClient();
 
   return async (
-    data: Readonly<Schema.Schema.Type<Entity.Insert<S>>>,
+    data: Readonly<Schema.Schema.Type<S>>,
     { walletClient }: { walletClient: Connect.SmartSessionClient },
     // TODO: return the entity with this type: Promise<Entity.Entity<S>>
   ) => {

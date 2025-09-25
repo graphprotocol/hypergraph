@@ -1,26 +1,26 @@
 import {
-  useCreateEntityNew,
+  useCreateEntity,
   useDeleteEntity,
-  useQueryNew,
+  useQuery,
   useRemoveRelation,
   useSpace,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import { Todo, TodoNew, UserNew } from '../schema';
+import { Todo, User } from '../schema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const { data: todos } = useQueryNew(TodoNew, {
+  const { data: todos } = useQuery(Todo, {
     mode: 'private',
     include: { assignees: {} },
     // filter: { or: [{ name: { startsWith: 'aa' } }, { name: { is: 'sdasd' } }] },
   });
-  const { data: users } = useQueryNew(UserNew, { mode: 'private' });
+  const { data: users } = useQuery(User, { mode: 'private' });
   const { ready: spaceReady } = useSpace({ mode: 'private' });
-  const createEntity = useCreateEntityNew(TodoNew);
+  const createEntity = useCreateEntity(Todo);
   const updateEntity = useUpdateEntity(Todo);
   const deleteEntity = useDeleteEntity();
   const removeRelation = useRemoveRelation();

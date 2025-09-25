@@ -1,9 +1,9 @@
-import type { Entity, Id } from '@graphprotocol/hypergraph';
+import type { Id } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { useEntityPrivate } from '../internal/use-entity-private.js';
 import { useEntityPublic } from '../internal/use-entity-public.js';
 
-export function useEntity<const S extends Entity.AnyNoContext>(
+export function useEntity<const S extends Schema.Schema.AnyNoContext>(
   type: S,
   params: {
     id: string | Id;

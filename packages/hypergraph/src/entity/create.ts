@@ -6,13 +6,13 @@ import { PropertyIdSymbol } from '../constants.js';
 import { generateId } from '../utils/generateId.js';
 import { isRelation } from '../utils/isRelation.js';
 import { isRelationField } from '../utils/isRelationField.js';
-import { encodeToGrc20Json } from './entity-new.js';
-import { findOne, findOneNew } from './findOne.js';
-import type { AnyNoContext, DocumentContent, DocumentRelation, Entity, EntityNew, Insert } from './types.js';
+import { encodeToGrc20Json } from './entity.js';
+import { findOne } from './findOne.js';
+import type { AnyNoContext, DocumentContent, DocumentRelation, Entity, Insert } from './types.js';
 
 /**
  * Type utility to transform relation fields to accept string arrays instead of their typed values
- * This specifically targets TypeNew.Relation fields which are arrays of objects
+ * This specifically targets Type.Relation fields which are arrays of objects
  */
 type WithRelationsAsStringArrays<T> = {
   [K in keyof T]: T[K] extends readonly (infer U)[]
@@ -79,7 +79,7 @@ export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
 };
 
 export const createNew = <const S extends Schema.Schema.AnyNoContext>(handle: DocHandle<DocumentContent>, type: S) => {
-  return (data: Readonly<WithRelationsAsStringArrays<Schema.Schema.Type<S>>>): EntityNew<S> => {
+  return (data: Readonly<WithRelationsAsStringArrays<Schema.Schema.Type<S>>>): Entity<S> => {
     const entityId = generateId();
     const encoded = encodeToGrc20Json(type, { ...data, id: entityId });
 
@@ -116,6 +116,6 @@ export const createNew = <const S extends Schema.Schema.AnyNoContext>(handle: Do
       }
     });
 
-    return findOneNew(handle, type)(entityId) as EntityNew<S>;
+    return findOne(handle, type)(entityId) as Entity<S>;
   };
 };

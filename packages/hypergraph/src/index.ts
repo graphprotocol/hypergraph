@@ -1,9 +1,8 @@
 export { Id } from '@graphprotocol/grc-20';
 export * as Typesync from './cli/services/Model.js';
 export * as Connect from './connect/index.js';
-export { Entity as EntityNew } from './entity/entity-new.js';
+export { EntitySchema } from './entity/entity.js';
 export * as Entity from './entity/index.js';
-export * as TypeNew from './entity/type-new.js';
 export * as Identity from './identity/index.js';
 export * as Inboxes from './inboxes/index.js';
 export * as Key from './key/index.js';

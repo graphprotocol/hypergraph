@@ -178,7 +178,7 @@ type EntityQueryResult = {
   }[];
 };
 
-export const parseResult = <S extends Entity.AnyNoContext>(
+export const parseResult = <S extends Schema.Schema.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
   mappingEntry: Mapping.MappingEntry,
@@ -222,7 +222,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   return { data, invalidEntities };
 };
 
-export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
+export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
   const { enabled = true, filter, include, space: spaceFromParams, first = 100 } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
