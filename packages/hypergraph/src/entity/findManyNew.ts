@@ -7,6 +7,7 @@ import { canonicalize } from '../utils/jsc.js';
 import { decodedEntitiesCache, type DecodedEntitiesCacheEntry, type QueryEntry } from './decodedEntitiesCacheNew.js';
 import { decodeFromGrc20Json } from './entity-new.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
+import { getEntityRelationsNew } from './getEntityRelationsNew.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import { TypeIdsSymbol } from './internal-new.js';
 import type {
@@ -82,15 +83,17 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         }
 
         const oldDecodedEntry = cacheEntry.entities.get(entityId);
-        // const relations = getEntityRelations(entityId, cacheEntry.type, doc, includeFromAllQueries);
+        const relations = getEntityRelationsNew(entityId, cacheEntry.type, doc, includeFromAllQueries);
         let decoded: unknown | undefined;
         try {
-          // decoded = cacheEntry.decoder({
           decoded = decodeFromGrc20Json(cacheEntry.type, {
             ...entity,
-            // ...relations,
             id: entityId,
           });
+          decoded = {
+            ...decoded,
+            ...relations,
+          };
           cacheEntry.entities.set(entityId, decoded);
         } catch (error) {
           // TODO: store the corrupt entity ids somewhere, so they can be read via the API
@@ -99,43 +102,43 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 
         if (oldDecodedEntry) {
           // collect all the Ids for relation entries in the `oldDecodedEntry`
-          // const deletedRelationIds = new Set<string>();
-          // for (const [, value] of Object.entries(oldDecodedEntry)) {
-          //   if (Array.isArray(value)) {
-          //     for (const relationEntity of value) {
-          //       deletedRelationIds.add(relationEntity.id);
-          //     }
-          //   }
-          // }
+          const deletedRelationIds = new Set<string>();
+          for (const [, value] of Object.entries(oldDecodedEntry)) {
+            if (Array.isArray(value)) {
+              for (const relationEntity of value) {
+                deletedRelationIds.add(relationEntity.id);
+              }
+            }
+          }
           // it's fine to remove all of them since they are re-added below
-          // for (const deletedRelationId of deletedRelationIds) {
-          //   const deletedRelationEntry = entityRelationParentsMap.get(deletedRelationId);
-          //   if (deletedRelationEntry) {
-          //     deletedRelationEntry.set(cacheEntry, (deletedRelationEntry.get(cacheEntry) ?? 0) - 1);
-          //     if (deletedRelationEntry.get(cacheEntry) === 0) {
-          //       deletedRelationEntry.delete(cacheEntry);
-          //     }
-          //     if (deletedRelationEntry.size === 0) {
-          //       entityRelationParentsMap.delete(deletedRelationId);
-          //     }
-          //   }
-          // }
+          for (const deletedRelationId of deletedRelationIds) {
+            const deletedRelationEntry = entityRelationParentsMap.get(deletedRelationId);
+            if (deletedRelationEntry) {
+              deletedRelationEntry.set(cacheEntry, (deletedRelationEntry.get(cacheEntry) ?? 0) - 1);
+              if (deletedRelationEntry.get(cacheEntry) === 0) {
+                deletedRelationEntry.delete(cacheEntry);
+              }
+              if (deletedRelationEntry.size === 0) {
+                entityRelationParentsMap.delete(deletedRelationId);
+              }
+            }
+          }
         }
 
         if (decoded) {
           for (const [, value] of Object.entries(decoded)) {
-            // if (Array.isArray(value)) {
-            //   for (const relationEntity of value) {
-            //     let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
-            //     if (relationParentEntry) {
-            //       relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
-            //     } else {
-            //       relationParentEntry = new Map();
-            //       entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
-            //       relationParentEntry.set(cacheEntry, 1);
-            //     }
-            //   }
-            // }
+            if (Array.isArray(value)) {
+              for (const relationEntity of value) {
+                let relationParentEntry = entityRelationParentsMap.get(relationEntity.id);
+                if (relationParentEntry) {
+                  relationParentEntry.set(cacheEntry, (relationParentEntry.get(cacheEntry) ?? 0) + 1);
+                } else {
+                  relationParentEntry = new Map();
+                  entityRelationParentsMap.set(relationEntity.id, relationParentEntry);
+                  relationParentEntry.set(cacheEntry, 1);
+                }
+              }
+            }
           }
         }
 
@@ -247,7 +250,6 @@ export function findManyNew<const S extends Schema.Schema.AnyNoContext>(
   );
 
   const doc = handle.doc();
-  console.log('doc', doc);
   if (!doc) {
     return { entities: [], corruptEntityIds: [] };
   }
@@ -364,10 +366,13 @@ export function findManyNew<const S extends Schema.Schema.AnyNoContext>(
         return entity['@@types@@'].includes(typeId);
       })
     ) {
-      // const relations = getEntityRelations(id, type, doc, include);
+      const relations = getEntityRelationsNew(id, type, doc, include);
       try {
-        // const decoded = { ...decodeFromGrc20Json(type, { ...entity, ...relations, id }) };
-        const decoded = { ...decodeFromGrc20Json(type, { ...entity, id }) };
+        let decoded = { ...decodeFromGrc20Json(type, { ...entity, id }) };
+        decoded = {
+          ...decoded,
+          ...relations,
+        };
 
         if (filter) {
           if (evaluateEntityFilter(filter, decoded)) {
@@ -426,7 +431,6 @@ export function subscribeToFindManyNew<const S extends Schema.Schema.AnyNoContex
     }
 
     const { entities } = findManyNew(handle, type, filter, include);
-    console.log('getEntities', entities);
 
     for (const entity of entities) {
       cacheEntry?.entities.set(entity.id, entity);

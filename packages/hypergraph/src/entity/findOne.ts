@@ -4,6 +4,7 @@ import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { decodeFromGrc20Json } from './entity-new.js';
 import { getEntityRelations } from './getEntityRelations.js';
+import { getEntityRelationsNew } from './getEntityRelationsNew.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import { TypeIdsSymbol } from './internal-new.js';
 import type { AnyNoContext, DocumentContent, Entity, EntityNew } from './types.js';
@@ -50,18 +51,18 @@ export const findOneNew = <const S extends Schema.Schema.AnyNoContext>(
     // an index and store the decoded values instead of re-decoding over and over again.
     const doc = handle.doc();
     const entity = doc?.entities?.[id];
-    console.log('raw entity', entity);
+
     const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
       Option.getOrElse(() => []),
     );
 
-    // TODO: implement relations
+    const relations = doc ? getEntityRelationsNew(id, type, doc, include) : {};
 
     if (hasValidTypesProperty(entity) && typeIds.every((typeId) => entity['@@types@@'].includes(typeId))) {
       const decoded = { ...decodeFromGrc20Json(type, { ...entity, id }) };
       // injecting the schema to the entity to be able to access it in the preparePublish function
       decoded.__schema = type;
-      return decoded;
+      return { ...decoded, ...relations };
     }
 
     return undefined;

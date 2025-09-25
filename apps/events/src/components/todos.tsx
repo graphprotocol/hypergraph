@@ -15,7 +15,7 @@ import { Input } from './ui/input';
 export const Todos = () => {
   const { data: todos } = useQueryNew(TodoNew, {
     mode: 'private',
-    // include: { assignees: {} },
+    include: { assignees: {} },
     // filter: { or: [{ name: { startsWith: 'aa' } }, { name: { is: 'sdasd' } }] },
   });
   const { data: users } = useQueryNew(UserNew, { mode: 'private' });
@@ -67,7 +67,7 @@ export const Todos = () => {
       {todos.map((todo) => (
         <div key={todo.id} className="flex flex-row items-center gap-2">
           <h2>{todo.name}</h2>
-          {/* {todo.assignees.length > 0 && (
+          {todo.assignees.length > 0 && (
             <span className="text-xs text-gray-500">
               Assigned to:{' '}
               {todo.assignees.map((assignee) => (
@@ -87,7 +87,7 @@ export const Todos = () => {
                 </span>
               ))}
             </span>
-          )} */}
+          )}
           <input
             type="checkbox"
             checked={todo.completed}

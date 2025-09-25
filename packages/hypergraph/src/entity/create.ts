@@ -1,10 +1,14 @@
 import type { DocHandle } from '@automerge/automerge-repo';
+import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
 import { generateId } from '../utils/generateId.js';
+import { isRelation } from '../utils/isRelation.js';
 import { isRelationField } from '../utils/isRelationField.js';
 import { encodeToGrc20Json } from './entity-new.js';
 import { findOne, findOneNew } from './findOne.js';
-import type { AnyNoContext, DocumentContent, DocumentRelation, Entity, Insert } from './types.js';
+import { PropertyIdSymbol } from './internal-new.js';
+import type { AnyNoContext, DocumentContent, DocumentRelation, Entity, EntityNew, Insert } from './types.js';
 
 /**
  * Type utility to transform relation fields to accept string arrays instead of their typed values
@@ -75,10 +79,29 @@ export const create = <const S extends AnyNoContext>(handle: DocHandle<DocumentC
 };
 
 export const createNew = <const S extends Schema.Schema.AnyNoContext>(handle: DocHandle<DocumentContent>, type: S) => {
-  // TODO: return type
-  return (data: Readonly<WithRelationsAsStringArrays<Schema.Schema.Type<S>>>) => {
+  return (data: Readonly<WithRelationsAsStringArrays<Schema.Schema.Type<S>>>): EntityNew<S> => {
     const entityId = generateId();
     const encoded = encodeToGrc20Json(type, { ...data, id: entityId });
+
+    const relations: Record<string, DocumentRelation> = {};
+
+    const ast = type.ast as SchemaAST.TypeLiteral;
+
+    for (const prop of ast.propertySignatures) {
+      const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
+      if (Option.isSome(result) && isRelation(prop.type)) {
+        const relationId = generateId();
+        for (const toEntityId of encoded[result.value] as string[]) {
+          relations[relationId] = {
+            from: entityId,
+            to: toEntityId as string,
+            fromPropertyId: result.value,
+            __deleted: false,
+          };
+        }
+        delete encoded[result.value];
+      }
+    }
 
     handle.change((doc) => {
       doc.entities ??= {};
@@ -86,8 +109,13 @@ export const createNew = <const S extends Schema.Schema.AnyNoContext>(handle: Do
         ...encoded,
         __deleted: false,
       };
+      doc.relations ??= {};
+      // merge relations with existing relations
+      for (const [relationId, relation] of Object.entries(relations)) {
+        doc.relations[relationId] = relation;
+      }
     });
 
-    return findOneNew(handle, type)(entityId);
+    return findOneNew(handle, type)(entityId) as EntityNew<S>;
   };
 };

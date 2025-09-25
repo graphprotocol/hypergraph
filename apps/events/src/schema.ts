@@ -43,9 +43,7 @@ export class Todo3 extends Entity.Class<Todo3>('Todo3')({
 }) {}
 
 export const UserNew = EntityNew(
-  {
-    name: TypeNew.String,
-  },
+  { name: TypeNew.String },
   {
     types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
     properties: {
