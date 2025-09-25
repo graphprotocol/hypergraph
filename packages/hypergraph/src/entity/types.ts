@@ -40,8 +40,7 @@ export type DocumentEntity = {
 export type DocumentRelation = {
   from: string;
   to: string;
-  fromTypeName: string;
-  fromPropertyName: string;
+  fromPropertyId: string;
   __deleted: boolean;
   [key: string]: unknown;
 };

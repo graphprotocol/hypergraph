@@ -1,5 +1,5 @@
 import * as Schema from 'effect/Schema';
-import { PropertyIdSymbol, RelationSchemaSymbol } from './internal-new.js';
+import { PropertyIdSymbol, RelationSchemaSymbol, RelationSymbol } from './internal-new.js';
 
 /**
  * Creates a String schema with the specified GRC-20 property ID
@@ -37,6 +37,6 @@ export const Relation =
   <S extends Schema.Schema.AnyNoContext>(schema: S) =>
   (propertyId: string) => {
     return Schema.Array(schema).pipe(
-      Schema.annotations({ [PropertyIdSymbol]: propertyId, [RelationSchemaSymbol]: schema }),
+      Schema.annotations({ [PropertyIdSymbol]: propertyId, [RelationSchemaSymbol]: schema, [RelationSymbol]: true }),
     );
   };
