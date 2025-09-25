@@ -1,9 +1,9 @@
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
+import { PropertyIdSymbol, RelationSchemaSymbol } from '../constants.js';
 import { isRelation } from '../utils/isRelation.js';
 import { decodeFromGrc20Json } from './entity-new.js';
-import { PropertyIdSymbol, RelationSchemaSymbol } from './internal-new.js';
 import type { DocumentContent, EntityNew } from './types.js';
 export const getEntityRelationsNew = <const S extends Schema.Schema.AnyNoContext>(
   entityId: string,

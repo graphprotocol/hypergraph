@@ -1,5 +1,5 @@
 import * as Schema from 'effect/Schema';
-import { PropertyIdSymbol, RelationSchemaSymbol, RelationSymbol } from './internal-new.js';
+import { PropertyIdSymbol, RelationSchemaSymbol, RelationSymbol } from '../constants.js';
 
 /**
  * Creates a String schema with the specified GRC-20 property ID
