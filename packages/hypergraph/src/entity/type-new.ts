@@ -40,3 +40,10 @@ export const Relation =
       Schema.annotations({ [PropertyIdSymbol]: propertyId, [RelationSchemaSymbol]: schema, [RelationSymbol]: true }),
     );
   };
+
+export const optional =
+  <S extends Schema.Schema.AnyNoContext>(schemaFn: (propertyId: string) => S) =>
+  (propertyId: string) => {
+    const innerSchema = schemaFn(propertyId);
+    return Schema.optional(innerSchema);
+  };
