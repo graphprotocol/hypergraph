@@ -2,12 +2,12 @@ import type { DocHandle } from '@automerge/automerge-repo';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
+import { PropertyIdSymbol } from '../constants.js';
 import { generateId } from '../utils/generateId.js';
 import { isRelation } from '../utils/isRelation.js';
 import { isRelationField } from '../utils/isRelationField.js';
 import { encodeToGrc20Json } from './entity-new.js';
 import { findOne, findOneNew } from './findOne.js';
-import { PropertyIdSymbol } from './internal-new.js';
 import type { AnyNoContext, DocumentContent, DocumentRelation, Entity, EntityNew, Insert } from './types.js';
 
 /**

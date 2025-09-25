@@ -1,7 +1,7 @@
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
-import { PropertyIdSymbol, TypeIdsSymbol } from './internal-new.js';
+import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
 
 /**
  * Entity function for creating schemas with a nicer API.

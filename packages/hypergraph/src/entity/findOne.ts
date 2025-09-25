@@ -2,11 +2,11 @@ import type { DocHandle } from '@automerge/automerge-repo';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
+import { TypeIdsSymbol } from '../constants.js';
 import { decodeFromGrc20Json } from './entity-new.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { getEntityRelationsNew } from './getEntityRelationsNew.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import { TypeIdsSymbol } from './internal-new.js';
 import type { AnyNoContext, DocumentContent, Entity, EntityNew } from './types.js';
 
 /**

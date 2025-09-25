@@ -2,6 +2,7 @@ import type { DocHandle, Patch } from '@automerge/automerge-repo';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
+import { TypeIdsSymbol } from '../constants.js';
 import { deepMerge } from '../utils/internal/deep-merge.js';
 import { canonicalize } from '../utils/jsc.js';
 import { decodedEntitiesCache, type DecodedEntitiesCacheEntry, type QueryEntry } from './decodedEntitiesCacheNew.js';
@@ -9,7 +10,6 @@ import { decodeFromGrc20Json } from './entity-new.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelationsNew } from './getEntityRelationsNew.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import { TypeIdsSymbol } from './internal-new.js';
 import type {
   CrossFieldFilter,
   DocumentContent,
