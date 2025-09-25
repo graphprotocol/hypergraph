@@ -1,30 +1,58 @@
 import * as Schema from 'effect/Schema';
-import { Field } from '../entity/entity.js';
-import type { AnyNoContext, EntityWithRelation } from '../entity/types.js';
+import { PropertyIdSymbol, RelationSchemaSymbol, RelationSymbol } from '../constants.js';
 
+/**
+ * Creates a String schema with the specified GRC-20 property ID
+ */
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
-export const String = Schema.String;
-// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
-export const Number = Schema.Number;
-// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
-export const Boolean = Schema.Boolean;
-// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
-export const Date = Schema.Date;
-export const Point = Schema.transform(Schema.String, Schema.Array(Number), {
-  strict: true,
-  decode: (str: string) => {
-    return str.split(',').map((n: string) => globalThis.Number(n));
-  },
-  encode: (points: readonly number[]) => points.join(','),
-});
-
-export const optional = Schema.optional;
-
-export const Relation = <S extends AnyNoContext>(schema: S) => {
-  const relationSchema = Field({
-    select: Schema.Array(schema) as unknown as Schema.Schema<ReadonlyArray<EntityWithRelation<S>>>,
-    insert: Schema.optional(Schema.Array(Schema.String)),
-    update: Schema.Undefined,
-  });
-  return relationSchema;
+export const String = (propertyId: string) => {
+  return Schema.String.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
 };
+
+/**
+ * Creates a Number schema with the specified GRC-20 property ID
+ */
+// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
+export const Number = (propertyId: string) => {
+  return Schema.Number.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+};
+
+/**
+ * Creates a Boolean schema with the specified GRC-20 property ID
+ */
+// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
+export const Boolean = (propertyId: string) => {
+  return Schema.Boolean.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+};
+
+/**
+ * Creates a Date schema with the specified GRC-20 property ID
+ */
+// biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
+export const Date = (propertyId: string) => {
+  return Schema.Date.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+};
+
+export const Point = (propertyId: string) =>
+  Schema.transform(Schema.String, Schema.Array(Schema.Number), {
+    strict: true,
+    decode: (str: string) => {
+      return str.split(',').map((n: string) => globalThis.Number(n));
+    },
+    encode: (points: readonly number[]) => points.join(','),
+  }).pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+
+export const Relation =
+  <S extends Schema.Schema.AnyNoContext>(schema: S) =>
+  (propertyId: string) => {
+    return Schema.Array(schema).pipe(
+      Schema.annotations({ [PropertyIdSymbol]: propertyId, [RelationSchemaSymbol]: schema, [RelationSymbol]: true }),
+    );
+  };
+
+export const optional =
+  <S extends Schema.Schema.AnyNoContext>(schemaFn: (propertyId: string) => S) =>
+  (propertyId: string) => {
+    const innerSchema = schemaFn(propertyId);
+    return Schema.optional(innerSchema);
+  };

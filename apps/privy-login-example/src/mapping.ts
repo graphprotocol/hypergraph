@@ -58,12 +58,4 @@ export const mapping: Mapping.Mapping = {
       sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
     },
   },
-  Todo3: {
-    typeIds: [Id('4f7bba76-7855-4d63-b59d-1d9f2be866df')],
-    properties: {
-      name: Id('47006386-d351-411c-8287-1dae1c1aa8c1'),
-      completed: Id('9f9f00eb-4f32-4f71-92ba-b266566d0013'),
-      description: Id('89cac80a-1dbd-4bca-97b2-45e1556d9122'),
-    },
-  },
 };

@@ -163,7 +163,7 @@ type EntityQueryResult = {
   } | null;
 };
 
-export const parseResult = <S extends Entity.AnyNoContext>(
+export const parseResult = <S extends Schema.Schema.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
   mappingEntry: Mapping.MappingEntry,
@@ -208,7 +208,7 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   return { data: null, invalidEntity: rawEntity };
 };
 
-type UseEntityPublicParams<S extends Entity.AnyNoContext> = {
+type UseEntityPublicParams<S extends Schema.Schema.AnyNoContext> = {
   id: string;
   enabled?: boolean;
   space?: string;
@@ -216,7 +216,7 @@ type UseEntityPublicParams<S extends Entity.AnyNoContext> = {
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
 };
 
-export const useEntityPublic = <S extends Entity.AnyNoContext>(type: S, params: UseEntityPublicParams<S>) => {
+export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntityPublicParams<S>) => {
   const { id, enabled = true, space: spaceFromParams, include } = params;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;

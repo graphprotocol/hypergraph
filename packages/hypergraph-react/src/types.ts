@@ -9,7 +9,7 @@ export type EntityLike = {
   [key: string]: unknown;
 };
 
-export type PartialEntity<S extends Entity.AnyNoContext> = Partial<Schema.Schema.Type<Entity.Update<S>>> & {
+export type PartialEntity<S extends Schema.Schema.AnyNoContext> = Partial<Schema.Schema.Type<Entity.Update<S>>> & {
   id: string;
 };
 

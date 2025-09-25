@@ -1,12 +1,12 @@
 export { PublishDiff } from './components/publish-diff/publish-diff.js';
 export { createWalletClient } from './create-wallet-client.js';
-export { useCreateEntity, useCreateEntityNew } from './hooks/use-create-entity.js';
+export { useCreateEntity } from './hooks/use-create-entity.js';
 export { useDeleteEntity } from './hooks/use-delete-entity.js';
 export { useEntity } from './hooks/use-entity.js';
 export { useHardDeleteEntity } from './hooks/use-hard-delete-entity.js';
 export { usePrivyAuthCreatePrivateSpace as _usePrivyAuthCreatePrivateSpace } from './hooks/use-privy-auth-create-private-space.js';
 export { usePrivyAuthCreatePublicSpace as _usePrivyAuthCreatePublicSpace } from './hooks/use-privy-auth-create-public-space.js';
-export { useQuery, useQueryNew } from './hooks/use-query.js';
+export { useQuery } from './hooks/use-query.js';
 export { useRemoveRelation } from './hooks/use-remove-relation.js';
 export { useSpace } from './hooks/use-space.js';
 export { useSpaces } from './hooks/use-spaces.js';

@@ -35,7 +35,7 @@ type GraphqlFilterEntry =
  * Translates internal filter format to GraphQL filter format
  * Maps the internal EntityFieldFilter structure to the expected GraphQL filter structure
  */
-export function translateFilterToGraphql<S extends Entity.AnyNoContext>(
+export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
   filter: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
   type: S,
   mapping: Mapping.Mapping,

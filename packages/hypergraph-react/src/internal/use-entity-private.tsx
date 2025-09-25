@@ -4,7 +4,7 @@ import { useRef, useSyncExternalStore } from 'react';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 import { useSubscribeToSpaceAndGetHandle } from './use-subscribe-to-space.js';
 
-export function useEntityPrivate<const S extends Entity.AnyNoContext>(
+export function useEntityPrivate<const S extends Schema.Schema.AnyNoContext>(
   type: S,
   params: {
     id: string | Id;

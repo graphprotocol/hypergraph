@@ -1,14 +1,16 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
-import * as Schema from 'effect/Schema';
+import * as Option from 'effect/Option';
+import type * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
+import { TypeIdsSymbol } from '../constants.js';
 import { deepMerge } from '../utils/internal/deep-merge.js';
-import { isRelationField } from '../utils/isRelationField.js';
 import { canonicalize } from '../utils/jsc.js';
 import { decodedEntitiesCache, type DecodedEntitiesCacheEntry, type QueryEntry } from './decodedEntitiesCache.js';
+import { decodeFromGrc20Json } from './entity.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import type {
-  AnyNoContext,
   CrossFieldFilter,
   DocumentContent,
   Entity,
@@ -84,11 +86,14 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         const relations = getEntityRelations(entityId, cacheEntry.type, doc, includeFromAllQueries);
         let decoded: unknown | undefined;
         try {
-          decoded = cacheEntry.decoder({
+          decoded = decodeFromGrc20Json(cacheEntry.type, {
             ...entity,
-            ...relations,
             id: entityId,
           });
+          decoded = {
+            ...decoded,
+            ...relations,
+          };
           cacheEntry.entities.set(entityId, decoded);
         } catch (error) {
           // TODO: store the corrupt entity ids somewhere, so they can be read via the API
@@ -105,7 +110,6 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
               }
             }
           }
-
           // it's fine to remove all of them since they are re-added below
           for (const deletedRelationId of deletedRelationIds) {
             const deletedRelationEntry = entityRelationParentsMap.get(deletedRelationId);
@@ -235,16 +239,15 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 /**
  * Queries for a list of entities of the given type from the repo.
  */
-export function findMany<const S extends AnyNoContext>(
+export function findMany<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
-  const decode = Schema.decodeUnknownSync(type);
-  // TODO: what's the right way to get the name of the type?
-  // @ts-expect-error name is defined
-  const typeName = type.name;
+  const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const doc = handle.doc();
   if (!doc) {
@@ -357,10 +360,20 @@ export function findMany<const S extends AnyNoContext>(
 
   for (const id in entities) {
     const entity = entities[id];
-    if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
+    if (
+      hasValidTypesProperty(entity) &&
+      typeIds.every((typeId) => {
+        return entity['@@types@@'].includes(typeId);
+      })
+    ) {
       const relations = getEntityRelations(id, type, doc, include);
       try {
-        const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
+        let decoded = { ...decodeFromGrc20Json(type, { ...entity, id }) };
+        decoded = {
+          ...decoded,
+          ...relations,
+        };
+
         if (filter) {
           if (evaluateEntityFilter(filter, decoded)) {
             // injecting the schema to the entity to be able to access it in the preparePublish function
@@ -390,25 +403,24 @@ export function findMany<const S extends AnyNoContext>(
 
 const stableEmptyArray: Array<unknown> = [];
 
-export type FindManySubscription<S extends AnyNoContext> = {
+export type FindManySubscription<S extends Schema.Schema.AnyNoContext> = {
   subscribe: (callback: () => void) => () => void;
   getEntities: () => Readonly<Array<Entity<S>>>;
 };
 
-export function subscribeToFindMany<const S extends AnyNoContext>(
+export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): FindManySubscription<S> {
   const queryKey = filter ? canonicalize(filter) : 'all';
-  const decode = Schema.decodeUnknownSync(type);
-  // TODO: what's the right way to get the name of the type?
-  // @ts-expect-error name is defined
-  const typeName = type.name;
+  const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const getEntities = () => {
-    const cacheEntry = decodedEntitiesCache.get(typeName);
+    const cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
     if (!cacheEntry) return stableEmptyArray;
 
     const query = cacheEntry.queries.get(queryKey);
@@ -432,15 +444,15 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     return query.data;
   };
 
-  const allTypes = new Set<S>();
-  for (const [_key, field] of Object.entries(type.fields)) {
-    if (isRelationField(field)) {
-      allTypes.add(field as S);
-    }
-  }
+  // const allTypes = new Set<S>();
+  // for (const [_key, field] of Object.entries(type.fields)) {
+  //   if (isRelationField(field)) {
+  //     allTypes.add(field as S);
+  //   }
+  // }
 
   const subscribe = (callback: () => void) => {
-    let cacheEntry = decodedEntitiesCache.get(typeName);
+    let cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
 
     if (!cacheEntry) {
       const entitiesMap = new Map();
@@ -454,14 +466,13 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
       });
 
       cacheEntry = {
-        decoder: decode,
         type,
         entities: entitiesMap,
         queries,
         isInvalidated: true,
       };
 
-      decodedEntitiesCache.set(typeName, cacheEntry);
+      decodedEntitiesCache.set(canonicalize(typeIds), cacheEntry);
     }
 
     let query = cacheEntry.queries.get(queryKey);
@@ -481,7 +492,7 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     }
 
     return () => {
-      const cacheEntry = decodedEntitiesCache.get(typeName);
+      const cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
       if (cacheEntry) {
         // first cleanup the queries
         const query = cacheEntry.queries.get(queryKey);
@@ -496,14 +507,14 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
           entityRelationParentsMap.forEach((relationCacheEntries, key) => {
             for (const [relationCacheEntry, counter] of relationCacheEntries) {
               if (relationCacheEntry === cacheEntry && counter === 0) {
-                relationCacheEntries.delete(cacheEntry);
+                // relationCacheEntries.delete(cacheEntry);
               }
             }
             if (relationCacheEntries.size === 0) {
               entityRelationParentsMap.delete(key);
             }
           });
-          decodedEntitiesCache.delete(typeName);
+          decodedEntitiesCache.delete(canonicalize(typeIds));
         }
       }
 

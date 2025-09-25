@@ -1,4 +1,5 @@
-import type { Entity, Mapping } from '@graphprotocol/hypergraph';
+import type { Mapping } from '@graphprotocol/hypergraph';
+import type * as Schema from 'effect/Schema';
 import { convertPropertyValue } from './convert-property-value.js';
 
 // A recursive representation of the entity structure returned by the public GraphQL
@@ -22,7 +23,7 @@ type RecursiveQueryEntity = {
   }[];
 };
 
-export const convertRelations = <S extends Entity.AnyNoContext>(
+export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   type: S,
   mappingEntry: Mapping.MappingEntry,
@@ -43,14 +44,19 @@ export const convertRelations = <S extends Entity.AnyNoContext>(
       console.error(`Field ${key} not found in ${type.name}`);
       continue;
     }
-    // @ts-expect-error TODO: properly access the type.name
-    const annotations = field.ast.rest[0].type.to.annotations;
+    const relationTransformation = field.ast.rest?.[0];
+    if (!relationTransformation) {
+      console.error(`Relation transformation for ${key} not found`);
+      continue;
+    }
 
-    // TODO: fix this access using proper effect types
-    const relationTypeName =
-      annotations[
-        Object.getOwnPropertySymbols(annotations).find((sym) => sym.description === 'effect/annotation/Identifier')
-      ];
+    const identifierAnnotation = SchemaAST.getIdentifierAnnotation(relationTransformation.type.to);
+    if (Option.isNone(identifierAnnotation)) {
+      console.error(`Relation identifier for ${key} not found`);
+      continue;
+    }
+
+    const relationTypeName = identifierAnnotation.value;
 
     const relationMappingEntry = mapping[relationTypeName];
     if (!relationMappingEntry) {

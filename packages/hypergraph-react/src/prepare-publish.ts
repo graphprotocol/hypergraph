@@ -8,9 +8,10 @@ import {
 } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
 import { store, TypeUtils } from '@graphprotocol/hypergraph';
+import type * as Schema from 'effect/Schema';
 import request, { gql } from 'graphql-request';
 
-export type PreparePublishParams<S extends Entity.AnyNoContext> = {
+export type PreparePublishParams<S extends Schema.Schema.AnyNoContext> = {
   entity: Entity.Entity<S>;
   publicSpace: string | Id;
 };
@@ -49,7 +50,7 @@ type EntityToPublishQueryResult = {
   };
 } | null;
 
-export const preparePublish = async <S extends Entity.AnyNoContext>({
+export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
   entity,
   publicSpace,
 }: PreparePublishParams<S>) => {
