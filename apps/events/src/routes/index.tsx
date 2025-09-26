@@ -1,11 +1,11 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { store } from '@graphprotocol/hypergraph';
 import { useHypergraphApp, useSpaces } from '@graphprotocol/hypergraph-react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useSelector } from '@xstate/store/react';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -44,6 +44,7 @@ function Index() {
   return (
     <div className="flex flex-col gap-4 max-w-(--breakpoint-sm) mx-auto py-8">
       <h2 className="text-lg font-bold">Invitations</h2>
+
       {invitations.length === 0 && <div>No invitations</div>}
       <ul className="text-xs">
         {invitations.map((invitation) => {

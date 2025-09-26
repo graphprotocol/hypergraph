@@ -367,6 +367,13 @@ export const ResponseUpdateConfirmed = Schema.Struct({
   spaceId: Schema.String,
 });
 
+export const ResponseInvitationAccepted = Schema.Struct({
+  type: Schema.Literal('invitation-accepted'),
+  invitationId: Schema.String,
+});
+
+export type ResponseInvitationAccepted = Schema.Schema.Type<typeof ResponseInvitationAccepted>;
+
 export type ResponseUpdateConfirmed = Schema.Schema.Type<typeof ResponseUpdateConfirmed>;
 
 export const ResponseUpdatesNotification = Schema.Struct({
@@ -433,6 +440,7 @@ export const ResponseMessage = Schema.Union(
   ResponseAccountInboxMessage,
   ResponseAccountInboxMessages,
   ResponseAccountInboxes,
+  ResponseInvitationAccepted,
 );
 
 export type ResponseMessage = Schema.Schema.Type<typeof ResponseMessage>;

@@ -1,10 +1,10 @@
 'use client';
 
+import type { DocHandle } from '@automerge/automerge-repo';
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
+import { Repo } from '@automerge/automerge-repo/slim';
 import { automergeWasmBase64 } from '@automerge/automerge/automerge.wasm.base64';
 import * as automerge from '@automerge/automerge/slim';
-import type { DocHandle } from '@automerge/automerge-repo';
-import { Repo } from '@automerge/automerge-repo/slim';
-import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Graph } from '@graphprotocol/grc-20';
 import {
   Connect,
@@ -91,7 +91,7 @@ export type HypergraphAppCtx = {
   listInvitations(): void;
   acceptInvitation(params: Readonly<{ invitation: Messages.Invitation }>): Promise<unknown>;
   subscribeToSpace(params: Readonly<{ spaceId: string }>): void;
-  inviteToSpace(params: Readonly<{ space: SpaceStorageEntry; invitee: { accountAddress: Address } }>): Promise<unknown>;
+  inviteToSpace(params: Readonly<{ space: string; inviteeAccountAddress: Address }>): Promise<unknown>;
   getVerifiedIdentity(
     accountAddress: string,
     publicKey: string | null,
@@ -927,6 +927,13 @@ export function HypergraphAppProvider({
             });
             break;
           }
+          case 'invitation-accepted': {
+            store.send({
+              type: 'invitationAccepted',
+              id: response.invitationId,
+            });
+            break;
+          }
           default: {
             Utils.assertExhaustive(response);
           }
@@ -1313,16 +1320,14 @@ export function HypergraphAppProvider({
 
   const inviteToSpace = useCallback(
     async ({
-      space,
-      invitee,
+      space: spaceId,
+      inviteeAccountAddress,
     }: Readonly<{
-      space: SpaceStorageEntry;
-      invitee: {
-        accountAddress: string;
-      };
+      space: string;
+      inviteeAccountAddress: Address;
     }>) => {
       if (!identity && !privyIdentity) {
-        throw new Error('No identity   found');
+        throw new Error('No identity found');
       }
       const encryptionPrivateKey = identity?.encryptionPrivateKey || privyIdentity?.encryptionPrivateKey;
       const encryptionPublicKey = identity?.encryptionPublicKey || privyIdentity?.encryptionPublicKey;
@@ -1338,12 +1343,13 @@ export function HypergraphAppProvider({
       ) {
         throw new Error('Missing keys');
       }
-      if (!space.state) {
-        console.error('No state found for space');
+      const space = store.getSnapshot().context.spaces.find((s) => s.id === spaceId);
+      if (space === undefined || space.state === undefined) {
+        console.error('No space or space state found', spaceId);
         return;
       }
       const inviteeWithKeys = await Identity.getVerifiedIdentity(
-        invitee.accountAddress,
+        inviteeAccountAddress,
         null,
         appId,
         syncServerUri,
@@ -1378,7 +1384,7 @@ export function HypergraphAppProvider({
           ciphertext: Utils.bytesToHex(keyBox.keyBoxCiphertext),
           nonce: Utils.bytesToHex(keyBox.keyBoxNonce),
           authorPublicKey: encryptionPublicKey,
-          accountAddress: invitee.accountAddress,
+          accountAddress: inviteeAccountAddress,
         };
       });
 

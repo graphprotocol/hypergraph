@@ -9,9 +9,7 @@ const { inviteToSpace } = useHypergraphApp();
 
 inviteToSpace({
   space: "space-id",
-  invitee: {
-    accountAddress: "0x1234567890123456789012345678901234567890",
-  },
+  inviteeAccountAddress: "0x1234567890123456789012345678901234567890"
 });
 ```
 

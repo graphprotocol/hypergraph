@@ -92,6 +92,7 @@ const initialStoreContext: StoreContext = {
 
 type StoreEvent =
   | { type: 'setInvitations'; invitations: Invitation[] }
+  | { type: 'invitationAccepted'; id: string }
   | { type: 'setMapping'; mapping: Mapping }
   | { type: 'reset' }
   | { type: 'addUpdateInFlight'; updateId: string }
@@ -169,6 +170,12 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
       return {
         ...context,
         invitations: event.invitations,
+      };
+    },
+    invitationAccepted: (context, event: { id: string }) => {
+      return {
+        ...context,
+        invitations: context.invitations.filter((invitation) => invitation.id !== event.id),
       };
     },
     setMapping: (context, event: { mapping: Mapping }) => {
