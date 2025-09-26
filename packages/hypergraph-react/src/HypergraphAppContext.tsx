@@ -115,7 +115,15 @@ export type HypergraphAppCtx = {
     connectUrl: string;
     redirectFn: (url: URL) => void;
   }): void;
-  processConnectAuthSuccess(params: { storage: Identity.Storage; ciphertext: string; nonce: string }): void;
+  processConnectAuthSuccess(params: { storage: Identity.Storage; ciphertext: string; nonce: string }):
+    | {
+        success: true;
+        identity: Connect.PrivateAppIdentity;
+      }
+    | {
+        success: false;
+        error: string;
+      };
   syncServerUri: string;
 };
 
@@ -249,9 +257,6 @@ export function HypergraphAppProvider({
   const repo = useSelectorStore(store, (state) => state.context.repo);
   const identity = useSelectorStore(store, (state) => state.context.identity);
   const privyIdentity = useSelectorStore(store, (state) => state.context.privyIdentity);
-
-  console.log('identity', identity);
-  console.log('privyIdentity', privyIdentity);
 
   const logout = useCallback(() => {
     websocketConnection?.close();
@@ -1464,15 +1469,26 @@ export function HypergraphAppProvider({
   );
 
   const processConnectAuthSuccessForContext = useCallback(
-    (params: { storage: Identity.Storage; ciphertext: string; nonce: string }) => {
+    (params: {
+      storage: Identity.Storage;
+      ciphertext: string;
+      nonce: string;
+    }):
+      | {
+          success: true;
+          identity: Connect.PrivateAppIdentity;
+        }
+      | {
+          success: false;
+          error: string;
+        } => {
       const { storage, ciphertext, nonce } = params;
       const storedNonce = storage.getItem('geo-connect-auth-nonce');
       const storedExpiry = Number.parseInt(storage.getItem('geo-connect-auth-expiry') ?? '0', 10);
       const storedSecretKey = storage.getItem('geo-connect-auth-secret-key');
       const storedPublicKey = storage.getItem('geo-connect-auth-public-key');
       if (!storedNonce || !storedExpiry || !storedSecretKey || !storedPublicKey) {
-        alert('Failed to authenticate due missing data in the local storage');
-        return;
+        return { success: false, error: 'Failed to authenticate due missing data in the local storage' };
       }
 
       try {
@@ -1487,7 +1503,7 @@ export function HypergraphAppProvider({
           }),
         );
 
-        setIdentity({
+        const identity: Connect.PrivateAppIdentity = {
           address: parsedAuthParams.appIdentityAddress,
           addressPrivateKey: parsedAuthParams.appIdentityAddressPrivateKey,
           accountAddress: parsedAuthParams.accountAddress,
@@ -1498,14 +1514,17 @@ export function HypergraphAppProvider({
           encryptionPrivateKey: parsedAuthParams.encryptionPrivateKey,
           sessionToken: parsedAuthParams.sessionToken,
           sessionTokenExpires: parsedAuthParams.sessionTokenExpires,
-        });
+        };
+
+        setIdentity(identity);
         storage.removeItem('geo-connect-auth-nonce');
         storage.removeItem('geo-connect-auth-expiry');
         storage.removeItem('geo-connect-auth-secret-key');
         storage.removeItem('geo-connect-auth-public-key');
+        return { success: true, identity };
       } catch (error) {
         console.error(error);
-        alert('Failed to authenticate due to invalid callback');
+        return { success: false, error: 'Failed to authenticate due to invalid callback' };
       }
     },
     [setIdentity],
