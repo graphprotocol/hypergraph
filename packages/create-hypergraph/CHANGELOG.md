@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.5.6
+### Patch Changes
+
+- 1d29c53: improve processConnectAuthSuccess behaviour
+
 ## 0.5.5
 ### Patch Changes
 

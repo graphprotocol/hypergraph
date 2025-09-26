@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph-react
 
+## 0.7.3
+### Patch Changes
+
+- 1d29c53: improve processConnectAuthSuccess behaviour
+
 ## 0.7.2
 ### Patch Changes
 

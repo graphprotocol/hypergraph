@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.7.3
+### Patch Changes
+
+- Catch up with hypergraph-react version
+
 ## 0.6.6
 ### Patch Changes
 
