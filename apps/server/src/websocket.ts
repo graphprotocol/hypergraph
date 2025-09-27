@@ -259,17 +259,10 @@ export const WebSocketLayer = HttpLayerRouter.add(
                 keyBoxes: [], // No keyBoxes needed for accepting invitations
               });
 
-              // Get the updated space data
-              const space = yield* spacesService.getSpace({
-                spaceId: request.spaceId,
-                accountAddress,
-                appIdentityAddress: address,
-              });
-
               // Send the updated space back to the client
-              const outgoingMessage: Messages.ResponseSpace = {
-                type: 'space',
-                ...space,
+              const outgoingMessage: Messages.ResponseInvitationAccepted = {
+                type: 'invitation-accepted',
+                invitationId: request.event.transaction.id,
               };
               yield* responseMailbox.offer(Messages.serializeV2(outgoingMessage));
 

@@ -1,11 +1,11 @@
+import GeoLogo from '@/assets/images/geo-logo-branded.svg?react';
+import { AppTitle } from '@/components/ui/AppTitle';
+import { Loading } from '@/components/ui/Loading';
 import { Connect, type Identity } from '@graphprotocol/hypergraph';
 import { type ConnectedWallet, useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { createWalletClient, custom, type WalletClient } from 'viem';
-import GeoLogo from '@/assets/images/geo-logo-branded.svg?react';
-import { AppTitle } from '@/components/ui/AppTitle';
-import { Loading } from '@/components/ui/Loading';
 
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const syncServerUri = import.meta.env.VITE_HYPERGRAPH_SYNC_SERVER_ORIGIN;
@@ -25,7 +25,6 @@ function Login() {
 
   const hypergraphLogin = useCallback(
     async (walletClient: WalletClient, embeddedWallet: ConnectedWallet) => {
-      console.log('hypergraphLogin');
       if (!identityToken) {
         return;
       }
@@ -69,14 +68,12 @@ function Login() {
   );
 
   useEffect(() => {
-    console.log('useEffect in login.lazy.tsx');
     if (
       !hypergraphLoginStarted && // avoid re-running the effect too often
       privyAuthenticated && // privy must be authenticated to run it
       walletsReady && // wallets must be ready to run it
       wallets.length > 0 // wallets must have at least one wallet to run it
     ) {
-      console.log('running login effect');
       setHypergraphLoginStarted(true);
       (async () => {
         try {
