@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.5.7
+### Patch Changes
+
+- e20c419: use correct crypto space id
+
 ## 0.5.6
 ### Patch Changes
 
