@@ -67,7 +67,7 @@ The Geo testnet contains public data that you can query immediately without any 
 **Note**:
 
 - **No authentication required** for public data queries.
-- All examples below use the Geo testnet space ID: `b2565802-3118-47be-91f2-e59170735bac`
+- All examples below use the Geo testnet space ID: `3f32353d-3b27-4a13-b71a-746f06e1f7db`
 
 Each section below includes the relevant `schema.ts`, `mapping.ts`, and a query example.
 
@@ -122,7 +122,7 @@ export default function ProjectsExample() {
     isError,
   } = useQuery(Project, {
     mode: "public",
-    space: "b2565802-3118-47be-91f2-e59170735bac",
+    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,
   });
 
@@ -216,7 +216,7 @@ export default function DappsExample() {
     isError,
   } = useQuery(Dapp, {
     mode: "public",
-    space: "b2565802-3118-47be-91f2-e59170735bac",
+    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,
   });
 
@@ -341,7 +341,7 @@ export default function InvestmentRoundsExample() {
     isError,
   } = useQuery(InvestmentRound, {
     mode: "public",
-    space: "b2565802-3118-47be-91f2-e59170735bac",
+    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,
     include: {
       investors: {},
@@ -452,7 +452,7 @@ export default function AssetMarketExample() {
     isError,
   } = useQuery(Asset, {
     mode: "public",
-    space: "b2565802-3118-47be-91f2-e59170735bac",
+    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,
   });
 

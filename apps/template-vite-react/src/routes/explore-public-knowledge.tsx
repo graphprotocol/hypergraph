@@ -1,5 +1,5 @@
 import { ExploreTabs } from '@/components/explore-tabs';
-import { Outlet, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/explore-public-knowledge')({
   component: ExploreLayout,
@@ -19,7 +19,7 @@ function ExploreLayout() {
           </span>{' '}
           with the ID{' '}
           <span className="inline-flex items-center rounded-full border bg-accent/60 text-accent-foreground px-2 py-0.5 text-xs font-mono align-middle">
-            b2565802-3118-47be-91f2-e59170735bac
+            3f32353d-3b27-4a13-b71a-746f06e1f7db
           </span>
           . No authentication is required.
         </p>
