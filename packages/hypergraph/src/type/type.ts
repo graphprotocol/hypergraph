@@ -45,7 +45,10 @@ export const Point = (propertyId: string) =>
 export const Relation =
   <S extends Schema.Schema.AnyNoContext>(schema: S) =>
   (propertyId: string) => {
-    return Schema.Array(schema).pipe(
+    const schemaWithId = Schema.extend(
+      Schema.Struct({ id: Schema.String, _relation: Schema.Struct({ id: Schema.String }) }),
+    )(schema);
+    return Schema.Array(schemaWithId).pipe(
       Schema.annotations({ [PropertyIdSymbol]: propertyId, [RelationSchemaSymbol]: schema, [RelationSymbol]: true }),
     );
   };
