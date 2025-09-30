@@ -1,4 +1,3 @@
-import type { Mapping } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { convertPropertyValue } from './convert-property-value.js';
 
@@ -23,12 +22,7 @@ type RecursiveQueryEntity = {
   }[];
 };
 
-export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
-  queryEntity: RecursiveQueryEntity,
-  type: S,
-  mappingEntry: Mapping.MappingEntry,
-  mapping: Mapping.Mapping,
-) => {
+export const convertRelations = <S extends Schema.Schema.AnyNoContext>(queryEntity: RecursiveQueryEntity, type: S) => {
   const rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {};
 
   for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {

@@ -183,7 +183,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
   for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
     const property = queryEntity.valuesList.find((a) => a.propertyId === value);
     if (property) {
-      rawEntity[key] = convertPropertyValue(property, key, type);
+      rawEntity[key] = convertPropertyValue(property, type);
     }
   }
 

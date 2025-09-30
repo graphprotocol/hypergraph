@@ -1,22 +1,27 @@
-import { TypeUtils } from '@graphprotocol/hypergraph';
-import type * as Schema from 'effect/Schema';
+import { PropertyTypeSymbol } from '@graphprotocol/hypergraph/constants';
+import * as Option from 'effect/Option';
+import * as SchemaAST from 'effect/SchemaAST';
 
 export const convertPropertyValue = (
   property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
-  key: string,
-  type: Schema.Schema.AnyNoContext,
+  type: SchemaAST.AST,
 ) => {
-  if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[key]) && property.boolean !== undefined) {
-    return Boolean(property.boolean);
+  const propertyType = SchemaAST.getAnnotation<string>(PropertyTypeSymbol)(type);
+  if (Option.isSome(propertyType)) {
+    if (propertyType.value === 'string') {
+      return property.string;
+    }
+    if (propertyType.value === 'boolean') {
+      return Boolean(property.boolean);
+    }
+    if (propertyType.value === 'point') {
+      return property.point;
+    }
+    if (propertyType.value === 'number') {
+      return Number(property.number);
+    }
+    if (propertyType.value === 'date') {
+      return property.time;
+    }
   }
-  if (TypeUtils.isPointOrOptionalPointType(type.fields[key]) && property.point !== undefined) {
-    return property.point;
-  }
-  if (TypeUtils.isDateOrOptionalDateType(type.fields[key]) && property.time !== undefined) {
-    return property.time;
-  }
-  if (TypeUtils.isNumberOrOptionalNumberType(type.fields[key]) && property.number !== undefined) {
-    return Number(property.number);
-  }
-  return property.string;
 };

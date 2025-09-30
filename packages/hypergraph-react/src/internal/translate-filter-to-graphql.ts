@@ -1,6 +1,8 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, type Mapping, TypeUtils } from '@graphprotocol/hypergraph';
+import { type Entity, TypeUtils } from '@graphprotocol/hypergraph';
+import { PropertyIdSymbol } from '@graphprotocol/hypergraph/constants';
 import type * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
 
 type GraphqlFilterEntry =
   | {
@@ -38,18 +40,9 @@ type GraphqlFilterEntry =
 export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
   filter: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
   type: S,
-  mapping: Mapping.Mapping,
 ): GraphqlFilterEntry {
   if (!filter) {
     return {};
-  }
-
-  // @ts-expect-error TODO should use the actual type instead of the name in the mapping
-  const typeName = type.name;
-
-  const mappingEntry = mapping[typeName];
-  if (!mappingEntry) {
-    throw new Error(`Mapping entry for ${typeName} not found`);
   }
 
   const graphqlFilter: GraphqlFilterEntry[] = [];
@@ -59,7 +52,7 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
       graphqlFilter.push({
         or: fieldFilter.map(
           (filter: { [K in keyof Schema.Schema.Type<S>]?: Entity.EntityFieldFilter<Schema.Schema.Type<S>[K]> }) =>
-            translateFilterToGraphql(filter, type, mapping),
+            translateFilterToGraphql(filter, type),
         ),
       });
       continue;
@@ -67,64 +60,68 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
 
     if (fieldName === 'not') {
       graphqlFilter.push({
-        not: translateFilterToGraphql(fieldFilter, type, mapping),
+        not: translateFilterToGraphql(fieldFilter, type),
       });
       continue;
     }
 
     if (!fieldFilter) continue;
 
-    const propertyId = mappingEntry?.properties?.[fieldName];
+    const ast = type.ast as SchemaAST.TypeLiteral;
+    const propertySignature = ast.propertySignatures.find((a) => a.name === fieldName);
+    if (!propertySignature) continue;
 
-    if (propertyId) {
-      if (
-        TypeUtils.isStringOrOptionalStringType(type.fields[fieldName]) &&
-        (fieldFilter.is || fieldFilter.startsWith || fieldFilter.endsWith || fieldFilter.contains)
-      ) {
-        graphqlFilter.push({
-          values: {
-            some: {
-              propertyId: { is: propertyId },
-              string: fieldFilter.is
-                ? { is: fieldFilter.is }
-                : fieldFilter.startsWith
-                  ? { startsWith: fieldFilter.startsWith }
-                  : fieldFilter.endsWith
-                    ? { endsWith: fieldFilter.endsWith }
-                    : { includes: fieldFilter.contains },
-            },
-          },
-        });
-      }
+    // find the property id for the field
+    const propertyId = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(propertySignature.type);
+    if (!propertyId) continue;
 
-      if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[fieldName]) && fieldFilter.is) {
-        graphqlFilter.push({
-          values: {
-            some: {
-              propertyId: { is: propertyId },
-              boolean: { is: fieldFilter.is },
-            },
+    if (
+      TypeUtils.isStringOrOptionalStringType(type.fields[fieldName]) &&
+      (fieldFilter.is || fieldFilter.startsWith || fieldFilter.endsWith || fieldFilter.contains)
+    ) {
+      graphqlFilter.push({
+        values: {
+          some: {
+            propertyId: { is: propertyId },
+            string: fieldFilter.is
+              ? { is: fieldFilter.is }
+              : fieldFilter.startsWith
+                ? { startsWith: fieldFilter.startsWith }
+                : fieldFilter.endsWith
+                  ? { endsWith: fieldFilter.endsWith }
+                  : { includes: fieldFilter.contains },
           },
-        });
-      }
+        },
+      });
+    }
 
-      if (
-        TypeUtils.isNumberOrOptionalNumberType(type.fields[fieldName]) &&
-        (fieldFilter.is || fieldFilter.greaterThan || fieldFilter.lessThan)
-      ) {
-        graphqlFilter.push({
-          values: {
-            some: {
-              propertyId: { is: propertyId },
-              number: fieldFilter.is
-                ? { is: Graph.serializeNumber(fieldFilter.is) }
-                : fieldFilter.greaterThan
-                  ? { greaterThan: Graph.serializeNumber(fieldFilter.greaterThan) }
-                  : { lessThan: Graph.serializeNumber(fieldFilter.lessThan) },
-            },
+    if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[fieldName]) && fieldFilter.is) {
+      graphqlFilter.push({
+        values: {
+          some: {
+            propertyId: { is: propertyId },
+            boolean: { is: fieldFilter.is },
           },
-        });
-      }
+        },
+      });
+    }
+
+    if (
+      TypeUtils.isNumberOrOptionalNumberType(type.fields[fieldName]) &&
+      (fieldFilter.is || fieldFilter.greaterThan || fieldFilter.lessThan)
+    ) {
+      graphqlFilter.push({
+        values: {
+          some: {
+            propertyId: { is: propertyId },
+            number: fieldFilter.is
+              ? { is: Graph.serializeNumber(fieldFilter.is) }
+              : fieldFilter.greaterThan
+                ? { greaterThan: Graph.serializeNumber(fieldFilter.greaterThan) }
+                : { lessThan: Graph.serializeNumber(fieldFilter.lessThan) },
+          },
+        },
+      });
     }
   }
 

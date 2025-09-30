@@ -1,12 +1,12 @@
 import * as Schema from 'effect/Schema';
-import { PropertyIdSymbol, RelationSchemaSymbol, RelationSymbol } from '../constants.js';
+import { PropertyIdSymbol, PropertyTypeSymbol, RelationSchemaSymbol, RelationSymbol } from '../constants.js';
 
 /**
  * Creates a String schema with the specified GRC-20 property ID
  */
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const String = (propertyId: string) => {
-  return Schema.String.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+  return Schema.String.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'string' }));
 };
 
 /**
@@ -14,7 +14,7 @@ export const String = (propertyId: string) => {
  */
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const Number = (propertyId: string) => {
-  return Schema.Number.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+  return Schema.Number.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'number' }));
 };
 
 /**
@@ -22,7 +22,7 @@ export const Number = (propertyId: string) => {
  */
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const Boolean = (propertyId: string) => {
-  return Schema.Boolean.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+  return Schema.Boolean.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'boolean' }));
 };
 
 /**
@@ -30,7 +30,7 @@ export const Boolean = (propertyId: string) => {
  */
 // biome-ignore lint/suspicious/noShadowRestrictedNames: is part of a namespaces module and therefor ok
 export const Date = (propertyId: string) => {
-  return Schema.Date.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+  return Schema.Date.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'date' }));
 };
 
 export const Point = (propertyId: string) =>
@@ -40,7 +40,7 @@ export const Point = (propertyId: string) =>
       return str.split(',').map((n: string) => globalThis.Number(n));
     },
     encode: (points: readonly number[]) => points.join(','),
-  }).pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId }));
+  }).pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'point' }));
 
 export const Relation =
   <S extends Schema.Schema.AnyNoContext>(schema: S) =>
@@ -49,7 +49,12 @@ export const Relation =
       Schema.Struct({ id: Schema.String, _relation: Schema.Struct({ id: Schema.String }) }),
     )(schema);
     return Schema.Array(schemaWithId).pipe(
-      Schema.annotations({ [PropertyIdSymbol]: propertyId, [RelationSchemaSymbol]: schema, [RelationSymbol]: true }),
+      Schema.annotations({
+        [PropertyIdSymbol]: propertyId,
+        [RelationSchemaSymbol]: schema,
+        [RelationSymbol]: true,
+        [PropertyTypeSymbol]: 'relation',
+      }),
     );
   };
 
