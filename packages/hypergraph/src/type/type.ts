@@ -1,5 +1,13 @@
+import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
-import { PropertyIdSymbol, PropertyTypeSymbol, RelationSchemaSymbol, RelationSymbol } from '../constants.js';
+import * as SchemaAST from 'effect/SchemaAST';
+import {
+  PropertyIdSymbol,
+  PropertyTypeSymbol,
+  RelationSchemaSymbol,
+  RelationSymbol,
+  TypeIdsSymbol,
+} from '../constants.js';
 
 /**
  * Creates a String schema with the specified GRC-20 property ID
@@ -45,9 +53,15 @@ export const Point = (propertyId: string) =>
 export const Relation =
   <S extends Schema.Schema.AnyNoContext>(schema: S) =>
   (propertyId: string) => {
-    const schemaWithId = Schema.extend(
+    const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(schema.ast as SchemaAST.TypeLiteral).pipe(
+      Option.getOrElse(() => []),
+    );
+
+    const schemaWithId = Schema.extend(schema)(
       Schema.Struct({ id: Schema.String, _relation: Schema.Struct({ id: Schema.String }) }),
-    )(schema);
+      // manually adding the type ids to the schema since they get lost when extending the schema
+    ).pipe(Schema.annotations({ [TypeIdsSymbol]: typeIds }));
+
     return Schema.Array(schemaWithId).pipe(
       Schema.annotations({
         [PropertyIdSymbol]: propertyId,

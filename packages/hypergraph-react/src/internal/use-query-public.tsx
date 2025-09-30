@@ -10,6 +10,7 @@ import * as SchemaAST from 'effect/SchemaAST';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { convertPropertyValue } from './convert-property-value.js';
+import { convertRelations } from './convert-relations.js';
 import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
 import type { QueryPublicParams } from './types.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
@@ -210,7 +211,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
 
     rawEntity = {
       ...rawEntity,
-      // ...convertRelations(queryEntity, type),
+      ...convertRelations(queryEntity, type),
     };
 
     const decodeResult = decode({

@@ -50,6 +50,7 @@ export function encodeToGrc20Json<T extends object, E>(schema: Schema.Schema<T, 
   const out: Record<string, unknown> = {};
 
   for (const prop of ast.propertySignatures) {
+    // TODO: what about optional properties here? usually we use prop.type.types[0] but we don't here?
     const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
     if (Option.isSome(result)) {
       out[result.value] = (value as any)[prop.name];
