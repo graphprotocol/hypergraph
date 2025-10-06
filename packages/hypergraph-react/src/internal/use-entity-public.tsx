@@ -204,8 +204,6 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
     ...convertRelations(queryEntity, ast),
   };
 
-  console.log('rawEntity', rawEntity);
-
   const decodeResult = decode({
     ...rawEntity,
     __deleted: false,
@@ -213,10 +211,9 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
     __version: '',
   });
 
-  console.log('decodeResult', decodeResult);
-
   if (Either.isRight(decodeResult)) {
     return {
+      // injecting the schema to the entity to be able to access it in the preparePublish function
       data: { ...decodeResult.right, __schema: type } as Entity.Entity<S>,
       invalidEntity: null,
     };

@@ -7,7 +7,7 @@ import {
   type RelationsParam,
 } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
-import { store, TypeUtils } from '@graphprotocol/hypergraph';
+import { store } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import request, { gql } from 'graphql-request';
 

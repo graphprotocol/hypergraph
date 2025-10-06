@@ -227,7 +227,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
     });
 
     if (Either.isRight(decodeResult)) {
-      // TODO: do we need __schema here?
+      // injecting the schema to the entity to be able to access it in the preparePublish function
       data.push({ ...decodeResult.right, __schema: type });
     } else {
       invalidEntities.push(rawEntity);
@@ -267,13 +267,16 @@ export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, pa
         queryDocument = entitiesQueryDocumentLevel2;
       }
 
+      const filterResult = filter ? translateFilterToGraphql(filter, type) : {};
+      console.log('filterResult', filterResult);
+
       const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
         spaceId: space,
         typeIds,
         relationTypeIdsLevel1: relationTypeIds.level1,
         relationTypeIdsLevel2: relationTypeIds.level2,
         first,
-        filter: filter ? translateFilterToGraphql(filter, type) : {},
+        filter: filterResult,
       });
       return result;
     },

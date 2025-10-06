@@ -13,7 +13,7 @@ export const Event = ({ spaceId, entityId }: { spaceId: string; entityId: string
     space: spaceId,
   });
 
-  console.log({ component: 'Event', isPending, isError, data });
+  // console.log({ component: 'Event', isPending, isError, data });
 
   return (
     <div>

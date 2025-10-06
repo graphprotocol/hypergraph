@@ -1,6 +1,6 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, TypeUtils } from '@graphprotocol/hypergraph';
-import { PropertyIdSymbol } from '@graphprotocol/hypergraph/constants';
+import { Constants, type Entity } from '@graphprotocol/hypergraph';
+import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 
@@ -72,17 +72,19 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
     if (!propertySignature) continue;
 
     // find the property id for the field
-    const propertyId = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(propertySignature.type);
-    if (!propertyId) continue;
+    const propertyId = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(propertySignature.type);
+    const propertyType = SchemaAST.getAnnotation<string>(Constants.PropertyTypeSymbol)(propertySignature.type);
+
+    if (!Option.isSome(propertyId) || !Option.isSome(propertyType)) continue;
 
     if (
-      TypeUtils.isStringOrOptionalStringType(type.fields[fieldName]) &&
+      propertyType.value === 'string' &&
       (fieldFilter.is || fieldFilter.startsWith || fieldFilter.endsWith || fieldFilter.contains)
     ) {
       graphqlFilter.push({
         values: {
           some: {
-            propertyId: { is: propertyId },
+            propertyId: { is: propertyId.value },
             string: fieldFilter.is
               ? { is: fieldFilter.is }
               : fieldFilter.startsWith
@@ -95,25 +97,22 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
       });
     }
 
-    if (TypeUtils.isBooleanOrOptionalBooleanType(type.fields[fieldName]) && fieldFilter.is) {
+    if (propertyType.value === 'boolean' && fieldFilter.is) {
       graphqlFilter.push({
         values: {
           some: {
-            propertyId: { is: propertyId },
+            propertyId: { is: propertyId.value },
             boolean: { is: fieldFilter.is },
           },
         },
       });
     }
 
-    if (
-      TypeUtils.isNumberOrOptionalNumberType(type.fields[fieldName]) &&
-      (fieldFilter.is || fieldFilter.greaterThan || fieldFilter.lessThan)
-    ) {
+    if (propertyType.value === 'number' && (fieldFilter.is || fieldFilter.greaterThan || fieldFilter.lessThan)) {
       graphqlFilter.push({
         values: {
           some: {
-            propertyId: { is: propertyId },
+            propertyId: { is: propertyId.value },
             number: fieldFilter.is
               ? { is: Graph.serializeNumber(fieldFilter.is) }
               : fieldFilter.greaterThan

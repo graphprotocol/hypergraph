@@ -11,9 +11,10 @@ export const Playground = ({ spaceId }: { spaceId: string }) => {
         jobOffers: {},
       },
     },
-    // filter: {
-    //   or: [{ name: { startsWith: 'test' } }, { name: { startsWith: 'ETH' } }],
-    // },
+    filter: {
+      or: [{ name: { startsWith: 'My' } }, { name: { startsWith: 'ETH' } }],
+    },
+    // filter: { name: { startsWith: 'My Test Event' } },
     first: 100,
     space: spaceId,
   });
