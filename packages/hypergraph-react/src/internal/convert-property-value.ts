@@ -1,4 +1,4 @@
-import { PropertyTypeSymbol } from '@graphprotocol/hypergraph/constants';
+import { Constants } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import * as SchemaAST from 'effect/SchemaAST';
 
@@ -6,7 +6,7 @@ export const convertPropertyValue = (
   property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
   type: SchemaAST.AST,
 ) => {
-  const propertyType = SchemaAST.getAnnotation<string>(PropertyTypeSymbol)(type);
+  const propertyType = SchemaAST.getAnnotation<string>(Constants.PropertyTypeSymbol)(type);
   if (Option.isSome(propertyType)) {
     if (propertyType.value === 'string') {
       return property.string;

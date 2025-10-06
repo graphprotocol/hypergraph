@@ -1,5 +1,4 @@
-import { PropertyIdSymbol, TypeIdsSymbol } from '@graphprotocol/hypergraph/constants';
-import { isRelation } from '@graphprotocol/hypergraph/utils/isRelation';
+import { Constants, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
@@ -34,13 +33,13 @@ export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
   const rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {};
 
   for (const prop of ast.propertySignatures) {
-    const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
+    const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
 
-    if (isRelation(prop.type) && Option.isSome(result)) {
+    if (Utils.isRelation(prop.type) && Option.isSome(result)) {
       rawEntity[String(prop.name)] = [];
 
       const relationTransformation = prop.type.rest?.[0]?.type;
-      const typeIds: string[] = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(relationTransformation).pipe(
+      const typeIds: string[] = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(relationTransformation).pipe(
         Option.getOrElse(() => []),
       );
       if (typeIds.length === 0) {
@@ -69,7 +68,7 @@ export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
           };
 
           for (const nestedProp of relationTransformation.propertySignatures) {
-            const nestedResult = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(nestedProp.type);
+            const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
             if (Option.isSome(nestedResult)) {
               const value = relationEntry.toEntity.valuesList?.find((a) => a.propertyId === nestedResult.value);
               if (!value) {
