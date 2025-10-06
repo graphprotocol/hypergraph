@@ -15,5 +15,5 @@ export function useCreateEntity<const S extends Schema.Schema.AnyNoContext>(type
       throw new Error('Space not found or not ready');
     };
   }
-  return Entity.createNew(handle, type);
+  return Entity.create(handle, type);
 }

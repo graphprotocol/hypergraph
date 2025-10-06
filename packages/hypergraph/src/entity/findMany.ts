@@ -444,13 +444,6 @@ export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
     return query.data;
   };
 
-  // const allTypes = new Set<S>();
-  // for (const [_key, field] of Object.entries(type.fields)) {
-  //   if (isRelationField(field)) {
-  //     allTypes.add(field as S);
-  //   }
-  // }
-
   const subscribe = (callback: () => void) => {
     let cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
 
