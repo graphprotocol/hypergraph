@@ -1,13 +1,15 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, type Mapping, store } from '@graphprotocol/hypergraph';
+import { Constants, type Entity } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
-import { useSelector } from '@xstate/store/react';
 import * as Either from 'effect/Either';
+import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { convertPropertyValue } from './convert-property-value.js';
 import { convertRelations } from './convert-relations.js';
+import { getRelationTypeIds } from './get-relation-type-ids.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 
 const entityQueryDocumentLevel0 = gql`
@@ -47,6 +49,7 @@ query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!) {
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
+      id
       toEntity {
         id
         name
@@ -83,6 +86,7 @@ query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!, $rel
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
+      id
       toEntity {
         id
         name
@@ -97,6 +101,7 @@ query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!, $rel
         relationsList(
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
         ) {
+          id
           toEntity {
             id
             name
@@ -131,6 +136,7 @@ type EntityQueryResult = {
       point: string;
     }[];
     relationsList?: {
+      id: string;
       toEntity: {
         id: string;
         name: string;
@@ -143,6 +149,7 @@ type EntityQueryResult = {
           point: string;
         }[];
         relationsList?: {
+          id: string;
           toEntity: {
             id: string;
             name: string;
@@ -163,40 +170,50 @@ type EntityQueryResult = {
   } | null;
 };
 
-export const parseResult = <S extends Schema.Schema.AnyNoContext>(
-  queryData: EntityQueryResult,
-  type: S,
-  mappingEntry: Mapping.MappingEntry,
-  mapping: Mapping.Mapping,
-) => {
+export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQueryResult, type: S) => {
   if (!queryData.entity) {
     return { data: null, invalidEntity: null };
   }
 
-  const decode = Schema.decodeUnknownEither(type);
+  const schemaWithId = Schema.extend(Schema.Struct({ id: Schema.String }))(type);
+  const decode = Schema.decodeUnknownEither(schemaWithId);
   const queryEntity = queryData.entity;
   let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
     id: queryEntity.id,
   };
 
-  // take the mappingEntry and assign the attributes to the rawEntity
-  for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
-    const property = queryEntity.valuesList.find((a) => a.propertyId === value);
-    if (property) {
-      rawEntity[key] = convertPropertyValue(property, type);
+  const ast = type.ast as SchemaAST.TypeLiteral;
+
+  for (const prop of ast.propertySignatures) {
+    const propType = prop.isOptional ? prop.type.types[0] : prop.type;
+    const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(propType);
+
+    if (Option.isSome(result)) {
+      const value = queryEntity.valuesList.find((a) => a.propertyId === result.value);
+      if (value) {
+        const rawValue = convertPropertyValue(value, propType);
+        if (rawValue) {
+          rawEntity[String(prop.name)] = rawValue;
+        }
+      }
     }
   }
 
   rawEntity = {
     ...rawEntity,
-    ...convertRelations(queryEntity, type, mappingEntry, mapping),
+    ...convertRelations(queryEntity, ast),
   };
+
+  console.log('rawEntity', rawEntity);
 
   const decodeResult = decode({
     ...rawEntity,
     __deleted: false,
+    // __version: queryEntity.currentVersion.versionId,
     __version: '',
   });
+
+  console.log('decodeResult', decodeResult);
 
   if (Either.isRight(decodeResult)) {
     return {
@@ -220,49 +237,30 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
   const { id, enabled = true, space: spaceFromParams, include } = params;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
-  const mapping = useSelector(store, (state) => state.context.mapping);
-
-  // @ts-expect-error TODO should use the actual type instead of the name in the mapping
-  const typeName = type.name;
-  const mappingEntry = mapping?.[typeName];
-  if (enabled && !mappingEntry) {
-    throw new Error(`Mapping entry for ${typeName} not found`);
-  }
 
   // constructing the relation type ids for the query
-  const relationTypeIdsLevel1: string[] = [];
-  const relationTypeIdsLevel2: string[] = [];
-  for (const key in mappingEntry?.relations ?? {}) {
-    if (include?.[key] && mappingEntry?.relations?.[key]) {
-      relationTypeIdsLevel1.push(mappingEntry?.relations?.[key]);
-      const field = type.fields[key];
-      // @ts-expect-error TODO find a better way to access the relation type name
-      const typeName2 = field.value.name;
-      const mappingEntry2 = mapping[typeName2];
-      for (const key2 in mappingEntry2?.relations ?? {}) {
-        if (include?.[key][key2] && mappingEntry2?.relations?.[key2]) {
-          relationTypeIdsLevel2.push(mappingEntry2?.relations?.[key2]);
-        }
-      }
-    }
-  }
+  const relationTypeIds = getRelationTypeIds(type, include);
+
+  const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const result = useQueryTanstack({
-    queryKey: ['hypergraph-public-entity', typeName, id, space, relationTypeIdsLevel1, relationTypeIdsLevel2, include],
+    queryKey: ['hypergraph-public-entity', id, typeIds, space, relationTypeIds.level1, relationTypeIds.level2, include],
     queryFn: async () => {
       let queryDocument = entityQueryDocumentLevel0;
-      if (relationTypeIdsLevel1.length > 0) {
+      if (relationTypeIds.level1.length > 0) {
         queryDocument = entityQueryDocumentLevel1;
       }
-      if (relationTypeIdsLevel2.length > 0) {
+      if (relationTypeIds.level2.length > 0) {
         queryDocument = entityQueryDocumentLevel2;
       }
 
       const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
         id,
         spaceId: space,
-        relationTypeIdsLevel1,
-        relationTypeIdsLevel2,
+        relationTypeIdsLevel1: relationTypeIds.level1,
+        relationTypeIdsLevel2: relationTypeIds.level2,
       });
       return result;
     },
@@ -270,11 +268,11 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
   });
 
   const { data, invalidEntity } = useMemo(() => {
-    if (result.data && mappingEntry) {
-      return parseResult(result.data, type, mappingEntry, mapping);
+    if (result.data) {
+      return parseResult(result.data, type);
     }
     return { data: null, invalidEntity: null };
-  }, [result.data, type, mappingEntry, mapping]);
+  }, [result.data, type]);
 
   return { ...result, data, invalidEntity };
 };

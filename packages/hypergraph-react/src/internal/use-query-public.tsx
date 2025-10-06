@@ -1,7 +1,6 @@
 import { Graph } from '@graphprotocol/grc-20';
 import type { Entity } from '@graphprotocol/hypergraph';
-import { PropertyIdSymbol, TypeIdsSymbol } from '@graphprotocol/hypergraph/constants';
-import { isRelation } from '@graphprotocol/hypergraph/utils/isRelation';
+import { Constants } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Either from 'effect/Either';
 import * as Option from 'effect/Option';
@@ -11,6 +10,7 @@ import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { convertPropertyValue } from './convert-property-value.js';
 import { convertRelations } from './convert-relations.js';
+import { getRelationTypeIds } from './get-relation-type-ids.js';
 import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
 import type { QueryPublicParams } from './types.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
@@ -201,7 +201,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
 
     for (const prop of ast.propertySignatures) {
       const propType = prop.isOptional ? prop.type.types[0] : prop.type;
-      const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(propType);
+      const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(propType);
 
       if (Option.isSome(result)) {
         const value = queryEntity.valuesList.find((a) => a.propertyId === result.value);
@@ -242,63 +242,36 @@ export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, pa
   const space = spaceFromParams ?? spaceFromContext;
 
   // constructing the relation type ids for the query
-  const relationTypeIdsLevel1: string[] = [];
-  const relationTypeIdsLevel2: string[] = [];
+  const relationTypeIds = getRelationTypeIds(type, include);
 
-  const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+  const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
   );
-
-  const ast = type.ast as SchemaAST.TypeLiteral;
-
-  for (const prop of ast.propertySignatures) {
-    if (!isRelation(prop.type)) continue;
-
-    const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
-    if (Option.isSome(result) && include?.[prop.name]) {
-      relationTypeIdsLevel1.push(result.value);
-      const relationTransformation = prop.type.rest?.[0]?.type;
-      const typeIds: string[] = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(relationTransformation).pipe(
-        Option.getOrElse(() => []),
-      );
-      if (typeIds.length === 0) {
-        continue;
-      }
-      for (const nestedProp of relationTransformation.propertySignatures) {
-        if (!isRelation(nestedProp.type)) continue;
-
-        const nestedResult = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(nestedProp.type);
-        if (Option.isSome(nestedResult) && include?.[prop.name][nestedProp.name]) {
-          relationTypeIdsLevel2.push(nestedResult.value);
-        }
-      }
-    }
-  }
 
   const result = useQueryTanstack({
     queryKey: [
       'hypergraph-public-entities',
       space,
       typeIds,
-      relationTypeIdsLevel1,
-      relationTypeIdsLevel2,
+      relationTypeIds.level1,
+      relationTypeIds.level2,
       filter,
       first,
     ],
     queryFn: async () => {
       let queryDocument = entitiesQueryDocumentLevel0;
-      if (relationTypeIdsLevel1.length > 0) {
+      if (relationTypeIds.level1.length > 0) {
         queryDocument = entitiesQueryDocumentLevel1;
       }
-      if (relationTypeIdsLevel2.length > 0) {
+      if (relationTypeIds.level2.length > 0) {
         queryDocument = entitiesQueryDocumentLevel2;
       }
 
       const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
         spaceId: space,
         typeIds,
-        relationTypeIdsLevel1,
-        relationTypeIdsLevel2,
+        relationTypeIdsLevel1: relationTypeIds.level1,
+        relationTypeIdsLevel2: relationTypeIds.level2,
         first,
         filter: filter ? translateFilterToGraphql(filter, type) : {},
       });
