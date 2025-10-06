@@ -60,6 +60,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
+      id
       toEntity {
         id
         name
@@ -100,6 +101,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
+      id
       toEntity {
         id
         name
@@ -115,6 +117,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
           # filter: {spaceId: {is: $spaceId}, toEntity: {relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $relationTypeIdsLevel2}}}}}
         ) {
+          id
           toEntity {
             id
             name
@@ -149,6 +152,7 @@ type EntityQueryResult = {
       point: string;
     }[];
     relationsList: {
+      id: string;
       toEntity: {
         id: string;
         name: string;
@@ -161,6 +165,7 @@ type EntityQueryResult = {
           point: string;
         }[];
         relationsList: {
+          id: string;
           toEntity: {
             id: string;
             name: string;
@@ -211,7 +216,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
 
     rawEntity = {
       ...rawEntity,
-      ...convertRelations(queryEntity, type),
+      ...convertRelations(queryEntity, ast),
     };
 
     const decodeResult = decode({
@@ -248,31 +253,31 @@ export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, pa
 
   for (const prop of ast.propertySignatures) {
     if (!isRelation(prop.type)) continue;
+
     const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
-    if (Option.isSome(result)) {
+    if (Option.isSome(result) && include?.[prop.name]) {
       relationTypeIdsLevel1.push(result.value);
+      const relationTransformation = prop.type.rest?.[0]?.type;
+      const typeIds: string[] = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(relationTransformation).pipe(
+        Option.getOrElse(() => []),
+      );
+      if (typeIds.length === 0) {
+        continue;
+      }
+      for (const nestedProp of relationTransformation.propertySignatures) {
+        if (!isRelation(nestedProp.type)) continue;
+
+        const nestedResult = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(nestedProp.type);
+        if (Option.isSome(nestedResult) && include?.[prop.name][nestedProp.name]) {
+          relationTypeIdsLevel2.push(nestedResult.value);
+        }
+      }
     }
   }
-
-  // for (const key in mappingEntry?.relations ?? {}) {
-  //   if (include?.[key] && mappingEntry?.relations?.[key]) {
-  //     relationTypeIdsLevel1.push(mappingEntry?.relations?.[key]);
-  //     const field = type.fields[key];
-  //     // @ts-expect-error TODO find a better way to access the relation type name
-  //     const typeName2 = field.value.name;
-  //     const mappingEntry2 = mapping[typeName2];
-  //     for (const key2 in mappingEntry2?.relations ?? {}) {
-  //       if (include?.[key][key2] && mappingEntry2?.relations?.[key2]) {
-  //         relationTypeIdsLevel2.push(mappingEntry2?.relations?.[key2]);
-  //       }
-  //     }
-  //   }
-  // }
 
   const result = useQueryTanstack({
     queryKey: [
       'hypergraph-public-entities',
-      'TODO: type name',
       space,
       typeIds,
       relationTypeIdsLevel1,
@@ -311,21 +316,3 @@ export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, pa
 
   return { ...result, data, invalidEntities };
 };
-
-// const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
-//   Option.getOrElse(() => []),
-// );
-
-// const out: Record<string, unknown> = {};
-
-// for (const prop of ast.propertySignatures) {
-//   const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
-//   if (Option.isSome(result)) {
-//     const grc20Key = result.value;
-//     if (grc20Key in grc20Data && typeof prop.name === 'string') {
-//       out[prop.name] = (grc20Data as any)[grc20Key];
-//     }
-//   }
-// }
-
-// out.id = grc20Data.id as string;

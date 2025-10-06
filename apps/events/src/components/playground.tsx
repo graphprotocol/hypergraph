@@ -4,7 +4,7 @@ import { Event } from '../schema';
 import { Button } from './ui/button';
 
 export const Playground = ({ spaceId }: { spaceId: string }) => {
-  const { data, isLoading, isError } = useQuery(Event, {
+  const { data, isLoading, isError, invalidEntities } = useQuery(Event, {
     mode: 'public',
     include: {
       sponsors: {
@@ -24,7 +24,7 @@ export const Playground = ({ spaceId }: { spaceId: string }) => {
 
   const deleteEntity = _useDeleteEntityPublic(Event, { space: spaceId });
 
-  console.log({ isLoading, isError, data });
+  console.log({ isLoading, isError, data, invalidEntities });
 
   return (
     <div>
