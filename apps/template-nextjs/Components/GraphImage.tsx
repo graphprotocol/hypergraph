@@ -10,5 +10,6 @@ function getImageUrl(src: string | undefined | Blob) {
 export function GraphImage(
   props: React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>,
 ) {
+  // biome-ignore lint/a11y/useAltText: should be provided with the props
   return <img {...props} src={getImageUrl(props.src)} />;
 }

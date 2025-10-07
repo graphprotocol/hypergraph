@@ -99,7 +99,7 @@ export const mapping: Mapping.Mapping = {
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      xUrl: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
+      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
     },
   },
 };
@@ -141,8 +141,8 @@ export default function ProjectsExample() {
             {project.description && (
               <p>Description: {project.description}</p>
             )}
-             {project.xUrl && (
-                <a href={project.xUrl} target="_blank" rel="noopener noreferrer">
+             {project.x && (
+                <a href={project.x} target="_blank" rel="noopener noreferrer">
                  View on X
                 </a>
               )}

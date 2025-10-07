@@ -12,15 +12,16 @@ import type { DocumentContent, DocumentRelation, Entity } from './types.js';
 /**
  * Type utility to transform relation fields to accept string arrays instead of their typed values
  * This specifically targets Type.Relation fields which are arrays of objects
+ * Relations can be provided as string arrays or left out completely (optional)
  */
 type WithRelationsAsStringArrays<T> = {
   [K in keyof T]: T[K] extends readonly (infer U)[]
     ? U extends object
-      ? string[]
+      ? string[] | undefined
       : T[K]
     : T[K] extends (infer U)[]
       ? U extends object
-        ? string[]
+        ? string[] | undefined
         : T[K]
       : T[K];
 };
