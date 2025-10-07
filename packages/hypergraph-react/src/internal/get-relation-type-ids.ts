@@ -18,9 +18,15 @@ export const getRelationTypeIds = (
     if (!Utils.isRelation(prop.type)) continue;
 
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
-    if (Option.isSome(result) && include?.[prop.name]) {
+    if (Option.isSome(result) && include?.[String(prop.name)]) {
       relationTypeIdsLevel1.push(result.value);
-      const relationTransformation = prop.type.rest?.[0]?.type;
+      if (!SchemaAST.isTupleType(prop.type)) {
+        continue;
+      }
+      const relationTransformation = prop.type.rest[0]?.type;
+      if (!relationTransformation || !SchemaAST.isTypeLiteral(relationTransformation)) {
+        continue;
+      }
       const typeIds2: string[] = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(
         relationTransformation,
       ).pipe(Option.getOrElse(() => []));
@@ -31,7 +37,7 @@ export const getRelationTypeIds = (
         if (!Utils.isRelation(nestedProp.type)) continue;
 
         const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
-        if (Option.isSome(nestedResult) && include?.[prop.name][nestedProp.name]) {
+        if (Option.isSome(nestedResult) && include?.[String(prop.name)]?.[String(nestedProp.name)]) {
           relationTypeIdsLevel2.push(nestedResult.value);
         }
       }

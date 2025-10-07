@@ -26,11 +26,15 @@ type RecursiveQueryEntity = {
   }[];
 };
 
+type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
+type RawEntity = Record<string, RawEntityValue>;
+type NestedRawEntity = RawEntity & { _relation: { id: string } };
+
 export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   ast: SchemaAST.TypeLiteral,
 ) => {
-  const rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {};
+  const rawEntity: RawEntity = {};
 
   for (const prop of ast.propertySignatures) {
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
@@ -38,7 +42,15 @@ export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
     if (Utils.isRelation(prop.type) && Option.isSome(result)) {
       rawEntity[String(prop.name)] = [];
 
-      const relationTransformation = prop.type.rest?.[0]?.type;
+      if (!SchemaAST.isTupleType(prop.type)) {
+        continue;
+      }
+      const relationType = prop.type;
+      const relationTransformation = relationType.rest[0]?.type;
+      if (!relationTransformation || !SchemaAST.isTypeLiteral(relationTransformation)) {
+        continue;
+      }
+
       const typeIds: string[] = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(relationTransformation).pipe(
         Option.getOrElse(() => []),
       );
@@ -51,9 +63,7 @@ export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
       );
       if (allRelationsWithTheCorrectPropertyTypeId) {
         for (const relationEntry of allRelationsWithTheCorrectPropertyTypeId) {
-          let nestedRawEntity:
-            | Record<string, string | boolean | number | unknown[] | Date>
-            | { _relation: { id: string } } = {
+          let nestedRawEntity: NestedRawEntity = {
             id: relationEntry.toEntity.id,
             _relation: {
               id: relationEntry.id,
