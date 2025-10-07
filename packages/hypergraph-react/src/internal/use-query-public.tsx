@@ -1,6 +1,5 @@
 import { Graph } from '@graphprotocol/grc-20';
-import type { Entity } from '@graphprotocol/hypergraph';
-import { Constants } from '@graphprotocol/hypergraph';
+import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Either from 'effect/Either';
 import * as Option from 'effect/Option';
@@ -187,7 +186,7 @@ type EntityQueryResult = {
 };
 
 export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQueryResult, type: S) => {
-  const schemaWithId = Schema.extend(Schema.Struct({ id: Schema.String }))(type);
+  const schemaWithId = Utils.addIdSchemaField(type);
   const decode = Schema.decodeUnknownEither(schemaWithId);
   const data: Entity.Entity<S>[] = [];
   const invalidEntities: Record<string, unknown>[] = [];
@@ -271,8 +270,7 @@ export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, pa
         queryDocument = entitiesQueryDocumentLevel2;
       }
 
-      const filterResult = filter ? translateFilterToGraphql(filter, type) : {};
-      console.log('filterResult', filterResult);
+      const filterParams = filter ? translateFilterToGraphql(filter, type) : {};
 
       const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
         spaceId: space,
@@ -280,7 +278,7 @@ export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, pa
         relationTypeIdsLevel1: relationTypeIds.level1,
         relationTypeIdsLevel2: relationTypeIds.level2,
         first,
-        filter: filterResult,
+        filter: filterParams,
       });
       return result;
     },

@@ -57,10 +57,19 @@ export const Relation =
       Option.getOrElse(() => []),
     );
 
-    const schemaWithId = Schema.extend(schema)(
-      Schema.Struct({ id: Schema.String, _relation: Schema.Struct({ id: Schema.String }) }),
+    const schemaWithId = Schema.asSchema(
+      Schema.extend(schema)(
+        Schema.Struct({
+          id: Schema.String,
+          _relation: Schema.Struct({ id: Schema.String }),
+        }),
+      ),
       // manually adding the type ids to the schema since they get lost when extending the schema
-    ).pipe(Schema.annotations({ [TypeIdsSymbol]: typeIds }));
+    ).pipe(Schema.annotations({ [TypeIdsSymbol]: typeIds })) as Schema.Schema<
+      Schema.Schema.Type<S> & { readonly id: string; readonly _relation: { readonly id: string } },
+      Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: { readonly id: string } },
+      never
+    >;
 
     return Schema.Array(schemaWithId).pipe(
       Schema.annotations({

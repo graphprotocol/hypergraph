@@ -1,3 +1,4 @@
+export * from './addIdSchemaField.js';
 export * from './assertExhaustive.js';
 export * from './automergeId.js';
 export * from './base58.js';

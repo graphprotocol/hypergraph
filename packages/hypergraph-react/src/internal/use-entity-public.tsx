@@ -1,5 +1,5 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { Constants, type Entity } from '@graphprotocol/hypergraph';
+import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Either from 'effect/Either';
 import * as Option from 'effect/Option';
@@ -175,7 +175,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
     return { data: null, invalidEntity: null };
   }
 
-  const schemaWithId = Schema.extend(Schema.Struct({ id: Schema.String }))(type);
+  const schemaWithId = Utils.addIdSchemaField(type);
   const decode = Schema.decodeUnknownEither(schemaWithId);
   const queryEntity = queryData.entity;
   let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
