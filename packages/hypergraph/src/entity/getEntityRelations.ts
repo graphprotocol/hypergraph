@@ -19,14 +19,11 @@ export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(
   for (const prop of ast.propertySignatures) {
     if (!isRelation(prop.type)) continue;
 
-    // TODO: should we add an empty array for relations that are not included?
-    // Currently we still add an empty array for relations that are not included.
-    // This is to ensure that the relation is not undefined in the decoded entity.
-    // In the future we might want to derive a schema based on the include object.
-    // if (!include?.[fieldName]) {
-    //   relations[fieldName] = [];
-    //   continue;
-    // }
+    const fieldName = String(prop.name);
+    if (!include?.[fieldName]) {
+      relations[fieldName] = [];
+      continue;
+    }
 
     const relationEntities: Array<Entity<Schema.Schema.AnyNoContext>> = [];
 
@@ -44,7 +41,7 @@ export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(
         relationEntities.push({ ...decodedRelationEntity, id: relation.to, _relation: { id: relationId } });
       }
     }
-    relations[prop.name] = relationEntities;
+    relations[String(prop.name)] = relationEntities;
   }
 
   return relations;

@@ -1,16 +1,10 @@
 import type { Op } from '@graphprotocol/grc-20';
-import type { Entity } from '@graphprotocol/hypergraph';
-import type * as Schema from 'effect/Schema';
 
 export type OmitStrict<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type EntityLike = {
   id: string;
   [key: string]: unknown;
-};
-
-export type PartialEntity<S extends Schema.Schema.AnyNoContext> = Partial<Schema.Schema.Type<Entity.Update<S>>> & {
-  id: string;
 };
 
 export type DiffEntry = {

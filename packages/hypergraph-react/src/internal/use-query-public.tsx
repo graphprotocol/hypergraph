@@ -217,6 +217,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
       }
     }
 
+    // @ts-expect-error
     rawEntity = {
       ...rawEntity,
       ...convertRelations(queryEntity, ast),
