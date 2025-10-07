@@ -185,7 +185,11 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
   const ast = type.ast as SchemaAST.TypeLiteral;
 
   for (const prop of ast.propertySignatures) {
-    const propType = prop.isOptional ? prop.type.types[0] : prop.type;
+    const propType =
+      prop.isOptional && SchemaAST.isUnion(prop.type)
+        ? (prop.type.types.find((member) => !SchemaAST.isUndefinedKeyword(member)) ?? prop.type)
+        : prop.type;
+
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(propType);
 
     if (Option.isSome(result)) {
