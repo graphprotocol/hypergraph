@@ -91,6 +91,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
             id: entityId,
           });
           decoded = {
+            // @ts-expect-error
             ...decoded,
             ...relations,
           };
