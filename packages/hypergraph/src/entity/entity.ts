@@ -50,10 +50,14 @@ export function encodeToGrc20Json<T extends object, E>(schema: Schema.Schema<T, 
   const out: Record<string, unknown> = {};
 
   for (const prop of ast.propertySignatures) {
-    // TODO: what about optional properties here? usually we use prop.type.types[0] but we don't here?
-    const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
-    if (Option.isSome(result)) {
-      out[result.value] = (value as any)[prop.name];
+    const propType =
+      prop.isOptional && SchemaAST.isUnion(prop.type)
+        ? (prop.type.types.find((member) => !SchemaAST.isUndefinedKeyword(member)) ?? prop.type)
+        : prop.type;
+    const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(propType);
+    const propertyValue: any = (value as any)[prop.name];
+    if (Option.isSome(result) && propertyValue !== undefined) {
+      out[result.value] = propertyValue;
     }
   }
 
@@ -71,7 +75,11 @@ export function decodeFromGrc20Json<T extends object, E>(
   const out: Record<string, unknown> = {};
 
   for (const prop of ast.propertySignatures) {
-    const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
+    const propType =
+      prop.isOptional && SchemaAST.isUnion(prop.type)
+        ? (prop.type.types.find((member) => !SchemaAST.isUndefinedKeyword(member)) ?? prop.type)
+        : prop.type;
+    const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(propType);
     if (Option.isSome(result)) {
       const grc20Key = result.value;
       if (grc20Key in grc20Data && typeof prop.name === 'string') {
