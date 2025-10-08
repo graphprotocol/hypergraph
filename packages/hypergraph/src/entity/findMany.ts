@@ -73,10 +73,8 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
       const entity = doc.entities?.[entityId];
       if (!hasValidTypesProperty(entity)) continue;
       for (const typeId of entity['@@types@@']) {
-        console.log('typeId', typeId);
         if (typeof typeId !== 'string') continue;
         const cacheEntry = decodedEntitiesCache.get(typeId);
-        console.log('cacheEntry', cacheEntry);
         if (!cacheEntry) continue;
 
         let includeFromAllQueries = {};

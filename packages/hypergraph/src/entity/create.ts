@@ -40,9 +40,9 @@ export const create = <const S extends Schema.Schema.AnyNoContext>(handle: DocHa
     for (const prop of ast.propertySignatures) {
       const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
       if (Option.isSome(result) && isRelation(prop.type)) {
-        const relationId = generateId();
         if (encoded[result.value]) {
           for (const toEntityId of encoded[result.value] as string[]) {
+            const relationId = generateId();
             relations[relationId] = {
               from: entityId,
               to: toEntityId as string,
