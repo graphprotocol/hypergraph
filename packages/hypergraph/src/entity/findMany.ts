@@ -5,7 +5,7 @@ import * as SchemaAST from 'effect/SchemaAST';
 import { TypeIdsSymbol } from '../constants.js';
 import { deepMerge } from '../utils/internal/deep-merge.js';
 import { canonicalize } from '../utils/jsc.js';
-import { type DecodedEntitiesCacheEntry, decodedEntitiesCache, type QueryEntry } from './decodedEntitiesCache.js';
+import { decodedEntitiesCache, type DecodedEntitiesCacheEntry, type QueryEntry } from './decodedEntitiesCache.js';
 import { decodeFromGrc20Json } from './entity.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
@@ -72,9 +72,11 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     for (const entityId of changedEntities) {
       const entity = doc.entities?.[entityId];
       if (!hasValidTypesProperty(entity)) continue;
-      for (const typeName of entity['@@types@@']) {
-        if (typeof typeName !== 'string') continue;
-        const cacheEntry = decodedEntitiesCache.get(typeName);
+      for (const typeId of entity['@@types@@']) {
+        console.log('typeId', typeId);
+        if (typeof typeId !== 'string') continue;
+        const cacheEntry = decodedEntitiesCache.get(typeId);
+        console.log('cacheEntry', cacheEntry);
         if (!cacheEntry) continue;
 
         let includeFromAllQueries = {};
@@ -100,6 +102,8 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           // TODO: store the corrupt entity ids somewhere, so they can be read via the API
           console.error('error', error);
         }
+
+        console.log('decoded', decoded);
 
         if (oldDecodedEntry) {
           // collect all the Ids for relation entries in the `oldDecodedEntry`
@@ -144,11 +148,11 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         }
 
         for (const [queryKey, query] of cacheEntry.queries) {
-          touchedQueries.add([typeName, queryKey]);
+          touchedQueries.add([typeId, queryKey]);
           query.isInvalidated = true;
         }
 
-        entityTypes.add(typeName);
+        entityTypes.add(typeId);
 
         // gather all the decodedEntitiesCacheEntries that have a relation to this entity to
         // invoke their query listeners below
@@ -165,9 +169,9 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 
     // loop over all deleted entities and remove them from the cache
     for (const entityId of deletedEntities) {
-      for (const [affectedTypeName, cacheEntry] of decodedEntitiesCache) {
+      for (const [affectedTypeId, cacheEntry] of decodedEntitiesCache) {
         if (cacheEntry.entities.has(entityId)) {
-          entityTypes.add(affectedTypeName);
+          entityTypes.add(affectedTypeId);
           cacheEntry.entities.delete(entityId);
 
           for (const [queryKey, query] of cacheEntry.queries) {
@@ -175,7 +179,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
             const index = query.data.findIndex((entity) => entity.id === entityId);
             if (index !== -1) {
               query.data.splice(index, 1);
-              touchedQueries.add([affectedTypeName, queryKey]);
+              touchedQueries.add([affectedTypeId, queryKey]);
             }
           }
         }
@@ -195,8 +199,8 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     }
 
     // update the queries affected queries
-    for (const [typeName, queryKey] of touchedQueries) {
-      const cacheEntry = decodedEntitiesCache.get(typeName);
+    for (const [typeId, queryKey] of touchedQueries) {
+      const cacheEntry = decodedEntitiesCache.get(typeId);
       if (!cacheEntry) continue;
 
       const query = cacheEntry.queries.get(queryKey);
@@ -206,8 +210,8 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     }
 
     // invoke all the listeners per type
-    for (const typeName of entityTypes) {
-      const cacheEntry = decodedEntitiesCache.get(typeName);
+    for (const typeId of entityTypes) {
+      const cacheEntry = decodedEntitiesCache.get(typeId);
       if (!cacheEntry) continue;
 
       for (const query of cacheEntry.queries.values()) {
@@ -246,7 +250,7 @@ export function findMany<const S extends Schema.Schema.AnyNoContext>(
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
-  const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+  const typeId = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
   );
 
@@ -363,7 +367,7 @@ export function findMany<const S extends Schema.Schema.AnyNoContext>(
     const entity = entities[id];
     if (
       hasValidTypesProperty(entity) &&
-      typeIds.every((typeId) => {
+      typeId.every((typeId) => {
         return entity['@@types@@'].includes(typeId);
       })
     ) {
@@ -421,7 +425,7 @@ export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
   );
 
   const getEntities = () => {
-    const cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
+    const cacheEntry = decodedEntitiesCache.get(typeIds[0]);
     if (!cacheEntry) return stableEmptyArray;
 
     const query = cacheEntry.queries.get(queryKey);
@@ -446,47 +450,50 @@ export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
   };
 
   const subscribe = (callback: () => void) => {
-    let cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
+    if (typeIds.length > 1) {
+      console.error('Schema with multiple type ids is not supported', typeIds);
+    } else {
+      let cacheEntry = decodedEntitiesCache.get(typeIds[0]);
+      if (!cacheEntry) {
+        const entitiesMap = new Map();
+        const queries = new Map<string, QueryEntry>();
 
-    if (!cacheEntry) {
-      const entitiesMap = new Map();
-      const queries = new Map<string, QueryEntry>();
+        queries.set(queryKey, {
+          data: [],
+          listeners: [],
+          isInvalidated: true,
+          include: include ?? {},
+        });
 
-      queries.set(queryKey, {
-        data: [],
-        listeners: [],
-        isInvalidated: true,
-        include: include ?? {},
-      });
+        cacheEntry = {
+          type,
+          entities: entitiesMap,
+          queries,
+          isInvalidated: true,
+        };
 
-      cacheEntry = {
-        type,
-        entities: entitiesMap,
-        queries,
-        isInvalidated: true,
-      };
+        decodedEntitiesCache.set(typeIds[0], cacheEntry);
+      }
 
-      decodedEntitiesCache.set(canonicalize(typeIds), cacheEntry);
-    }
+      let query = cacheEntry.queries.get(queryKey);
+      if (!query) {
+        query = {
+          data: [],
+          listeners: [],
+          isInvalidated: true,
+          include: include ?? {},
+        };
+        // we just set up the query and expect it to correctly set itself up in findMany
+        cacheEntry.queries.set(queryKey, query);
+      }
 
-    let query = cacheEntry.queries.get(queryKey);
-    if (!query) {
-      query = {
-        data: [],
-        listeners: [],
-        isInvalidated: true,
-        include: include ?? {},
-      };
-      // we just set up the query and expect it to correctly set itself up in findMany
-      cacheEntry.queries.set(queryKey, query);
-    }
-
-    if (query?.listeners) {
-      query.listeners.push(callback);
+      if (query?.listeners) {
+        query.listeners.push(callback);
+      }
     }
 
     return () => {
-      const cacheEntry = decodedEntitiesCache.get(canonicalize(typeIds));
+      const cacheEntry = decodedEntitiesCache.get(typeIds[0]);
       if (cacheEntry) {
         // first cleanup the queries
         const query = cacheEntry.queries.get(queryKey);
@@ -508,7 +515,7 @@ export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
               entityRelationParentsMap.delete(key);
             }
           });
-          decodedEntitiesCache.delete(canonicalize(typeIds));
+          decodedEntitiesCache.delete(typeIds[0]);
         }
       }
 

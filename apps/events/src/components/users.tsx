@@ -11,8 +11,6 @@ export const Users = () => {
   const createEntityNew = useCreateEntity(User);
   const [newUserName, setNewUserName] = useState('');
 
-  console.log(users);
-
   if (!spaceReady) {
     return <div>Loading space...</div>;
   }
@@ -24,9 +22,7 @@ export const Users = () => {
         <Input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} />
         <Button
           onClick={() => {
-            // createEntity({ name: newUserName });
-            const user = createEntityNew({ name: newUserName });
-            console.log(user);
+            createEntityNew({ name: newUserName });
             setNewUserName('');
           }}
         >
