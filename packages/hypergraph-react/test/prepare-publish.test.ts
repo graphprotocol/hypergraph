@@ -1,6 +1,6 @@
 import { Repo } from '@automerge/automerge-repo';
 import { Graph, Id } from '@graphprotocol/grc-20';
-import { Entity, store, Type } from '@graphprotocol/hypergraph';
+import { Entity, EntitySchema, store, Type } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import request from 'graphql-request';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -20,28 +20,62 @@ afterEach(() => {
 
 describe('preparePublish', () => {
   // Test entity classes
-  class Person extends Entity.Class<Person>('Person')({
-    name: Type.String,
-    age: Type.Number,
-    email: Type.optional(Type.String),
-    isActive: Type.Boolean,
-    birthDate: Type.Date,
-    location: Type.Point,
-  }) {}
+  const Person = EntitySchema(
+    {
+      name: Type.String,
+      age: Type.Number,
+      email: Type.optional(Type.String),
+      isActive: Type.Boolean,
+      birthDate: Type.Date,
+      location: Type.Point,
+    },
+    {
+      types: [Id('a06dd0c6-3d38-4be1-a865-8c95be0ca35a')],
+      properties: {
+        name: Id('ed49ed7b-17b3-4df6-b0b5-11f78d82e151'),
+        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
+        email: Id('43d6f432-c661-4c05-bc65-5ddacdfd50bf'),
+        isActive: Id('e4259554-42b1-46e4-84c3-f8681987770f'),
+        birthDate: Id('b5c0e2c7-9ac9-415e-8ffe-34f8b530f126'),
+        location: Id('45e707a5-4364-42fb-bb0b-927a5a8bc061'),
+      },
+    },
+  );
 
-  class Company extends Entity.Class<Company>('Company')({
-    name: Type.String,
-    employees: Type.Relation(Person),
-  }) {}
+  const Company = EntitySchema(
+    {
+      name: Type.String,
+      employees: Type.Relation(Person),
+    },
+    {
+      types: [Id('1d113495-a1d8-4520-be14-8bc5378dc4ad')],
+      properties: {
+        name: Id('907722dc-2cd1-4bae-a81b-263186b29dff'),
+        employees: Id('6530b1dc-24ce-46ca-95e7-e89e87dd3839'),
+      },
+    },
+  );
 
   // Entity class for testing optional types
-  class OptionalFieldsEntity extends Entity.Class<OptionalFieldsEntity>('OptionalFieldsEntity')({
-    name: Type.String, // required field
-    optionalNumber: Type.optional(Type.Number),
-    optionalBoolean: Type.optional(Type.Boolean),
-    optionalDate: Type.optional(Type.Date),
-    optionalPoint: Type.optional(Type.Point),
-  }) {}
+  const OptionalFieldsEntity = EntitySchema(
+    {
+      name: Type.String, // required field
+      optionalNumber: Type.optional(Type.Number),
+      optionalBoolean: Type.optional(Type.Boolean),
+      optionalDate: Type.optional(Type.Date),
+      optionalPoint: Type.optional(Type.Point),
+    },
+    {
+      types: [Id('3f9e28c1-5b7d-4e8f-9a2c-6d5e4f3a2b1c')],
+      properties: {
+        name: Id('2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d'),
+        optionalNumber: Id('eaf9f4f8-5647-4228-aff5-8725368fc87c'),
+        optionalBoolean: Id('2742d8b6-3059-4adb-b439-fdfcd588dccb'),
+        optionalDate: Id('9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f'),
+        optionalPoint: Id('0c1d2e3f-4a5b-4c7d-8e9f-0a1b2c3d4e5f'),
+      },
+    },
+  );
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const publicSpaceId = '2e5e39da-a00d-4fd8-b53b-98095337112f';
@@ -51,45 +85,6 @@ describe('preparePublish', () => {
   beforeEach(() => {
     repo = new Repo({});
     store.send({ type: 'setRepo', repo });
-
-    // Set up mapping in store
-    store.send({
-      type: 'setMapping',
-      mapping: {
-        Person: {
-          typeIds: [Id('a06dd0c6-3d38-4be1-a865-8c95be0ca35a')],
-          properties: {
-            name: Id('ed49ed7b-17b3-4df6-b0b5-11f78d82e151'),
-            age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
-            email: Id('43d6f432-c661-4c05-bc65-5ddacdfd50bf'),
-            isActive: Id('e4259554-42b1-46e4-84c3-f8681987770f'),
-            birthDate: Id('b5c0e2c7-9ac9-415e-8ffe-34f8b530f126'),
-            location: Id('45e707a5-4364-42fb-bb0b-927a5a8bc061'),
-          },
-          relations: {},
-        },
-        Company: {
-          typeIds: [Id('1d113495-a1d8-4520-be14-8bc5378dc4ad')],
-          properties: {
-            name: Id('907722dc-2cd1-4bae-a81b-263186b29dff'),
-          },
-          relations: {
-            employees: Id('6530b1dc-24ce-46ca-95e7-e89e87dd3839'),
-          },
-        },
-        OptionalFieldsEntity: {
-          typeIds: [Id('3f9e28c1-5b7d-4e8f-9a2c-6d5e4f3a2b1c')],
-          properties: {
-            name: Id('2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d'),
-            optionalNumber: Id('eaf9f4f8-5647-4228-aff5-8725368fc87c'),
-            optionalBoolean: Id('2742d8b6-3059-4adb-b439-fdfcd588dccb'),
-            optionalDate: Id('9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f'),
-            optionalPoint: Id('0c1d2e3f-4a5b-4c7d-8e9f-0a1b2c3d4e5f'),
-          },
-          relations: {},
-        },
-      },
-    });
 
     store.send({
       type: 'setSpace',
@@ -319,26 +314,6 @@ describe('preparePublish', () => {
   describe('error cases', () => {
     beforeEach(() => {
       mockRequest.mockResolvedValue({ entity: null });
-    });
-
-    it('should throw error when mapping entry is not found', async () => {
-      class UnmappedEntity extends Entity.Class<UnmappedEntity>('UnmappedEntity')({
-        name: Type.String,
-      }) {}
-
-      const entity = {
-        id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
-        type: 'UnmappedEntity',
-        name: 'Test',
-        __schema: UnmappedEntity,
-      } as Entity.Entity<typeof UnmappedEntity>;
-
-      const params: PreparePublishParams<typeof UnmappedEntity> = {
-        entity,
-        publicSpace: publicSpaceId,
-      };
-
-      await expect(preparePublish(params)).rejects.toThrow('Mapping entry for UnmappedEntity not found');
     });
 
     it('should handle GraphQL request failures', async () => {

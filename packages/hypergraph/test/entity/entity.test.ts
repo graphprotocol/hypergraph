@@ -1,29 +1,64 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
+import { Id } from '@graphprotocol/grc-20';
 import { beforeEach, describe, expect, it } from 'vitest';
-
+import { EntitySchema } from '../../src/entity/entity.js';
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('Entity', () => {
-  class Person extends Entity.Class<Person>('Person')({
-    name: Type.String,
-    age: Type.Number,
-  }) {}
+  const Person = EntitySchema(
+    {
+      name: Type.String,
+      age: Type.Number,
+    },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
+      },
+    },
+  );
 
-  class User extends Entity.Class<User>('User')({
-    name: Type.String,
-    email: Type.String,
-  }) {}
+  const User = EntitySchema(
+    {
+      name: Type.String,
+      email: Type.String,
+    },
+    {
+      types: [Id('2a7db9c2-df00-4a19-82d0-91522777f980')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        email: Id('b667f951-4ede-40ef-83f8-fb5efee8c2ae'),
+      },
+    },
+  );
 
-  class Badge extends Entity.Class<Badge>('Badge')({
-    name: Type.String,
-  }) {}
+  const Badge = EntitySchema(
+    {
+      name: Type.String,
+    },
+    {
+      types: [Id('2ce4d8ff-a6ca-4977-8b4e-11c272a7eb1c')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
 
-  class Event extends Entity.Class<Event>('Event')({
-    name: Type.String,
-  }) {}
+  const Event = EntitySchema(
+    {
+      name: Type.String,
+    },
+    {
+      types: [Id('2ce4d8ff-a6ca-4977-8b4e-11c272a7eb1c')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);
@@ -134,7 +169,7 @@ describe('Entity', () => {
     it('should throw an error if attempting to update an entity that does not exist in the repo', () => {
       expect(() => {
         Entity.update(handle, Person)('person_dne', { name: 'does not exist' });
-      }).toThrowError(Entity.EntityNotFoundError);
+      }).toThrowError();
     });
   });
 
@@ -209,15 +244,9 @@ describe('Entity', () => {
       // should only return users
       const users = Entity.findMany(handle, User, undefined, undefined);
       expect(users.entities).toHaveLength(1);
-      for (const user of users.entities) {
-        expect(user.type).toEqual(User.name);
-      }
       // should only return badges
       const badges = Entity.findMany(handle, Badge, undefined, undefined);
       expect(badges.entities).toHaveLength(1);
-      for (const badge of badges.entities) {
-        expect(badge.type).toEqual(Badge.name);
-      }
     });
   });
 

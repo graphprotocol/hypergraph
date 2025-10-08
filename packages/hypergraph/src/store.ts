@@ -4,7 +4,6 @@ import type { PrivateAppIdentity, PrivatePrivyAppIdentity } from './connect/type
 import type { DocumentContent } from './entity/types.js';
 import { mergeMessages } from './inboxes/merge-messages.js';
 import type { InboxSenderAuthPolicy } from './inboxes/types.js';
-import type { Mapping } from './mapping/Mapping.js';
 import type { Invitation, Updates } from './messages/index.js';
 import type { SpaceEvent, SpaceState } from './space-events/index.js';
 import { idToAutomergeId } from './utils/automergeId.js';
@@ -72,7 +71,6 @@ interface StoreContext {
   privyIdentity: PrivatePrivyAppIdentity | null;
   lastUpdateClock: { [spaceId: string]: number };
   accountInboxes: AccountInboxStorageEntry[];
-  mapping: Mapping;
 }
 
 const initialStoreContext: StoreContext = {
@@ -87,12 +85,10 @@ const initialStoreContext: StoreContext = {
   privyIdentity: null,
   lastUpdateClock: {},
   accountInboxes: [],
-  mapping: {},
 };
 
 type StoreEvent =
   | { type: 'setInvitations'; invitations: Invitation[] }
-  | { type: 'setMapping'; mapping: Mapping }
   | { type: 'reset' }
   | { type: 'addUpdateInFlight'; updateId: string }
   | { type: 'removeUpdateInFlight'; updateId: string }
@@ -171,15 +167,9 @@ export const store: Store<StoreContext, StoreEvent, GenericEventObject> = create
         invitations: event.invitations,
       };
     },
-    setMapping: (context, event: { mapping: Mapping }) => {
-      return {
-        ...context,
-        mapping: event.mapping,
-      };
-    },
     reset: (context) => {
       // once the repo is initialized, there is no need to reset it
-      return { ...initialStoreContext, repo: context.repo, mapping: context.mapping };
+      return { ...initialStoreContext, repo: context.repo };
     },
     addUpdateInFlight: (context, event: { updateId: string }) => {
       return {

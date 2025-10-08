@@ -94,6 +94,7 @@ export function decodeFromGrc20Json<T extends object, E>(
   }
 
   out.id = grc20Data.id as string;
+  out.__deleted = grc20Data.__deleted ?? false;
 
   return out as T;
 }
