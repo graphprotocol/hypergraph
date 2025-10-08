@@ -1,4 +1,3 @@
-export { PublishDiff } from './components/publish-diff/publish-diff.js';
 export { createWalletClient } from './create-wallet-client.js';
 export {
   HypergraphAppProvider,

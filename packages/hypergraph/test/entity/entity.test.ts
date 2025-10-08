@@ -77,7 +77,7 @@ describe('Entity', () => {
   describe('create', () => {
     it('should create an entity in the repo and be discoverable by querying', () => {
       const created = Entity.create(handle, Event)({ name: 'Conference' });
-      expect(created).toEqual(expect.objectContaining({ type: Event.name, name: 'Conference' }));
+      expect(created).toEqual(expect.objectContaining({ name: 'Conference' }));
 
       const id = created.id;
       expect(id).not.toBeNull();
@@ -87,9 +87,7 @@ describe('Entity', () => {
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
-        type: Event.name,
         name: 'Conference',
-        __version: '',
         __deleted: false,
         __schema: Event,
       });
@@ -98,9 +96,7 @@ describe('Entity', () => {
       expect(found).not.toBeNull();
       expect(found).toEqual({
         id,
-        type: Event.name,
         name: 'Conference',
-        __version: '',
         __deleted: false,
         __schema: Event,
       });
@@ -110,7 +106,7 @@ describe('Entity', () => {
   describe('update', () => {
     it('should update an existing entity and see the updates when querying', () => {
       const created = Entity.create(handle, Person)({ name: 'Test', age: 1 });
-      expect(created).toEqual(expect.objectContaining({ type: Person.name, name: 'Test', age: 1 }));
+      expect(created).toEqual(expect.objectContaining({ name: 'Test', age: 1 }));
 
       const id = created.id;
       expect(id).not.toBeNull();
@@ -120,10 +116,8 @@ describe('Entity', () => {
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
-        type: Person.name,
         name: 'Test',
         age: 1,
-        __version: '',
         __deleted: false,
         __schema: Person,
       });
@@ -131,10 +125,8 @@ describe('Entity', () => {
       expect(found).not.toBeNull();
       expect(found).toEqual({
         id,
-        type: Person.name,
         name: 'Test',
         age: 1,
-        __version: '',
         __deleted: false,
         __schema: Person,
       });
@@ -142,7 +134,6 @@ describe('Entity', () => {
       const updated = Entity.update(handle, Person)(id, { name: 'Test Updated', age: 2112 });
       expect(updated).toEqual({
         id,
-        type: Person.name,
         name: 'Test Updated',
         age: 2112,
         __schema: Person,
@@ -157,10 +148,8 @@ describe('Entity', () => {
       expect(foundUpdated).not.toBeNull();
       expect(foundUpdated).toEqual({
         id,
-        type: Person.name,
         name: 'Test Updated',
         age: 2112,
-        __version: '',
         __deleted: false,
         __schema: Person,
       });
@@ -183,9 +172,7 @@ describe('Entity', () => {
         email: 'test.user@thegraph.com',
       });
 
-      expect(created).toEqual(
-        expect.objectContaining({ type: User.name, name: 'Test', email: 'test.user@thegraph.com' }),
-      );
+      expect(created).toEqual(expect.objectContaining({ name: 'Test', email: 'test.user@thegraph.com' }));
 
       const id = created.id;
       expect(id).not.toBeNull();
@@ -195,10 +182,8 @@ describe('Entity', () => {
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
-        type: User.name,
         name: 'Test',
         email: 'test.user@thegraph.com',
-        __version: '',
         __deleted: false,
         __schema: User,
       });
@@ -206,10 +191,8 @@ describe('Entity', () => {
       expect(found).not.toBeNull();
       expect(found).toEqual({
         id,
-        type: User.name,
         name: 'Test',
         email: 'test.user@thegraph.com',
-        __version: '',
         __deleted: false,
         __schema: User,
       });
@@ -234,12 +217,10 @@ describe('Entity', () => {
         email: 'test.user@thegraph.com',
       });
 
-      expect(createdUser).toEqual(
-        expect.objectContaining({ type: User.name, name: 'Test', email: 'test.user@thegraph.com' }),
-      );
+      expect(createdUser).toEqual(expect.objectContaining({ name: 'Test', email: 'test.user@thegraph.com' }));
 
       const createdBadge = Entity.create(handle, Badge)({ name: 'WeDidIt' });
-      expect(createdBadge).toEqual(expect.objectContaining({ type: Badge.name, name: 'WeDidIt' }));
+      expect(createdBadge).toEqual(expect.objectContaining({ name: 'WeDidIt' }));
 
       // should only return users
       const users = Entity.findMany(handle, User, undefined, undefined);

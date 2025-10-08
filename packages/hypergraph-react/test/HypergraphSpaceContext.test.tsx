@@ -164,10 +164,10 @@ describe('HypergraphSpaceContext', () => {
       });
 
       expect(createdEntity).toEqual({
+        __deleted: false,
         id,
         name: 'Test User',
         age: 2112,
-        type: Person.name,
         __schema: Person,
       });
 
@@ -178,7 +178,6 @@ describe('HypergraphSpaceContext', () => {
         data: {
           // @ts-expect-error - TODO: fix the types error
           ...createdEntity,
-          __version: '',
           __deleted: false,
           __schema: Person,
         },
@@ -194,7 +193,7 @@ describe('HypergraphSpaceContext', () => {
       expect(queryEntitiesResult.current).toEqual({
         deletedEntities: [],
         // @ts-expect-error - TODO: fix the types error
-        entities: [{ ...createdEntity, __version: '', __deleted: false, __schema: Person }],
+        entities: [{ ...createdEntity, __deleted: false, __schema: Person }],
       });
     });
   });

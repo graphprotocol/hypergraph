@@ -1,6 +1,7 @@
 import type { DocHandle } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
 import { decodeFromGrc20Json, EntityNotFoundError, encodeToGrc20Json } from './entity.js';
+import { findOne } from './findOne.js';
 import type { DocumentContent, DocumentEntity, Entity } from './types.js';
 
 /**
@@ -10,8 +11,6 @@ export const update = <const S extends Schema.Schema.AnyNoContext>(handle: DocHa
   const validate = Schema.validateSync(Schema.partial(type));
 
   // TODO: what's the right way to get the name of the type?
-  // @ts-expect-error name is defined
-  const typeName = type.name;
 
   return (id: string, data: Schema.Simplify<Partial<Schema.Schema.Type<S>>>): Entity<S> => {
     validate(data);
@@ -34,9 +33,7 @@ export const update = <const S extends Schema.Schema.AnyNoContext>(handle: DocHa
 
       const encoded: DocumentEntity = {
         ...encodeToGrc20Json(type, updated),
-        '@@types@@': [typeName],
         __deleted: entity.__deleted ?? false,
-        __version: entity.__version ?? '',
       };
       // filter out undefined values otherwise Automerge will throw an error
       for (const key in updated) {
@@ -51,12 +48,6 @@ export const update = <const S extends Schema.Schema.AnyNoContext>(handle: DocHa
       throw new EntityNotFoundError({ id, type });
     }
 
-    return {
-      id,
-      type: typeName,
-      ...(updated as Schema.Schema.Type<S>),
-      // injecting the schema to the entity to be able to access it in the preparePublish function
-      __schema: type,
-    };
+    return findOne(handle, type)(id) as Entity<S>;
   };
 };

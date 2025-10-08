@@ -212,8 +212,6 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
   const decodeResult = decode({
     ...rawEntity,
     __deleted: false,
-    // __version: queryEntity.currentVersion.versionId,
-    __version: '',
   });
 
   if (Either.isRight(decodeResult)) {

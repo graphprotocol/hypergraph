@@ -20,7 +20,7 @@ export const Todo = EntitySchema(
   },
 );
 
-const mapping: Mapping.Mapping = {
+const _mapping: Mapping.Mapping = {
   Todo: {
     typeIds: [Id('a288444f-06a3-4037-9ace-66fe325864d0')],
     properties: {

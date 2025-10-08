@@ -15,8 +15,6 @@ export const UsersLocal = () => {
           <div className="text-xs">{user.id}</div>
           {/* @ts-expect-error */}
           <div className="text-xs">{user.__deleted ? 'deleted' : 'not deleted'}</div>
-          {/* @ts-expect-error */}
-          <div className="text-xs">{user.__version}</div>
           <Button variant="secondary" size="sm" onClick={() => hardDeleteEntity(user.id)}>
             Hard Delete
           </Button>

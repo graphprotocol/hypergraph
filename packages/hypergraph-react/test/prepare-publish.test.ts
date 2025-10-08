@@ -1,6 +1,6 @@
 import { Repo } from '@automerge/automerge-repo';
 import { Graph, Id } from '@graphprotocol/grc-20';
-import { Entity, EntitySchema, store, Type } from '@graphprotocol/hypergraph';
+import { type Entity, EntitySchema, store, Type } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import request from 'graphql-request';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
