@@ -10,21 +10,23 @@ import { findOne } from './findOne.js';
 import type { DocumentContent, DocumentRelation, Entity } from './types.js';
 
 /**
- * Type utility to transform relation fields to accept string arrays instead of their typed values
- * This specifically targets Type.Relation fields which are arrays of objects
- * Relations can be provided as string arrays or left out completely (optional)
+ * Type utility to transform relation fields to accept string arrays or be omitted entirely.
+ * This specifically targets Type.Relation fields which are arrays of objects.
  */
-type WithRelationsAsStringArrays<T> = {
+type RelationArrayKeys<T> = {
   [K in keyof T]: T[K] extends readonly (infer U)[]
     ? U extends object
-      ? string[] | undefined
-      : T[K]
+      ? K
+      : never
     : T[K] extends (infer U)[]
       ? U extends object
-        ? string[] | undefined
-        : T[K]
-      : T[K];
-};
+        ? K
+        : never
+      : never;
+}[keyof T];
+
+type WithRelationsAsStringArrays<T> = Omit<T, RelationArrayKeys<T>> &
+  Partial<Record<RelationArrayKeys<T>, string[] | undefined>>;
 
 export const create = <const S extends Schema.Schema.AnyNoContext>(handle: DocHandle<DocumentContent>, type: S) => {
   return (data: Readonly<WithRelationsAsStringArrays<Schema.Schema.Type<S>>>): Entity<S> => {
