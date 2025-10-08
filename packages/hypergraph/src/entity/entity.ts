@@ -22,6 +22,7 @@ import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
 export function EntitySchema<
   T extends Record<
     string,
+    // biome-ignore lint/suspicious/noExplicitAny: any
     (propertyId: string) => Schema.Schema<any> | Schema.PropertySignature<any, any, any, any, any, any, any>
   >,
   P extends Record<keyof T, string>,
@@ -34,6 +35,7 @@ export function EntitySchema<
 ): Schema.Struct<{
   [K in keyof T]: ReturnType<T[K]> & { id: string };
 }> {
+  // biome-ignore lint/suspicious/noExplicitAny: any
   const properties: Record<string, Schema.Schema<any> | Schema.PropertySignature<any, any, any, any, any, any, any>> =
     {};
 
@@ -42,6 +44,7 @@ export function EntitySchema<
     properties[key] = schemaType(propertyId);
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: any
   return Schema.Struct(properties).pipe(Schema.annotations({ [TypeIdsSymbol]: mapping.types })) as any;
 }
 
@@ -55,6 +58,7 @@ export function encodeToGrc20Json<T extends object, E>(schema: Schema.Schema<T, 
         ? (prop.type.types.find((member) => !SchemaAST.isUndefinedKeyword(member)) ?? prop.type)
         : prop.type;
     const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(propType);
+    // biome-ignore lint/suspicious/noExplicitAny: any
     const propertyValue: any = (value as any)[prop.name];
     if (Option.isSome(result) && propertyValue !== undefined) {
       out[result.value] = propertyValue;
@@ -83,6 +87,7 @@ export function decodeFromGrc20Json<T extends object, E>(
     if (Option.isSome(result)) {
       const grc20Key = result.value;
       if (grc20Key in grc20Data && typeof prop.name === 'string') {
+        // biome-ignore lint/suspicious/noExplicitAny: any
         out[prop.name] = (grc20Data as any)[grc20Key];
       }
     }

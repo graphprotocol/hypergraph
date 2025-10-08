@@ -30,7 +30,7 @@ type RawEntityValue = string | boolean | number | unknown[] | Date | { id: strin
 type RawEntity = Record<string, RawEntityValue>;
 type NestedRawEntity = RawEntity & { _relation: { id: string } };
 
-export const convertRelations = <S extends Schema.Schema.AnyNoContext>(
+export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   ast: SchemaAST.TypeLiteral,
 ) => {

@@ -1,6 +1,6 @@
 import type { DocHandle } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
-import { decodeFromGrc20Json, encodeToGrc20Json, EntityNotFoundError } from './entity.js';
+import { decodeFromGrc20Json, EntityNotFoundError, encodeToGrc20Json } from './entity.js';
 import type { DocumentContent, Entity } from './types.js';
 
 /**

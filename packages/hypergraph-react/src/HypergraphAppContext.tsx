@@ -1,10 +1,10 @@
 'use client';
 
-import type { DocHandle } from '@automerge/automerge-repo';
-import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Repo } from '@automerge/automerge-repo/slim';
 import { automergeWasmBase64 } from '@automerge/automerge/automerge.wasm.base64';
 import * as automerge from '@automerge/automerge/slim';
+import type { DocHandle } from '@automerge/automerge-repo';
+import { Repo } from '@automerge/automerge-repo/slim';
+import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Graph } from '@graphprotocol/grc-20';
 import {
   Connect,
