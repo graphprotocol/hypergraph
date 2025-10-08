@@ -10,6 +10,7 @@ import {
   useSpace,
   useSpaces,
 } from '@graphprotocol/hypergraph-react';
+import type { Entity } from '@graphprotocol/hypergraph';
 import { useState } from 'react';
 
 import { Project } from '@/app/schema';
@@ -51,7 +52,7 @@ function PrivateSpace() {
     setProjectDescription('');
   };
 
-  const publishToPublicSpace = async (project: typeof Project) => {
+  const publishToPublicSpace = async (project: Entity.Entity<typeof Project>) => {
     if (!selectedSpace) {
       alert('No space selected');
       return;
