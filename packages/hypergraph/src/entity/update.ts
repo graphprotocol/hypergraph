@@ -1,7 +1,7 @@
 import type { DocHandle } from '@automerge/automerge-repo';
 import * as Schema from 'effect/Schema';
 import { decodeFromGrc20Json, EntityNotFoundError, encodeToGrc20Json } from './entity.js';
-import type { DocumentContent, Entity } from './types.js';
+import type { DocumentContent, DocumentEntity, Entity } from './types.js';
 
 /**
  * Update an existing entity model of given type in the repo.
@@ -32,7 +32,7 @@ export const update = <const S extends Schema.Schema.AnyNoContext>(handle: DocHa
       // TODO: Try to get a diff of the entity properties and only override the changed ones.
       updated = { ...decodeFromGrc20Json(type, entity), ...data };
 
-      const encoded = {
+      const encoded: DocumentEntity = {
         ...encodeToGrc20Json(type, updated),
         '@@types@@': [typeName],
         __deleted: entity.__deleted ?? false,
