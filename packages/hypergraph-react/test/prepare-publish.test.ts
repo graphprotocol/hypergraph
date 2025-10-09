@@ -575,23 +575,18 @@ describe('preparePublish', () => {
         },
       });
 
-      const entity = {
-        id: 'e5f6a7b8-c9d0-4e2f-ba4b-5c6d7e8f9a0b',
-        type: 'OptionalFieldsEntity',
-        name: 'Existing Entity',
-        optionalNumber: 100, // New field
-        optionalBoolean: true, // New field
-        optionalDate: new Date('2024-03-15'), // New field
-        optionalPoint: [45.0, 90.0], // New field
-        __schema: OptionalFieldsEntity,
-      } as Entity.Entity<typeof OptionalFieldsEntity>;
-
-      const params: PreparePublishParams<typeof OptionalFieldsEntity> = {
-        entity,
+      const result = await preparePublish({
+        entity: {
+          id: 'e5f6a7b8-c9d0-4e2f-ba4b-5c6d7e8f9a0b',
+          name: 'Existing Entity',
+          optionalNumber: 100, // New field
+          optionalBoolean: true, // New field
+          optionalDate: new Date('2024-03-15'), // New field
+          optionalPoint: [45.0, 90.0], // New field
+          __schema: OptionalFieldsEntity,
+        },
         publicSpace: publicSpaceId,
-      };
-
-      const result = await preparePublish(params);
+      });
 
       expect(result.ops).toBeDefined();
       expect(result.ops.length).toBeGreaterThan(0);

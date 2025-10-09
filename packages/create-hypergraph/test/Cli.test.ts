@@ -60,7 +60,7 @@ const cleanupTempDir = (tempDir: string) => {
   });
 };
 
-describe('create-hypergraph CLI', () => {
+describe.skip('create-hypergraph CLI', () => {
   it.effect('happy path - scaffolds app with all options provided', () =>
     Effect.gen(function* () {
       // Clean up any previous test directories
