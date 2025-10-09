@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { GraphImage } from '../../../Components/GraphImage';
 import { Project } from '../../schema';
@@ -8,7 +8,7 @@ import { Project } from '../../schema';
 export default function ExploreProjectsPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: projects, isPending } = useQuery(Project, {
+  const { data: projects, isPending } = useEntities(Project, {
     mode: 'public',
     space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,

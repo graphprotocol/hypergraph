@@ -1,4 +1,10 @@
-import { useCreateEntity, useDeleteEntity, useQuery, useSpace, useUpdateEntity } from '@graphprotocol/hypergraph-react';
+import {
+  useCreateEntity,
+  useDeleteEntity,
+  useEntities,
+  useSpace,
+  useUpdateEntity,
+} from '@graphprotocol/hypergraph-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { cn } from '@/lib/utils';
@@ -15,13 +21,13 @@ export const Todos2 = () => {
     isLoading: isLoadingTodos,
     isError: isErrorTodos,
     // preparePublish: preparePublishTodos,
-  } = useQuery(Todo2, { mode: 'private', include: { assignees: {} } });
+  } = useEntities(Todo2, { mode: 'private', include: { assignees: {} } });
   const {
     data: dataUsers,
     isLoading: isLoadingUsers,
     isError: isErrorUsers,
     // preparePublish: preparePublishUsers,
-  } = useQuery(User, { mode: 'private' });
+  } = useEntities(User, { mode: 'private' });
   const { ready: spaceReady } = useSpace({ mode: 'private' });
   const createTodo = useCreateEntity(Todo2);
   const updateTodo = useUpdateEntity(Todo2);

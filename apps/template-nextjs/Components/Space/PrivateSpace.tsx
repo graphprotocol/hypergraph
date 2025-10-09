@@ -1,16 +1,16 @@
 'use client';
 
+import type { Entity } from '@graphprotocol/hypergraph';
 import {
   HypergraphSpaceProvider,
   preparePublish,
   publishOps,
   useCreateEntity,
+  useEntities,
   useHypergraphApp,
-  useQuery,
   useSpace,
   useSpaces,
 } from '@graphprotocol/hypergraph-react';
-import type { Entity } from '@graphprotocol/hypergraph';
 import { useState } from 'react';
 
 import { Project } from '@/app/schema';
@@ -26,7 +26,7 @@ export function PrivateSpaceWrapper({ spaceid }: Readonly<{ spaceid: string }>) 
 
 function PrivateSpace() {
   const { name, ready, id: spaceId } = useSpace({ mode: 'private' });
-  const { data: projects } = useQuery(Project, { mode: 'private' });
+  const { data: projects } = useEntities(Project, { mode: 'private' });
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const [selectedSpace, setSelectedSpace] = useState<string>('');
   const createProject = useCreateEntity(Project);

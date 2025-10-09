@@ -11,7 +11,7 @@ export class Event extends Entity.Class<Event>("Event")({
 }) {}
 
 // inside the React component
-const { data } = useQuery(Event, {
+const { data } = useEntities(Event, {
   filter: {
     cancelled: { is: false },
   },
@@ -84,7 +84,7 @@ The filter API supports different filters for different property types and offer
 
 ```tsx
 // ever person except if their name is not Jane Doe or John Doe
-const { data } = useQuery(Person, {
+const { data } = useEntities(Person, {
   filter: {
     or: [
       { not: { name: { is: 'Jane Doe' } } },
@@ -94,7 +94,7 @@ const { data } = useQuery(Person, {
 });
 
 // ever person that is 42, but their name is not Jane Doe or John Doe
-const { data } = useQuery(Person, {
+const { data } = useEntities(Person, {
   filter: {
     age: {
       is: 42
@@ -113,7 +113,7 @@ const { data } = useQuery(Person, {
 });
 
 // every person that is not 42 years old
-const { data } = useQuery(Person, {
+const { data } = useEntities(Person, {
   filter: {
     age: {
       not: { is: 42 },
@@ -138,7 +138,7 @@ export class Todo extends Entity.Class<Todo2>('Todo')({
 1 level filtering
 
 ```tsx
-const { data } = useQuery(Person, {
+const { data } = useEntities(Person, {
   filter: {
     assignees: {
       name: { is: "John" },
@@ -150,7 +150,7 @@ const { data } = useQuery(Person, {
 2 level filtering
 
 ```tsx
-const { data } = useQuery(Person, {
+const { data } = useEntities(Person, {
   filter: {
     assignees: {
       name: { is: "John" },
@@ -183,7 +183,7 @@ export class Todo extends Entity.Class<Todo2>('Todo')({
 ```
 
 ```tsx
-const { data } = useQuery(Person, {
+const { data } = useEntities(Person, {
   filter: {
     assignees: {
       _relation: {

@@ -11,7 +11,7 @@ type QueryParams<S extends Schema.Schema.AnyNoContext> = {
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
 };
 
-export function useQueryPrivate<const S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryParams<S>) {
+export function useEntitiesPrivate<const S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryParams<S>) {
   const { enabled = true, filter, include, space: spaceFromParams } = params ?? {};
   const entitiesRef = useRef<Entity.Entity<S>[]>([]);
   const subscriptionRef = useRef<Entity.FindManySubscription<S>>({

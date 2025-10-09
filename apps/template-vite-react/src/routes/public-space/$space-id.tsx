@@ -1,5 +1,5 @@
 import { Project } from '@/schema';
-import { HypergraphSpaceProvider, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
+import { HypergraphSpaceProvider, useEntities, useSpace } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/public-space/$space-id')({
@@ -18,7 +18,7 @@ function RouteComponent() {
 
 function PublicSpace() {
   const { ready, name, id: spaceId } = useSpace({ mode: 'public' });
-  const { data: projects, isPending } = useQuery(Project, { mode: 'public' });
+  const { data: projects, isPending } = useEntities(Project, { mode: 'public' });
 
   if (!ready) {
     return (

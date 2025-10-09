@@ -1,9 +1,9 @@
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { Todo } from '../schema';
 
 export const TodosReadOnlyFilter = () => {
-  const { data: todosCompleted } = useQuery(Todo, { mode: 'private', filter: { completed: { is: true } } });
-  const { data: todosNotCompleted } = useQuery(Todo, {
+  const { data: todosCompleted } = useEntities(Todo, { mode: 'private', filter: { completed: { is: true } } });
+  const { data: todosNotCompleted } = useEntities(Todo, {
     mode: 'private',
     filter: { completed: { is: false } },
   });

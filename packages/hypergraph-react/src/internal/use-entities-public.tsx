@@ -238,7 +238,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
   return { data, invalidEntities };
 };
 
-export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
+export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
   const { enabled = true, filter, include, space: spaceFromParams, first = 100 } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;

@@ -1,5 +1,5 @@
 import { InvestmentRound } from '@/schema';
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/explore-public-knowledge/investment-rounds')({
@@ -7,7 +7,7 @@ export const Route = createFileRoute('/explore-public-knowledge/investment-round
 });
 
 function InvestmentRounds() {
-  const { data: investmentRounds, isPending } = useQuery(InvestmentRound, {
+  const { data: investmentRounds, isPending } = useEntities(InvestmentRound, {
     mode: 'public',
     space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,

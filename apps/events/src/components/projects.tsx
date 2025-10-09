@@ -1,8 +1,8 @@
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { Project } from '../schema';
 
 export const Projects = ({ spaceId }: { spaceId: string }) => {
-  const { data, isLoading, isError } = useQuery(Project, {
+  const { data, isLoading, isError } = useEntities(Project, {
     mode: 'public',
     // include: {
     //   sponsors: {

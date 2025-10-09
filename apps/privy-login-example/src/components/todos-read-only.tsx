@@ -1,8 +1,8 @@
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { Todo } from '../schema';
 
 export const TodosReadOnly = () => {
-  const { data: todos } = useQuery(Todo, { mode: 'private' });
+  const { data: todos } = useEntities(Todo, { mode: 'private' });
 
   return (
     <>
