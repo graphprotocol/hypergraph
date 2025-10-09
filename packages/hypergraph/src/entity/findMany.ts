@@ -101,8 +101,6 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
           console.error('error', error);
         }
 
-        console.log('decoded', decoded);
-
         if (oldDecodedEntry) {
           // collect all the Ids for relation entries in the `oldDecodedEntry`
           const deletedRelationIds = new Set<string>();

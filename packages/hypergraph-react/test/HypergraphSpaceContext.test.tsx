@@ -61,7 +61,7 @@ describe('HypergraphSpaceContext', () => {
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
 
   let repo = new Repo({});
-  const queryClient = new QueryClient();
+  let queryClient = new QueryClient();
   const createWrapper =
     () =>
     ({ children }: Readonly<{ children: React.ReactNode }>) => (
@@ -76,6 +76,8 @@ describe('HypergraphSpaceContext', () => {
 
   beforeEach(() => {
     repo = new Repo({});
+    queryClient = new QueryClient();
+    store.send({ type: 'reset' });
     store.send({ type: 'setRepo', repo });
     store.send({
       type: 'setSpace',

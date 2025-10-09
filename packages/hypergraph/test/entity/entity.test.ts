@@ -137,6 +137,7 @@ describe('Entity', () => {
         name: 'Test Updated',
         age: 2112,
         __schema: Person,
+        __deleted: false,
       });
 
       const updatedEntities = Entity.findMany(handle, Person, undefined, undefined);
