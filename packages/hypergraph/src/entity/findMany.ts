@@ -1,14 +1,16 @@
 import type { DocHandle, Patch } from '@automerge/automerge-repo';
-import * as Schema from 'effect/Schema';
+import * as Option from 'effect/Option';
+import type * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
+import { TypeIdsSymbol } from '../constants.js';
 import { deepMerge } from '../utils/internal/deep-merge.js';
-import { isRelationField } from '../utils/isRelationField.js';
 import { canonicalize } from '../utils/jsc.js';
 import { type DecodedEntitiesCacheEntry, decodedEntitiesCache, type QueryEntry } from './decodedEntitiesCache.js';
+import { decodeFromGrc20Json } from './entity.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import type {
-  AnyNoContext,
   CrossFieldFilter,
   DocumentContent,
   Entity,
@@ -70,9 +72,9 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     for (const entityId of changedEntities) {
       const entity = doc.entities?.[entityId];
       if (!hasValidTypesProperty(entity)) continue;
-      for (const typeName of entity['@@types@@']) {
-        if (typeof typeName !== 'string') continue;
-        const cacheEntry = decodedEntitiesCache.get(typeName);
+      for (const typeId of entity['@@types@@']) {
+        if (typeof typeId !== 'string') continue;
+        const cacheEntry = decodedEntitiesCache.get(typeId);
         if (!cacheEntry) continue;
 
         let includeFromAllQueries = {};
@@ -84,11 +86,15 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         const relations = getEntityRelations(entityId, cacheEntry.type, doc, includeFromAllQueries);
         let decoded: unknown | undefined;
         try {
-          decoded = cacheEntry.decoder({
+          decoded = decodeFromGrc20Json(cacheEntry.type, {
             ...entity,
-            ...relations,
             id: entityId,
           });
+          decoded = {
+            // @ts-expect-error
+            ...decoded,
+            ...relations,
+          };
           cacheEntry.entities.set(entityId, decoded);
         } catch (error) {
           // TODO: store the corrupt entity ids somewhere, so they can be read via the API
@@ -105,7 +111,6 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
               }
             }
           }
-
           // it's fine to remove all of them since they are re-added below
           for (const deletedRelationId of deletedRelationIds) {
             const deletedRelationEntry = entityRelationParentsMap.get(deletedRelationId);
@@ -139,11 +144,11 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         }
 
         for (const [queryKey, query] of cacheEntry.queries) {
-          touchedQueries.add([typeName, queryKey]);
+          touchedQueries.add([typeId, queryKey]);
           query.isInvalidated = true;
         }
 
-        entityTypes.add(typeName);
+        entityTypes.add(typeId);
 
         // gather all the decodedEntitiesCacheEntries that have a relation to this entity to
         // invoke their query listeners below
@@ -160,9 +165,9 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 
     // loop over all deleted entities and remove them from the cache
     for (const entityId of deletedEntities) {
-      for (const [affectedTypeName, cacheEntry] of decodedEntitiesCache) {
+      for (const [affectedTypeId, cacheEntry] of decodedEntitiesCache) {
         if (cacheEntry.entities.has(entityId)) {
-          entityTypes.add(affectedTypeName);
+          entityTypes.add(affectedTypeId);
           cacheEntry.entities.delete(entityId);
 
           for (const [queryKey, query] of cacheEntry.queries) {
@@ -170,7 +175,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
             const index = query.data.findIndex((entity) => entity.id === entityId);
             if (index !== -1) {
               query.data.splice(index, 1);
-              touchedQueries.add([affectedTypeName, queryKey]);
+              touchedQueries.add([affectedTypeId, queryKey]);
             }
           }
         }
@@ -190,8 +195,8 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     }
 
     // update the queries affected queries
-    for (const [typeName, queryKey] of touchedQueries) {
-      const cacheEntry = decodedEntitiesCache.get(typeName);
+    for (const [typeId, queryKey] of touchedQueries) {
+      const cacheEntry = decodedEntitiesCache.get(typeId);
       if (!cacheEntry) continue;
 
       const query = cacheEntry.queries.get(queryKey);
@@ -201,8 +206,8 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
     }
 
     // invoke all the listeners per type
-    for (const typeName of entityTypes) {
-      const cacheEntry = decodedEntitiesCache.get(typeName);
+    for (const typeId of entityTypes) {
+      const cacheEntry = decodedEntitiesCache.get(typeId);
       if (!cacheEntry) continue;
 
       for (const query of cacheEntry.queries.values()) {
@@ -235,16 +240,15 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 /**
  * Queries for a list of entities of the given type from the repo.
  */
-export function findMany<const S extends AnyNoContext>(
+export function findMany<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
-  const decode = Schema.decodeUnknownSync(type);
-  // TODO: what's the right way to get the name of the type?
-  // @ts-expect-error name is defined
-  const typeName = type.name;
+  const typeId = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const doc = handle.doc();
   if (!doc) {
@@ -357,10 +361,20 @@ export function findMany<const S extends AnyNoContext>(
 
   for (const id in entities) {
     const entity = entities[id];
-    if (hasValidTypesProperty(entity) && entity['@@types@@'].includes(typeName)) {
+    if (
+      hasValidTypesProperty(entity) &&
+      typeId.every((typeId) => {
+        return entity['@@types@@'].includes(typeId);
+      })
+    ) {
       const relations = getEntityRelations(id, type, doc, include);
       try {
-        const decoded = { ...decode({ ...entity, ...relations, id }), type: typeName };
+        let decoded = { ...decodeFromGrc20Json(type, { ...entity, id }) };
+        decoded = {
+          ...decoded,
+          ...relations,
+        };
+
         if (filter) {
           if (evaluateEntityFilter(filter, decoded)) {
             // injecting the schema to the entity to be able to access it in the preparePublish function
@@ -390,25 +404,24 @@ export function findMany<const S extends AnyNoContext>(
 
 const stableEmptyArray: Array<unknown> = [];
 
-export type FindManySubscription<S extends AnyNoContext> = {
+export type FindManySubscription<S extends Schema.Schema.AnyNoContext> = {
   subscribe: (callback: () => void) => () => void;
   getEntities: () => Readonly<Array<Entity<S>>>;
 };
 
-export function subscribeToFindMany<const S extends AnyNoContext>(
+export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ): FindManySubscription<S> {
   const queryKey = filter ? canonicalize(filter) : 'all';
-  const decode = Schema.decodeUnknownSync(type);
-  // TODO: what's the right way to get the name of the type?
-  // @ts-expect-error name is defined
-  const typeName = type.name;
+  const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const getEntities = () => {
-    const cacheEntry = decodedEntitiesCache.get(typeName);
+    const cacheEntry = decodedEntitiesCache.get(typeIds[0]);
     if (!cacheEntry) return stableEmptyArray;
 
     const query = cacheEntry.queries.get(queryKey);
@@ -432,56 +445,51 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
     return query.data;
   };
 
-  const allTypes = new Set<S>();
-  for (const [_key, field] of Object.entries(type.fields)) {
-    if (isRelationField(field)) {
-      allTypes.add(field as S);
-    }
-  }
-
   const subscribe = (callback: () => void) => {
-    let cacheEntry = decodedEntitiesCache.get(typeName);
+    if (typeIds.length > 1) {
+      console.error('Schema with multiple type ids is not supported', typeIds);
+    } else {
+      let cacheEntry = decodedEntitiesCache.get(typeIds[0]);
+      if (!cacheEntry) {
+        const entitiesMap = new Map();
+        const queries = new Map<string, QueryEntry>();
 
-    if (!cacheEntry) {
-      const entitiesMap = new Map();
-      const queries = new Map<string, QueryEntry>();
+        queries.set(queryKey, {
+          data: [],
+          listeners: [],
+          isInvalidated: true,
+          include: include ?? {},
+        });
 
-      queries.set(queryKey, {
-        data: [],
-        listeners: [],
-        isInvalidated: true,
-        include: include ?? {},
-      });
+        cacheEntry = {
+          type,
+          entities: entitiesMap,
+          queries,
+          isInvalidated: true,
+        };
 
-      cacheEntry = {
-        decoder: decode,
-        type,
-        entities: entitiesMap,
-        queries,
-        isInvalidated: true,
-      };
+        decodedEntitiesCache.set(typeIds[0], cacheEntry);
+      }
 
-      decodedEntitiesCache.set(typeName, cacheEntry);
-    }
+      let query = cacheEntry.queries.get(queryKey);
+      if (!query) {
+        query = {
+          data: [],
+          listeners: [],
+          isInvalidated: true,
+          include: include ?? {},
+        };
+        // we just set up the query and expect it to correctly set itself up in findMany
+        cacheEntry.queries.set(queryKey, query);
+      }
 
-    let query = cacheEntry.queries.get(queryKey);
-    if (!query) {
-      query = {
-        data: [],
-        listeners: [],
-        isInvalidated: true,
-        include: include ?? {},
-      };
-      // we just set up the query and expect it to correctly set itself up in findMany
-      cacheEntry.queries.set(queryKey, query);
-    }
-
-    if (query?.listeners) {
-      query.listeners.push(callback);
+      if (query?.listeners) {
+        query.listeners.push(callback);
+      }
     }
 
     return () => {
-      const cacheEntry = decodedEntitiesCache.get(typeName);
+      const cacheEntry = decodedEntitiesCache.get(typeIds[0]);
       if (cacheEntry) {
         // first cleanup the queries
         const query = cacheEntry.queries.get(queryKey);
@@ -496,14 +504,14 @@ export function subscribeToFindMany<const S extends AnyNoContext>(
           entityRelationParentsMap.forEach((relationCacheEntries, key) => {
             for (const [relationCacheEntry, counter] of relationCacheEntries) {
               if (relationCacheEntry === cacheEntry && counter === 0) {
-                relationCacheEntries.delete(cacheEntry);
+                // relationCacheEntries.delete(cacheEntry);
               }
             }
             if (relationCacheEntries.size === 0) {
               entityRelationParentsMap.delete(key);
             }
           });
-          decodedEntitiesCache.delete(typeName);
+          decodedEntitiesCache.delete(typeIds[0]);
         }
       }
 

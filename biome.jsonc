@@ -15,7 +15,6 @@
       "!**/routeTree.gen.ts",
       "!**/tsconfig.json",
       "!**/tsconfig.*.json",
-      "!**/variant-schema.ts",
       "!**/apps/template-*",
       "!**/*.css",
       "!**/packages/typesync-studio/src/generated/**/*.ts"

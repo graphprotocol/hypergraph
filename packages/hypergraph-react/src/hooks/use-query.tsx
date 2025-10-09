@@ -3,7 +3,7 @@ import type * as Schema from 'effect/Schema';
 import { useQueryPrivate } from '../internal/use-query-private.js';
 import { useQueryPublic } from '../internal/use-query-public.js';
 
-type QueryParams<S extends Entity.AnyNoContext> = {
+type QueryParams<S extends Schema.Schema.AnyNoContext> = {
   mode: 'public' | 'private';
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
@@ -12,9 +12,7 @@ type QueryParams<S extends Entity.AnyNoContext> = {
   first?: number | undefined;
 };
 
-const preparePublishDummy = () => undefined;
-
-export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: QueryParams<S>) {
+export function useQuery<const S extends Schema.Schema.AnyNoContext>(type: S, params: QueryParams<S>) {
   const { mode, filter, include, space, first } = params;
   const publicResult = useQueryPublic(type, { enabled: mode === 'public', filter, include, first, space });
   const localResult = useQueryPrivate(type, { enabled: mode === 'private', filter, include, space });
@@ -23,7 +21,6 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: Q
     return {
       ...publicResult,
       deleted: [],
-      preparePublish: preparePublishDummy,
     };
   }
 
@@ -31,6 +28,5 @@ export function useQuery<const S extends Entity.AnyNoContext>(type: S, params: Q
     ...publicResult,
     data: localResult.entities,
     deleted: localResult.deletedEntities,
-    preparePublish: preparePublishDummy,
   };
 }

@@ -1,44 +1,47 @@
+import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
-import { isRelationField } from '../utils/isRelationField.js';
+import * as SchemaAST from 'effect/SchemaAST';
+import { PropertyIdSymbol, RelationSchemaSymbol } from '../constants.js';
+import { isRelation } from '../utils/isRelation.js';
+import { decodeFromGrc20Json } from './entity.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
-import type { AnyNoContext, DocumentContent, Entity } from './types.js';
-export const getEntityRelations = <const S extends AnyNoContext>(
+import type { DocumentContent, Entity } from './types.js';
+
+export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(
   entityId: string,
   type: S,
   doc: DocumentContent,
   include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
 ) => {
-  const relations: Record<string, Entity<AnyNoContext>> = {};
-  for (const [fieldName, field] of Object.entries(type.fields)) {
-    // skip non-relation fields or relations that are not defined in the include object
-    if (!isRelationField(field)) continue;
+  const relations: Record<string, Entity<Schema.Schema.AnyNoContext>> = {};
+  const ast = type.ast as SchemaAST.TypeLiteral;
 
-    // Currently we still add an empty array for relations that are not included.
-    // This is to ensure that the relation is not undefined in the decoded entity.
-    // In the future we might want to derive a schema based on the include object.
+  for (const prop of ast.propertySignatures) {
+    if (!isRelation(prop.type)) continue;
+
+    const fieldName = String(prop.name);
     if (!include?.[fieldName]) {
       relations[fieldName] = [];
       continue;
     }
 
-    const relationEntities: Array<Entity<AnyNoContext>> = [];
+    const relationEntities: Array<Entity<Schema.Schema.AnyNoContext>> = [];
 
     for (const [relationId, relation] of Object.entries(doc.relations ?? {})) {
-      // @ts-expect-error name is defined
-      const typeName = type.name;
+      const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
+      const schema = SchemaAST.getAnnotation<Schema.Schema.AnyNoContext>(RelationSchemaSymbol)(prop.type);
+      if (Option.isSome(result) && Option.isSome(schema)) {
+        if (relation.fromPropertyId !== result.value || relation.from !== entityId) continue;
+        if (relation.__deleted) continue;
 
-      if (relation.fromTypeName !== typeName || relation.fromPropertyName !== fieldName || relation.from !== entityId)
-        continue;
+        const relationEntity = doc.entities?.[relation.to];
+        const decodedRelationEntity = { ...decodeFromGrc20Json(schema.value, { ...relationEntity, id: relation.to }) };
+        if (!hasValidTypesProperty(relationEntity)) continue;
 
-      if (relation.__deleted) continue;
-
-      const relationEntity = doc.entities?.[relation.to];
-      if (!hasValidTypesProperty(relationEntity)) continue;
-
-      relationEntities.push({ ...relationEntity, id: relation.to, _relation: { id: relationId } });
+        relationEntities.push({ ...decodedRelationEntity, id: relation.to, _relation: { id: relationId } });
+      }
     }
-
-    relations[fieldName] = relationEntities;
+    relations[String(prop.name)] = relationEntities;
   }
 
   return relations;

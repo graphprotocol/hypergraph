@@ -1,13 +1,15 @@
 import { Graph } from '@graphprotocol/grc-20';
-import { type Entity, type Mapping, store } from '@graphprotocol/hypergraph';
+import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
-import { useSelector } from '@xstate/store/react';
 import * as Either from 'effect/Either';
+import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
 import { convertPropertyValue } from './convert-property-value.js';
 import { convertRelations } from './convert-relations.js';
+import { getRelationTypeIds } from './get-relation-type-ids.js';
 import { translateFilterToGraphql } from './translate-filter-to-graphql.js';
 import type { QueryPublicParams } from './types.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
@@ -57,6 +59,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
+      id
       toEntity {
         id
         name
@@ -97,6 +100,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
+      id
       toEntity {
         id
         name
@@ -112,6 +116,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
           # filter: {spaceId: {is: $spaceId}, toEntity: {relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $relationTypeIdsLevel2}}}}}
         ) {
+          id
           toEntity {
             id
             name
@@ -146,6 +151,7 @@ type EntityQueryResult = {
       point: string;
     }[];
     relationsList: {
+      id: string;
       toEntity: {
         id: string;
         name: string;
@@ -158,6 +164,7 @@ type EntityQueryResult = {
           point: string;
         }[];
         relationsList: {
+          id: string;
           toEntity: {
             id: string;
             name: string;
@@ -178,13 +185,9 @@ type EntityQueryResult = {
   }[];
 };
 
-export const parseResult = <S extends Entity.AnyNoContext>(
-  queryData: EntityQueryResult,
-  type: S,
-  mappingEntry: Mapping.MappingEntry,
-  mapping: Mapping.Mapping,
-) => {
-  const decode = Schema.decodeUnknownEither(type);
+export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQueryResult, type: S) => {
+  const schemaWithId = Utils.addIdSchemaField(type);
+  const decode = Schema.decodeUnknownEither(schemaWithId);
   const data: Entity.Entity<S>[] = [];
   const invalidEntities: Record<string, unknown>[] = [];
 
@@ -193,27 +196,40 @@ export const parseResult = <S extends Entity.AnyNoContext>(
       id: queryEntity.id,
     };
 
-    // take the mappingEntry and assign the attributes to the rawEntity
-    for (const [key, value] of Object.entries(mappingEntry?.properties ?? {})) {
-      const property = queryEntity.valuesList.find((a) => a.propertyId === value);
-      if (property) {
-        rawEntity[key] = convertPropertyValue(property, key, type);
+    const ast = type.ast as SchemaAST.TypeLiteral;
+
+    for (const prop of ast.propertySignatures) {
+      const propType =
+        prop.isOptional && SchemaAST.isUnion(prop.type)
+          ? (prop.type.types.find((member) => !SchemaAST.isUndefinedKeyword(member)) ?? prop.type)
+          : prop.type;
+
+      const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(propType);
+
+      if (Option.isSome(result)) {
+        const value = queryEntity.valuesList.find((a) => a.propertyId === result.value);
+        if (value) {
+          const rawValue = convertPropertyValue(value, propType);
+          if (rawValue) {
+            rawEntity[String(prop.name)] = rawValue;
+          }
+        }
       }
     }
 
+    // @ts-expect-error
     rawEntity = {
       ...rawEntity,
-      ...convertRelations(queryEntity, type, mappingEntry, mapping),
+      ...convertRelations(queryEntity, ast),
     };
 
     const decodeResult = decode({
       ...rawEntity,
       __deleted: false,
-      // __version: queryEntity.currentVersion.versionId,
-      __version: '',
     });
 
     if (Either.isRight(decodeResult)) {
+      // injecting the schema to the entity to be able to access it in the preparePublish function
       data.push({ ...decodeResult.right, __schema: type });
     } else {
       invalidEntities.push(rawEntity);
@@ -222,64 +238,46 @@ export const parseResult = <S extends Entity.AnyNoContext>(
   return { data, invalidEntities };
 };
 
-export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
+export const useQueryPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
   const { enabled = true, filter, include, space: spaceFromParams, first = 100 } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
-  const mapping = useSelector(store, (state) => state.context.mapping);
-
-  // @ts-expect-error TODO should use the actual type instead of the name in the mapping
-  const typeName = type.name;
-  const mappingEntry = mapping?.[typeName];
-  if (enabled && !mappingEntry) {
-    throw new Error(`Mapping entry for ${typeName} not found`);
-  }
 
   // constructing the relation type ids for the query
-  const relationTypeIdsLevel1: string[] = [];
-  const relationTypeIdsLevel2: string[] = [];
-  for (const key in mappingEntry?.relations ?? {}) {
-    if (include?.[key] && mappingEntry?.relations?.[key]) {
-      relationTypeIdsLevel1.push(mappingEntry?.relations?.[key]);
-      const field = type.fields[key];
-      // @ts-expect-error TODO find a better way to access the relation type name
-      const typeName2 = field.value.name;
-      const mappingEntry2 = mapping[typeName2];
-      for (const key2 in mappingEntry2?.relations ?? {}) {
-        if (include?.[key][key2] && mappingEntry2?.relations?.[key2]) {
-          relationTypeIdsLevel2.push(mappingEntry2?.relations?.[key2]);
-        }
-      }
-    }
-  }
+  const relationTypeIds = getRelationTypeIds(type, include);
+
+  const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
+    Option.getOrElse(() => []),
+  );
 
   const result = useQueryTanstack({
     queryKey: [
       'hypergraph-public-entities',
-      typeName,
       space,
-      mappingEntry?.typeIds,
-      relationTypeIdsLevel1,
-      relationTypeIdsLevel2,
+      typeIds,
+      relationTypeIds.level1,
+      relationTypeIds.level2,
       filter,
       first,
     ],
     queryFn: async () => {
       let queryDocument = entitiesQueryDocumentLevel0;
-      if (relationTypeIdsLevel1.length > 0) {
+      if (relationTypeIds.level1.length > 0) {
         queryDocument = entitiesQueryDocumentLevel1;
       }
-      if (relationTypeIdsLevel2.length > 0) {
+      if (relationTypeIds.level2.length > 0) {
         queryDocument = entitiesQueryDocumentLevel2;
       }
 
+      const filterParams = filter ? translateFilterToGraphql(filter, type) : {};
+
       const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
         spaceId: space,
-        typeIds: mappingEntry?.typeIds || [],
-        relationTypeIdsLevel1,
-        relationTypeIdsLevel2,
+        typeIds,
+        relationTypeIdsLevel1: relationTypeIds.level1,
+        relationTypeIdsLevel2: relationTypeIds.level2,
         first,
-        filter: filter ? translateFilterToGraphql(filter, type, mapping) : {},
+        filter: filterParams,
       });
       return result;
     },
@@ -287,11 +285,11 @@ export const useQueryPublic = <S extends Entity.AnyNoContext>(type: S, params?: 
   });
 
   const { data, invalidEntities } = useMemo(() => {
-    if (result.data && mappingEntry) {
-      return parseResult(result.data, type, mappingEntry, mapping);
+    if (result.data) {
+      return parseResult(result.data, type);
     }
     return { data: [], invalidEntities: [] };
-  }, [result.data, type, mappingEntry, mapping]);
+  }, [result.data, type]);
 
   return { ...result, data, invalidEntities };
 };

@@ -1,6 +1,6 @@
 import { Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Entity, store, Type } from '@graphprotocol/hypergraph';
+import { type Entity, EntitySchema, Id, store, Type } from '@graphprotocol/hypergraph';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
@@ -18,24 +18,50 @@ afterEach(() => {
 });
 
 describe('HypergraphSpaceContext', () => {
-  class Person extends Entity.Class<Person>('Person')({
-    name: Type.String,
-    age: Type.Number,
-  }) {}
+  const Person = EntitySchema(
+    {
+      name: Type.String,
+      age: Type.Number,
+    },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
+      },
+    },
+  );
 
-  class User extends Entity.Class<User>('User')({
-    name: Type.String,
-    email: Type.String,
-  }) {}
+  const User = EntitySchema(
+    {
+      name: Type.String,
+      email: Type.String,
+    },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        email: Id('b667f951-4ede-40ef-83f8-fb5efee8c2ae'),
+      },
+    },
+  );
 
-  class Event extends Entity.Class<Event>('Event')({
-    name: Type.String,
-  }) {}
+  const Event = EntitySchema(
+    {
+      name: Type.String,
+    },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
 
   let repo = new Repo({});
-  const queryClient = new QueryClient();
+  let queryClient = new QueryClient();
   const createWrapper =
     () =>
     ({ children }: Readonly<{ children: React.ReactNode }>) => (
@@ -50,6 +76,8 @@ describe('HypergraphSpaceContext', () => {
 
   beforeEach(() => {
     repo = new Repo({});
+    queryClient = new QueryClient();
+    store.send({ type: 'reset' });
     store.send({ type: 'setRepo', repo });
     store.send({
       type: 'setSpace',
@@ -120,9 +148,7 @@ describe('HypergraphSpaceContext', () => {
 
       await waitFor(() => {
         expect(createdEntity).not.toBeNull();
-        expect(createdEntity).toEqual(
-          expect.objectContaining({ name: 'Test', age: 1, type: Person.name, __deleted: false }),
-        );
+        expect(createdEntity).toEqual(expect.objectContaining({ name: 'Test', age: 1, __deleted: false }));
       });
 
       if (createdEntity == null) {
@@ -140,10 +166,10 @@ describe('HypergraphSpaceContext', () => {
       });
 
       expect(createdEntity).toEqual({
+        __deleted: false,
         id,
         name: 'Test User',
         age: 2112,
-        type: Person.name,
         __schema: Person,
       });
 
@@ -154,7 +180,6 @@ describe('HypergraphSpaceContext', () => {
         data: {
           // @ts-expect-error - TODO: fix the types error
           ...createdEntity,
-          __version: '',
           __deleted: false,
           __schema: Person,
         },
@@ -170,7 +195,7 @@ describe('HypergraphSpaceContext', () => {
       expect(queryEntitiesResult.current).toEqual({
         deletedEntities: [],
         // @ts-expect-error - TODO: fix the types error
-        entities: [{ ...createdEntity, __version: '', __deleted: false, __schema: Person }],
+        entities: [{ ...createdEntity, __deleted: false, __schema: Person }],
       });
     });
   });
@@ -187,9 +212,7 @@ describe('HypergraphSpaceContext', () => {
 
       await waitFor(() => {
         expect(createdEntity).not.toBeNull();
-        expect(createdEntity).toEqual(
-          expect.objectContaining({ name: 'Test', email: 'test.user@edgeandnode.com', type: User.name }),
-        );
+        expect(createdEntity?.name).toEqual('Test');
       });
 
       const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryPrivate(User), {

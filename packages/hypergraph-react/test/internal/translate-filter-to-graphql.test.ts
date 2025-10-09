@@ -1,32 +1,34 @@
 import { Graph, Id } from '@graphprotocol/grc-20';
-import { Entity, type Mapping, Type } from '@graphprotocol/hypergraph';
+import { type Entity, EntitySchema, Type } from '@graphprotocol/hypergraph';
+import type * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';
 import { translateFilterToGraphql } from '../../src/internal/translate-filter-to-graphql.js';
 
-export class Todo extends Entity.Class<Todo>('Todo')({
-  name: Type.String,
-  completed: Type.Boolean,
-  priority: Type.Number,
-}) {}
-
-const mapping: Mapping.Mapping = {
-  Todo: {
-    typeIds: [Id('a288444f-06a3-4037-9ace-66fe325864d0')],
+export const Todo = EntitySchema(
+  {
+    name: Type.String,
+    completed: Type.Boolean,
+    priority: Type.Number,
+  },
+  {
+    types: [Id('a288444f-06a3-4037-9ace-66fe325864d0')],
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       completed: Id('d2d64cd3-a337-4784-9e30-25bea0349471'),
       priority: Id('ee920534-42ce-4113-a63b-8f3c889dd772'),
     },
   },
-};
+);
+
+type TodoFilter = Entity.EntityFilter<Schema.Schema.Type<typeof Todo>>;
 
 describe('translateFilterToGraphql string filters', () => {
   it('should translate string `is` filter correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       name: { is: 'test' },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       values: {
@@ -39,11 +41,11 @@ describe('translateFilterToGraphql string filters', () => {
   });
 
   it('should translate string `contains` filter correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       name: { contains: 'test' },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       values: {
@@ -56,11 +58,11 @@ describe('translateFilterToGraphql string filters', () => {
   });
 
   it('should translate string `startsWith` filter correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       name: { startsWith: 'test' },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       values: {
@@ -73,11 +75,11 @@ describe('translateFilterToGraphql string filters', () => {
   });
 
   it('should translate string `endsWith` filter correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       name: { endsWith: 'test' },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       values: {
@@ -92,11 +94,11 @@ describe('translateFilterToGraphql string filters', () => {
 
 describe('translateFilterToGraphql boolean filters', () => {
   it('should translate boolean `is` filter correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       completed: { is: true },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       values: {
@@ -111,11 +113,11 @@ describe('translateFilterToGraphql boolean filters', () => {
 
 describe('translateFilterToGraphql number filters', () => {
   it('should translate number `is` filter correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       priority: { is: 1 },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       values: {
@@ -128,11 +130,11 @@ describe('translateFilterToGraphql number filters', () => {
   });
 
   it('should translate number `greaterThan` filter correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       priority: { greaterThan: 1 },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       values: {
@@ -147,13 +149,13 @@ describe('translateFilterToGraphql number filters', () => {
 
 describe('translateFilterToGraphql multiple filters', () => {
   it('should translate multiple filters correctly', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       name: { is: 'test' },
       completed: { is: true },
       priority: { greaterThan: 1 },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       and: [
@@ -188,11 +190,11 @@ describe('translateFilterToGraphql multiple filters', () => {
 
 describe('translateFilterToGraphql with OR operator', () => {
   it('should translate OR operator in nested filter array', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       or: [{ name: { is: 'test' } }, { name: { is: 'test2' } }],
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       or: [
@@ -207,11 +209,11 @@ describe('translateFilterToGraphql with OR operator', () => {
   });
 
   it('should translate OR operator in nested filter array', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       or: [{ name: { is: 'test' } }, { completed: { is: true } }],
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       or: [
@@ -228,11 +230,11 @@ describe('translateFilterToGraphql with OR operator', () => {
 
 describe('translateFilterToGraphql with NOT operator', () => {
   it('should translate NOT operator', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       not: { name: { is: 'test' } },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       not: { values: { some: { propertyId: { is: 'a126ca53-0c8e-48d5-b888-82c734c38935' }, string: { is: 'test' } } } },
@@ -240,11 +242,11 @@ describe('translateFilterToGraphql with NOT operator', () => {
   });
 
   it('should translate NOT operator with multiple filters', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       not: { name: { is: 'test' }, completed: { is: true } },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       not: {
@@ -259,11 +261,11 @@ describe('translateFilterToGraphql with NOT operator', () => {
 
 describe('translateFilterToGraphql with complex nested filters', () => {
   it('should translate complex nested filters with or and not', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       or: [{ not: { name: { is: 'Jane Doe' } } }, { not: { name: { is: 'John Doe' } } }],
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       or: [
@@ -286,7 +288,7 @@ describe('translateFilterToGraphql with complex nested filters', () => {
   });
 
   it('should translate complex nested filters with and, or and not', () => {
-    const filter: Entity.EntityFilter<Todo> = {
+    const filter: TodoFilter = {
       priority: {
         is: 42,
       },
@@ -296,7 +298,7 @@ describe('translateFilterToGraphql with complex nested filters', () => {
       },
     };
 
-    const result = translateFilterToGraphql(filter, Todo, mapping);
+    const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
       and: [

@@ -33,29 +33,29 @@ export const mapping: Mapping.Mapping = {
     },
   },
   JobOffer: {
-    typeIds: [Id('f60585af-71b6-4674-9a26-b74ca6c1cceb')],
+    typeIds: [Id('a4c1b288-756e-477b-aab2-007decf01c61')],
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      salary: Id('baa36ac9-78ac-4cf7-8394-6b2d3006bebe'),
+      salary: Id('86ff5361-b820-4ba8-b689-b48e815e07d2'),
     },
   },
   Company: {
-    typeIds: [Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
+    typeIds: [Id('bcf56f59-c532-47d5-a005-2d802f512c85')],
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
     },
     relations: {
-      jobOffers: Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
+      jobOffers: Id('54190b30-1c68-499c-9ed8-5c6190810e31'),
     },
   },
   Event: {
-    typeIds: [Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+    typeIds: [Id('239bc639-938e-427c-bebb-d562d82ae272')],
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
     },
     relations: {
-      sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
+      sponsors: Id('926b00ee-68b5-4462-a27f-3806af705118'),
     },
   },
   Todo3: {

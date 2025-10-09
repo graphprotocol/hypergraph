@@ -4,14 +4,14 @@ import { useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 import { useSubscribeToSpaceAndGetHandle } from './use-subscribe-to-space.js';
 
-type QueryParams<S extends Entity.AnyNoContext> = {
+type QueryParams<S extends Schema.Schema.AnyNoContext> = {
   space?: string | undefined;
   enabled: boolean;
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
 };
 
-export function useQueryPrivate<const S extends Entity.AnyNoContext>(type: S, params?: QueryParams<S>) {
+export function useQueryPrivate<const S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryParams<S>) {
   const { enabled = true, filter, include, space: spaceFromParams } = params ?? {};
   const entitiesRef = useRef<Entity.Entity<S>[]>([]);
   const subscriptionRef = useRef<Entity.FindManySubscription<S>>({

@@ -8,7 +8,7 @@ import { UserEntry } from './user-entry.js';
 export const Users = () => {
   const { data: users } = useQuery(User, { mode: 'private' });
   const { ready: spaceReady } = useSpace({ mode: 'private' });
-  const createEntity = useCreateEntity(User);
+  const createEntityNew = useCreateEntity(User);
   const [newUserName, setNewUserName] = useState('');
 
   if (!spaceReady) {
@@ -22,7 +22,7 @@ export const Users = () => {
         <Input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} />
         <Button
           onClick={() => {
-            createEntity({ name: newUserName });
+            createEntityNew({ name: newUserName });
             setNewUserName('');
           }}
         >

@@ -1,24 +1,46 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
+import { Id } from '@graphprotocol/grc-20';
 import { beforeEach, describe, expect, it } from 'vitest';
-
+import { EntitySchema } from '../../src/entity/entity.js';
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('findMany with filters', () => {
   // Define entity classes for testing
-  class Person extends Entity.Class<Person>('Person')({
-    name: Type.String,
-    age: Type.Number,
-    isActive: Type.Boolean,
-  }) {}
 
-  class Product extends Entity.Class<Product>('Product')({
-    name: Type.String,
-    price: Type.Number,
-    category: Type.String,
-  }) {}
+  const Person = EntitySchema(
+    {
+      name: Type.String,
+      age: Type.Number,
+      isActive: Type.Boolean,
+    },
+    {
+      types: [Id('bce10418-2e20-4903-ad75-1bc496c24635')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
+        isActive: Id('e4259554-42b1-46e4-84c3-f8681987770f'),
+      },
+    },
+  );
+
+  const Product = EntitySchema(
+    {
+      name: Type.String,
+      price: Type.Number,
+      category: Type.String,
+    },
+    {
+      types: [Id('0961fc6e-d254-491d-a54b-ae44d53c4ac4')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        price: Id('f9a43200-51b3-4278-9332-de6fcc7acb09'),
+        category: Id('84159eba-8699-4cd0-8042-c66dc03fe237'),
+      },
+    },
+  );
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);

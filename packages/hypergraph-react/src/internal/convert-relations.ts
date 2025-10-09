@@ -1,4 +1,7 @@
-import type { Entity, Mapping } from '@graphprotocol/hypergraph';
+import { Constants, Utils } from '@graphprotocol/hypergraph';
+import * as Option from 'effect/Option';
+import type * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
 import { convertPropertyValue } from './convert-property-value.js';
 
 // A recursive representation of the entity structure returned by the public GraphQL
@@ -17,80 +20,80 @@ type RecursiveQueryEntity = {
     point: string;
   }[];
   relationsList?: {
+    id: string;
     toEntity: RecursiveQueryEntity;
     typeId: string;
   }[];
 };
 
-export const convertRelations = <S extends Entity.AnyNoContext>(
+type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
+type RawEntity = Record<string, RawEntityValue>;
+type NestedRawEntity = RawEntity & { _relation: { id: string } };
+
+export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
-  type: S,
-  mappingEntry: Mapping.MappingEntry,
-  mapping: Mapping.Mapping,
+  ast: SchemaAST.TypeLiteral,
 ) => {
-  const rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {};
+  const rawEntity: RawEntity = {};
 
-  for (const [key, relationId] of Object.entries(mappingEntry?.relations ?? {})) {
-    const properties = (queryEntity.relationsList ?? []).filter((a) => a.typeId === relationId);
-    if (properties.length === 0) {
-      rawEntity[key] = [] as unknown[];
-      continue;
-    }
+  for (const prop of ast.propertySignatures) {
+    const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
 
-    const field = type.fields[key];
-    if (!field) {
-      // @ts-expect-error TODO: properly access the type.name
-      console.error(`Field ${key} not found in ${type.name}`);
-      continue;
-    }
-    // @ts-expect-error TODO: properly access the type.name
-    const annotations = field.ast.rest[0].type.to.annotations;
+    if (Utils.isRelation(prop.type) && Option.isSome(result)) {
+      rawEntity[String(prop.name)] = [];
 
-    // TODO: fix this access using proper effect types
-    const relationTypeName =
-      annotations[
-        Object.getOwnPropertySymbols(annotations).find((sym) => sym.description === 'effect/annotation/Identifier')
-      ];
-
-    const relationMappingEntry = mapping[relationTypeName];
-    if (!relationMappingEntry) {
-      console.error(`Relation mapping entry for ${relationTypeName} not found`);
-      continue;
-    }
-
-    const newRelationEntities = properties.map((propertyEntry) => {
-      // @ts-expect-error TODO: properly access the type.name
-      const type = field.value;
-
-      let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
-        id: propertyEntry.toEntity.id,
-        name: propertyEntry.toEntity.name,
-        // TODO: should be determined by the actual value
-        __deleted: false,
-        // TODO: should be determined by the actual value
-        __version: '',
-      };
-
-      // take the mappingEntry and assign the attributes to the rawEntity
-      for (const [key, value] of Object.entries(relationMappingEntry?.properties ?? {})) {
-        const property = propertyEntry.toEntity.valuesList?.find((a) => a.propertyId === value);
-        if (property) {
-          rawEntity[key] = convertPropertyValue(property, key, type);
-        }
+      if (!SchemaAST.isTupleType(prop.type)) {
+        continue;
+      }
+      const relationType = prop.type;
+      const relationTransformation = relationType.rest[0]?.type;
+      if (!relationTransformation || !SchemaAST.isTypeLiteral(relationTransformation)) {
+        continue;
       }
 
-      rawEntity = {
-        ...rawEntity,
-        ...convertRelations(propertyEntry.toEntity, type, relationMappingEntry, mapping),
-      };
+      const typeIds: string[] = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(relationTransformation).pipe(
+        Option.getOrElse(() => []),
+      );
+      if (typeIds.length === 0) {
+        continue;
+      }
 
-      return rawEntity;
-    });
+      const allRelationsWithTheCorrectPropertyTypeId = queryEntity.relationsList?.filter(
+        (a) => a.typeId === result.value,
+      );
+      if (allRelationsWithTheCorrectPropertyTypeId) {
+        for (const relationEntry of allRelationsWithTheCorrectPropertyTypeId) {
+          let nestedRawEntity: NestedRawEntity = {
+            id: relationEntry.toEntity.id,
+            _relation: {
+              id: relationEntry.id,
+            },
+          };
 
-    if (rawEntity[key]) {
-      rawEntity[key] = [...(rawEntity[key] as unknown[]), ...newRelationEntities];
-    } else {
-      rawEntity[key] = newRelationEntities;
+          const relationsForRawNestedEntity = convertRelations(relationEntry.toEntity, relationTransformation);
+
+          nestedRawEntity = {
+            ...nestedRawEntity,
+            ...relationsForRawNestedEntity,
+          };
+
+          for (const nestedProp of relationTransformation.propertySignatures) {
+            const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
+            if (Option.isSome(nestedResult)) {
+              const value = relationEntry.toEntity.valuesList?.find((a) => a.propertyId === nestedResult.value);
+              if (!value) {
+                continue;
+              }
+              const rawValue = convertPropertyValue(value, nestedProp.type);
+              if (rawValue) {
+                nestedRawEntity[String(nestedProp.name)] = rawValue;
+              }
+            }
+          }
+          // TODO: in the end every entry should be validated using the Schema?!?
+          rawEntity[String(prop.name)] = [...(rawEntity[String(prop.name)] as unknown[]), nestedRawEntity];
+        }
+      }
     }
   }
 

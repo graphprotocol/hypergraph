@@ -13,7 +13,6 @@ import {
   Inboxes,
   type InboxMessageStorageEntry,
   Key,
-  type Mapping,
   Messages,
   SpaceEvents,
   type SpaceStorageEntry,
@@ -229,7 +228,6 @@ export type HypergraphAppProviderProps = Readonly<{
   syncServerUri?: string;
   chainId?: number;
   children: ReactNode;
-  mapping: Mapping.Mapping;
   appId: string;
 }>;
 
@@ -247,7 +245,6 @@ export function HypergraphAppProvider({
   chainId = Connect.GEO_TESTNET.id,
   appId,
   children,
-  mapping,
 }: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [isConnecting, setIsConnecting] = useState(true);
@@ -280,11 +277,6 @@ export function HypergraphAppProvider({
   const initialRenderAuthCheckRef = useRef(false);
   // using a layout effect to avoid a re-render
   useLayoutEffect(() => {
-    store.send({
-      type: 'setMapping',
-      mapping,
-    });
-
     if (!initialRenderAuthCheckRef.current) {
       const identity = Identity.loadIdentity(storage);
       if (identity) {
@@ -304,7 +296,7 @@ export function HypergraphAppProvider({
       // set render auth check to true so next potential rerender doesn't try this again
       initialRenderAuthCheckRef.current = true;
     }
-  }, [storage, mapping]);
+  }, [storage]);
 
   useEffect(() => {
     if (identity === null && privyIdentity === null) {
