@@ -1,10 +1,11 @@
+import type { Entity } from '@graphprotocol/hypergraph';
 import { useDeleteEntity, useUpdateEntity } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { User } from '../schema.js';
 import { Button } from './ui/button';
 import { Input } from './ui/input.js';
 
-export const UserEntry = (user: User & { id: string }) => {
+export const UserEntry = (user: Entity.Entity<typeof User> & { id: string }) => {
   const deleteEntity = useDeleteEntity();
   const updateEntity = useUpdateEntity(User);
   const [editMode, setEditMode] = useState(false);

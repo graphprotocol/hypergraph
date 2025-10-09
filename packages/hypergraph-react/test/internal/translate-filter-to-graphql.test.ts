@@ -1,5 +1,5 @@
 import { Graph, Id } from '@graphprotocol/grc-20';
-import { type Entity, EntitySchema, type Mapping, Type } from '@graphprotocol/hypergraph';
+import { type Entity, EntitySchema, Type } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';
 import { translateFilterToGraphql } from '../../src/internal/translate-filter-to-graphql.js';
@@ -19,17 +19,6 @@ export const Todo = EntitySchema(
     },
   },
 );
-
-const _mapping: Mapping.Mapping = {
-  Todo: {
-    typeIds: [Id('a288444f-06a3-4037-9ace-66fe325864d0')],
-    properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      completed: Id('d2d64cd3-a337-4784-9e30-25bea0349471'),
-      priority: Id('ee920534-42ce-4113-a63b-8f3c889dd772'),
-    },
-  },
-};
 
 type TodoFilter = Entity.EntityFilter<Schema.Schema.Type<typeof Todo>>;
 

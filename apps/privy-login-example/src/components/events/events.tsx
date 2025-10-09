@@ -1,3 +1,4 @@
+import type { Entity } from '@graphprotocol/hypergraph';
 import {
   preparePublish,
   publishOps,
@@ -19,7 +20,7 @@ export const Events = () => {
   const { data: spaces } = useSpaces({ mode: 'public' });
   const [selectedSpace, setSelectedSpace] = useState<string>('');
 
-  const handlePublish = async (event: Event) => {
+  const handlePublish = async (event: Entity.Entity<typeof Event>) => {
     if (!selectedSpace) {
       alert('No space selected');
       return;
