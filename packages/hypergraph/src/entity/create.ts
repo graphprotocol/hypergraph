@@ -14,16 +14,17 @@ import type { DocumentContent, DocumentRelation, Entity } from './types.js';
  * This specifically targets Type.Relation fields which are arrays of objects.
  */
 type RelationArrayKeys<T> = {
-  [K in keyof T]: T[K] extends readonly (infer U)[]
-    ? U extends object
-      ? K
+  // For each property K in T, check if it's an array of objects (relation fields)
+  [K in keyof T]: T[K] extends readonly (infer U)[] // Check for readonly arrays
+    ? U extends object // If array element is an object
+      ? K // Return the property key K
       : never
-    : T[K] extends (infer U)[]
-      ? U extends object
-        ? K
+    : T[K] extends (infer U)[] // Check for mutable arrays
+      ? U extends object // If array element is an object
+        ? K // Return the property key K
         : never
-      : never;
-}[keyof T];
+      : never; // Not an array of objects, so exclude
+}[keyof T]; // Extract the union of all matching property keys
 
 type WithRelationsAsStringArrays<T> = Omit<T, RelationArrayKeys<T>> &
   Partial<Record<RelationArrayKeys<T>, string[] | undefined>>;
