@@ -3,8 +3,8 @@ import {
   preparePublish,
   publishOps,
   useCreateEntity,
+  useEntities,
   useHypergraphApp,
-  useQuery,
   useSpaces,
 } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
@@ -14,7 +14,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
 export const Events = () => {
-  const { data: eventsLocalData } = useQuery(Event, { mode: 'private' });
+  const { data: eventsLocalData } = useEntities(Event, { mode: 'private' });
   const createEvent = useCreateEntity(Event);
   const { getSmartSessionClient } = useHypergraphApp();
   const { data: spaces } = useSpaces({ mode: 'public' });

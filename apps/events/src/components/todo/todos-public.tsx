@@ -1,4 +1,10 @@
-import { _generateDeleteOps, publishOps, useHypergraphApp, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
+import {
+  _generateDeleteOps,
+  publishOps,
+  useEntities,
+  useHypergraphApp,
+  useSpace,
+} from '@graphprotocol/hypergraph-react';
 import { Todo2 } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
@@ -10,7 +16,7 @@ export const TodosPublic = () => {
     data: dataPublic,
     isLoading: isLoadingPublic,
     isError: isErrorPublic,
-  } = useQuery(Todo2, {
+  } = useEntities(Todo2, {
     mode: 'public',
     include: { assignees: {} },
   });

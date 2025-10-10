@@ -1,11 +1,11 @@
-import { useHardDeleteEntity, useQuery, useUpdateEntity } from '@graphprotocol/hypergraph-react';
+import { useEntities, useHardDeleteEntity, useUpdateEntity } from '@graphprotocol/hypergraph-react';
 import { Todo2 } from '../../schema';
 import { Button } from '../ui/button';
 
 export const TodosLocal = () => {
   const updateEntity = useUpdateEntity(Todo2);
   const hardDeleteEntity = useHardDeleteEntity();
-  const { data: todosLocalData, deleted: deletedTodosLocalData } = useQuery(Todo2, { mode: 'private' });
+  const { data: todosLocalData, deleted: deletedTodosLocalData } = useEntities(Todo2, { mode: 'private' });
 
   return (
     <>

@@ -11,7 +11,7 @@ import { useCreateEntity } from '../src/hooks/use-create-entity.js';
 import { useDeleteEntity } from '../src/hooks/use-delete-entity.js';
 import { useEntity } from '../src/hooks/use-entity.js';
 import { useUpdateEntity } from '../src/hooks/use-update-entity.js';
-import { useQueryPrivate } from '../src/internal/use-query-private.js';
+import { useEntitiesPrivate } from '../src/internal/use-entities-private.js';
 
 afterEach(() => {
   cleanup();
@@ -102,7 +102,7 @@ describe('HypergraphSpaceContext', () => {
 
   describe('useCreateEntity', () => {
     it('should be able to create an entity through the useCreateEntity Hook', async () => {
-      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryPrivate(Event), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useEntitiesPrivate(Event), { wrapper });
       const { result: createEntityResult } = renderHook(() => useCreateEntity(Event), { wrapper });
 
       let createdEntity: Entity.Entity<typeof Event> | null = null;
@@ -188,7 +188,7 @@ describe('HypergraphSpaceContext', () => {
         isError: false,
       });
 
-      const { result: queryEntitiesResult, rerender } = renderHook(() => useQueryPrivate(Person), { wrapper });
+      const { result: queryEntitiesResult, rerender } = renderHook(() => useEntitiesPrivate(Person), { wrapper });
 
       rerender();
 
@@ -215,9 +215,12 @@ describe('HypergraphSpaceContext', () => {
         expect(createdEntity?.name).toEqual('Test');
       });
 
-      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(() => useQueryPrivate(User), {
-        wrapper,
-      });
+      const { result: queryEntitiesResult, rerender: rerenderQueryEntities } = renderHook(
+        () => useEntitiesPrivate(User),
+        {
+          wrapper,
+        },
+      );
       rerenderQueryEntities();
       expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
 

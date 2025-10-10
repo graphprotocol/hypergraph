@@ -3,8 +3,8 @@ import { Project } from '@/schema';
 import {
   HypergraphSpaceProvider,
   useCreateEntity,
+  useEntities,
   usePublishToPublicSpace,
-  useQuery,
   useSpace,
   useSpaces,
 } from '@graphprotocol/hypergraph-react';
@@ -27,7 +27,7 @@ function RouteComponent() {
 
 function PrivateSpace() {
   const { name, ready, id: spaceId } = useSpace({ mode: 'private' });
-  const { data: projects } = useQuery(Project, { mode: 'private' });
+  const { data: projects } = useEntities(Project, { mode: 'private' });
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const [selectedSpace, setSelectedSpace] = useState<string>('');
   const createProject = useCreateEntity(Project);

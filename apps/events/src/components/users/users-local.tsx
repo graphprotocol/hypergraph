@@ -1,10 +1,10 @@
-import { useHardDeleteEntity, useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities, useHardDeleteEntity } from '@graphprotocol/hypergraph-react';
 import { User } from '../../schema';
 import { Button } from '../ui/button';
 
 export const UsersLocal = () => {
   const hardDeleteEntity = useHardDeleteEntity();
-  const { data: usersLocalData, deleted: deletedUsersLocalData } = useQuery(User, { mode: 'private' });
+  const { data: usersLocalData, deleted: deletedUsersLocalData } = useEntities(User, { mode: 'private' });
 
   return (
     <>

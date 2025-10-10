@@ -1,10 +1,10 @@
 'use client';
 
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { InvestmentRound } from '../../schema';
 
 export default function ExploreInvestmentRoundsPage() {
-  const { data: investmentRounds, isPending } = useQuery(InvestmentRound, {
+  const { data: investmentRounds, isPending } = useEntities(InvestmentRound, {
     mode: 'public',
     space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,

@@ -1,10 +1,10 @@
-import { _useDeleteEntityPublic, useHypergraphApp, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
+import { _useDeleteEntityPublic, useEntities, useHypergraphApp, useSpace } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
 import { Event } from '../schema';
 import { Button } from './ui/button';
 
 export const Playground = ({ spaceId }: { spaceId: string }) => {
-  const { data, isLoading, isError, invalidEntities } = useQuery(Event, {
+  const { data, isLoading, isError, invalidEntities } = useEntities(Event, {
     mode: 'public',
     include: {
       sponsors: {

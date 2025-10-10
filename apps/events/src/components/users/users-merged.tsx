@@ -1,10 +1,10 @@
-import { useDeleteEntity, useQuery } from '@graphprotocol/hypergraph-react';
+import { useDeleteEntity, useEntities } from '@graphprotocol/hypergraph-react';
 import { User } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
 
 export const UsersMerged = () => {
-  const { data, isLoading, isError } = useQuery(User, { mode: 'private' });
+  const { data, isLoading, isError } = useEntities(User, { mode: 'private' });
   const deleteEntity = useDeleteEntity();
 
   return (

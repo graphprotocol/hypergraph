@@ -2,15 +2,15 @@
 
 Based on your schema, you can query public data that you created using Hypergraph. It works very much like [querying private data](/docs/query-private-data).
 
-## useQuery
+## useEntities
 
 In order to query private data, you need to pass in the schema type and set the mode to `public`.
 
 ```ts
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { Event } from '../schema';
 
-const { data, isPending, isError } = useQuery(Event, { mode: 'public' });
+const { data, isPending, isError } = useEntities(Event, { mode: 'public' });
 ```
 
 ### Including Relations
@@ -18,7 +18,7 @@ const { data, isPending, isError } = useQuery(Event, { mode: 'public' });
 By default only non-relation properties are included in the query entries. In order to include relations, you can use the `include` parameter.
 
 ```ts
-const { data, isPending, isError } = useQuery(Event, {
+const { data, isPending, isError } = useEntities(Event, {
   mode: 'public',
   include: { sponsors: {} },
 });
@@ -31,8 +31,8 @@ For deeper relations you can use the `include` parameter multiple levels deep. C
 You can also query from a specific space by passing in the `space` parameter.
 
 ```ts
-const { data: spaceAData } = useQuery(Event, { mode: 'public', space: 'space-a-id' });
-const { data: spaceBData } = useQuery(Event, { mode: 'public', space: 'space-b-id' });
+const { data: spaceAData } = useEntities(Event, { mode: 'public', space: 'space-a-id' });
+const { data: spaceBData } = useEntities(Event, { mode: 'public', space: 'space-b-id' });
 ```
 
 ### Filtering
@@ -40,14 +40,14 @@ const { data: spaceBData } = useQuery(Event, { mode: 'public', space: 'space-b-i
 You can filter the data by passing in the `filter` parameter.
 
 ```ts
-const { data, isPending, isError } = useQuery(Event, { mode: 'public', filter: { name: 'John' } });
+const { data, isPending, isError } = useEntities(Event, { mode: 'public', filter: { name: 'John' } });
 ```
 
 Please learn more about filtering in the [Filtering query results](#filtering-query-results) section.
 
 ### Returned data
 
-useQuery for private data returns:
+useEntities for private data returns:
 
 - data - a list of entities defined in your schema
 - invalidEntities - a list of entities that are in your space storage with correct type, but can't be parsed to your schema
@@ -57,7 +57,7 @@ useQuery for private data returns:
 In addition you have access to the full response from `@tanstack/react-query`'s `useQuery` hook, which is used internally to query the public data.
 
 ```ts
-const { data, isPending, isError } = useQuery(Event, { mode: 'public' });
+const { data, isPending, isError } = useEntities(Event, { mode: 'public' });
 ```
 
 ## Querying Public Data from Geo Testnet using useQuery
@@ -111,7 +111,7 @@ export const mapping: Mapping.Mapping = {
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@graphprotocol/hypergraph-react";
+import { useEntities } from "@graphprotocol/hypergraph-react";
 import { Project } from "../schema";
 
 export default function ProjectsExample() {
@@ -120,7 +120,7 @@ export default function ProjectsExample() {
     data: projects,
     isPending,
     isError,
-  } = useQuery(Project, {
+  } = useEntities(Project, {
     mode: "public",
     space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,
@@ -205,7 +205,7 @@ export const mapping: Mapping.Mapping = {
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@graphprotocol/hypergraph-react";
+import { useEntities } from "@graphprotocol/hypergraph-react";
 import { Dapp } from "../schema";
 
 export default function DappsExample() {
@@ -214,7 +214,7 @@ export default function DappsExample() {
     data: dapps,
     isPending,
     isError,
-  } = useQuery(Dapp, {
+  } = useEntities(Dapp, {
     mode: "public",
     space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,
@@ -326,7 +326,7 @@ export const mapping: Mapping.Mapping = {
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@graphprotocol/hypergraph-react";
+import { useEntities } from "@graphprotocol/hypergraph-react";
 import { InvestmentRound } from "../schema";
 
 export default function InvestmentRoundsExample() {
@@ -335,7 +335,7 @@ export default function InvestmentRoundsExample() {
     data: investmentRounds,
     isPending,
     isError,
-  } = useQuery(InvestmentRound, {
+  } = useEntities(InvestmentRound, {
     mode: "public",
     space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,
@@ -437,7 +437,7 @@ export const mapping: Mapping.Mapping = {
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@graphprotocol/hypergraph-react";
+import { useEntities } from "@graphprotocol/hypergraph-react";
 import { Asset } from "../schema";
 
 export default function AssetMarketExample() {
@@ -446,7 +446,7 @@ export default function AssetMarketExample() {
     data: assets,
     isPending,
     isError,
-  } = useQuery(Asset, {
+  } = useEntities(Asset, {
     mode: "public",
     space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
     first: limit,

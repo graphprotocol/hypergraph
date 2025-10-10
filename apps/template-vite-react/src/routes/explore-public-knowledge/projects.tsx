@@ -1,6 +1,6 @@
 import { GraphImage } from '@/components/graph-image';
 import { Project } from '@/schema';
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/explore-public-knowledge/projects')({
 function ExplorePublicKnowledgeProjects() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: projects, isPending } = useQuery(Project, {
+  const { data: projects, isPending } = useEntities(Project, {
     mode: 'public',
     space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,

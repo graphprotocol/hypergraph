@@ -1,11 +1,21 @@
-import { _generateDeleteOps, publishOps, useHypergraphApp, useQuery, useSpace } from '@graphprotocol/hypergraph-react';
+import {
+  _generateDeleteOps,
+  publishOps,
+  useEntities,
+  useHypergraphApp,
+  useSpace,
+} from '@graphprotocol/hypergraph-react';
 import { User } from '../../schema';
 import { Spinner } from '../spinner';
 import { Button } from '../ui/button';
 
 export const UsersPublic = () => {
   const { id: spaceId } = useSpace({ mode: 'public' });
-  const { data: dataPublic, isLoading: isLoadingPublic, isError: isErrorPublic } = useQuery(User, { mode: 'public' });
+  const {
+    data: dataPublic,
+    isLoading: isLoadingPublic,
+    isError: isErrorPublic,
+  } = useEntities(User, { mode: 'public' });
   const { getSmartSessionClient } = useHypergraphApp();
   return (
     <>

@@ -1,7 +1,7 @@
 import {
   useCreateEntity,
   useDeleteEntity,
-  useQuery,
+  useEntities,
   useRemoveRelation,
   useSpace,
   useUpdateEntity,
@@ -13,12 +13,12 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export const Todos = () => {
-  const { data: todos } = useQuery(Todo, {
+  const { data: todos } = useEntities(Todo, {
     mode: 'private',
     include: { assignees: {} },
     // filter: { or: [{ name: { startsWith: 'aa' } }, { name: { is: 'sdasd' } }] },
   });
-  const { data: users } = useQuery(User, { mode: 'private' });
+  const { data: users } = useEntities(User, { mode: 'private' });
   const { ready: spaceReady } = useSpace({ mode: 'private' });
   const createEntity = useCreateEntity(Todo);
   const updateEntity = useUpdateEntity(Todo);

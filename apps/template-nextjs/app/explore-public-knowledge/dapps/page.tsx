@@ -1,11 +1,11 @@
 'use client';
 
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { GraphImage } from '../../../Components/GraphImage';
 import { Dapp } from '../../schema';
 
 export default function ExploreDappsPage() {
-  const { data: dapps, isPending } = useQuery(Dapp, {
+  const { data: dapps, isPending } = useEntities(Dapp, {
     mode: 'public',
     space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,
