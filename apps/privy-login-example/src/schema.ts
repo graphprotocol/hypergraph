@@ -1,6 +1,6 @@
-import { EntitySchema, Id, Type } from '@graphprotocol/hypergraph';
+import { Entity, Id, Type } from '@graphprotocol/hypergraph';
 
-export const User = EntitySchema(
+export const User = Entity.Schema(
   { name: Type.String },
   {
     types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
@@ -10,7 +10,7 @@ export const User = EntitySchema(
   },
 );
 
-export const Todo = EntitySchema(
+export const Todo = Entity.Schema(
   {
     name: Type.String,
     completed: Type.Boolean,
@@ -26,7 +26,7 @@ export const Todo = EntitySchema(
   },
 );
 
-export const Todo2 = EntitySchema(
+export const Todo2 = Entity.Schema(
   {
     name: Type.String,
     checked: Type.Boolean,
@@ -50,7 +50,7 @@ export const Todo2 = EntitySchema(
   },
 );
 
-export const JobOffer = EntitySchema(
+export const JobOffer = Entity.Schema(
   {
     name: Type.String,
     salary: Type.Number,
@@ -64,7 +64,7 @@ export const JobOffer = EntitySchema(
   },
 );
 
-export const Company = EntitySchema(
+export const Company = Entity.Schema(
   {
     name: Type.String,
     jobOffers: Type.Relation(JobOffer),
@@ -78,7 +78,7 @@ export const Company = EntitySchema(
   },
 );
 
-export const Event = EntitySchema(
+export const Event = Entity.Schema(
   {
     name: Type.String,
     description: Type.optional(Type.String),
@@ -94,7 +94,7 @@ export const Event = EntitySchema(
   },
 );
 
-export const Image = EntitySchema(
+export const Image = Entity.Schema(
   {
     url: Type.String,
   },
@@ -106,7 +106,7 @@ export const Image = EntitySchema(
   },
 );
 
-export const Project = EntitySchema(
+export const Project = Entity.Schema(
   {
     name: Type.String,
     description: Type.optional(Type.String),

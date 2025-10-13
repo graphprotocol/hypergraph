@@ -1,10 +1,10 @@
 import { Graph, Id } from '@graphprotocol/grc-20';
-import { type Entity, EntitySchema, Type } from '@graphprotocol/hypergraph';
+import { Entity, Type } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';
 import { translateFilterToGraphql } from '../../src/internal/translate-filter-to-graphql.js';
 
-export const Todo = EntitySchema(
+export const Todo = Entity.Schema(
   {
     name: Type.String,
     completed: Type.Boolean,

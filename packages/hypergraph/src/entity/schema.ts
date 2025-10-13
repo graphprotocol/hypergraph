@@ -1,6 +1,6 @@
 import * as Data from 'effect/Data';
 import * as Option from 'effect/Option';
-import * as Schema from 'effect/Schema';
+import * as EffectSchema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
 
@@ -10,20 +10,20 @@ import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
  *
  * @example
  * ```typescript
- * const User = EntityDefinition({
+ * const User = Entity.Schema({
  *   name: Type.String,
  *   age: Type.Number,
  * }, {
- *   name: "grc-20-name",
- *   age: "grc-20-age"
+ *   name: "grc-20-id",
+ *   age: "grc-20-id"
  * });
  * ```
  */
-export function EntitySchema<
+export function Schema<
   T extends Record<
     string,
     // biome-ignore lint/suspicious/noExplicitAny: any
-    (propertyId: string) => Schema.Schema<any> | Schema.PropertySignature<any, any, any, any, any, any, any>
+    (propertyId: string) => EffectSchema.Schema<any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>
   >,
   P extends Record<keyof T, string>,
 >(
@@ -32,12 +32,14 @@ export function EntitySchema<
     types: Array<string>;
     properties: P;
   },
-): Schema.Struct<{
+): EffectSchema.Struct<{
   [K in keyof T]: ReturnType<T[K]> & { id: string };
 }> {
-  // biome-ignore lint/suspicious/noExplicitAny: any
-  const properties: Record<string, Schema.Schema<any> | Schema.PropertySignature<any, any, any, any, any, any, any>> =
-    {};
+  const properties: Record<
+    string,
+    // biome-ignore lint/suspicious/noExplicitAny: any
+    EffectSchema.Schema<any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>
+  > = {};
 
   for (const [key, schemaType] of Object.entries(schemaTypes)) {
     const propertyId = mapping.properties[key as keyof P];
@@ -45,10 +47,13 @@ export function EntitySchema<
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: any
-  return Schema.Struct(properties).pipe(Schema.annotations({ [TypeIdsSymbol]: mapping.types })) as any;
+  return EffectSchema.Struct(properties).pipe(EffectSchema.annotations({ [TypeIdsSymbol]: mapping.types })) as any;
 }
 
-export function encodeToGrc20Json<T extends object, E>(schema: Schema.Schema<T, E>, value: T): Record<string, unknown> {
+export function encodeToGrc20Json<T extends object, E>(
+  schema: EffectSchema.Schema<T, E>,
+  value: T,
+): Record<string, unknown> {
   const ast = schema.ast as SchemaAST.TypeLiteral;
   const out: Record<string, unknown> = {};
 
@@ -72,7 +77,7 @@ export function encodeToGrc20Json<T extends object, E>(schema: Schema.Schema<T, 
 }
 
 export function decodeFromGrc20Json<T extends object, E>(
-  schema: Schema.Schema<T, E>,
+  schema: EffectSchema.Schema<T, E>,
   grc20Data: Record<string, unknown>,
 ): T {
   const ast = schema.ast as SchemaAST.TypeLiteral;
@@ -101,6 +106,6 @@ export function decodeFromGrc20Json<T extends object, E>(
 
 export class EntityNotFoundError extends Data.TaggedError('EntityNotFoundError')<{
   id: string;
-  type: Schema.Schema.AnyNoContext;
+  type: EffectSchema.Schema.AnyNoContext;
   cause?: unknown;
 }> {}

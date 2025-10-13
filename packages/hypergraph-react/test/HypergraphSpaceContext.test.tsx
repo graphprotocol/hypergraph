@@ -1,6 +1,6 @@
 import { Repo } from '@automerge/automerge-repo';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { type Entity, EntitySchema, Id, store, Type } from '@graphprotocol/hypergraph';
+import { Entity, Id, store, Type } from '@graphprotocol/hypergraph';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 describe('HypergraphSpaceContext', () => {
-  const Person = EntitySchema(
+  const Person = Entity.Schema(
     {
       name: Type.String,
       age: Type.Number,
@@ -32,7 +32,7 @@ describe('HypergraphSpaceContext', () => {
     },
   );
 
-  const User = EntitySchema(
+  const User = Entity.Schema(
     {
       name: Type.String,
       email: Type.String,
@@ -46,7 +46,7 @@ describe('HypergraphSpaceContext', () => {
     },
   );
 
-  const Event = EntitySchema(
+  const Event = Entity.Schema(
     {
       name: Type.String,
     },

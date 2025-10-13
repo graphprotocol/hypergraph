@@ -31,7 +31,6 @@ const sidebars = {
     { type: 'doc', id: 'schema', label: '🔗 Schema' },
     { type: 'doc', id: 'writing-private-data', label: '✍️ Writing Private Data' },
     { type: 'doc', id: 'query-private-data', label: '🔍 Query Private Data' },
-    { type: 'doc', id: 'mapping', label: '🔗 Mapping' },
     { type: 'doc', id: 'publishing-public-data', label: '✍️ Publishing Public Data' },
     { type: 'doc', id: 'query-public-data', label: '🔍 Query Public Data' },
     { type: 'doc', id: 'filtering-query-results', label: '🔍 Filtering Query Results' },

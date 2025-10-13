@@ -1,6 +1,6 @@
 import { Repo } from '@automerge/automerge-repo';
 import { Graph, Id } from '@graphprotocol/grc-20';
-import { type Entity, EntitySchema, store, Type } from '@graphprotocol/hypergraph';
+import { Entity, store, Type } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import request from 'graphql-request';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -20,7 +20,7 @@ afterEach(() => {
 
 describe('preparePublish', () => {
   // Test entity classes
-  const Person = EntitySchema(
+  const Person = Entity.Schema(
     {
       name: Type.String,
       age: Type.Number,
@@ -42,7 +42,7 @@ describe('preparePublish', () => {
     },
   );
 
-  const Company = EntitySchema(
+  const Company = Entity.Schema(
     {
       name: Type.String,
       employees: Type.Relation(Person),
@@ -57,7 +57,7 @@ describe('preparePublish', () => {
   );
 
   // Entity class for testing optional types
-  const OptionalFieldsEntity = EntitySchema(
+  const OptionalFieldsEntity = Entity.Schema(
     {
       name: Type.String, // required field
       optionalNumber: Type.optional(Type.Number),

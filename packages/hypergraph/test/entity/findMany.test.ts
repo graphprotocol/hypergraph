@@ -2,7 +2,6 @@ import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
 import { Id } from '@graphprotocol/grc-20';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { EntitySchema } from '../../src/entity/entity.js';
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
@@ -10,7 +9,7 @@ import { idToAutomergeId } from '../../src/utils/automergeId.js';
 describe('findMany with filters', () => {
   // Define entity classes for testing
 
-  const Person = EntitySchema(
+  const Person = Entity.Schema(
     {
       name: Type.String,
       age: Type.Number,
@@ -26,7 +25,7 @@ describe('findMany with filters', () => {
     },
   );
 
-  const Product = EntitySchema(
+  const Product = Entity.Schema(
     {
       name: Type.String,
       price: Type.Number,
