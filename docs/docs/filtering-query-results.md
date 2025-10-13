@@ -5,10 +5,13 @@ The filter API allows you to filter the results of a query by property values an
 ## Filtering by property values
 
 ```tsx
-export class Event extends Entity.Class<Event>("Event")({
-  name: Type.String,
-  cancelled: Type.Boolean,
-}) {}
+export const Event = Entity.Schema(
+  { name: Type.String, cancelled: Type.Boolean },
+  {
+    types: [Id('event-type-id')],
+    properties: { name: Id('name-property-id'), cancelled: Id('cancelled-property-id') },
+  },
+);
 
 // inside the React component
 const { data } = useEntities(Event, {
@@ -128,11 +131,17 @@ const { data } = useEntities(Person, {
 
 ```tsx
 // schema
-export class Todo extends Entity.Class<Todo2>('Todo')({
-  name: Type.String,
-  checked: Type.Boolean,
-  assignees: Type.Relation(User),
-})
+export const Todo = Entity.Schema(
+  { name: Type.String, checked: Type.Boolean, assignees: Type.Relation(User) },
+  {
+    types: [Id('todo-type-id')],
+    properties: {
+      name: Id('name-property-id'),
+      checked: Id('checked-property-id'),
+      assignees: Id('assignees-property-id'),
+    },
+  },
+);
 ```
 
 1 level filtering
@@ -171,15 +180,17 @@ const { data } = useEntities(Person, {
 
 ```tsx
 // schema
-export class Todo extends Entity.Class<Todo2>('Todo')({
-  name: Type.String,
-  checked: Type.Boolean,
-  assignees: Type.Relation(User, {
-    entity: {
-      assignedAt: Type.DateTime,
-    }
-  }),
-})
+export const Todo = Entity.Schema(
+  { name: Type.String, checked: Type.Boolean, assignees: Type.Relation(User) },
+  {
+    types: [Id('todo-type-id')],
+    properties: {
+      name: Id('name-property-id'),
+      checked: Id('checked-property-id'),
+      assignees: Id('assignees-property-id'),
+    },
+  },
+);
 ```
 
 ```tsx

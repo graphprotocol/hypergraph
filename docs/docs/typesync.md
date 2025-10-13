@@ -7,6 +7,8 @@ tags: [typesync, hypergraph-cli, schema]
 
 # 🧬 TypeSync
 
+**WARNING: This tool is currently not supported in the latest version of the `hypergraph` package. We are working on a new version of TypeSync.**
+
 TypeSync is a visual tool that helps you manage your Hypergraph schema and update the schema.ts and mapping.ts for your Hypergraph application.
 
 ## Installation
