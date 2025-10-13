@@ -2,13 +2,12 @@ import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
 import { Id } from '@graphprotocol/grc-20';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { EntitySchema } from '../../src/entity/entity.js';
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('Entity', () => {
-  const Person = EntitySchema(
+  const Person = Entity.Schema(
     {
       name: Type.String,
       age: Type.Number,
@@ -22,7 +21,7 @@ describe('Entity', () => {
     },
   );
 
-  const User = EntitySchema(
+  const User = Entity.Schema(
     {
       name: Type.String,
       email: Type.String,
@@ -36,7 +35,7 @@ describe('Entity', () => {
     },
   );
 
-  const Badge = EntitySchema(
+  const Badge = Entity.Schema(
     {
       name: Type.String,
     },
@@ -48,7 +47,7 @@ describe('Entity', () => {
     },
   );
 
-  const Event = EntitySchema(
+  const Event = Entity.Schema(
     {
       name: Type.String,
     },

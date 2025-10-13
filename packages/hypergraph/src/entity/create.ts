@@ -5,8 +5,8 @@ import * as SchemaAST from 'effect/SchemaAST';
 import { PropertyIdSymbol } from '../constants.js';
 import { generateId } from '../utils/generateId.js';
 import { isRelation } from '../utils/isRelation.js';
-import { encodeToGrc20Json } from './entity.js';
 import { findOne } from './findOne.js';
+import { encodeToGrc20Json } from './schema.js';
 import type { DocumentContent, DocumentRelation, Entity } from './types.js';
 
 /**

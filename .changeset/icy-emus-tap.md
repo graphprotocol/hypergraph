@@ -15,7 +15,7 @@ export class User extends Entity.Class<User>('User')({
 
 After:
 ```ts
-export const User = EntitySchema(
+export const User = Entity.Schema(
   { name: Type.String },
   {
     types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],

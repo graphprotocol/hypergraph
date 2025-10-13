@@ -1,6 +1,6 @@
-import { EntitySchema, Id, Type } from '@graphprotocol/hypergraph';
+import { Entity, Id, Type } from '@graphprotocol/hypergraph';
 
-export const Image = EntitySchema(
+export const Image = Entity.Schema(
   {
     url: Type.String,
   },
@@ -12,7 +12,7 @@ export const Image = EntitySchema(
   },
 );
 
-export const Project = EntitySchema(
+export const Project = Entity.Schema(
   {
     name: Type.String,
     description: Type.optional(Type.String),
@@ -30,7 +30,7 @@ export const Project = EntitySchema(
   },
 );
 
-export const Dapp = EntitySchema(
+export const Dapp = Entity.Schema(
   {
     name: Type.String,
     description: Type.optional(Type.String),
@@ -50,7 +50,7 @@ export const Dapp = EntitySchema(
   },
 );
 
-export const Investor = EntitySchema(
+export const Investor = Entity.Schema(
   {
     name: Type.String,
   },
@@ -62,7 +62,7 @@ export const Investor = EntitySchema(
   },
 );
 
-export const FundingStage = EntitySchema(
+export const FundingStage = Entity.Schema(
   {
     name: Type.String,
   },
@@ -74,7 +74,7 @@ export const FundingStage = EntitySchema(
   },
 );
 
-export const InvestmentRound = EntitySchema(
+export const InvestmentRound = Entity.Schema(
   {
     name: Type.String,
     raisedAmount: Type.optional(Type.Number),
@@ -94,7 +94,7 @@ export const InvestmentRound = EntitySchema(
   },
 );
 
-export const Asset = EntitySchema(
+export const Asset = Entity.Schema(
   {
     name: Type.String,
     symbol: Type.optional(Type.String),

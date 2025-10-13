@@ -6,10 +6,10 @@ import { TypeIdsSymbol } from '../constants.js';
 import { deepMerge } from '../utils/internal/deep-merge.js';
 import { canonicalize } from '../utils/jsc.js';
 import { type DecodedEntitiesCacheEntry, decodedEntitiesCache, type QueryEntry } from './decodedEntitiesCache.js';
-import { decodeFromGrc20Json } from './entity.js';
 import { entityRelationParentsMap } from './entityRelationParentsMap.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
+import { decodeFromGrc20Json } from './schema.js';
 import type {
   CrossFieldFilter,
   DocumentContent,

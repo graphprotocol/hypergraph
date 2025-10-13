@@ -3,8 +3,8 @@ import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { PropertyIdSymbol, RelationSchemaSymbol } from '../constants.js';
 import { isRelation } from '../utils/isRelation.js';
-import { decodeFromGrc20Json } from './entity.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
+import { decodeFromGrc20Json } from './schema.js';
 import type { DocumentContent, Entity } from './types.js';
 
 export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(

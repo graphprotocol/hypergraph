@@ -3,9 +3,9 @@ import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { TypeIdsSymbol } from '../constants.js';
-import { decodeFromGrc20Json } from './entity.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
+import { decodeFromGrc20Json } from './schema.js';
 import type { DocumentContent, Entity } from './types.js';
 
 export const findOne = <const S extends Schema.Schema.AnyNoContext>(
