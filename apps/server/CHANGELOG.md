@@ -1,5 +1,11 @@
 # server
 
+## 0.1.4
+### Patch Changes
+
+- Updated dependencies [edf7630]
+  - @graphprotocol/hypergraph@0.8.0
+
 ## 0.1.3
 ### Patch Changes
 
