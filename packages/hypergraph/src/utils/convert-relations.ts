@@ -2,6 +2,7 @@ import { Constants, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
+import { convertPropertyValue } from './convert-property-value.js';
 
 // A recursive representation of the entity structure returned by the public GraphQL
 // endpoint. `values` and `relations` are optional because the nested `to` selections
@@ -83,7 +84,7 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
               if (!value) {
                 continue;
               }
-              const rawValue = Utils.convertPropertyValue(value, nestedProp.type);
+              const rawValue = convertPropertyValue(value, nestedProp.type);
               if (rawValue) {
                 nestedRawEntity[String(nestedProp.name)] = rawValue;
               }
