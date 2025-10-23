@@ -240,7 +240,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
 /**
  * Queries for a list of entities of the given type from the repo.
  */
-export function findMany<const S extends Schema.Schema.AnyNoContext>(
+export function findManyPrivate<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
@@ -431,7 +431,7 @@ export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
       return query.data;
     }
 
-    const { entities } = findMany(handle, type, filter, include);
+    const { entities } = findManyPrivate(handle, type, filter, include);
 
     for (const entity of entities) {
       cacheEntry?.entities.set(entity.id, entity);

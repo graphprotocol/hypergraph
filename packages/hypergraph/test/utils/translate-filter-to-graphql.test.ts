@@ -2,7 +2,7 @@ import { Graph, Id } from '@graphprotocol/grc-20';
 import { Entity, Type } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';
-import { translateFilterToGraphql } from '../../src/internal/translate-filter-to-graphql.js';
+import { translateFilterToGraphql } from '../../src/utils/translate-filter-to-graphql.js';
 
 export const Todo = Entity.Schema(
   {

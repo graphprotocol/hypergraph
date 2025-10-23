@@ -7,9 +7,6 @@ import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { gql, request } from 'graphql-request';
 import { useMemo } from 'react';
-import { convertPropertyValue } from './convert-property-value.js';
-import { convertRelations } from './convert-relations.js';
-import { getRelationTypeIds } from './get-relation-type-ids.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 
 const entityQueryDocumentLevel0 = gql`
@@ -195,7 +192,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
     if (Option.isSome(result)) {
       const value = queryEntity.valuesList.find((a) => a.propertyId === result.value);
       if (value) {
-        const rawValue = convertPropertyValue(value, propType);
+        const rawValue = Utils.convertPropertyValue(value, propType);
         if (rawValue) {
           rawEntity[String(prop.name)] = rawValue;
         }
@@ -206,7 +203,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
   // @ts-expect-error
   rawEntity = {
     ...rawEntity,
-    ...convertRelations(queryEntity, ast),
+    ...Utils.convertRelations(queryEntity, ast),
   };
 
   const decodeResult = decode({
@@ -239,7 +236,7 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
   const space = spaceFromParams ?? spaceFromContext;
 
   // constructing the relation type ids for the query
-  const relationTypeIds = getRelationTypeIds(type, include);
+  const relationTypeIds = Utils.getRelationTypeIds(type, include);
 
   const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
