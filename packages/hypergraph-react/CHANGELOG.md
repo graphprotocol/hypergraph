@@ -1,5 +1,14 @@
 # @graphprotocol/hypergraph-react
 
+## 0.8.1
+### Patch Changes
+
+- 887dbc3: rename Entity.findMany to findManyPrivate and add Entity.findManyPublic
+- a4898c4: add Entity.searchManyPublic
+- Updated dependencies [887dbc3]
+- Updated dependencies [a4898c4]
+  - @graphprotocol/hypergraph@0.8.1
+
 ## 0.8.0
 ### Minor Changes
 
