@@ -5,5 +5,6 @@ export * from './find-many-public.js';
 export * from './findOne.js';
 export * from './removeRelation.js';
 export * from './schema.js';
+export * from './search-many-public.js';
 export * from './types.js';
 export * from './update.js';
