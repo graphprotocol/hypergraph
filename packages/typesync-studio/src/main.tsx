@@ -4,8 +4,8 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { createTypesyncAppRouter, type TypesyncAppRouter } from './clients/Router.tsx';
-import './styles.css';
 import reportWebVitals from './reportWebVitals.ts';
+import './styles.css';
 
 const router = createTypesyncAppRouter();
 
@@ -22,7 +22,7 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <HypergraphAppProvider storage={localStorage} mapping={{}} appId="577fb988-3699-495a-9e59-ced8ccbf7a19">
+      <HypergraphAppProvider storage={localStorage} appId="577fb988-3699-495a-9e59-ced8ccbf7a19">
         <RouterProvider<TypesyncAppRouter> router={router} />
       </HypergraphAppProvider>
     </StrictMode>,

@@ -1,5 +1,5 @@
 import { Asset } from '@/schema';
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/explore-public-knowledge/assets')({
@@ -7,9 +7,9 @@ export const Route = createFileRoute('/explore-public-knowledge/assets')({
 });
 
 function AssetMarket() {
-  const { data: assets, isPending } = useQuery(Asset, {
+  const { data: assets, isPending } = useEntities(Asset, {
     mode: 'public',
-    space: 'b2565802-3118-47be-91f2-e59170735bac',
+    space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,
   });
 

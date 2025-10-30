@@ -1,4 +1,4 @@
-import type { Messages } from '@graphprotocol/hypergraph';
+import type { Connect, Messages } from '@graphprotocol/hypergraph';
 import { useCallback, useEffect, useState } from 'react';
 import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js';
 
@@ -8,7 +8,11 @@ import { useHypergraphApp, useHypergraphAuth } from '../HypergraphAppContext.js'
  */
 export function useExternalAccountInbox(accountAddress: string, inboxId: string) {
   const { sendAccountInboxMessage, getAccountInbox } = useHypergraphApp();
-  const { identity } = useHypergraphAuth();
+  const result = useHypergraphAuth();
+  let identity: Connect.PrivatePrivyAppIdentity | Connect.PrivateAppIdentity | null = result.identity;
+  if (!identity && result.privyIdentity) {
+    identity = result.privyIdentity;
+  }
 
   // Use local state for external inbox
   const [inbox, setInbox] = useState<Messages.AccountInboxPublic | null>(null);
@@ -45,7 +49,7 @@ export function useExternalAccountInbox(accountAddress: string, inboxId: string)
 
         let authorAccountAddress: string | null = null;
         let signaturePrivateKey: string | null = null;
-        if (identity?.address && inbox.authPolicy !== 'anonymous') {
+        if (identity?.accountAddress && inbox.authPolicy !== 'anonymous') {
           authorAccountAddress = identity.accountAddress;
           signaturePrivateKey = identity.signaturePrivateKey;
         }

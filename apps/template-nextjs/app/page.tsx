@@ -1,10 +1,26 @@
+'use client';
+
+import { useHypergraphApp, useHypergraphAuth } from '@graphprotocol/hypergraph-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { LoginButton } from '@/Components/Login/LoginButton';
 import { Button } from '@/Components/ui/button';
 
 export default function HomePage() {
+  const { redirectToConnect } = useHypergraphApp();
+  const { authenticated } = useHypergraphAuth();
+
+  const handleSignIn = () => {
+    redirectToConnect({
+      storage: localStorage,
+      connectUrl: 'https://connect.geobrowser.io/',
+      successUrl: `${window.location.origin}/authenticate-success`,
+      redirectFn: (url: URL) => {
+        window.location.href = url.toString();
+      },
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-12">
@@ -25,6 +41,7 @@ export default function HomePage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -46,7 +63,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Section 2: Sign in with Geo Connect */}
+        {/* Section 2: Conditional content based on authentication */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-700">
           <div className="text-center">
             <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -55,6 +72,7 @@ export default function HomePage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -64,11 +82,27 @@ export default function HomePage() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-3">Manage Your Data</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Sign in with Geo Connect to manage your private data and publish it to the public Knowledge Graph.
-            </p>
-            <LoginButton />
+            {authenticated ? (
+              <>
+                <h3 className="text-xl font-semibold mb-3">Go to Geo Connect</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Go to Geo Connect to manage your private data and publish it to the public Knowledge Graph.
+                </p>
+                <Button onClick={handleSignIn} className="w-full bg-primary hover:bg-primary/90">
+                  Go to Geo Connect
+                </Button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-semibold mb-3">Manage Your Data</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Sign in with Geo Connect to manage your private data and publish it to the public Knowledge Graph.
+                </p>
+                <Button onClick={handleSignIn} className="w-full bg-primary hover:bg-primary/90">
+                  Sign in with Geo Connect
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -81,6 +115,7 @@ export default function HomePage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"

@@ -1,5 +1,64 @@
 # @graphprotocol/hypergraph
 
+## 0.8.1
+### Patch Changes
+
+- 887dbc3: rename Entity.findMany to findManyPrivate and add Entity.findManyPublic
+- a4898c4: add Entity.searchManyPublic
+
+## 0.8.0
+### Minor Changes
+
+- edf7630: Schema Definition API Change (Breaking Change)
+  
+  Before:
+  ```ts
+  export class User extends Entity.Class<User>('User')({
+    name: Type.String,
+  }) {}
+  ```
+  
+  After:
+  ```ts
+  export const User = Entity.Schema(
+    { name: Type.String },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
+  ```
+  
+  All entity definitions need to be rewritten. The new API requires explicit type IDs and property IDs.
+
+## 0.7.3
+### Patch Changes
+
+- Catch up with hypergraph-react version
+
+## 0.6.6
+### Patch Changes
+
+- 55a6403: upgrade grc-20 dependency
+
+## 0.6.5
+### Patch Changes
+
+- b780f76: add privy authentication functionality for internal apps
+
+## 0.6.4
+### Patch Changes
+
+- 604724b: improve include type for fineOne
+
+## 0.6.3
+### Patch Changes
+
+- 0546a02: upgrade dependencies
+- 2baa671: Removed Url from the TypeSelect in typesync-studio
+
 ## 0.6.2
 ### Patch Changes
 

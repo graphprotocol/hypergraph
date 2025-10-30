@@ -1,38 +1,32 @@
 {
   "name": "server",
-  "version": "0.1.10",
+  "version": "0.1.5",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch ./src/index.ts",
+    "dev": "tsx watch ./src/index.ts",
+    "build": "tsup",
     "prisma": "prisma",
-    "prebuild": "prisma generate",
-    "build": "tsup"
+    "prebuild": "prisma generate"
   },
   "dependencies": {
+    "@effect/opentelemetry": "^0.56.6",
+    "@effect/platform": "^0.90.10",
+    "@effect/platform-node": "^0.96.1",
     "@graphprotocol/hypergraph": "workspace:*",
-    "@hpke/chacha20poly1305": "^1.6.2",
-    "@hpke/core": "^1.7.2",
-    "@noble/ciphers": "^1.3.0",
     "@noble/hashes": "^1.8.0",
     "@prisma/client": "^6.14.0",
-    "@privy-io/server-auth": "^1.26.0",
-    "body-parser": "^2.2.0",
+    "@privy-io/server-auth": "^1.32.0",
     "cors": "^2.8.5",
-    "effect": "^3.17.6",
-    "express": "^5.1.0",
-    "prisma": "^6.14.0",
-    "siwe": "^3.0.0",
-    "viem": "^2.29.0",
-    "ws": "^8.18.2"
+    "effect": "^3.17.13",
+    "prisma": "^6.14.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.1",
-    "@types/node": "^24.2.0",
-    "@types/pg": "^8.15.0",
-    "@types/ws": "^8.18.1",
+    "@types/node": "^24.1.0",
     "tsup": "^8.4.0",
-    "typescript": "^5.8.3"
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }

@@ -1,5 +1,59 @@
 # connect
 
+## 0.2.14
+### Patch Changes
+
+- Updated dependencies [887dbc3]
+- Updated dependencies [a4898c4]
+  - @graphprotocol/hypergraph-react@0.8.1
+  - @graphprotocol/hypergraph@0.8.1
+
+## 0.2.13
+### Patch Changes
+
+- Updated dependencies [edf7630]
+  - @graphprotocol/hypergraph-react@0.8.0
+  - @graphprotocol/hypergraph@0.8.0
+
+## 0.2.12
+### Patch Changes
+
+- Updated dependencies [1d29c53]
+  - @graphprotocol/hypergraph-react@0.7.3
+
+## 0.2.11
+### Patch Changes
+
+- 55a6403: upgrade grc-20 dependency
+- Updated dependencies [55a6403]
+- Updated dependencies [b7cc2fa]
+  - @graphprotocol/hypergraph-react@0.7.2
+  - @graphprotocol/hypergraph@0.6.6
+
+## 0.2.10
+### Patch Changes
+
+- b780f76: add privy authentication functionality for internal apps
+- Updated dependencies [b780f76]
+  - @graphprotocol/hypergraph-react@0.7.1
+  - @graphprotocol/hypergraph@0.6.5
+
+## 0.2.9
+### Patch Changes
+
+- Updated dependencies [604724b]
+- Updated dependencies [604724b]
+  - @graphprotocol/hypergraph@0.6.4
+  - @graphprotocol/hypergraph-react@0.7.0
+
+## 0.2.8
+### Patch Changes
+
+- Updated dependencies [0546a02]
+- Updated dependencies [2baa671]
+  - @graphprotocol/hypergraph-react@0.6.3
+  - @graphprotocol/hypergraph@0.6.3
+
 ## 0.2.7
 ### Patch Changes
 
@@ -26,7 +80,7 @@
 
 - Updated dependencies [9d22312]
   - @graphprotocol/hypergraph@0.5.0
-  - @graphprotocol/hypergraph-react@1.0.0
+  - @graphprotocol/hypergraph-react@0.5.0
 
 ## 0.2.3
 ### Patch Changes
@@ -56,7 +110,7 @@
 ### Patch Changes
 
 - Updated dependencies [9b29006]
-  - @graphprotocol/hypergraph-react@1.0.0
+  - @graphprotocol/hypergraph-react@0.4.0
   - @graphprotocol/hypergraph@0.4.0
 
 ## 0.1.3

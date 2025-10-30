@@ -22,7 +22,7 @@ const { ops } = preparePublish({
 });
 ```
 
-The entity can come from a `useCreateEntity` result or from a `useQuery` result e.g.
+The entity can come from a `useCreateEntity` result or from a `useEntities` result e.g.
 
 ## Publish
 
@@ -42,11 +42,11 @@ const { result } = publishOps({
 Additionally, we export a `usePublishToPublishSpace` hook which abstracts the above functionality into a single function call. This function internally uses React Query's useMutate hook, so you have access to the same state machine and callback functions.
 
 ```tsx
-import { usePublishToPublicSpace, useHypergraphApp } from "@graphprotocol/hypergraph-react";
+import { usePublishToPublicSpace, useHypergraphApp, useEntities } from "@graphprotocol/hypergraph-react";
 
 const MyComponent = ({ publicSpaceId }: { publicSpaceId: string }) => {
   const { getSmartSessionClient } = useHypergraphApp();
-  const { data: events } = useQuery(Event, { mode: "private" });
+  const { data: events } = useEntities(Event, { mode: "private" });
   const { mutate, isPending } = usePublishToPublicSpace();
 
   if (isPending) {

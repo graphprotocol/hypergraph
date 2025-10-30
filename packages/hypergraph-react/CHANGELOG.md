@@ -1,5 +1,84 @@
 # @graphprotocol/hypergraph-react
 
+## 0.8.1
+### Patch Changes
+
+- 887dbc3: rename Entity.findMany to findManyPrivate and add Entity.findManyPublic
+- a4898c4: add Entity.searchManyPublic
+- Updated dependencies [887dbc3]
+- Updated dependencies [a4898c4]
+  - @graphprotocol/hypergraph@0.8.1
+
+## 0.8.0
+### Minor Changes
+
+- edf7630: Schema Definition API Change (Breaking Change)
+  
+  Before:
+  ```ts
+  export class User extends Entity.Class<User>('User')({
+    name: Type.String,
+  }) {}
+  ```
+  
+  After:
+  ```ts
+  export const User = Entity.Schema(
+    { name: Type.String },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
+  ```
+  
+  All entity definitions need to be rewritten. The new API requires explicit type IDs and property IDs.
+
+### Patch Changes
+
+- Updated dependencies [edf7630]
+  - @graphprotocol/hypergraph@0.8.0
+
+## 0.7.3
+### Patch Changes
+
+- 1d29c53: improve processConnectAuthSuccess behaviour
+
+## 0.7.2
+### Patch Changes
+
+- 55a6403: upgrade grc-20 dependency
+- b7cc2fa: add privy auth based createSpace hooks
+- Updated dependencies [55a6403]
+  - @graphprotocol/hypergraph@0.6.6
+
+## 0.7.1
+### Patch Changes
+
+- b780f76: add privy authentication functionality for internal apps
+- Updated dependencies [b780f76]
+  - @graphprotocol/hypergraph@0.6.5
+
+## 0.7.0
+### Minor Changes
+
+- 604724b: remove useQueryEntity and add useEntity hook
+
+### Patch Changes
+
+- Updated dependencies [604724b]
+  - @graphprotocol/hypergraph@0.6.4
+
+## 0.6.3
+### Patch Changes
+
+- 0546a02: upgrade dependencies
+- Updated dependencies [0546a02]
+- Updated dependencies [2baa671]
+  - @graphprotocol/hypergraph@0.6.3
+
 ## 0.6.2
 ### Patch Changes
 

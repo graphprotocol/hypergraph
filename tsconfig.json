@@ -9,8 +9,9 @@
     { "path": "apps/server" },
     { "path": "apps/connect" },
     { "path": "apps/events" },
+    { "path": "apps/privy-login-example" },
     { "path": "apps/template-nextjs" },
     { "path": "apps/template-vite-react" },
-    { "path": "apps/next-example" },
+    { "path": "apps/next-example" }
   ]
 }

@@ -1,13 +1,13 @@
 'use client';
 
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { GraphImage } from '../../../Components/GraphImage';
 import { Dapp } from '../../schema';
 
 export default function ExploreDappsPage() {
-  const { data: dapps, isPending } = useQuery(Dapp, {
+  const { data: dapps, isPending } = useEntities(Dapp, {
     mode: 'public',
-    space: 'b2565802-3118-47be-91f2-e59170735bac',
+    space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,
     include: { avatar: {} },
   });
@@ -51,28 +51,28 @@ export default function ExploreDappsPage() {
 
               {dapp.description && <p className="text-sm text-gray-600 mb-2 line-clamp-2">{dapp.description}</p>}
 
-              {dapp.xUrl && (
+              {dapp.x && (
                 <a
-                  href={dapp.xUrl}
+                  href={dapp.x}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
                   View on X
                 </a>
               )}
 
-              {dapp.githubUrl && (
+              {dapp.github && (
                 <a
-                  href={dapp.githubUrl}
+                  href={dapp.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 2L2 22h20L12 2z" />
                   </svg>
                   View on Github
@@ -88,7 +88,13 @@ export default function ExploreDappsPage() {
       {isPending === false && dapps.length === 0 && (
         <div className="text-center py-16">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-12 h-12 text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

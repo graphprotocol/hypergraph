@@ -11,17 +11,17 @@
   },
   "type": "module",
   "dependencies": {
-    "@graphprotocol/grc-20": "^0.24.1",
+    "@graphprotocol/grc-20": "^0.25.2",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
-    "next": "15.3.2",
+    "next": "15.5.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "typescript": "^5"
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "typescript": "^5.9.2"
   }
 }

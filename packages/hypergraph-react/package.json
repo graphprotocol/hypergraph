@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph-react",
-  "version": "0.6.2",
+  "version": "0.8.1",
   "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
   "keywords": [
     "Web3",
@@ -35,11 +35,11 @@
   },
   "devDependencies": {
     "@graphprotocol/hypergraph": "workspace:*",
-    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
-    "@types/react": "^19.1.9",
-    "@vitejs/plugin-react": "^4.7.0",
-    "@xstate/store": "^3.5.1",
+    "@types/react": "^19.1.10",
+    "@vitejs/plugin-react": "^5.0.1",
+    "@xstate/store": "^3.9.2",
     "jsdom": "^26.1.0",
     "react": "^19.1.1"
   },
@@ -47,13 +47,13 @@
     "@automerge/automerge": "^3.1.1",
     "@automerge/automerge-repo": "^2.2.0",
     "@automerge/automerge-repo-react-hooks": "^2.2.0",
-    "@graphprotocol/grc-20": "^0.24.1",
+    "@graphprotocol/grc-20": "^0.25.2",
     "@noble/hashes": "^1.8.0",
-    "@tanstack/react-query": "^5.75.5",
-    "effect": "^3.17.6",
-    "graphql-request": "^7.1.2",
+    "@tanstack/react-query": "^5.85.5",
+    "effect": "^3.17.13",
+    "graphql-request": "^7.2.0",
     "siwe": "^3.0.0",
     "uuid": "^11.1.0",
-    "viem": "^2.29.0"
+    "viem": "^2.34.0"
   }
 }

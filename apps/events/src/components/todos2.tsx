@@ -1,15 +1,10 @@
-import type { PublishDiffInfo } from '@graphprotocol/hypergraph-react';
 import {
-  PublishDiff,
-  publishOps,
   useCreateEntity,
   useDeleteEntity,
-  useHypergraphApp,
-  useQuery,
+  useEntities,
   useSpace,
   useUpdateEntity,
 } from '@graphprotocol/hypergraph-react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { cn } from '@/lib/utils';
@@ -19,7 +14,6 @@ import { TodosLocal } from './todo/todos-local';
 import { TodosPublic } from './todo/todos-public';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Modal } from './ui/modal';
 
 export const Todos2 = () => {
   const {
@@ -27,15 +21,14 @@ export const Todos2 = () => {
     isLoading: isLoadingTodos,
     isError: isErrorTodos,
     // preparePublish: preparePublishTodos,
-  } = useQuery(Todo2, { mode: 'private', include: { assignees: {} } });
+  } = useEntities(Todo2, { mode: 'private', include: { assignees: {} } });
   const {
     data: dataUsers,
     isLoading: isLoadingUsers,
     isError: isErrorUsers,
     // preparePublish: preparePublishUsers,
-  } = useQuery(User, { mode: 'private' });
-  const { ready: spaceReady, id: spaceId } = useSpace({ mode: 'private' });
-  const { getSmartSessionClient } = useHypergraphApp();
+  } = useEntities(User, { mode: 'private' });
+  const { ready: spaceReady } = useSpace({ mode: 'private' });
   const createTodo = useCreateEntity(Todo2);
   const updateTodo = useUpdateEntity(Todo2);
   const createUser = useCreateEntity(User);
@@ -43,11 +36,6 @@ export const Todos2 = () => {
   const [newTodoName, setNewTodoName] = useState('');
   const [newTodoAssignees, setNewTodoAssignees] = useState<{ value: string; label: string }[]>([]);
   const [newUserName, setNewUserName] = useState('');
-  const queryClient = useQueryClient();
-  const [publishData, setPublishData] = useState<PublishDiffInfo | null>(null);
-  const [isPublishDiffModalOpen, setIsPublishDiffModalOpen] = useState(false);
-  const [isPreparingPublish, setIsPreparingPublish] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
     setNewTodoAssignees((prevFilteredAssignees) => {
@@ -74,8 +62,6 @@ export const Todos2 = () => {
           <div key={user.id} className="flex flex-row items-center gap-2">
             <h2>{user.name}</h2>
             <div className="text-xs">{user.id}</div>
-            {/* @ts-expect-error */}
-            <div className="text-xs">{user.__version}</div>
             <Button variant="outline" size="sm" onClick={() => deleteEntity(user.id)}>
               Delete
             </Button>
@@ -140,8 +126,6 @@ export const Todos2 = () => {
                 ))}
               </span>
             )}
-            {/* @ts-expect-error */}
-            <div className="text-xs">{todo.__version}</div>
             <Button variant="outline" size="sm" onClick={() => deleteEntity(todo.id)}>
               Delete
             </Button>
@@ -178,92 +162,6 @@ export const Todos2 = () => {
           Create Todo
         </Button>
       </div>
-
-      <Button
-        onClick={async () => {
-          try {
-            setIsPreparingPublish(true);
-            // const usersResult = await preparePublishUsers();
-            // console.log('users ops & diff', usersResult);
-            // const todosResult = await preparePublishTodos();
-            // console.log('todos ops & diff', todosResult);
-
-            // if (todosResult && usersResult) {
-            //   setPublishData({
-            //     newEntities: [...todosResult.newEntities, ...usersResult.newEntities],
-            //     deletedEntities: [...todosResult.deletedEntities, ...usersResult.deletedEntities],
-            //     updatedEntities: [...todosResult.updatedEntities, ...usersResult.updatedEntities],
-            //   });
-            //   setIsPublishDiffModalOpen(true);
-            // } else {
-            //   console.error('preparing publishing error', todosResult, usersResult);
-            //   throw new Error('Failed to prepare the publishing operations');
-            // }
-          } catch (error) {
-            console.error('preparing publishing error', error);
-            alert('Failed to prepare the publishing operations');
-          } finally {
-            setIsPreparingPublish(false);
-          }
-        }}
-        disabled={isPreparingPublish}
-      >
-        {isPreparingPublish ? 'Preparing …' : 'Prepare Publish'}
-      </Button>
-
-      <Modal isOpen={isPublishDiffModalOpen} onOpenChange={setIsPublishDiffModalOpen}>
-        <div className="p-4 flex flex-col gap-4 min-w-96">
-          <PublishDiff
-            newEntities={publishData?.newEntities ?? []}
-            deletedEntities={publishData?.deletedEntities ?? []}
-            updatedEntities={publishData?.updatedEntities ?? []}
-          />
-          <Button
-            onClick={async () => {
-              try {
-                const smartSessionClient = await getSmartSessionClient();
-                if (!smartSessionClient) {
-                  throw new Error('Missing smartSessionClient');
-                }
-                if (publishData) {
-                  setIsPublishing(true);
-                  const ops = [
-                    ...publishData.newEntities.map((entity) => entity.ops),
-                    ...publishData.updatedEntities.map((entity) => entity.ops),
-                    ...publishData.deletedEntities.map((entity) => entity.ops),
-                  ].flat();
-                  const publishOpsResult = await publishOps({
-                    ops,
-                    walletClient: smartSessionClient,
-                    space: spaceId,
-                    name: 'Update users and todos',
-                  });
-                  console.log('publishOpsResult', publishOpsResult);
-                  setIsPublishDiffModalOpen(false);
-                  setPublishData(null);
-                  setTimeout(() => {
-                    queryClient.invalidateQueries({
-                      queryKey: ['hypergraph-public-entities', Todo2.name],
-                    });
-                  }, 1000);
-                }
-              } catch (error) {
-                console.error('publishing error', error);
-              } finally {
-                setIsPublishing(false);
-              }
-            }}
-            disabled={
-              (publishData?.newEntities.length === 0 &&
-                publishData?.updatedEntities.length === 0 &&
-                publishData?.deletedEntities.length === 0) ||
-              isPublishing
-            }
-          >
-            {isPublishing ? 'Publishing …' : 'Publish'}
-          </Button>
-        </div>
-      </Modal>
 
       <TodosLocal />
 

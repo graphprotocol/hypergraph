@@ -1,24 +1,45 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
+import { Id } from '@graphprotocol/grc-20';
 import { beforeEach, describe, expect, it } from 'vitest';
-
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('findMany with filters', () => {
   // Define entity classes for testing
-  class Person extends Entity.Class<Person>('Person')({
-    name: Type.String,
-    age: Type.Number,
-    isActive: Type.Boolean,
-  }) {}
 
-  class Product extends Entity.Class<Product>('Product')({
-    name: Type.String,
-    price: Type.Number,
-    category: Type.String,
-  }) {}
+  const Person = Entity.Schema(
+    {
+      name: Type.String,
+      age: Type.Number,
+      isActive: Type.Boolean,
+    },
+    {
+      types: [Id('bce10418-2e20-4903-ad75-1bc496c24635')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
+        isActive: Id('e4259554-42b1-46e4-84c3-f8681987770f'),
+      },
+    },
+  );
+
+  const Product = Entity.Schema(
+    {
+      name: Type.String,
+      price: Type.Number,
+      category: Type.String,
+    },
+    {
+      types: [Id('0961fc6e-d254-491d-a54b-ae44d53c4ac4')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        price: Id('f9a43200-51b3-4278-9332-de6fcc7acb09'),
+        category: Id('84159eba-8699-4cd0-8042-c66dc03fe237'),
+      },
+    },
+  );
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);
@@ -42,7 +63,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by exact name match
-      const result = Entity.findMany(handle, Person, { name: { is: 'John' } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { name: { is: 'John' } }, undefined);
       expect(result.entities).toHaveLength(1);
       expect(result.entities[0].name).toBe('John');
     });
@@ -54,7 +75,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by name starting with 'J'
-      const result = Entity.findMany(handle, Person, { name: { startsWith: 'J' } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { name: { startsWith: 'J' } }, undefined);
       expect(result.entities).toHaveLength(2);
       expect(result.entities.map((e) => e.name).sort()).toEqual(['Jane', 'John']);
     });
@@ -66,7 +87,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by name ending with 'e'
-      const result = Entity.findMany(handle, Person, { name: { endsWith: 'e' } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { name: { endsWith: 'e' } }, undefined);
       expect(result.entities).toHaveLength(1);
       expect(result.entities[0].name).toBe('Jane');
     });
@@ -78,7 +99,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by name containing 'an'
-      const result = Entity.findMany(handle, Person, { name: { contains: 'an' } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { name: { contains: 'an' } }, undefined);
       expect(result.entities).toHaveLength(1);
       expect(result.entities[0].name).toBe('Jane');
     });
@@ -92,7 +113,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by exact age match
-      const result = Entity.findMany(handle, Person, { age: { is: 30 } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { age: { is: 30 } }, undefined);
       expect(result.entities).toHaveLength(1);
       expect(result.entities[0].name).toBe('John');
     });
@@ -104,7 +125,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by age greater than 28
-      const result = Entity.findMany(handle, Person, { age: { greaterThan: 28 } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { age: { greaterThan: 28 } }, undefined);
       expect(result.entities).toHaveLength(2);
       expect(result.entities.map((e) => e.name).sort()).toEqual(['Bob', 'John']);
     });
@@ -116,7 +137,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by age less than 35
-      const result = Entity.findMany(handle, Person, { age: { lessThan: 35 } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { age: { lessThan: 35 } }, undefined);
       expect(result.entities).toHaveLength(2);
       expect(result.entities.map((e) => e.name).sort()).toEqual(['Jane', 'John']);
     });
@@ -130,7 +151,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by isActive = true
-      const result = Entity.findMany(handle, Person, { isActive: { is: true } }, undefined);
+      const result = Entity.findManyPrivate(handle, Person, { isActive: { is: true } }, undefined);
       expect(result.entities).toHaveLength(2);
       expect(result.entities.map((e) => e.name).sort()).toEqual(['Jane', 'John']);
     });
@@ -144,7 +165,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by name starting with 'J' AND age less than 30
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -166,7 +187,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Product)({ name: 'Table', price: 299, category: 'Furniture' });
 
       // Filter by category 'Electronics' AND price greater than 800
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Product,
         {
@@ -189,7 +210,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by name NOT equal to 'John'
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -209,7 +230,7 @@ describe('findMany with filters', () => {
 
       expect(() => {
         // Filter by name NOT equal to 'John'
-        Entity.findMany(
+        Entity.findManyPrivate(
           handle,
           Person,
           {
@@ -228,7 +249,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by age NOT equal to 30
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -249,7 +270,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by name equal to 'John' OR 'Jane'
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -269,7 +290,7 @@ describe('findMany with filters', () => {
 
       expect(() => {
         // Attempt to use OR operator at the field level (should throw)
-        Entity.findMany(
+        Entity.findManyPrivate(
           handle,
           Person,
           {
@@ -288,7 +309,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by age equal to 25 OR 40
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -309,7 +330,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by NOT (name is 'John' OR name is 'Jane')
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -329,7 +350,7 @@ describe('findMany with filters', () => {
 
       expect(() => {
         // Filter by name NOT (name is 'John' OR name is 'Jane')
-        Entity.findMany(
+        Entity.findManyPrivate(
           handle,
           Person,
           {
@@ -350,7 +371,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by name contains 'o' OR age greater than 35
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -369,7 +390,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Bob', age: 40, isActive: false });
 
       // Filter by NOT (name starts with 'J' AND age less than 30)
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -392,7 +413,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Alice', age: 35, isActive: true });
 
       // Filter by (name starts with 'J' AND age less than 30) OR (name contains 'i' AND isActive is true)
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -421,7 +442,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Alice', age: 35, isActive: true });
 
       // Filter by NOT (name starts with 'J') AND NOT (age greater than 35)
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -442,7 +463,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Product)({ name: 'Table', price: 299, category: 'Furniture' });
 
       // Filter by (category is 'Electronics' AND price greater than 800) OR (category is 'Furniture' AND name contains 'Chair')
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Product,
         {
@@ -471,7 +492,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Alice', age: 35, isActive: true });
 
       // Filter by (name starts with 'J' OR name contains 'i') AND isActive is true
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {
@@ -492,7 +513,7 @@ describe('findMany with filters', () => {
       Entity.create(handle, Person)({ name: 'Alice', age: 35, isActive: true });
 
       // Filter by NOT (name starts with 'J') AND age greater than 30
-      const result = Entity.findMany(
+      const result = Entity.findManyPrivate(
         handle,
         Person,
         {

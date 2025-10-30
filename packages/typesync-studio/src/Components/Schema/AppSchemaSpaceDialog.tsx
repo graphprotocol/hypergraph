@@ -6,7 +6,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { WarningIcon, XIcon } from '@phosphor-icons/react';
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { Schema } from 'effect';
-
+import { useId } from 'react';
 import { fieldContext, formContext, useFieldContext } from '@/Components/Form/form.ts';
 import { SubmitButton } from '@/Components/Form/SubmitButton.tsx';
 import { useAppSchemaSpace } from '@/Context/AppSchemaSpaceContext';
@@ -44,6 +44,7 @@ export function AppSchemaSpaceDialog({
   spaceSubmitted(args: Readonly<{ id: Id; name: string | null }>): void;
 }>) {
   const { setAppSchemaSpace } = useAppSchemaSpace();
+  const htmlSpaceId = useId();
 
   const defaultValues: SelectAppSchemaSpaceFormSchema = {
     spaceId: '',
@@ -108,7 +109,7 @@ export function AppSchemaSpaceDialog({
                   <selectAppSchemaSpaceForm.AppField name="spaceId">
                     {(field) => (
                       <field.SchemaSpaceSelect
-                        id="spaceId"
+                        id={htmlSpaceId}
                         name="spaceId"
                         spaceSelected={(space) => {
                           selectAppSchemaSpaceForm.setFieldValue('name', space.name || space.id);

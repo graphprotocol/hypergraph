@@ -1,29 +1,63 @@
 import type { AnyDocumentId, DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo';
+import { Id } from '@graphprotocol/grc-20';
 import { beforeEach, describe, expect, it } from 'vitest';
-
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { idToAutomergeId } from '../../src/utils/automergeId.js';
 
 describe('Entity', () => {
-  class Person extends Entity.Class<Person>('Person')({
-    name: Type.String,
-    age: Type.Number,
-  }) {}
+  const Person = Entity.Schema(
+    {
+      name: Type.String,
+      age: Type.Number,
+    },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
+      },
+    },
+  );
 
-  class User extends Entity.Class<User>('User')({
-    name: Type.String,
-    email: Type.String,
-  }) {}
+  const User = Entity.Schema(
+    {
+      name: Type.String,
+      email: Type.String,
+    },
+    {
+      types: [Id('2a7db9c2-df00-4a19-82d0-91522777f980')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        email: Id('b667f951-4ede-40ef-83f8-fb5efee8c2ae'),
+      },
+    },
+  );
 
-  class Badge extends Entity.Class<Badge>('Badge')({
-    name: Type.String,
-  }) {}
+  const Badge = Entity.Schema(
+    {
+      name: Type.String,
+    },
+    {
+      types: [Id('2ce4d8ff-a6ca-4977-8b4e-11c272a7eb1c')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
 
-  class Event extends Entity.Class<Event>('Event')({
-    name: Type.String,
-  }) {}
+  const Event = Entity.Schema(
+    {
+      name: Type.String,
+    },
+    {
+      types: [Id('2ce4d8ff-a6ca-4977-8b4e-11c272a7eb1c')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
 
   const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);
@@ -42,19 +76,17 @@ describe('Entity', () => {
   describe('create', () => {
     it('should create an entity in the repo and be discoverable by querying', () => {
       const created = Entity.create(handle, Event)({ name: 'Conference' });
-      expect(created).toEqual(expect.objectContaining({ type: Event.name, name: 'Conference' }));
+      expect(created).toEqual(expect.objectContaining({ name: 'Conference' }));
 
       const id = created.id;
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = Entity.findMany(handle, Event, undefined, undefined);
+      const entities = Entity.findManyPrivate(handle, Event, undefined, undefined);
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
-        type: Event.name,
         name: 'Conference',
-        __version: '',
         __deleted: false,
         __schema: Event,
       });
@@ -63,9 +95,7 @@ describe('Entity', () => {
       expect(found).not.toBeNull();
       expect(found).toEqual({
         id,
-        type: Event.name,
         name: 'Conference',
-        __version: '',
         __deleted: false,
         __schema: Event,
       });
@@ -75,20 +105,18 @@ describe('Entity', () => {
   describe('update', () => {
     it('should update an existing entity and see the updates when querying', () => {
       const created = Entity.create(handle, Person)({ name: 'Test', age: 1 });
-      expect(created).toEqual(expect.objectContaining({ type: Person.name, name: 'Test', age: 1 }));
+      expect(created).toEqual(expect.objectContaining({ name: 'Test', age: 1 }));
 
       const id = created.id;
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = Entity.findMany(handle, Person, undefined, undefined);
+      const entities = Entity.findManyPrivate(handle, Person, undefined, undefined);
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
-        type: Person.name,
         name: 'Test',
         age: 1,
-        __version: '',
         __deleted: false,
         __schema: Person,
       });
@@ -96,10 +124,8 @@ describe('Entity', () => {
       expect(found).not.toBeNull();
       expect(found).toEqual({
         id,
-        type: Person.name,
         name: 'Test',
         age: 1,
-        __version: '',
         __deleted: false,
         __schema: Person,
       });
@@ -107,13 +133,13 @@ describe('Entity', () => {
       const updated = Entity.update(handle, Person)(id, { name: 'Test Updated', age: 2112 });
       expect(updated).toEqual({
         id,
-        type: Person.name,
         name: 'Test Updated',
         age: 2112,
         __schema: Person,
+        __deleted: false,
       });
 
-      const updatedEntities = Entity.findMany(handle, Person, undefined, undefined);
+      const updatedEntities = Entity.findManyPrivate(handle, Person, undefined, undefined);
       expect(updatedEntities.entities).toHaveLength(1);
 
       // TODO: fix this
@@ -122,10 +148,8 @@ describe('Entity', () => {
       expect(foundUpdated).not.toBeNull();
       expect(foundUpdated).toEqual({
         id,
-        type: Person.name,
         name: 'Test Updated',
         age: 2112,
-        __version: '',
         __deleted: false,
         __schema: Person,
       });
@@ -134,7 +158,7 @@ describe('Entity', () => {
     it('should throw an error if attempting to update an entity that does not exist in the repo', () => {
       expect(() => {
         Entity.update(handle, Person)('person_dne', { name: 'does not exist' });
-      }).toThrowError(Entity.EntityNotFoundError);
+      }).toThrowError();
     });
   });
 
@@ -148,22 +172,18 @@ describe('Entity', () => {
         email: 'test.user@thegraph.com',
       });
 
-      expect(created).toEqual(
-        expect.objectContaining({ type: User.name, name: 'Test', email: 'test.user@thegraph.com' }),
-      );
+      expect(created).toEqual(expect.objectContaining({ name: 'Test', email: 'test.user@thegraph.com' }));
 
       const id = created.id;
       expect(id).not.toBeNull();
       expect(id).not.toBeUndefined();
 
-      const entities = Entity.findMany(handle, User, undefined, undefined);
+      const entities = Entity.findManyPrivate(handle, User, undefined, undefined);
       expect(entities.entities).toHaveLength(1);
       expect(entities.entities[0]).toEqual({
         id,
-        type: User.name,
         name: 'Test',
         email: 'test.user@thegraph.com',
-        __version: '',
         __deleted: false,
         __schema: User,
       });
@@ -171,10 +191,8 @@ describe('Entity', () => {
       expect(found).not.toBeNull();
       expect(found).toEqual({
         id,
-        type: User.name,
         name: 'Test',
         email: 'test.user@thegraph.com',
-        __version: '',
         __deleted: false,
         __schema: User,
       });
@@ -182,7 +200,7 @@ describe('Entity', () => {
       const deleted = Entity.delete(handle)(id);
       expect(deleted).toBe(true);
 
-      expect(Entity.findMany(handle, User, undefined, undefined).entities).toHaveLength(0);
+      expect(Entity.findManyPrivate(handle, User, undefined, undefined).entities).toHaveLength(0);
       expect(Entity.findOne(handle, User)(id)).toBeUndefined();
     });
 
@@ -199,25 +217,17 @@ describe('Entity', () => {
         email: 'test.user@thegraph.com',
       });
 
-      expect(createdUser).toEqual(
-        expect.objectContaining({ type: User.name, name: 'Test', email: 'test.user@thegraph.com' }),
-      );
+      expect(createdUser).toEqual(expect.objectContaining({ name: 'Test', email: 'test.user@thegraph.com' }));
 
       const createdBadge = Entity.create(handle, Badge)({ name: 'WeDidIt' });
-      expect(createdBadge).toEqual(expect.objectContaining({ type: Badge.name, name: 'WeDidIt' }));
+      expect(createdBadge).toEqual(expect.objectContaining({ name: 'WeDidIt' }));
 
       // should only return users
-      const users = Entity.findMany(handle, User, undefined, undefined);
+      const users = Entity.findManyPrivate(handle, User, undefined, undefined);
       expect(users.entities).toHaveLength(1);
-      for (const user of users.entities) {
-        expect(user.type).toEqual(User.name);
-      }
       // should only return badges
-      const badges = Entity.findMany(handle, Badge, undefined, undefined);
+      const badges = Entity.findManyPrivate(handle, Badge, undefined, undefined);
       expect(badges.entities).toHaveLength(1);
-      for (const badge of badges.entities) {
-        expect(badge.type).toEqual(Badge.name);
-      }
     });
   });
 

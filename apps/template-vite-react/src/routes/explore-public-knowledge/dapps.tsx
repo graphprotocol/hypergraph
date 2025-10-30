@@ -1,6 +1,6 @@
 import { GraphImage } from '@/components/graph-image';
 import { Dapp } from '@/schema';
-import { useQuery } from '@graphprotocol/hypergraph-react';
+import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/explore-public-knowledge/dapps')({
@@ -8,9 +8,9 @@ export const Route = createFileRoute('/explore-public-knowledge/dapps')({
 });
 
 function Dapps() {
-  const { data: dapps, isPending } = useQuery(Dapp, {
+  const { data: dapps, isPending } = useEntities(Dapp, {
     mode: 'public',
-    space: 'b2565802-3118-47be-91f2-e59170735bac',
+    space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
     first: 100,
     include: { avatar: {} },
   });

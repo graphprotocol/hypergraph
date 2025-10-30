@@ -1,6 +1,10 @@
 import { Graph, type Op } from '@graphprotocol/grc-20';
-import type { Connect, Entity } from '@graphprotocol/hypergraph';
+import type { Connect } from '@graphprotocol/hypergraph';
+import { Constants } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
+import * as Option from 'effect/Option';
+import type * as Schema from 'effect/Schema';
+import * as SchemaAST from 'effect/SchemaAST';
 import request, { gql } from 'graphql-request';
 import { publishOps } from '../publish-ops.js';
 
@@ -32,7 +36,10 @@ type EntityToDeleteQueryResult = {
   };
 } | null;
 
-export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { space }: DeleteEntityPublicParams) => {
+export const useDeleteEntityPublic = <S extends Schema.Schema.AnyNoContext>(
+  type: S,
+  { space }: DeleteEntityPublicParams,
+) => {
   const queryClient = useQueryClient();
 
   return async ({ id, walletClient }: { id: string; walletClient: Connect.SmartSessionClient }) => {
@@ -66,16 +73,22 @@ export const useDeleteEntityPublic = <S extends Entity.AnyNoContext>(type: S, { 
         name: `Delete entity ${id}`,
         walletClient,
       });
+
+      const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(
+        type.ast as SchemaAST.TypeLiteral,
+      ).pipe(Option.getOrElse(() => []));
+
       // TODO: temporary fix until we get the information from the API when a transaction is confirmed
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      queryClient.invalidateQueries({
-        queryKey: [
-          'hypergraph-public-entities',
-          // @ts-expect-error - TODO: find a better way to access the type.name
-          type.name,
-          space,
-        ],
-      });
+      if (typeIds.length > 0) {
+        queryClient.invalidateQueries({
+          queryKey: ['hypergraph-public-entities', space, typeIds],
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ['hypergraph-public-entities', space],
+        });
+      }
 
       return { success: true, cid, txResult };
     } catch (_error) {

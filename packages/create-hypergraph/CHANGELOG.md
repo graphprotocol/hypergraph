@@ -1,5 +1,57 @@
 # create-hypergraph
 
+## 0.6.0
+### Minor Changes
+
+- edf7630: Schema Definition API Change (Breaking Change)
+  
+  Before:
+  ```ts
+  export class User extends Entity.Class<User>('User')({
+    name: Type.String,
+  }) {}
+  ```
+  
+  After:
+  ```ts
+  export const User = Entity.Schema(
+    { name: Type.String },
+    {
+      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      properties: {
+        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      },
+    },
+  );
+  ```
+  
+  All entity definitions need to be rewritten. The new API requires explicit type IDs and property IDs.
+
+## 0.5.7
+### Patch Changes
+
+- e20c419: use correct crypto space id
+
+## 0.5.6
+### Patch Changes
+
+- 1d29c53: improve processConnectAuthSuccess behaviour
+
+## 0.5.5
+### Patch Changes
+
+- upgrade hypergraph dependencies
+
+## 0.5.4
+### Patch Changes
+
+- de0d153: improve geo connect box based on authentication state in all templates
+
+## 0.5.3
+### Patch Changes
+
+- 0546a02: upgrade dependencies
+
 ## 0.5.2
 ### Patch Changes
 

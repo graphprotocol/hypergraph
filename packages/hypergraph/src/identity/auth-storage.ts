@@ -1,4 +1,4 @@
-import type { PrivateAppIdentity } from '../connect/types.js';
+import type { PrivateAppIdentity, PrivatePrivyAppIdentity } from '../connect/types.js';
 import type { Storage } from './types.js';
 
 export const storeIdentity = (storage: Storage, identity: PrivateAppIdentity) => {
@@ -12,6 +12,39 @@ export const storeIdentity = (storage: Storage, identity: PrivateAppIdentity) =>
   storage.setItem('hypergraph:session-token', identity.sessionToken);
   storage.setItem('hypergraph:session-token-expires', identity.sessionTokenExpires.toISOString());
   storage.setItem('hypergraph:permission-id', identity.permissionId);
+};
+
+export const storePrivyIdentity = (storage: Storage, identity: PrivatePrivyAppIdentity) => {
+  storage.setItem('hypergraph:privy-auth-identity-token', identity.privyIdentityToken);
+  storage.setItem('hypergraph:privy-auth-signature-public-key', identity.signaturePublicKey);
+  storage.setItem('hypergraph:privy-auth-signature-private-key', identity.signaturePrivateKey);
+  storage.setItem('hypergraph:privy-auth-encryption-public-key', identity.encryptionPublicKey);
+  storage.setItem('hypergraph:privy-auth-encryption-private-key', identity.encryptionPrivateKey);
+  storage.setItem('hypergraph:privy-auth-account-address', identity.accountAddress);
+};
+
+export const loadPrivyIdentity = (storage: Storage): PrivatePrivyAppIdentity | null => {
+  const privyIdentityToken = storage.getItem('hypergraph:privy-auth-identity-token');
+  const signaturePublicKey = storage.getItem('hypergraph:privy-auth-signature-public-key');
+  const signaturePrivateKey = storage.getItem('hypergraph:privy-auth-signature-private-key');
+  const encryptionPublicKey = storage.getItem('hypergraph:privy-auth-encryption-public-key');
+  const encryptionPrivateKey = storage.getItem('hypergraph:privy-auth-encryption-private-key');
+  const accountAddress = storage.getItem('hypergraph:privy-auth-account-address');
+  return privyIdentityToken &&
+    signaturePublicKey &&
+    signaturePrivateKey &&
+    encryptionPublicKey &&
+    encryptionPrivateKey &&
+    accountAddress
+    ? {
+        privyIdentityToken,
+        signaturePublicKey,
+        signaturePrivateKey,
+        encryptionPublicKey,
+        encryptionPrivateKey,
+        accountAddress,
+      }
+    : null;
 };
 
 export const loadIdentity = (storage: Storage): PrivateAppIdentity | null => {
@@ -64,4 +97,13 @@ export const wipeIdentity = (storage: Storage) => {
   storage.removeItem('hypergraph:session-token');
   storage.removeItem('hypergraph:session-token-expires');
   storage.removeItem('hypergraph:permission-id');
+};
+
+export const wipePrivyIdentity = (storage: Storage) => {
+  storage.removeItem('hypergraph:privy-auth-identity-token');
+  storage.removeItem('hypergraph:privy-auth-signature-public-key');
+  storage.removeItem('hypergraph:privy-auth-signature-private-key');
+  storage.removeItem('hypergraph:privy-auth-encryption-public-key');
+  storage.removeItem('hypergraph:privy-auth-encryption-private-key');
+  storage.removeItem('hypergraph:privy-auth-account-address');
 };
