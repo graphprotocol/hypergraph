@@ -4,10 +4,56 @@ import * as SchemaAST from 'effect/SchemaAST';
 import {
   PropertyIdSymbol,
   PropertyTypeSymbol,
+  RelationPropertiesSymbol,
   RelationSchemaSymbol,
   RelationSymbol,
   TypeIdsSymbol,
 } from '../constants.js';
+
+type SchemaBuilderReturn =
+  | Schema.Schema.AnyNoContext
+  // biome-ignore lint/suspicious/noExplicitAny: effect schema property signature is intentionally untyped here
+  | Schema.PropertySignature<any, any, any, any, any, any, any>;
+
+// biome-ignore lint/suspicious/noExplicitAny: property builders accept property ids of varying shapes
+type SchemaBuilder = (propertyId: any) => SchemaBuilderReturn;
+
+type RelationPropertiesDefinition = Record<string, SchemaBuilder>;
+
+type RelationOptions<RP extends RelationPropertiesDefinition> = {
+  properties: RP;
+};
+
+type RelationMappingInput<RP extends RelationPropertiesDefinition | undefined> = RP extends RelationPropertiesDefinition
+  ? {
+      propertyId: string;
+      properties: {
+        [K in keyof RP]: Parameters<RP[K]>[0];
+      };
+    }
+  : string | { propertyId: string };
+
+type RelationPropertyValue<RP extends RelationPropertiesDefinition | undefined> =
+  RP extends RelationPropertiesDefinition
+    ? {
+        readonly [K in keyof RP]: Schema.Schema.Type<ReturnType<RP[K]>>;
+      }
+    : {};
+
+type RelationPropertyEncoded<RP extends RelationPropertiesDefinition | undefined> =
+  RP extends RelationPropertiesDefinition
+    ? {
+        readonly [K in keyof RP]: Schema.Schema.Encoded<ReturnType<RP[K]>>;
+      }
+    : {};
+
+type RelationMetadata<RP extends RelationPropertiesDefinition | undefined> = {
+  readonly id: string;
+} & RelationPropertyValue<RP>;
+
+type RelationMetadataEncoded<RP extends RelationPropertiesDefinition | undefined> = {
+  readonly id: string;
+} & RelationPropertyEncoded<RP>;
 
 /**
  * Creates a String schema with the specified GRC-20 property ID
@@ -50,24 +96,78 @@ export const Point = (propertyId: string) =>
     encode: (points: readonly number[]) => points.join(','),
   }).pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'point' }));
 
-export const Relation =
-  <S extends Schema.Schema.AnyNoContext>(schema: S) =>
-  (propertyId: string) => {
+export function Relation<S extends Schema.Schema.AnyNoContext>(
+  schema: S,
+): (mapping: RelationMappingInput<undefined>) => Schema.Schema<
+  readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<undefined> })[],
+  readonly (Schema.Schema.Encoded<S> & {
+    readonly id: string;
+    readonly _relation: RelationMetadataEncoded<undefined>;
+  })[],
+  never
+>;
+export function Relation<S extends Schema.Schema.AnyNoContext, RP extends RelationPropertiesDefinition>(
+  schema: S,
+  options: RelationOptions<RP>,
+): (
+  mapping: RelationMappingInput<RP>,
+) => Schema.Schema<
+  readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<RP> })[],
+  readonly (Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: RelationMetadataEncoded<RP> })[],
+  never
+>;
+export function Relation<
+  S extends Schema.Schema.AnyNoContext,
+  RP extends RelationPropertiesDefinition | undefined = undefined,
+>(schema: S, options?: RP extends RelationPropertiesDefinition ? RelationOptions<RP> : undefined) {
+  return (mapping: RelationMappingInput<RP>) => {
+    const { propertyId, relationPropertyIds } =
+      typeof mapping === 'string'
+        ? { propertyId: mapping, relationPropertyIds: undefined as undefined }
+        : 'properties' in mapping
+          ? { propertyId: mapping.propertyId, relationPropertyIds: mapping.properties }
+          : { propertyId: mapping.propertyId, relationPropertyIds: undefined as undefined };
+
     const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(schema.ast as SchemaAST.TypeLiteral).pipe(
       Option.getOrElse(() => []),
     );
+
+    const relationEntityPropertiesSchemas: Record<string, SchemaBuilderReturn> = {};
+
+    if (options?.properties) {
+      for (const [key, schemaType] of Object.entries(options.properties)) {
+        const propertyMapping = relationPropertyIds?.[key];
+        if (propertyMapping === undefined) {
+          throw new Error(`Type.Relation: missing property id for relation property "${String(key)}"`);
+        }
+        relationEntityPropertiesSchemas[key] = schemaType(propertyMapping);
+      }
+    }
+
+    const relationEntitySchemaStruct = Schema.Struct({
+      ...relationEntityPropertiesSchemas,
+    });
 
     const schemaWithId = Schema.asSchema(
       Schema.extend(schema)(
         Schema.Struct({
           id: Schema.String,
-          _relation: Schema.Struct({ id: Schema.String }),
+          _relation: Schema.extend(relationEntitySchemaStruct)(
+            Schema.Struct({
+              id: Schema.String,
+            }),
+          ),
         }),
       ),
       // manually adding the type ids to the schema since they get lost when extending the schema
-    ).pipe(Schema.annotations({ [TypeIdsSymbol]: typeIds })) as Schema.Schema<
-      Schema.Schema.Type<S> & { readonly id: string; readonly _relation: { readonly id: string } },
-      Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: { readonly id: string } },
+    ).pipe(
+      Schema.annotations({
+        [TypeIdsSymbol]: typeIds,
+        [RelationPropertiesSymbol]: relationEntitySchemaStruct,
+      }),
+    ) as Schema.Schema<
+      Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<RP> },
+      Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: RelationMetadataEncoded<RP> },
       never
     >;
 
@@ -78,8 +178,13 @@ export const Relation =
         [RelationSymbol]: true,
         [PropertyTypeSymbol]: 'relation',
       }),
-    );
+    ) as Schema.Schema<
+      readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<RP> })[],
+      readonly (Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: RelationMetadataEncoded<RP> })[],
+      never
+    >;
   };
+}
 
 export const optional =
   <S extends Schema.Schema.AnyNoContext>(schemaFn: (propertyId: string) => S) =>

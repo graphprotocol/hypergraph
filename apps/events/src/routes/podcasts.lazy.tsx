@@ -23,6 +23,17 @@ function RouteComponent() {
       <h1>Podcasts</h1>
       {isLoading && <div>Loading...</div>}
       {isError && <div>Error</div>}
+      {data?.map((podcast) => (
+        <div key={podcast.id}>
+          <h2>{podcast.name}</h2>
+          {podcast.projects.map((project) => (
+            <div key={project._relation.id}>
+              <h3>- {project.name}</h3>
+              <div>--{project._relation.website}</div>
+            </div>
+          ))}
+        </div>
+      ))}
       <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>
     </>
   );

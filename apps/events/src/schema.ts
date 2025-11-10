@@ -111,7 +111,6 @@ export const Project = Entity.Schema(
     name: Type.String,
     description: Type.optional(Type.String),
     x: Type.optional(Type.String),
-    avatar: Type.Relation(Image),
   },
   {
     types: [Id('484a18c5-030a-499c-b0f2-ef588ff16d50')],
@@ -119,7 +118,6 @@ export const Project = Entity.Schema(
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
       x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
-      avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
     },
   },
 );
@@ -133,6 +131,7 @@ export const Podcast = Entity.Schema(
     projects: Type.Relation(Project, {
       properties: {
         website: Type.optional(Type.String),
+        // website: Type.String,
       },
     }),
   },
@@ -146,7 +145,7 @@ export const Podcast = Entity.Schema(
       projects: {
         propertyId: Id('71931b5f-1d6a-462e-81d9-5b8e85fb5c4b'),
         properties: {
-          website: Id('75b6a647-5c2b-41e7-92c0-b0a0c9b28b02'),
+          website: Id('eed38e74-e679-46bf-8a42-ea3e4f8fb5fb'),
         },
       },
     },
