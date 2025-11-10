@@ -23,9 +23,15 @@ import { Route as SpaceSpaceIdPlaygroundRouteImport } from './routes/space/$spac
 import { Route as SpaceSpaceIdEventsRouteImport } from './routes/space/$spaceId/events'
 import { Route as SpaceSpaceIdChatRouteImport } from './routes/space/$spaceId/chat'
 
+const PodcastsLazyRouteImport = createFileRoute('/podcasts')()
 const PlaygroundLazyRouteImport = createFileRoute('/playground')()
 const LoginLazyRouteImport = createFileRoute('/login')()
 
+const PodcastsLazyRoute = PodcastsLazyRouteImport.update({
+  id: '/podcasts',
+  path: '/podcasts',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/podcasts.lazy').then((d) => d.Route))
 const PlaygroundLazyRoute = PlaygroundLazyRouteImport.update({
   id: '/playground',
   path: '/playground',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/authenticate-success': typeof AuthenticateSuccessRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
+  '/podcasts': typeof PodcastsLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/authenticate-success': typeof AuthenticateSuccessRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
+  '/podcasts': typeof PodcastsLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/authenticate-success': typeof AuthenticateSuccessRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
+  '/podcasts': typeof PodcastsLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/authenticate-success'
     | '/login'
     | '/playground'
+    | '/podcasts'
     | '/account-inbox/$inboxId'
     | '/friends/$accountAddress'
     | '/space/$spaceId'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/authenticate-success'
     | '/login'
     | '/playground'
+    | '/podcasts'
     | '/account-inbox/$inboxId'
     | '/friends/$accountAddress'
     | '/space/$spaceId/chat'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/authenticate-success'
     | '/login'
     | '/playground'
+    | '/podcasts'
     | '/account-inbox/$inboxId'
     | '/friends/$accountAddress'
     | '/space/$spaceId'
@@ -190,6 +202,7 @@ export interface RootRouteChildren {
   AuthenticateSuccessRoute: typeof AuthenticateSuccessRoute
   LoginLazyRoute: typeof LoginLazyRoute
   PlaygroundLazyRoute: typeof PlaygroundLazyRoute
+  PodcastsLazyRoute: typeof PodcastsLazyRoute
   AccountInboxInboxIdRoute: typeof AccountInboxInboxIdRoute
   FriendsAccountAddressRoute: typeof FriendsAccountAddressRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRouteWithChildren
@@ -197,6 +210,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/podcasts': {
+      id: '/podcasts'
+      path: '/podcasts'
+      fullPath: '/podcasts'
+      preLoaderRoute: typeof PodcastsLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/playground': {
       id: '/playground'
       path: '/playground'
@@ -318,6 +338,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticateSuccessRoute: AuthenticateSuccessRoute,
   LoginLazyRoute: LoginLazyRoute,
   PlaygroundLazyRoute: PlaygroundLazyRoute,
+  PodcastsLazyRoute: PodcastsLazyRoute,
   AccountInboxInboxIdRoute: AccountInboxInboxIdRoute,
   FriendsAccountAddressRoute: FriendsAccountAddressRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRouteWithChildren,

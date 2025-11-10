@@ -5,7 +5,11 @@ export type Entity<S extends Schema.Schema.AnyNoContext> = Schema.Schema.Type<S>
 };
 
 export type EntityWithRelation<S extends Schema.Schema.AnyNoContext> = Entity<S> & {
-  _relation: { id: string } | undefined;
+  _relation:
+    | ({
+        id: string;
+      } & Record<string, unknown>)
+    | undefined;
 };
 
 export type DocumentEntity = {

@@ -20,12 +20,14 @@ import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
  * ```
  */
 export function Schema<
-  T extends Record<
+  const T extends Record<
     string,
     // biome-ignore lint/suspicious/noExplicitAny: any
-    (propertyId: string) => EffectSchema.Schema<any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>
+    (propertyId: any) => EffectSchema.Schema<any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>
   >,
-  P extends Record<keyof T, string>,
+  const P extends {
+    [K in keyof T]: Parameters<T[K]>[0];
+  },
 >(
   schemaTypes: T,
   mapping: {
@@ -42,8 +44,8 @@ export function Schema<
   > = {};
 
   for (const [key, schemaType] of Object.entries(schemaTypes)) {
-    const propertyId = mapping.properties[key as keyof P];
-    properties[key] = schemaType(propertyId);
+    const propertyMapping = mapping.properties[key as keyof P];
+    properties[key] = schemaType(propertyMapping);
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: any

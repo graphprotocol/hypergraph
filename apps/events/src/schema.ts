@@ -111,7 +111,6 @@ export const Project = Entity.Schema(
     name: Type.String,
     description: Type.optional(Type.String),
     x: Type.optional(Type.String),
-    avatar: Type.Relation(Image),
   },
   {
     types: [Id('484a18c5-030a-499c-b0f2-ef588ff16d50')],
@@ -119,7 +118,35 @@ export const Project = Entity.Schema(
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
       x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
-      avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
+    },
+  },
+);
+
+export const Podcast = Entity.Schema(
+  {
+    name: Type.String,
+    description: Type.optional(Type.String),
+    dateFounded: Type.Date,
+    rssFeedUrl: Type.optional(Type.String),
+    projects: Type.Relation(Project, {
+      properties: {
+        website: Type.optional(Type.String),
+      },
+    }),
+  },
+  {
+    types: [Id('69732974-c632-490d-81a3-12ea567b2a8e')],
+    properties: {
+      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
+      dateFounded: Id('41aa3d98-47b6-4a97-b7ec-427e575b910e'),
+      rssFeedUrl: Id('4dd1a486-c1ad-48c6-b261-e4c8edf7ac65'),
+      projects: {
+        propertyId: Id('71931b5f-1d6a-462e-81d9-5b8e85fb5c4b'),
+        properties: {
+          website: Id('eed38e74-e679-46bf-8a42-ea3e4f8fb5fb'),
+        },
+      },
     },
   },
 );

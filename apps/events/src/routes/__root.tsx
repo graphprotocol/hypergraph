@@ -33,6 +33,9 @@ export const Route = createRootRoute({
           <nav className="ml-auto flex gap-4 sm:gap-6">
             {authenticated ? (
               <div className="flex items-center gap-4">
+                <Link className="text-xs" to="/podcasts">
+                  Podcasts
+                </Link>
                 <Link className="text-xs" to="/playground">
                   Playground
                 </Link>

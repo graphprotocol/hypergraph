@@ -4,6 +4,15 @@ import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { convertPropertyValue } from './convert-property-value.js';
 
+type ValueList = {
+  propertyId: string;
+  string: string;
+  boolean: boolean;
+  number: number;
+  time: string;
+  point: string;
+}[];
+
 // A recursive representation of the entity structure returned by the public GraphQL
 // endpoint. `values` and `relations` are optional because the nested `to` selections
 // get slimmer the deeper we traverse in the query. This type intentionally mirrors
@@ -11,24 +20,20 @@ import { convertPropertyValue } from './convert-property-value.js';
 type RecursiveQueryEntity = {
   id: string;
   name: string;
-  valuesList?: {
-    propertyId: string;
-    string: string;
-    boolean: boolean;
-    number: number;
-    time: string;
-    point: string;
-  }[];
+  valuesList?: ValueList;
   relationsList?: {
     id: string;
     toEntity: RecursiveQueryEntity;
+    entity: {
+      valuesList?: ValueList;
+    };
     typeId: string;
   }[];
 };
 
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
 type RawEntity = Record<string, RawEntityValue>;
-type NestedRawEntity = RawEntity & { _relation: { id: string } };
+type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, RawEntityValue> };
 
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
@@ -45,6 +50,7 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
       if (!SchemaAST.isTupleType(prop.type)) {
         continue;
       }
+
       const relationType = prop.type;
       const relationTransformation = relationType.rest[0]?.type;
       if (!relationTransformation || !SchemaAST.isTypeLiteral(relationTransformation)) {
@@ -90,6 +96,31 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
               }
             }
           }
+
+          const relationPropertiesSchema = SchemaAST.getAnnotation<Schema.Schema.AnyNoContext>(
+            Constants.RelationPropertiesSymbol,
+          )(relationTransformation);
+          if (Option.isSome(relationPropertiesSchema)) {
+            const relationPropertiesSchemaAst = relationPropertiesSchema.value.ast as SchemaAST.TypeLiteral;
+            for (const nestedProp of relationPropertiesSchemaAst.propertySignatures) {
+              const propType =
+                nestedProp.isOptional && SchemaAST.isUnion(nestedProp.type)
+                  ? (nestedProp.type.types.find((member) => !SchemaAST.isUndefinedKeyword(member)) ?? nestedProp.type)
+                  : nestedProp.type;
+
+              const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(propType);
+              if (Option.isSome(nestedResult)) {
+                const value = relationEntry.entity.valuesList?.find((a) => a.propertyId === nestedResult.value);
+                if (value) {
+                  const rawValue = convertPropertyValue(value, propType);
+                  if (rawValue !== undefined) {
+                    nestedRawEntity._relation[String(nestedProp.name)] = rawValue;
+                  }
+                }
+              }
+            }
+          }
+
           // TODO: in the end every entry should be validated using the Schema?!?
           rawEntity[String(prop.name)] = [...(rawEntity[String(prop.name)] as unknown[]), nestedRawEntity];
         }

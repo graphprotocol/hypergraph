@@ -47,6 +47,16 @@ query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!) {
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
       id
+      entity {
+        valuesList(filter: {spaceId: {is: $spaceId}}) {
+          propertyId
+          string
+          boolean
+          number
+          time
+          point
+        }
+      }
       toEntity {
         id
         name
@@ -84,6 +94,16 @@ query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!, $rel
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
       id
+      entity {
+        valuesList(filter: {spaceId: {is: $spaceId}}) {
+          propertyId
+          string
+          boolean
+          number
+          time
+          point
+        }
+      }
       toEntity {
         id
         name
@@ -99,6 +119,16 @@ query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!, $rel
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
         ) {
           id
+          entity {
+            valuesList(filter: {spaceId: {is: $spaceId}}) {
+              propertyId
+              string
+              boolean
+              number
+              time
+              point
+            }
+          }
           toEntity {
             id
             name
@@ -134,6 +164,16 @@ type EntityQueryResult = {
     }[];
     relationsList?: {
       id: string;
+      entity: {
+        valuesList: {
+          propertyId: string;
+          string: string;
+          boolean: boolean;
+          number: number;
+          time: string;
+          point: string;
+        }[];
+      };
       toEntity: {
         id: string;
         name: string;
@@ -147,6 +187,16 @@ type EntityQueryResult = {
         }[];
         relationsList?: {
           id: string;
+          entity: {
+            valuesList: {
+              propertyId: string;
+              string: string;
+              boolean: boolean;
+              number: number;
+              time: string;
+              point: string;
+            }[];
+          };
           toEntity: {
             id: string;
             name: string;

@@ -1,7 +1,7 @@
 import { Graph } from '@graphprotocol/grc-20';
 import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
-import * as Schema from 'effect/Schema';
+import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { gql, request } from 'graphql-request';
 import { parseResult } from './find-many-public.js';
@@ -67,6 +67,16 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationType
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
       id
+      entity {
+        valuesList(filter: {spaceId: {is: $spaceId}}) {
+          propertyId
+          string
+          boolean
+          number
+          time
+          point
+        }
+      }
       toEntity {
         id
         name
@@ -111,6 +121,16 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationType
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
     ) {
       id
+      entity {
+        valuesList(filter: {spaceId: {is: $spaceId}}) {
+          propertyId
+          string
+          boolean
+          number
+          time
+          point
+        }
+      }
       toEntity {
         id
         name
@@ -126,6 +146,16 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationType
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
         ) {
           id
+          entity {
+            valuesList(filter: {spaceId: {is: $spaceId}}) {
+              propertyId
+              string
+              boolean
+              number
+              time
+              point
+            }
+          }
           toEntity {
             id
             name
@@ -161,6 +191,16 @@ type SearchQueryResult = {
     }[];
     relationsList: {
       id: string;
+      entity: {
+        valuesList: {
+          propertyId: string;
+          string: string;
+          boolean: boolean;
+          number: number;
+          time: string;
+          point: string;
+        }[];
+      };
       toEntity: {
         id: string;
         name: string;
@@ -174,6 +214,16 @@ type SearchQueryResult = {
         }[];
         relationsList: {
           id: string;
+          entity: {
+            valuesList: {
+              propertyId: string;
+              string: string;
+              boolean: boolean;
+              number: number;
+              time: string;
+              point: string;
+            }[];
+          };
           toEntity: {
             id: string;
             name: string;
