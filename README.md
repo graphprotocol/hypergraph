@@ -12,6 +12,12 @@ Build privacy preserving apps with interoperable data using the GRC-20 standard.
 * Hypergraph - A local-first framework for building web3 consumer applications
 * Hypergraph React - React bindings for Hypergraph
 
+## Changelogs
+
+- [@graphprotocol/hypergraph](./packages/hypergraph/CHANGELOG.md)
+- [@graphprotocol/hypergraph-react](./packages/hypergraph-react/CHANGELOG.md)
+- [create-hypergraph](./packages/create-hypergraph/CHANGELOG.md)
+
 ## Development
 
 Please refer to the [Contributing Guide](./CONTRIBUTING.md) for more information on how to contribute to the project.
