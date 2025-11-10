@@ -1,7 +1,7 @@
 import { Graph } from '@graphprotocol/grc-20';
 import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
-import * as Schema from 'effect/Schema';
+import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { gql, request } from 'graphql-request';
 import { parseResult } from './find-many-public.js';

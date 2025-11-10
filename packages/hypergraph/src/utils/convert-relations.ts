@@ -33,7 +33,7 @@ type RecursiveQueryEntity = {
 
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
 type RawEntity = Record<string, RawEntityValue>;
-type NestedRawEntity = RawEntity & { _relation: { id: string } };
+type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, RawEntityValue> };
 
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
@@ -112,7 +112,10 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
               if (Option.isSome(nestedResult)) {
                 const value = relationEntry.entity.valuesList?.find((a) => a.propertyId === nestedResult.value);
                 if (value) {
-                  nestedRawEntity._relation[String(nestedProp.name)] = convertPropertyValue(value, propType);
+                  const rawValue = convertPropertyValue(value, propType);
+                  if (rawValue !== undefined) {
+                    nestedRawEntity._relation[String(nestedProp.name)] = rawValue;
+                  }
                 }
               }
             }

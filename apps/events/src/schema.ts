@@ -131,7 +131,6 @@ export const Podcast = Entity.Schema(
     projects: Type.Relation(Project, {
       properties: {
         website: Type.optional(Type.String),
-        // website: Type.String,
       },
     }),
   },

@@ -38,14 +38,14 @@ type RelationPropertyValue<RP extends RelationPropertiesDefinition | undefined> 
     ? {
         readonly [K in keyof RP]: Schema.Schema.Type<ReturnType<RP[K]>>;
       }
-    : {};
+    : Record<string, never>;
 
 type RelationPropertyEncoded<RP extends RelationPropertiesDefinition | undefined> =
   RP extends RelationPropertiesDefinition
     ? {
         readonly [K in keyof RP]: Schema.Schema.Encoded<ReturnType<RP[K]>>;
       }
-    : {};
+    : Record<string, never>;
 
 type RelationMetadata<RP extends RelationPropertiesDefinition | undefined> = {
   readonly id: string;
@@ -119,12 +119,13 @@ export function Relation<S extends Schema.Schema.AnyNoContext, RP extends Relati
 export function Relation<
   S extends Schema.Schema.AnyNoContext,
   RP extends RelationPropertiesDefinition | undefined = undefined,
->(schema: S, options?: RP extends RelationPropertiesDefinition ? RelationOptions<RP> : undefined) {
+  // biome-ignore lint/suspicious/noExplicitAny: implementation signature for overloads must use any
+>(schema: S, options?: RP extends RelationPropertiesDefinition ? RelationOptions<RP> : undefined): any {
   return (mapping: RelationMappingInput<RP>) => {
     const { propertyId, relationPropertyIds } =
       typeof mapping === 'string'
         ? { propertyId: mapping, relationPropertyIds: undefined as undefined }
-        : 'properties' in mapping
+        : typeof mapping === 'object' && mapping !== null && 'properties' in mapping
           ? { propertyId: mapping.propertyId, relationPropertyIds: mapping.properties }
           : { propertyId: mapping.propertyId, relationPropertyIds: undefined as undefined };
 
@@ -137,9 +138,6 @@ export function Relation<
     if (options?.properties) {
       for (const [key, schemaType] of Object.entries(options.properties)) {
         const propertyMapping = relationPropertyIds?.[key];
-        if (propertyMapping === undefined) {
-          throw new Error(`Type.Relation: missing property id for relation property "${String(key)}"`);
-        }
         relationEntityPropertiesSchemas[key] = schemaType(propertyMapping);
       }
     }
