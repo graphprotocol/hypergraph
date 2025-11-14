@@ -36,6 +36,9 @@ export const Route = createRootRoute({
                 <Link className="text-xs" to="/podcasts">
                   Podcasts
                 </Link>
+                <Link className="text-xs" to="/podcasts-infinite">
+                  Podcasts Infinite Query
+                </Link>
                 <Link className="text-xs" to="/playground">
                   Playground
                 </Link>

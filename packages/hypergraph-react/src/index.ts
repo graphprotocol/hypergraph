@@ -8,6 +8,7 @@ export { HypergraphSpaceProvider } from './HypergraphSpaceContext.js';
 export { useCreateEntity } from './hooks/use-create-entity.js';
 export { useDeleteEntity } from './hooks/use-delete-entity.js';
 export { useEntities } from './hooks/use-entities.js';
+export { useEntitiesPublicInfinite } from './hooks/use-entities-public-infinite.js';
 export { useEntity } from './hooks/use-entity.js';
 export { useHardDeleteEntity } from './hooks/use-hard-delete-entity.js';
 export { usePrivyAuthCreatePrivateSpace as _usePrivyAuthCreatePrivateSpace } from './hooks/use-privy-auth-create-private-space.js';

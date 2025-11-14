@@ -23,10 +23,18 @@ import { Route as SpaceSpaceIdPlaygroundRouteImport } from './routes/space/$spac
 import { Route as SpaceSpaceIdEventsRouteImport } from './routes/space/$spaceId/events'
 import { Route as SpaceSpaceIdChatRouteImport } from './routes/space/$spaceId/chat'
 
+const PodcastsInfiniteLazyRouteImport = createFileRoute('/podcasts-infinite')()
 const PodcastsLazyRouteImport = createFileRoute('/podcasts')()
 const PlaygroundLazyRouteImport = createFileRoute('/playground')()
 const LoginLazyRouteImport = createFileRoute('/login')()
 
+const PodcastsInfiniteLazyRoute = PodcastsInfiniteLazyRouteImport.update({
+  id: '/podcasts-infinite',
+  path: '/podcasts-infinite',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/podcasts-infinite.lazy').then((d) => d.Route),
+)
 const PodcastsLazyRoute = PodcastsLazyRouteImport.update({
   id: '/podcasts',
   path: '/podcasts',
@@ -105,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/podcasts': typeof PodcastsLazyRoute
+  '/podcasts-infinite': typeof PodcastsInfiniteLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
@@ -121,6 +130,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/podcasts': typeof PodcastsLazyRoute
+  '/podcasts-infinite': typeof PodcastsInfiniteLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId/chat': typeof SpaceSpaceIdChatRoute
@@ -137,6 +147,7 @@ export interface FileRoutesById {
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/podcasts': typeof PodcastsLazyRoute
+  '/podcasts-infinite': typeof PodcastsInfiniteLazyRoute
   '/account-inbox/$inboxId': typeof AccountInboxInboxIdRoute
   '/friends/$accountAddress': typeof FriendsAccountAddressRoute
   '/space/$spaceId': typeof SpaceSpaceIdRouteWithChildren
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/playground'
     | '/podcasts'
+    | '/podcasts-infinite'
     | '/account-inbox/$inboxId'
     | '/friends/$accountAddress'
     | '/space/$spaceId'
@@ -171,6 +183,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/playground'
     | '/podcasts'
+    | '/podcasts-infinite'
     | '/account-inbox/$inboxId'
     | '/friends/$accountAddress'
     | '/space/$spaceId/chat'
@@ -186,6 +199,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/playground'
     | '/podcasts'
+    | '/podcasts-infinite'
     | '/account-inbox/$inboxId'
     | '/friends/$accountAddress'
     | '/space/$spaceId'
@@ -203,6 +217,7 @@ export interface RootRouteChildren {
   LoginLazyRoute: typeof LoginLazyRoute
   PlaygroundLazyRoute: typeof PlaygroundLazyRoute
   PodcastsLazyRoute: typeof PodcastsLazyRoute
+  PodcastsInfiniteLazyRoute: typeof PodcastsInfiniteLazyRoute
   AccountInboxInboxIdRoute: typeof AccountInboxInboxIdRoute
   FriendsAccountAddressRoute: typeof FriendsAccountAddressRoute
   SpaceSpaceIdRoute: typeof SpaceSpaceIdRouteWithChildren
@@ -210,6 +225,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/podcasts-infinite': {
+      id: '/podcasts-infinite'
+      path: '/podcasts-infinite'
+      fullPath: '/podcasts-infinite'
+      preLoaderRoute: typeof PodcastsInfiniteLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/podcasts': {
       id: '/podcasts'
       path: '/podcasts'
@@ -339,6 +361,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginLazyRoute: LoginLazyRoute,
   PlaygroundLazyRoute: PlaygroundLazyRoute,
   PodcastsLazyRoute: PodcastsLazyRoute,
+  PodcastsInfiniteLazyRoute: PodcastsInfiniteLazyRoute,
   AccountInboxInboxIdRoute: AccountInboxInboxIdRoute,
   FriendsAccountAddressRoute: FriendsAccountAddressRoute,
   SpaceSpaceIdRoute: SpaceSpaceIdRouteWithChildren,
