@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.8.3
+### Patch Changes
+
+- f51992d: add param `offset` for Entity.findManyPublic, Entity.searchManyPublic, useEntities
+
 ## 0.8.2
 ### Patch Changes
 

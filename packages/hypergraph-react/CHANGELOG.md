@@ -1,5 +1,13 @@
 # @graphprotocol/hypergraph-react
 
+## 0.8.3
+### Patch Changes
+
+- dded603: add useEntitiesPublicInfinite hook]
+- f51992d: add param `offset` for Entity.findManyPublic, Entity.searchManyPublic, useEntities
+- Updated dependencies [f51992d]
+  - @graphprotocol/hypergraph@0.8.3
+
 ## 0.8.2
 ### Patch Changes
 
