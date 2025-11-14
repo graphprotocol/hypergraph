@@ -12,16 +12,18 @@ export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
   space: string;
   first?: number | undefined;
+  offset?: number | undefined;
 };
 
 const entitiesQueryDocumentLevel0 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
   entities(
     filter: { and: [{
       relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
       spaceIds: {in: [$spaceId]},
     }, $filter]}
     first: $first
+    offset: $offset
   ) {
     id
     name
@@ -38,13 +40,14 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: Entity
 `;
 
 const entitiesQueryDocumentLevel1 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
   entities(
     first: $first
     filter: { and: [{
     relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
     spaceIds: {in: [$spaceId]},
   }, $filter]}
+    offset: $offset
   ) {
     id
     name
@@ -89,13 +92,14 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 `;
 
 const entitiesQueryDocumentLevel2 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
   entities(
     first: $first
     filter: { and: [{
     relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
     spaceIds: {in: [$spaceId]},
   }, $filter]}
+    offset: $offset
   ) {
     id
     name
@@ -292,7 +296,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   type: S,
   params?: FindManyPublicParams<S>,
 ) => {
-  const { filter, include, space, first = 100 } = params ?? {};
+  const { filter, include, space, first = 100, offset = 0 } = params ?? {};
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -318,6 +322,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     relationTypeIdsLevel2: relationTypeIds.level2,
     first,
     filter: filterParams,
+    offset,
   });
 
   const { data, invalidEntities } = parseResult(result, type);

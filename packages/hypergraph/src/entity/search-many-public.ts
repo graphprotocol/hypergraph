@@ -13,10 +13,11 @@ export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
   space: string | undefined;
   first?: number | undefined;
+  offset?: number | undefined;
 };
 
 const searchQueryDocumentLevel0 = gql`
-query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!) {
+query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
   search(
     query: $query
     filter: { and: [{
@@ -25,7 +26,7 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, 
     }, $filter]}
     spaceId: $spaceId
     first: $first
-    offset: 0
+    offset: $offset
   ) {
     id
     name
@@ -42,7 +43,7 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, 
 `;
 
 const searchQueryDocumentLevel1 = gql`
-query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!) {
+query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
   search(
     query: $query
     filter: { and: [{
@@ -51,7 +52,7 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationType
     }, $filter]}
     spaceId: $spaceId
     first: $first
-    offset: 0
+    offset: $offset
   ) {
     id
     name
@@ -96,7 +97,7 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationType
 `;
 
 const searchQueryDocumentLevel2 = gql`
-query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!) {
+query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
   search(
     query: $query
     filter: { and: [{
@@ -105,7 +106,7 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationType
     }, $filter]}
     spaceId: $spaceId
     first: $first
-    offset: 0
+    offset: $offset
   ) {
     id
     name
@@ -248,7 +249,7 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   type: S,
   params?: SearchManyPublicParams<S>,
 ) => {
-  const { query, filter, include, space, first = 100 } = params ?? {};
+  const { query, filter, include, space, first = 100, offset = 0 } = params ?? {};
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -275,6 +276,7 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     relationTypeIdsLevel2: relationTypeIds.level2,
     first,
     filter: filterParams,
+    offset,
   });
 
   const { data, invalidEntities } = parseResult({ entities: result.search }, type);

@@ -8,4 +8,5 @@ export type QueryPublicParams<S extends Schema.Schema.AnyNoContext> = {
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
   space?: string | undefined;
   first?: number | undefined;
+  offset?: number | undefined;
 };

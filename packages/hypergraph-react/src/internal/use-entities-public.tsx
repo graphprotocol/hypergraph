@@ -7,7 +7,7 @@ import type { QueryPublicParams } from './types.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 
 export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
-  const { enabled = true, filter, include, space: spaceFromParams, first = 100 } = params ?? {};
+  const { enabled = true, filter, include, space: spaceFromParams, first = 100, offset } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
 
@@ -27,9 +27,10 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
       relationTypeIds.level2,
       filter,
       first,
+      offset,
     ],
     queryFn: async () => {
-      return Entity.findManyPublic(type, { filter, include, space, first });
+      return Entity.findManyPublic(type, { filter, include, space, first, offset });
     },
     enabled,
   });

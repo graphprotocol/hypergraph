@@ -10,11 +10,12 @@ type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = {
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
   space?: string | undefined;
   first?: number | undefined;
+  offset?: number | undefined;
 };
 
 export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntitiesParams<S>) {
-  const { mode, filter, include, space, first } = params;
-  const publicResult = useEntitiesPublic(type, { enabled: mode === 'public', filter, include, first, space });
+  const { mode, filter, include, space, first, offset } = params;
+  const publicResult = useEntitiesPublic(type, { enabled: mode === 'public', filter, include, first, offset, space });
   const localResult = useEntitiesPrivate(type, { enabled: mode === 'private', filter, include, space });
 
   if (mode === 'public') {

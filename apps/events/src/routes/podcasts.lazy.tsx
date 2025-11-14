@@ -7,11 +7,12 @@ export const Route = createLazyFileRoute('/podcasts')({
 });
 
 function RouteComponent() {
-  const space = '530a70d9-d5ee-410a-850a-cf70e4be2ee5';
+  const space = 'e252f9e1-d3ad-4460-8bf1-54f93b02f220';
 
   const { data, isLoading, isError } = useEntities(Podcast, {
     mode: 'public',
-    first: 100,
+    first: 6,
+    offset: 0,
     space: space,
     include: {
       projects: {},
