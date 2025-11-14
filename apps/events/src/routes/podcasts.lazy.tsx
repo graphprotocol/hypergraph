@@ -11,8 +11,7 @@ function RouteComponent() {
 
   const { data, isLoading, isError } = useEntities(Podcast, {
     mode: 'public',
-    first: 6,
-    offset: 0,
+    first: 100,
     space: space,
     include: {
       projects: {},
