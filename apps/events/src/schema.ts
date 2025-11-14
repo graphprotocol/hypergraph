@@ -109,15 +109,11 @@ export const Image = Entity.Schema(
 export const Project = Entity.Schema(
   {
     name: Type.String,
-    description: Type.optional(Type.String),
-    x: Type.optional(Type.String),
   },
   {
-    types: [Id('484a18c5-030a-499c-b0f2-ef588ff16d50')],
+    types: [Id('484a18c5-030a-499c-b0f2-ef588ff16d50')], // Project type
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
     },
   },
 );
@@ -135,14 +131,14 @@ export const Podcast = Entity.Schema(
     }),
   },
   {
-    types: [Id('69732974-c632-490d-81a3-12ea567b2a8e')],
+    types: [Id('4c81561d-1f95-4131-9cdd-dd20ab831ba2')],
     properties: {
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
       dateFounded: Id('41aa3d98-47b6-4a97-b7ec-427e575b910e'),
-      rssFeedUrl: Id('4dd1a486-c1ad-48c6-b261-e4c8edf7ac65'),
+      rssFeedUrl: Id('a5776138-deb8-436f-8c98-3eccd100d98f'),
       projects: {
-        propertyId: Id('71931b5f-1d6a-462e-81d9-5b8e85fb5c4b'),
+        propertyId: Id('1367bac7-dcea-4b80-86ad-a4a4cdd7c2cb'),
         properties: {
           website: Id('eed38e74-e679-46bf-8a42-ea3e4f8fb5fb'),
         },
