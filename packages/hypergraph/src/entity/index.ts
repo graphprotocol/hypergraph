@@ -2,6 +2,7 @@ export * from './create.js';
 export * from './delete.js';
 export * from './find-many-private.js';
 export * from './find-many-public.js';
+export * from './find-one-public.js';
 export * from './findOne.js';
 export * from './removeRelation.js';
 export * from './schema.js';
