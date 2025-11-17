@@ -269,9 +269,9 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQuer
     return { ...decodeResult.right } as Entity.Entity<S>;
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn('Invalid entity', rawEntity);
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  console.warn('Invalid entity', rawEntity);
+  // }
   throw new Error('Invalid entity');
 };
 
