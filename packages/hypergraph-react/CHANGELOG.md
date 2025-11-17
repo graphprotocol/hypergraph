@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.8.5
+### Patch Changes
+
+- d23643d: add temporary backlinksTotalCountsTypeId1 to Entity.findManyPublic and useEntities
+- Updated dependencies [d23643d]
+  - @graphprotocol/hypergraph@0.8.5
+
 ## 0.8.4
 ### Patch Changes
 

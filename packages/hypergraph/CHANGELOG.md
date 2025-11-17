@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.8.5
+### Patch Changes
+
+- d23643d: add temporary backlinksTotalCountsTypeId1 to Entity.findManyPublic and useEntities
+
 ## 0.8.4
 ### Patch Changes
 
