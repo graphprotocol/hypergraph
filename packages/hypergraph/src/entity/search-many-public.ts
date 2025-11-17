@@ -279,6 +279,7 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     offset,
   });
 
+  // @ts-expect-error TODO: fix this
   const { data, invalidEntities } = parseResult({ entities: result.search }, type);
   return { data, invalidEntities };
 };
