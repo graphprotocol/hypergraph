@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.8.4
+### Patch Changes
+
+- 69923e1: add orderBy to Entities.findManyPublic and useEntities(mode: 'public')
+- Updated dependencies [69923e1]
+  - @graphprotocol/hypergraph@0.8.4
+
 ## 0.8.3
 ### Patch Changes
 
