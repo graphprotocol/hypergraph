@@ -19,10 +19,11 @@ export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
         direction: 'asc' | 'desc';
       }
     | undefined;
+  backlinksTotalCountsTypeId1?: string | undefined;
 };
 
 const entitiesQueryDocumentLevel0 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $backlinksTotalCountsTypeId1: UUID, $backlinksTotalCountsTypeId1Present: Boolean!) {
   entities(
     filter: { and: [{
       relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
@@ -41,12 +42,15 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: Entity
       time
       point
     }
+    backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+      totalCount
+    }
   }
 }
 `;
 
 const entitiesQueryDocumentLevel1 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $backlinksTotalCountsTypeId1: UUID, $backlinksTotalCountsTypeId1Present: Boolean!) {
   entities(
     first: $first
     filter: { and: [{
@@ -64,6 +68,9 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
       number
       time
       point
+    }
+    backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+      totalCount
     }
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
@@ -98,7 +105,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 `;
 
 const entitiesQueryDocumentLevel2 = gql`
-query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
+query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $backlinksTotalCountsTypeId1: UUID, $backlinksTotalCountsTypeId1Present: Boolean!) {
   entities(
     first: $first
     filter: { and: [{
@@ -116,6 +123,9 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
       number
       time
       point
+    }
+    backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+      totalCount
     }
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
@@ -141,6 +151,9 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
           number
           time
           point
+        }
+        backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+          totalCount
         }
         relationsList(
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
@@ -179,7 +192,7 @@ query entities($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUI
 `;
 
 const entitiesOrderedByPropertyQueryDocumentLevel0 = gql`
-query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $propertyId: UUID!, $sortDirection: SortOrder!) {
+query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $propertyId: UUID!, $sortDirection: SortOrder!, $backlinksTotalCountsTypeId1: UUID, $backlinksTotalCountsTypeId1Present: Boolean!) {
   entities: entitiesOrderedByProperty(
     filter: { and: [{
       relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
@@ -200,12 +213,15 @@ query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $first: Int
       time
       point
     }
+    backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+      totalCount
+    }
   }
 }
 `;
 
 const entitiesOrderedByPropertyQueryDocumentLevel1 = gql`
-query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $propertyId: UUID!, $sortDirection: SortOrder!) {
+query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $propertyId: UUID!, $sortDirection: SortOrder!, $backlinksTotalCountsTypeId1: UUID, $backlinksTotalCountsTypeId1Present: Boolean!) {
   entities: entitiesOrderedByProperty(
     first: $first
     filter: { and: [{
@@ -225,6 +241,9 @@ query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTy
       number
       time
       point
+    }
+    backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+      totalCount
     }
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
@@ -259,7 +278,7 @@ query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTy
 `;
 
 const entitiesOrderedByPropertyQueryDocumentLevel2 = gql`
-query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $propertyId: UUID!, $sortDirection: SortOrder!) {
+query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int, $propertyId: UUID!, $sortDirection: SortOrder!, $backlinksTotalCountsTypeId1: UUID, $backlinksTotalCountsTypeId1Present: Boolean!) {
   entities: entitiesOrderedByProperty(
     first: $first
     filter: { and: [{
@@ -279,6 +298,9 @@ query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTy
       number
       time
       point
+    }
+    backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+      totalCount
     }
     relationsList(
       filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
@@ -304,6 +326,9 @@ query entitiesOrderedByProperty($spaceId: UUID!, $typeIds: [UUID!]!, $relationTy
           number
           time
           point
+        }
+        backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+          totalCount
         }
         relationsList(
           filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
@@ -352,6 +377,9 @@ type EntityQueryResult = {
       time: string;
       point: string;
     }[];
+    backlinksTotalCountsTypeId1: {
+      totalCount: number;
+    } | null;
     relationsList: {
       id: string;
       entity: {
@@ -412,7 +440,7 @@ type GraphSortDirection = 'ASC' | 'DESC';
 export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQueryResult, type: S) => {
   const schemaWithId = Utils.addIdSchemaField(type);
   const decode = Schema.decodeUnknownEither(schemaWithId);
-  const data: Entity.Entity<S>[] = [];
+  const data: (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[] = [];
   const invalidEntities: Record<string, unknown>[] = [];
 
   for (const queryEntity of queryData.entities) {
@@ -454,7 +482,11 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: Ent
 
     if (Either.isRight(decodeResult)) {
       // injecting the schema to the entity to be able to access it in the preparePublish function
-      data.push({ ...decodeResult.right, __schema: type });
+      data.push({
+        ...decodeResult.right,
+        __schema: type,
+        backlinksTotalCountsTypeId1: queryEntity.backlinksTotalCountsTypeId1?.totalCount,
+      });
     } else {
       invalidEntities.push(rawEntity);
     }
@@ -466,7 +498,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   type: S,
   params?: FindManyPublicParams<S>,
 ) => {
-  const { filter, include, space, first = 100, offset = 0, orderBy } = params ?? {};
+  const { filter, include, space, first = 100, offset = 0, orderBy, backlinksTotalCountsTypeId1 } = params ?? {};
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -532,6 +564,13 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   if (orderByPropertyId && sortDirection) {
     queryVariables.propertyId = orderByPropertyId;
     queryVariables.sortDirection = sortDirection;
+  }
+
+  if (backlinksTotalCountsTypeId1) {
+    queryVariables.backlinksTotalCountsTypeId1 = backlinksTotalCountsTypeId1;
+    queryVariables.backlinksTotalCountsTypeId1Present = true;
+  } else {
+    queryVariables.backlinksTotalCountsTypeId1Present = false;
   }
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);

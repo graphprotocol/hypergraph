@@ -17,10 +17,11 @@ type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = {
         direction: 'asc' | 'desc';
       }
     | undefined;
+  backlinksTotalCountsTypeId1?: string | undefined;
 };
 
 export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntitiesParams<S>) {
-  const { mode, filter, include, space, first, offset, orderBy } = params;
+  const { mode, filter, include, space, first, offset, orderBy, backlinksTotalCountsTypeId1 } = params;
   const publicResult = useEntitiesPublic(type, {
     enabled: mode === 'public',
     filter,
@@ -29,6 +30,7 @@ export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S,
     offset,
     space,
     orderBy,
+    backlinksTotalCountsTypeId1,
   });
   const localResult = useEntitiesPrivate(type, { enabled: mode === 'private', filter, include, space });
 
@@ -41,7 +43,7 @@ export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S,
 
   return {
     ...publicResult,
-    data: localResult.entities,
+    data: localResult.entities as (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[],
     deleted: localResult.deletedEntities,
   };
 }

@@ -17,6 +17,7 @@ function RouteComponent() {
       projects: {},
     },
     orderBy: { property: 'dateFounded', direction: 'asc' },
+    backlinksTotalCountsTypeId1: '972d201a-d780-4568-9e01-543f67b26bee',
   });
   console.log({ data, isLoading, isError });
   return (
@@ -27,7 +28,7 @@ function RouteComponent() {
       {data?.map((podcast) => (
         <div key={podcast.id}>
           <h2>
-            {podcast.dateFounded.toISOString()} {podcast.name}
+            {podcast.backlinksTotalCountsTypeId1} - {podcast.dateFounded.toISOString()} {podcast.name}
           </h2>
           {podcast.projects.map((project) => (
             <div key={project._relation.id}>

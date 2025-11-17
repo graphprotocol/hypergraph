@@ -15,4 +15,5 @@ export type QueryPublicParams<S extends Schema.Schema.AnyNoContext> = {
         direction: 'asc' | 'desc';
       }
     | undefined;
+  backlinksTotalCountsTypeId1?: string | undefined;
 };
