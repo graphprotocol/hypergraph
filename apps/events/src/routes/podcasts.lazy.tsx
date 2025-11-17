@@ -1,5 +1,7 @@
+import { Entity } from '@graphprotocol/hypergraph';
 import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { Podcast } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
@@ -8,6 +10,19 @@ export const Route = createLazyFileRoute('/podcasts')({
 
 function RouteComponent() {
   const space = 'e252f9e1-d3ad-4460-8bf1-54f93b02f220';
+
+  useEffect(() => {
+    setTimeout(async () => {
+      const result = await Entity.findOnePublic(Podcast, {
+        id: 'f5d27d3e-3a51-452d-bac2-702574381633',
+        space: space,
+        include: {
+          projects: {},
+        },
+      });
+      console.log('findOnePublic result:', result);
+    }, 1000);
+  }, []);
 
   const { data, isLoading, isError } = useEntities(Podcast, {
     mode: 'public',
@@ -28,7 +43,7 @@ function RouteComponent() {
       {data?.map((podcast) => (
         <div key={podcast.id}>
           <h2>
-            {podcast.backlinksTotalCountsTypeId1} - {podcast.dateFounded.toISOString()} {podcast.name}
+            {podcast.backlinksTotalCountsTypeId1} - {podcast.dateFounded.toISOString()} {podcast.name} - {podcast.id}
           </h2>
           {podcast.projects.map((project) => (
             <div key={project._relation.id}>
