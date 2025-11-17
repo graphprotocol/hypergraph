@@ -223,7 +223,7 @@ query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!, $rel
 
 const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQueryResult, type: S) => {
   if (!queryData.entity) {
-    return { data: null, invalidEntity: null };
+    return null;
   }
 
   const schemaWithId = Utils.addIdSchemaField(type);
