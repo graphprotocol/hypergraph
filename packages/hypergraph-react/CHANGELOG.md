@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.8.6
+### Patch Changes
+
+- 8c2c42b: add Entity.findOnePublic
+- Updated dependencies [8c2c42b]
+  - @graphprotocol/hypergraph@0.8.6
+
 ## 0.8.5
 ### Patch Changes
 

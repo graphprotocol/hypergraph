@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.8.6
+### Patch Changes
+
+- 8c2c42b: add Entity.findOnePublic
+
 ## 0.8.5
 ### Patch Changes
 
