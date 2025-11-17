@@ -9,4 +9,10 @@ export type QueryPublicParams<S extends Schema.Schema.AnyNoContext> = {
   space?: string | undefined;
   first?: number | undefined;
   offset?: number | undefined;
+  orderBy?:
+    | {
+        property: keyof Schema.Schema.Type<S>;
+        direction: 'asc' | 'desc';
+      }
+    | undefined;
 };

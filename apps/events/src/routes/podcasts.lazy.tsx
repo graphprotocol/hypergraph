@@ -16,6 +16,7 @@ function RouteComponent() {
     include: {
       projects: {},
     },
+    orderBy: { property: 'dateFounded', direction: 'asc' },
   });
   console.log({ data, isLoading, isError });
   return (
@@ -25,7 +26,9 @@ function RouteComponent() {
       {isError && <div>Error</div>}
       {data?.map((podcast) => (
         <div key={podcast.id}>
-          <h2>{podcast.name}</h2>
+          <h2>
+            {podcast.dateFounded.toISOString()} {podcast.name}
+          </h2>
           {podcast.projects.map((project) => (
             <div key={project._relation.id}>
               <h3>- {project.name}</h3>

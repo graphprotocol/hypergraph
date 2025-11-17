@@ -11,11 +11,25 @@ type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = {
   space?: string | undefined;
   first?: number | undefined;
   offset?: number | undefined;
+  orderBy?:
+    | {
+        property: keyof Schema.Schema.Type<S>;
+        direction: 'asc' | 'desc';
+      }
+    | undefined;
 };
 
 export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntitiesParams<S>) {
-  const { mode, filter, include, space, first, offset } = params;
-  const publicResult = useEntitiesPublic(type, { enabled: mode === 'public', filter, include, first, offset, space });
+  const { mode, filter, include, space, first, offset, orderBy } = params;
+  const publicResult = useEntitiesPublic(type, {
+    enabled: mode === 'public',
+    filter,
+    include,
+    first,
+    offset,
+    space,
+    orderBy,
+  });
   const localResult = useEntitiesPrivate(type, { enabled: mode === 'private', filter, include, space });
 
   if (mode === 'public') {
