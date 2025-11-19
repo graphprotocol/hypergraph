@@ -6,6 +6,7 @@ import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { request } from 'graphql-request';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
+import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 
 export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
@@ -23,67 +24,8 @@ export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   backlinksTotalCountsTypeId1?: string | undefined;
 };
 
-// Helper to generate alias for relation type ID
-const getRelationAlias = (typeId: string) => `relationsList_${typeId.replace(/-/g, '_')}`;
-
-// Helper to build relationsList fragment for a single type ID
-const buildRelationsListFragment = (typeId: string, level: 1 | 2) => {
-  const alias = getRelationAlias(typeId);
-  const fragment = `
-    ${alias}: relationsList(
-      filter: {spaceId: {is: $spaceId}, typeId: {is: "${typeId}"}},
-    ) {
-      id
-      entity {
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      toEntity {
-        id
-        name
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-        ${level === 1 ? '__LEVEL2_RELATIONS__' : ''}
-      }
-      typeId
-    }`;
-  return fragment;
-};
-
-// Build level 2 relations fragment
-const buildLevel2RelationsFragment = (relationInfoLevel2: RelationTypeIdInfo[]) => {
-  if (relationInfoLevel2.length === 0) return '';
-
-  return relationInfoLevel2.map((info) => buildRelationsListFragment(info.typeId, 2)).join('\n');
-};
-
-// Build level 1 relations fragment
-const buildLevel1RelationsFragment = (relationInfoLevel1: RelationTypeIdInfo[]) => {
-  if (relationInfoLevel1.length === 0) return '';
-
-  return relationInfoLevel1
-    .map((info) => {
-      const level2Fragment = buildLevel2RelationsFragment(info.children ?? []);
-      const fragment = buildRelationsListFragment(info.typeId, 1);
-      return fragment.replace('__LEVEL2_RELATIONS__', level2Fragment);
-    })
-    .join('\n');
-};
-
 const buildEntitiesQuery = (relationInfoLevel1: RelationTypeIdInfo[], useOrderBy: boolean) => {
-  const level1Relations = buildLevel1RelationsFragment(relationInfoLevel1);
+  const level1Relations = buildRelationsSelection(relationInfoLevel1);
 
   const queryName = useOrderBy ? 'entitiesOrderedByProperty' : 'entities';
   const orderByParams = useOrderBy ? '$propertyId: UUID!, $sortDirection: SortOrder!, ' : '';
@@ -146,7 +88,7 @@ type RelationsListWithTotalCount = {
   totalCount: number;
 } & RelationsListItem[];
 
-type EntityQueryResult = {
+export type EntityQueryResult = {
   entities: ({
     id: string;
     name: string;

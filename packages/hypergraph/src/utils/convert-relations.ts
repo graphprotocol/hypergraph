@@ -4,6 +4,7 @@ import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { convertPropertyValue } from './convert-property-value.js';
 import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
+import { getRelationAlias } from './relation-query-helpers.js';
 
 type ValueList = {
   propertyId: string;
@@ -13,9 +14,6 @@ type ValueList = {
   time: string;
   point: string;
 }[];
-
-// Helper to generate alias for relation type ID (must match the one in find-many-public.ts)
-const getRelationAlias = (typeId: string) => `relationsList_${typeId.replace(/-/g, '_')}`;
 
 type RelationsListItem = {
   id: string;

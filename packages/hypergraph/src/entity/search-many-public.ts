@@ -3,8 +3,10 @@ import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
-import { gql, request } from 'graphql-request';
-import { parseResult } from './find-many-public.js';
+import { request } from 'graphql-request';
+import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
+import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
+import { type EntityQueryResult, parseResult } from './find-many-public.js';
 
 export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   query: string;
@@ -16,9 +18,12 @@ export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   offset?: number | undefined;
 };
 
-const searchQueryDocumentLevel0 = gql`
-query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
-  search(
+const buildSearchQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
+  const relationsSelection = buildRelationsSelection(relationInfoLevel1);
+
+  return `
+query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
+  entities: search(
     query: $query
     filter: { and: [{
       typeIds: {in: $typeIds}, 
@@ -38,211 +43,9 @@ query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, 
       time
       point
     }
+    ${relationsSelection}
   }
-}
-`;
-
-const searchQueryDocumentLevel1 = gql`
-query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
-  search(
-    query: $query
-    filter: { and: [{
-      typeIds: {in: $typeIds}, 
-      spaceIds: {in: [$spaceId]},
-    }, $filter]}
-    spaceId: $spaceId
-    first: $first
-    offset: $offset
-  ) {
-    id
-    name
-    valuesList(filter: {spaceId: {is: $spaceId}}) {
-      propertyId
-      string
-      boolean
-      number
-      time
-      point
-    }
-    relationsList(
-      filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
-    ) {
-      id
-      entity {
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      toEntity {
-        id
-        name
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      typeId
-    }
-  }
-}
-`;
-
-const searchQueryDocumentLevel2 = gql`
-query search($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
-  search(
-    query: $query
-    filter: { and: [{
-      typeIds: {in: $typeIds}, 
-      spaceIds: {in: [$spaceId]},
-    }, $filter]}
-    spaceId: $spaceId
-    first: $first
-    offset: $offset
-  ) {
-    id
-    name
-    valuesList(filter: {spaceId: {is: $spaceId}}) {
-      propertyId
-      string
-      boolean
-      number
-      time
-      point
-    }
-    relationsList(
-      filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
-    ) {
-      id
-      entity {
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      toEntity {
-        id
-        name
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-        relationsList(
-          filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
-        ) {
-          id
-          entity {
-            valuesList(filter: {spaceId: {is: $spaceId}}) {
-              propertyId
-              string
-              boolean
-              number
-              time
-              point
-            }
-          }
-          toEntity {
-            id
-            name
-            valuesList(filter: {spaceId: {is: $spaceId}}) {
-              propertyId
-              string
-              boolean
-              number
-              time
-              point
-            }
-          }
-          typeId
-        }
-      }
-      typeId
-    }
-  }
-}
-`;
-
-type SearchQueryResult = {
-  search: {
-    id: string;
-    name: string;
-    valuesList: {
-      propertyId: string;
-      string: string;
-      boolean: boolean;
-      number: number;
-      time: string;
-      point: string;
-    }[];
-    relationsList: {
-      id: string;
-      entity: {
-        valuesList: {
-          propertyId: string;
-          string: string;
-          boolean: boolean;
-          number: number;
-          time: string;
-          point: string;
-        }[];
-      };
-      toEntity: {
-        id: string;
-        name: string;
-        valuesList: {
-          propertyId: string;
-          string: string;
-          boolean: boolean;
-          number: number;
-          time: string;
-          point: string;
-        }[];
-        relationsList: {
-          id: string;
-          entity: {
-            valuesList: {
-              propertyId: string;
-              string: string;
-              boolean: boolean;
-              number: number;
-              time: string;
-              point: string;
-            }[];
-          };
-          toEntity: {
-            id: string;
-            name: string;
-            valuesList: {
-              propertyId: string;
-              string: string;
-              boolean: boolean;
-              number: number;
-              time: string;
-              point: string;
-            }[];
-          };
-          typeId: string;
-        }[];
-      };
-      typeId: string;
-    }[];
-  }[];
+}`;
 };
 
 export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
@@ -258,28 +61,21 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     Option.getOrElse(() => []),
   );
 
-  let queryDocument = searchQueryDocumentLevel0;
-  if (relationTypeIds.level1.length > 0) {
-    queryDocument = searchQueryDocumentLevel1;
-  }
-  if (relationTypeIds.level2.length > 0) {
-    queryDocument = searchQueryDocumentLevel2;
-  }
+  const queryDocument = buildSearchQuery(relationTypeIds.infoLevel1);
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
-  const result = await request<SearchQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
+  const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
     spaceId: space,
     typeIds,
     query,
-    relationTypeIdsLevel1: relationTypeIds.level1,
-    relationTypeIdsLevel2: relationTypeIds.level2,
     first,
     filter: filterParams,
     offset,
   });
 
-  // @ts-expect-error TODO: fix this
-  const { data, invalidEntities } = parseResult({ entities: result.search }, type);
+  console.log('searchManyPublic result:', result);
+
+  const { data, invalidEntities } = parseResult(result, type, relationTypeIds.infoLevel1, relationTypeIds.infoLevel2);
   return { data, invalidEntities };
 };
