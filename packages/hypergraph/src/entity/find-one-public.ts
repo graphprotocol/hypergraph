@@ -23,7 +23,6 @@ export type FindOnePublicParams<S extends Schema.Schema.AnyNoContext> = {
 const buildEntityQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
   const relationsSelection = buildRelationsSelection(relationInfoLevel1);
   const relationsSelectionBlock = relationsSelection ? `\n    ${relationsSelection}\n` : '';
-
   return `
 query entity($id: UUID!, $spaceId: UUID!) {
   entity(
@@ -109,6 +108,7 @@ export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: 
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
 
   const queryDocument = buildEntityQuery(relationTypeIds);
+  console.log({ queryDocument });
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
     id,

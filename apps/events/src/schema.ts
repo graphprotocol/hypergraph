@@ -162,6 +162,39 @@ export const GenericEntity = Entity.Schema(
   },
 );
 
+export const Episode2 = Entity.Schema(
+  {
+    name: Type.String,
+    description: Type.optional(Type.String),
+    airDate: Type.Date,
+    avatar: Type.Relation(Image),
+    duration: Type.optional(Type.Number), // in seconds
+    audioUrl: Type.optional(Type.String),
+    listenOn: Type.Relation(GenericEntity, {
+      properties: {
+        website: Type.optional(Type.String),
+      },
+    }),
+  },
+  {
+    types: [Id('972d201a-d780-4568-9e01-543f67b26bee')],
+    properties: {
+      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
+      airDate: Id('77999397-f78d-44a7-bbc5-d93a617af47c'),
+      duration: Id('76996acc-d10f-4cd5-9ac9-4a705b8e03b4'),
+      audioUrl: Id('87f919d5-560b-408c-be8d-318e2c5c098b'),
+      avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
+      listenOn: {
+        propertyId: Id('1367bac7-dcea-4b80-86ad-a4a4cdd7c2cb'),
+        properties: {
+          website: Id('eed38e74-e679-46bf-8a42-ea3e4f8fb5fb'),
+        },
+      },
+    },
+  },
+);
+
 export const Podcast = Entity.Schema(
   {
     name: Type.String,
@@ -176,6 +209,7 @@ export const Podcast = Entity.Schema(
         website: Type.optional(Type.String),
       },
     }),
+    episodes: Type.Backlink(Episode2),
   },
   {
     types: [Id('4c81561d-1f95-4131-9cdd-dd20ab831ba2')],
@@ -193,6 +227,7 @@ export const Podcast = Entity.Schema(
           website: Id('eed38e74-e679-46bf-8a42-ea3e4f8fb5fb'),
         },
       },
+      episodes: Id('f1873bbc-381f-4604-abad-76fed4f6d73f'),
     },
   },
 );

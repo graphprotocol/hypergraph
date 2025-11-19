@@ -2,13 +2,16 @@ import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
 
 export const getRelationAlias = (typeId: string) => `relationsList_${typeId.replace(/-/g, '_')}`;
 
-const buildRelationsListFragment = (typeId: string, level: 1 | 2) => {
-  const alias = getRelationAlias(typeId);
+const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2) => {
+  const alias = getRelationAlias(info.typeId);
   const nestedPlaceholder = level === 1 ? '__LEVEL2_RELATIONS__' : '';
+  const listField = info.listField ?? 'relationsList';
+  const toEntityField = listField === 'backlinksList' ? 'fromEntity' : 'toEntity';
+  const toEntitySelectionHeader = toEntityField === 'toEntity' ? 'toEntity' : `toEntity: ${toEntityField}`;
 
   return `
-    ${alias}: relationsList(
-      filter: {spaceId: {is: $spaceId}, typeId: {is: "${typeId}"}},
+    ${alias}: ${listField}(
+      filter: {spaceId: {is: $spaceId}, typeId: {is: "${info.typeId}"}},
     ) {
       id
       entity {
@@ -21,7 +24,7 @@ const buildRelationsListFragment = (typeId: string, level: 1 | 2) => {
           point
         }
       }
-      toEntity {
+      ${toEntitySelectionHeader} {
         id
         name
         valuesList(filter: {spaceId: {is: $spaceId}}) {
@@ -41,7 +44,7 @@ const buildRelationsListFragment = (typeId: string, level: 1 | 2) => {
 const buildLevel2RelationsFragment = (relationInfoLevel2: RelationTypeIdInfo[]) => {
   if (relationInfoLevel2.length === 0) return '';
 
-  return relationInfoLevel2.map((info) => buildRelationsListFragment(info.typeId, 2)).join('\n');
+  return relationInfoLevel2.map((info) => buildRelationsListFragment(info, 2)).join('\n');
 };
 
 const buildLevel1RelationsFragment = (relationInfoLevel1: RelationTypeIdInfo[]) => {
@@ -50,7 +53,7 @@ const buildLevel1RelationsFragment = (relationInfoLevel1: RelationTypeIdInfo[]) 
   return relationInfoLevel1
     .map((info) => {
       const level2Fragment = buildLevel2RelationsFragment(info.children ?? []);
-      const fragment = buildRelationsListFragment(info.typeId, 1);
+      const fragment = buildRelationsListFragment(info, 1);
       return fragment.replace('__LEVEL2_RELATIONS__', level2Fragment);
     })
     .join('\n');

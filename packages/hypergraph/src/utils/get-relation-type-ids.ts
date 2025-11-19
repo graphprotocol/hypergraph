@@ -3,9 +3,12 @@ import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 
+export type RelationListField = 'relationsList' | 'backlinksList';
+
 export type RelationTypeIdInfo = {
   typeId: string;
   propertyName: string;
+  listField: RelationListField;
   children?: RelationTypeIdInfo[];
 };
 
@@ -24,7 +27,15 @@ export const getRelationTypeIds = (
 
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
     if (Option.isSome(result) && include?.[String(prop.name)]) {
-      const level1Info: RelationTypeIdInfo = { typeId: result.value, propertyName: String(prop.name) };
+      const isBacklink = SchemaAST.getAnnotation<boolean>(Constants.RelationBacklinkSymbol)(prop.type).pipe(
+        Option.getOrElse(() => false),
+      );
+      const listField: RelationListField = isBacklink ? 'backlinksList' : 'relationsList';
+      const level1Info: RelationTypeIdInfo = {
+        typeId: result.value,
+        propertyName: String(prop.name),
+        listField,
+      };
       const nestedRelations: RelationTypeIdInfo[] = [];
 
       if (!SchemaAST.isTupleType(prop.type)) {
@@ -48,9 +59,14 @@ export const getRelationTypeIds = (
 
         const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
         if (Option.isSome(nestedResult) && include?.[String(prop.name)]?.[String(nestedProp.name)]) {
+          const nestedIsBacklink = SchemaAST.getAnnotation<boolean>(Constants.RelationBacklinkSymbol)(
+            nestedProp.type,
+          ).pipe(Option.getOrElse(() => false));
+          const nestedListField: RelationListField = nestedIsBacklink ? 'backlinksList' : 'relationsList';
           const nestedInfo: RelationTypeIdInfo = {
             typeId: nestedResult.value,
             propertyName: String(nestedProp.name),
+            listField: nestedListField,
           };
           nestedRelations.push(nestedInfo);
         }
