@@ -17,6 +17,19 @@ type ValueList = {
 // Helper to generate alias for relation type ID (must match the one in find-many-public.ts)
 const getRelationAlias = (typeId: string) => `relationsList_${typeId.replace(/-/g, '_')}`;
 
+type RelationsListItem = {
+  id: string;
+  toEntity: RecursiveQueryEntity;
+  entity: {
+    valuesList?: ValueList;
+  };
+  typeId: string;
+};
+
+type RelationsListWithTotalCount = {
+  totalCount: number;
+} & RelationsListItem[];
+
 // A recursive representation of the entity structure returned by the public GraphQL
 // endpoint. `values` and `relations` are optional because the nested `to` selections
 // get slimmer the deeper we traverse in the query. This type intentionally mirrors
@@ -25,16 +38,10 @@ type RecursiveQueryEntity = {
   id: string;
   name: string;
   valuesList?: ValueList;
-  relationsList?: {
-    totalCount: number;
-    id: string;
-    toEntity: RecursiveQueryEntity;
-    entity: {
-      valuesList?: ValueList;
-    };
-    typeId: string;
-  }[];
-  [key: string]: unknown; // For aliased relationsList_* fields
+  relationsList?: RelationsListItem[];
+} & {
+  // For aliased relationsList_* fields with proper typing
+  [K: `relationsList_${string}`]: RelationsListWithTotalCount;
 };
 
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
@@ -74,18 +81,18 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
 
       // Get relations from aliased field if we have relationInfo, otherwise fallback to old behavior
       let allRelationsWithTheCorrectPropertyTypeId: RecursiveQueryEntity['relationsList'];
-      
+
       if (relationInfoLevel1.length > 0) {
         // Use the aliased field to get relations for this specific type ID
         const alias = getRelationAlias(result.value);
-        allRelationsWithTheCorrectPropertyTypeId = queryEntity[alias] as RecursiveQueryEntity['relationsList'];
+        allRelationsWithTheCorrectPropertyTypeId = queryEntity[
+          alias as keyof RecursiveQueryEntity
+        ] as RecursiveQueryEntity['relationsList'];
       } else {
         // Fallback to old behavior (filtering from a single relationsList)
-        allRelationsWithTheCorrectPropertyTypeId = queryEntity.relationsList?.filter(
-          (a) => a.typeId === result.value,
-        );
+        allRelationsWithTheCorrectPropertyTypeId = queryEntity.relationsList?.filter((a) => a.typeId === result.value);
       }
-      
+
       if (allRelationsWithTheCorrectPropertyTypeId) {
         for (const relationEntry of allRelationsWithTheCorrectPropertyTypeId) {
           let nestedRawEntity: NestedRawEntity = {

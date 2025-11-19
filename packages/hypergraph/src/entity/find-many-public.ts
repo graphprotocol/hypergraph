@@ -91,7 +91,6 @@ const buildEntitiesQuery = (
   useOrderBy: boolean,
 ) => {
   const level1Relations = buildLevel1RelationsFragment(relationInfoLevel1, relationInfoLevel2);
-  console.log('level1Relations', level1Relations);
 
   const queryName = useOrderBy ? 'entitiesOrderedByProperty' : 'entities';
   const orderByParams = useOrderBy ? '$propertyId: UUID!, $sortDirection: SortOrder!, ' : '';
@@ -125,51 +124,47 @@ query ${queryName}($spaceId: UUID!, $typeIds: [UUID!]!, ${orderByParams}$first: 
 }`;
 };
 
-type RelationsList = {
+type ValuesList = {
+  propertyId: string;
+  string: string;
+  boolean: boolean;
+  number: number;
+  time: string;
+  point: string;
+}[];
+
+type RelationsListItem = {
   id: string;
   entity: {
-    valuesList: {
-      propertyId: string;
-      string: string;
-      boolean: boolean;
-      number: number;
-      time: string;
-      point: string;
-    }[];
+    valuesList: ValuesList;
   };
   toEntity: {
     id: string;
     name: string;
-    valuesList: {
-      propertyId: string;
-      string: string;
-      boolean: boolean;
-      number: number;
-      time: string;
-      point: string;
-    }[];
-    [key: string]: unknown; // For nested aliased relationsList fields
+    valuesList: ValuesList;
+  } & {
+    // For nested aliased relationsList_* fields at level 2
+    [K: `relationsList_${string}`]: RelationsListWithTotalCount;
   };
   typeId: string;
-}[];
+};
+
+type RelationsListWithTotalCount = {
+  totalCount: number;
+} & RelationsListItem[];
 
 type EntityQueryResult = {
-  entities: {
+  entities: ({
     id: string;
     name: string;
-    valuesList: {
-      propertyId: string;
-      string: string;
-      boolean: boolean;
-      number: number;
-      time: string;
-      point: string;
-    }[];
+    valuesList: ValuesList;
     backlinksTotalCountsTypeId1: {
       totalCount: number;
     } | null;
-    [key: string]: unknown; // For aliased relationsList_* fields
-  }[];
+  } & {
+    // For aliased relationsList_* fields - provides proper typing with totalCount
+    [K: `relationsList_${string}`]: RelationsListWithTotalCount;
+  })[];
 };
 
 type GraphSortDirection = 'ASC' | 'DESC';
