@@ -15,7 +15,7 @@ function RouteComponent() {
     offset: 0,
     space: space,
     include: {
-      projects: {},
+      listenOn: {},
     },
   });
 
