@@ -3,6 +3,7 @@ import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { convertPropertyValue } from './convert-property-value.js';
+import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
 
 type ValueList = {
   propertyId: string;
@@ -13,6 +14,9 @@ type ValueList = {
   point: string;
 }[];
 
+// Helper to generate alias for relation type ID (must match the one in find-many-public.ts)
+const getRelationAlias = (typeId: string) => `relationsList_${typeId.replace(/-/g, '_')}`;
+
 // A recursive representation of the entity structure returned by the public GraphQL
 // endpoint. `values` and `relations` are optional because the nested `to` selections
 // get slimmer the deeper we traverse in the query. This type intentionally mirrors
@@ -22,6 +26,7 @@ type RecursiveQueryEntity = {
   name: string;
   valuesList?: ValueList;
   relationsList?: {
+    totalCount: number;
     id: string;
     toEntity: RecursiveQueryEntity;
     entity: {
@@ -29,6 +34,7 @@ type RecursiveQueryEntity = {
     };
     typeId: string;
   }[];
+  [key: string]: unknown; // For aliased relationsList_* fields
 };
 
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
@@ -38,6 +44,8 @@ type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, 
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   ast: SchemaAST.TypeLiteral,
+  relationInfoLevel1: RelationTypeIdInfo[] = [],
+  relationInfoLevel2: RelationTypeIdInfo[] = [],
 ) => {
   const rawEntity: RawEntity = {};
 
@@ -64,9 +72,20 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
         continue;
       }
 
-      const allRelationsWithTheCorrectPropertyTypeId = queryEntity.relationsList?.filter(
-        (a) => a.typeId === result.value,
-      );
+      // Get relations from aliased field if we have relationInfo, otherwise fallback to old behavior
+      let allRelationsWithTheCorrectPropertyTypeId: RecursiveQueryEntity['relationsList'];
+      
+      if (relationInfoLevel1.length > 0) {
+        // Use the aliased field to get relations for this specific type ID
+        const alias = getRelationAlias(result.value);
+        allRelationsWithTheCorrectPropertyTypeId = queryEntity[alias] as RecursiveQueryEntity['relationsList'];
+      } else {
+        // Fallback to old behavior (filtering from a single relationsList)
+        allRelationsWithTheCorrectPropertyTypeId = queryEntity.relationsList?.filter(
+          (a) => a.typeId === result.value,
+        );
+      }
+      
       if (allRelationsWithTheCorrectPropertyTypeId) {
         for (const relationEntry of allRelationsWithTheCorrectPropertyTypeId) {
           let nestedRawEntity: NestedRawEntity = {
@@ -76,7 +95,12 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
             },
           };
 
-          const relationsForRawNestedEntity = convertRelations(relationEntry.toEntity, relationTransformation);
+          const relationsForRawNestedEntity = convertRelations(
+            relationEntry.toEntity,
+            relationTransformation,
+            relationInfoLevel2,
+            [],
+          );
 
           nestedRawEntity = {
             ...nestedRawEntity,

@@ -3,6 +3,11 @@ import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 
+export type RelationTypeIdInfo = {
+  typeId: string;
+  propertyName: string;
+};
+
 export const getRelationTypeIds = (
   type: Schema.Schema.AnyNoContext,
   include:
@@ -11,6 +16,8 @@ export const getRelationTypeIds = (
 ) => {
   const relationTypeIdsLevel1: string[] = [];
   const relationTypeIdsLevel2: string[] = [];
+  const relationInfoLevel1: RelationTypeIdInfo[] = [];
+  const relationInfoLevel2: RelationTypeIdInfo[] = [];
 
   const ast = type.ast as SchemaAST.TypeLiteral;
 
@@ -20,6 +27,7 @@ export const getRelationTypeIds = (
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
     if (Option.isSome(result) && include?.[String(prop.name)]) {
       relationTypeIdsLevel1.push(result.value);
+      relationInfoLevel1.push({ typeId: result.value, propertyName: String(prop.name) });
       if (!SchemaAST.isTupleType(prop.type)) {
         continue;
       }
@@ -39,6 +47,7 @@ export const getRelationTypeIds = (
         const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
         if (Option.isSome(nestedResult) && include?.[String(prop.name)]?.[String(nestedProp.name)]) {
           relationTypeIdsLevel2.push(nestedResult.value);
+          relationInfoLevel2.push({ typeId: nestedResult.value, propertyName: String(nestedProp.name) });
         }
       }
     }
@@ -47,5 +56,7 @@ export const getRelationTypeIds = (
   return {
     level1: relationTypeIdsLevel1,
     level2: relationTypeIdsLevel2,
+    infoLevel1: relationInfoLevel1,
+    infoLevel2: relationInfoLevel2,
   };
 };
