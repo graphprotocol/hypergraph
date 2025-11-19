@@ -58,4 +58,3 @@ const buildLevel1RelationsFragment = (relationInfoLevel1: RelationTypeIdInfo[]) 
 
 export const buildRelationsSelection = (relationInfoLevel1: RelationTypeIdInfo[]) =>
   buildLevel1RelationsFragment(relationInfoLevel1);
-

@@ -1,6 +1,6 @@
-import { Podcast } from '@/schema';
 import { useEntities, useEntity } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
+import { Podcast } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,
