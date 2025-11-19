@@ -4,73 +4,13 @@ import * as Either from 'effect/Either';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
-import { gql, request } from 'graphql-request';
+import { request } from 'graphql-request';
+import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
+import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
+import type { EntityQueryResult as MultiEntityQueryResult } from './find-many-public.js';
 
 type EntityQueryResult = {
-  entity: {
-    id: string;
-    name: string;
-    valuesList: {
-      propertyId: string;
-      string: string;
-      boolean: boolean;
-      number: number;
-      time: string;
-      point: string;
-    }[];
-    relationsList?: {
-      id: string;
-      entity: {
-        valuesList: {
-          propertyId: string;
-          string: string;
-          boolean: boolean;
-          number: number;
-          time: string;
-          point: string;
-        }[];
-      };
-      toEntity: {
-        id: string;
-        name: string;
-        valuesList: {
-          propertyId: string;
-          string: string;
-          boolean: boolean;
-          number: number;
-          time: string;
-          point: string;
-        }[];
-        relationsList?: {
-          id: string;
-          entity: {
-            valuesList: {
-              propertyId: string;
-              string: string;
-              boolean: boolean;
-              number: number;
-              time: string;
-              point: string;
-            }[];
-          };
-          toEntity: {
-            id: string;
-            name: string;
-            valuesList: {
-              propertyId: string;
-              string: string;
-              boolean: boolean;
-              number: number;
-              time: string;
-              point: string;
-            }[];
-          };
-          typeId: string;
-        }[];
-      };
-      typeId: string;
-    }[];
-  } | null;
+  entity: MultiEntityQueryResult['entities'][number] | null;
 };
 
 export type FindOnePublicParams<S extends Schema.Schema.AnyNoContext> = {
@@ -80,7 +20,11 @@ export type FindOnePublicParams<S extends Schema.Schema.AnyNoContext> = {
   include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
 };
 
-const entityQueryDocumentLevel0 = gql`
+const buildEntityQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
+  const relationsSelection = buildRelationsSelection(relationInfoLevel1);
+  const relationsSelectionBlock = relationsSelection ? `\n    ${relationsSelection}\n` : '';
+
+  return `
 query entity($id: UUID!, $spaceId: UUID!) {
   entity(
     id: $id,
@@ -94,134 +38,18 @@ query entity($id: UUID!, $spaceId: UUID!) {
       number
       time
       point
-    }
+    }${relationsSelectionBlock}
   }
 }
 `;
+};
 
-const entityQueryDocumentLevel1 = gql`
-query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!) {
-  entity(
-    id: $id,
-  ) {
-    id
-    name
-    valuesList(filter: {spaceId: {is: $spaceId}}) {
-      propertyId
-      string
-      boolean
-      number
-      time
-      point
-    }
-    relationsList(
-      filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
-    ) {
-      id
-      entity {
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      toEntity {
-        id
-        name
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      typeId
-    }
-  }
-}
-`;
-
-const entityQueryDocumentLevel2 = gql`
-query entity($id: UUID!, $spaceId: UUID!, $relationTypeIdsLevel1: [UUID!]!, $relationTypeIdsLevel2: [UUID!]!) {
-  entity(
-    id: $id,
-  ) {
-    id
-    name
-    valuesList(filter: {spaceId: {is: $spaceId}}) {
-      propertyId
-      string
-      boolean
-      number
-      time
-      point
-    }
-    relationsList(
-      filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel1}},
-    ) {
-      id
-      entity {
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      toEntity {
-        id
-        name
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-        relationsList(
-          filter: {spaceId: {is: $spaceId}, typeId:{ in: $relationTypeIdsLevel2}},
-        ) {
-          id
-          entity {
-            valuesList(filter: {spaceId: {is: $spaceId}}) {
-              propertyId
-              string
-              boolean
-              number
-              time
-              point
-            }
-          }
-          toEntity {
-            id
-            name
-            valuesList(filter: {spaceId: {is: $spaceId}}) {
-              propertyId
-              string
-              boolean
-              number
-              time
-              point
-            }
-          }
-          typeId
-        }
-      }
-      typeId
-    }
-  }
-}
-`;
-
-const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQueryResult, type: S) => {
+const parseResult = <S extends Schema.Schema.AnyNoContext>(
+  queryData: EntityQueryResult,
+  type: S,
+  relationInfoLevel1: RelationTypeIdInfo[],
+  relationInfoLevel2: RelationTypeIdInfo[],
+) => {
   if (!queryData.entity) {
     return null;
   }
@@ -257,7 +85,7 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(queryData: EntityQuer
   // @ts-expect-error
   rawEntity = {
     ...rawEntity,
-    ...Utils.convertRelations(queryEntity, ast),
+    ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1, relationInfoLevel2),
   };
 
   const decodeResult = decode({
@@ -281,21 +109,12 @@ export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
 
-  const relationLevel = relationTypeIds.level2.length > 0 ? 2 : relationTypeIds.level1.length > 0 ? 1 : 0;
-
-  const queryDocument =
-    relationLevel === 2
-      ? entityQueryDocumentLevel2
-      : relationLevel === 1
-        ? entityQueryDocumentLevel1
-        : entityQueryDocumentLevel0;
+  const queryDocument = buildEntityQuery(relationTypeIds.infoLevel1);
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
     id,
     spaceId: space,
-    relationTypeIdsLevel1: relationTypeIds.level1,
-    relationTypeIdsLevel2: relationTypeIds.level2,
   });
 
-  return parseResult(result, type);
+  return parseResult(result, type, relationTypeIds.infoLevel1, relationTypeIds.infoLevel2);
 };

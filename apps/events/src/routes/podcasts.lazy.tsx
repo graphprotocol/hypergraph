@@ -1,8 +1,6 @@
 import { Podcast } from '@/schema';
-import { Entity } from '@graphprotocol/hypergraph';
-import { useEntities } from '@graphprotocol/hypergraph-react';
+import { useEntities, useEntity } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { useEffect } from 'react';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,
@@ -11,31 +9,31 @@ export const Route = createLazyFileRoute('/podcasts')({
 function RouteComponent() {
   const space = 'e252f9e1-d3ad-4460-8bf1-54f93b02f220';
 
-  useEffect(() => {
-    setTimeout(async () => {
-      const result = await Entity.searchManyPublic(Podcast, {
-        query: 'Joe',
-        space: space,
-        // include: {
-        //   listenOn: {},
-        // },
-      });
-      console.log('searchManyPublic result:', result);
-    }, 1000);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(async () => {
+  //     const result = await Entity.searchManyPublic(Podcast, {
+  //       query: 'Joe',
+  //       space: space,
+  //       // include: {
+  //       //   listenOn: {},
+  //       // },
+  //     });
+  //     console.log('searchManyPublic result:', result);
+  //   }, 1000);
+  // }, []);
 
-  // const { data: podcast } = useEntity(Podcast, {
-  //   id: 'f5d27d3e-3a51-452d-bac2-702574381633',
-  //   mode: 'public',
-  //   space: space,
-  //   include: {
-  //     listenOn: {},
-  //     hosts: {
-  //       avatar: {},
-  //     },
-  //   },
-  // });
-  // console.log({ podcast });
+  const { data: podcast } = useEntity(Podcast, {
+    id: 'f5d27d3e-3a51-452d-bac2-702574381633',
+    mode: 'public',
+    space: space,
+    include: {
+      listenOn: {},
+      hosts: {
+        avatar: {},
+      },
+    },
+  });
+  console.log({ podcast });
 
   const { data, isLoading, isError } = useEntities(Podcast, {
     mode: 'public',
