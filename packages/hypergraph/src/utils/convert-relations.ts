@@ -49,8 +49,7 @@ type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, 
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   ast: SchemaAST.TypeLiteral,
-  relationInfoLevel1: RelationTypeIdInfo[] = [],
-  relationInfoLevel2: RelationTypeIdInfo[] = [],
+  relationInfo: RelationTypeIdInfo[] = [],
 ) => {
   const rawEntity: RawEntity = {};
 
@@ -77,10 +76,14 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
         continue;
       }
 
-      // Get relations from aliased field if we have relationInfo, otherwise fallback to old behavior
+      const relationMetadata = relationInfo.find(
+        (info) => info.typeId === result.value && info.propertyName === String(prop.name),
+      );
+
+      // Get relations from aliased field if we have relationInfo for this property, otherwise fallback to old behavior
       let allRelationsWithTheCorrectPropertyTypeId: RecursiveQueryEntity['relationsList'];
 
-      if (relationInfoLevel1.length > 0) {
+      if (relationMetadata) {
         // Use the aliased field to get relations for this specific type ID
         const alias = getRelationAlias(result.value);
         allRelationsWithTheCorrectPropertyTypeId = queryEntity[
@@ -103,8 +106,7 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
           const relationsForRawNestedEntity = convertRelations(
             relationEntry.toEntity,
             relationTransformation,
-            relationInfoLevel2,
-            [],
+            relationMetadata?.children ?? [],
           );
 
           nestedRawEntity = {

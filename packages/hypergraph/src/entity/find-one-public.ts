@@ -48,7 +48,6 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
   relationInfoLevel1: RelationTypeIdInfo[],
-  relationInfoLevel2: RelationTypeIdInfo[],
 ) => {
   if (!queryData.entity) {
     return null;
@@ -85,7 +84,7 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
   // @ts-expect-error
   rawEntity = {
     ...rawEntity,
-    ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1, relationInfoLevel2),
+    ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1),
   };
 
   const decodeResult = decode({
@@ -116,5 +115,5 @@ export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: 
     spaceId: space,
   });
 
-  return parseResult(result, type, relationTypeIds.infoLevel1, relationTypeIds.infoLevel2);
+  return parseResult(result, type, relationTypeIds.infoLevel1);
 };

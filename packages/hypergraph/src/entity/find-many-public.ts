@@ -108,7 +108,6 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
   relationInfoLevel1: RelationTypeIdInfo[],
-  relationInfoLevel2: RelationTypeIdInfo[],
 ) => {
   const schemaWithId = Utils.addIdSchemaField(type);
   const decode = Schema.decodeUnknownEither(schemaWithId);
@@ -144,7 +143,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
     // @ts-expect-error
     rawEntity = {
       ...rawEntity,
-      ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1, relationInfoLevel2),
+      ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1),
     };
 
     const decodeResult = decode({
@@ -233,6 +232,6 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);
 
-  const { data, invalidEntities } = parseResult(result, type, relationTypeIds.infoLevel1, relationTypeIds.infoLevel2);
+  const { data, invalidEntities } = parseResult(result, type, relationTypeIds.infoLevel1);
   return { data, invalidEntities };
 };
