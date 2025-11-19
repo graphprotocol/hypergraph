@@ -6,6 +6,7 @@ import * as SchemaAST from 'effect/SchemaAST';
 export type RelationTypeIdInfo = {
   typeId: string;
   propertyName: string;
+  children?: RelationTypeIdInfo[];
 };
 
 export const getRelationTypeIds = (
@@ -27,18 +28,24 @@ export const getRelationTypeIds = (
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
     if (Option.isSome(result) && include?.[String(prop.name)]) {
       relationTypeIdsLevel1.push(result.value);
-      relationInfoLevel1.push({ typeId: result.value, propertyName: String(prop.name) });
+
+      const level1Info: RelationTypeIdInfo = { typeId: result.value, propertyName: String(prop.name) };
+      const nestedRelations: RelationTypeIdInfo[] = [];
+
       if (!SchemaAST.isTupleType(prop.type)) {
+        relationInfoLevel1.push(level1Info);
         continue;
       }
       const relationTransformation = prop.type.rest[0]?.type;
       if (!relationTransformation || !SchemaAST.isTypeLiteral(relationTransformation)) {
+        relationInfoLevel1.push(level1Info);
         continue;
       }
       const typeIds2: string[] = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(
         relationTransformation,
       ).pipe(Option.getOrElse(() => []));
       if (typeIds2.length === 0) {
+        relationInfoLevel1.push(level1Info);
         continue;
       }
       for (const nestedProp of relationTransformation.propertySignatures) {
@@ -47,9 +54,18 @@ export const getRelationTypeIds = (
         const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
         if (Option.isSome(nestedResult) && include?.[String(prop.name)]?.[String(nestedProp.name)]) {
           relationTypeIdsLevel2.push(nestedResult.value);
-          relationInfoLevel2.push({ typeId: nestedResult.value, propertyName: String(nestedProp.name) });
+          const nestedInfo: RelationTypeIdInfo = {
+            typeId: nestedResult.value,
+            propertyName: String(nestedProp.name),
+          };
+          nestedRelations.push(nestedInfo);
+          relationInfoLevel2.push(nestedInfo);
         }
       }
+      if (nestedRelations.length > 0) {
+        level1Info.children = nestedRelations;
+      }
+      relationInfoLevel1.push(level1Info);
     }
   }
 

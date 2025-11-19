@@ -70,27 +70,21 @@ const buildLevel2RelationsFragment = (relationInfoLevel2: RelationTypeIdInfo[]) 
 };
 
 // Build level 1 relations fragment
-const buildLevel1RelationsFragment = (
-  relationInfoLevel1: RelationTypeIdInfo[],
-  relationInfoLevel2: RelationTypeIdInfo[],
-) => {
+const buildLevel1RelationsFragment = (relationInfoLevel1: RelationTypeIdInfo[]) => {
   if (relationInfoLevel1.length === 0) return '';
 
-  const level2Fragment = buildLevel2RelationsFragment(relationInfoLevel2);
   return relationInfoLevel1
     .map((info) => {
+      const level2Fragment = buildLevel2RelationsFragment(info.children ?? []);
       const fragment = buildRelationsListFragment(info.typeId, 1);
       return fragment.replace('__LEVEL2_RELATIONS__', level2Fragment);
     })
     .join('\n');
 };
 
-const buildEntitiesQuery = (
-  relationInfoLevel1: RelationTypeIdInfo[],
-  relationInfoLevel2: RelationTypeIdInfo[],
-  useOrderBy: boolean,
-) => {
-  const level1Relations = buildLevel1RelationsFragment(relationInfoLevel1, relationInfoLevel2);
+const buildEntitiesQuery = (relationInfoLevel1: RelationTypeIdInfo[], useOrderBy: boolean) => {
+  const level1Relations = buildLevel1RelationsFragment(relationInfoLevel1);
+  console.log('level1Relations', level1Relations);
 
   const queryName = useOrderBy ? 'entitiesOrderedByProperty' : 'entities';
   const orderByParams = useOrderBy ? '$propertyId: UUID!, $sortDirection: SortOrder!, ' : '';
@@ -272,7 +266,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   }
 
   // Build the query dynamically with aliases for each relation type ID
-  const queryDocument = buildEntitiesQuery(relationTypeIds.infoLevel1, relationTypeIds.infoLevel2, Boolean(orderBy));
+  const queryDocument = buildEntitiesQuery(relationTypeIds.infoLevel1, Boolean(orderBy));
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
