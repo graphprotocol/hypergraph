@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.8.7
+### Patch Changes
+
+- 7ed329b: fix resolving optional values in a Relation Entity
+- Updated dependencies [7ed329b]
+  - @graphprotocol/hypergraph@0.8.7
+
 ## 0.8.6
 ### Patch Changes
 
