@@ -1,4 +1,4 @@
-import { Constants, Entity, Utils } from '@graphprotocol/hypergraph';
+import { Constants, Entity } from '@graphprotocol/hypergraph';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
@@ -18,15 +18,12 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
 
-  // constructing the relation type ids for the query
-  const relationTypeIds = Utils.getRelationTypeIds(type, include);
-
   const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
   );
 
   const result = useQueryTanstack({
-    queryKey: ['hypergraph-public-entity', id, typeIds, space, relationTypeIds.level1, relationTypeIds.level2, include],
+    queryKey: ['hypergraph-public-entity', id, typeIds, space, include],
     queryFn: async () => {
       return Entity.findOnePublic(type, {
         id,

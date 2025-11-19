@@ -15,8 +15,6 @@ export const getRelationTypeIds = (
     | { [K in keyof Schema.Schema.Type<Schema.Schema.AnyNoContext>]?: Record<string, Record<string, never>> }
     | undefined,
 ) => {
-  const relationTypeIdsLevel1: string[] = [];
-  const relationTypeIdsLevel2: string[] = [];
   const relationInfoLevel1: RelationTypeIdInfo[] = [];
   const relationInfoLevel2: RelationTypeIdInfo[] = [];
 
@@ -27,8 +25,6 @@ export const getRelationTypeIds = (
 
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
     if (Option.isSome(result) && include?.[String(prop.name)]) {
-      relationTypeIdsLevel1.push(result.value);
-
       const level1Info: RelationTypeIdInfo = { typeId: result.value, propertyName: String(prop.name) };
       const nestedRelations: RelationTypeIdInfo[] = [];
 
@@ -53,7 +49,6 @@ export const getRelationTypeIds = (
 
         const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
         if (Option.isSome(nestedResult) && include?.[String(prop.name)]?.[String(nestedProp.name)]) {
-          relationTypeIdsLevel2.push(nestedResult.value);
           const nestedInfo: RelationTypeIdInfo = {
             typeId: nestedResult.value,
             propertyName: String(nestedProp.name),
@@ -70,8 +65,6 @@ export const getRelationTypeIds = (
   }
 
   return {
-    level1: relationTypeIdsLevel1,
-    level2: relationTypeIdsLevel2,
     infoLevel1: relationInfoLevel1,
     infoLevel2: relationInfoLevel2,
   };
