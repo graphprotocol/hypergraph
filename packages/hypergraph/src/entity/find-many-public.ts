@@ -84,7 +84,6 @@ const buildLevel1RelationsFragment = (relationInfoLevel1: RelationTypeIdInfo[]) 
 
 const buildEntitiesQuery = (relationInfoLevel1: RelationTypeIdInfo[], useOrderBy: boolean) => {
   const level1Relations = buildLevel1RelationsFragment(relationInfoLevel1);
-  console.log('level1Relations', level1Relations);
 
   const queryName = useOrderBy ? 'entitiesOrderedByProperty' : 'entities';
   const orderByParams = useOrderBy ? '$propertyId: UUID!, $sortDirection: SortOrder!, ' : '';

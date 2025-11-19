@@ -22,6 +22,19 @@ function RouteComponent() {
   //   }, 1000);
   // }, []);
 
+  // const { data: podcast } = useEntity(Podcast, {
+  //   id: 'f5d27d3e-3a51-452d-bac2-702574381633',
+  //   mode: 'public',
+  //   space: space,
+  //   include: {
+  //     listenOn: {},
+  //     hosts: {
+  //       avatar: {},
+  //     },
+  //   },
+  // });
+  // console.log({ podcast });
+
   const { data, isLoading, isError } = useEntities(Podcast, {
     mode: 'public',
     first: 100,
