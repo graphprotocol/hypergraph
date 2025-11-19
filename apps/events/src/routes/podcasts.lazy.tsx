@@ -17,7 +17,7 @@ function RouteComponent() {
         id: 'f5d27d3e-3a51-452d-bac2-702574381633',
         space: space,
         include: {
-          projects: {},
+          listenOn: {},
         },
       });
       console.log('findOnePublic result:', result);
@@ -29,7 +29,7 @@ function RouteComponent() {
     first: 100,
     space: space,
     include: {
-      projects: {},
+      listenOn: {},
     },
     orderBy: { property: 'dateFounded', direction: 'asc' },
     backlinksTotalCountsTypeId1: '972d201a-d780-4568-9e01-543f67b26bee',
@@ -45,15 +45,14 @@ function RouteComponent() {
           <h2>
             {podcast.backlinksTotalCountsTypeId1} - {podcast.dateFounded.toISOString()} {podcast.name} - {podcast.id}
           </h2>
-          {podcast.projects.map((project) => (
-            <div key={project._relation.id}>
-              <h3>- {project.name}</h3>
-              <div>--{project._relation.website}</div>
+          {podcast.listenOn.map((listenOn) => (
+            <div key={listenOn._relation.id}>
+              <h3>- {listenOn.name}</h3>
+              <div>--{listenOn._relation.website}</div>
             </div>
           ))}
         </div>
       ))}
-      <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>
     </>
   );
 }

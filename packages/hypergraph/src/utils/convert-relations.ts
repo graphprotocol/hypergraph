@@ -84,13 +84,18 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
           };
 
           for (const nestedProp of relationTransformation.propertySignatures) {
-            const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
+            const propType =
+              nestedProp.isOptional && SchemaAST.isUnion(nestedProp.type)
+                ? (nestedProp.type.types.find((member) => !SchemaAST.isUndefinedKeyword(member)) ?? nestedProp.type)
+                : nestedProp.type;
+
+            const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(propType);
             if (Option.isSome(nestedResult)) {
               const value = relationEntry.toEntity.valuesList?.find((a) => a.propertyId === nestedResult.value);
               if (!value) {
                 continue;
               }
-              const rawValue = convertPropertyValue(value, nestedProp.type);
+              const rawValue = convertPropertyValue(value, propType);
               if (rawValue) {
                 nestedRawEntity[String(nestedProp.name)] = rawValue;
               }
