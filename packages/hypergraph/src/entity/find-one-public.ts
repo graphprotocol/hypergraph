@@ -108,12 +108,12 @@ export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
 
-  const queryDocument = buildEntityQuery(relationTypeIds.infoLevel1);
+  const queryDocument = buildEntityQuery(relationTypeIds);
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
     id,
     spaceId: space,
   });
 
-  return parseResult(result, type, relationTypeIds.infoLevel1);
+  return parseResult(result, type, relationTypeIds);
 };

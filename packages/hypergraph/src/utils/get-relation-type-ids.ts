@@ -15,8 +15,7 @@ export const getRelationTypeIds = (
     | { [K in keyof Schema.Schema.Type<Schema.Schema.AnyNoContext>]?: Record<string, Record<string, never>> }
     | undefined,
 ) => {
-  const relationInfoLevel1: RelationTypeIdInfo[] = [];
-  const relationInfoLevel2: RelationTypeIdInfo[] = [];
+  const relationInfo: RelationTypeIdInfo[] = [];
 
   const ast = type.ast as SchemaAST.TypeLiteral;
 
@@ -29,19 +28,19 @@ export const getRelationTypeIds = (
       const nestedRelations: RelationTypeIdInfo[] = [];
 
       if (!SchemaAST.isTupleType(prop.type)) {
-        relationInfoLevel1.push(level1Info);
+        relationInfo.push(level1Info);
         continue;
       }
       const relationTransformation = prop.type.rest[0]?.type;
       if (!relationTransformation || !SchemaAST.isTypeLiteral(relationTransformation)) {
-        relationInfoLevel1.push(level1Info);
+        relationInfo.push(level1Info);
         continue;
       }
       const typeIds2: string[] = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(
         relationTransformation,
       ).pipe(Option.getOrElse(() => []));
       if (typeIds2.length === 0) {
-        relationInfoLevel1.push(level1Info);
+        relationInfo.push(level1Info);
         continue;
       }
       for (const nestedProp of relationTransformation.propertySignatures) {
@@ -54,18 +53,14 @@ export const getRelationTypeIds = (
             propertyName: String(nestedProp.name),
           };
           nestedRelations.push(nestedInfo);
-          relationInfoLevel2.push(nestedInfo);
         }
       }
       if (nestedRelations.length > 0) {
         level1Info.children = nestedRelations;
       }
-      relationInfoLevel1.push(level1Info);
+      relationInfo.push(level1Info);
     }
   }
 
-  return {
-    infoLevel1: relationInfoLevel1,
-    infoLevel2: relationInfoLevel2,
-  };
+  return relationInfo;
 };

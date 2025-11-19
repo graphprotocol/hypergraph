@@ -61,7 +61,7 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     Option.getOrElse(() => []),
   );
 
-  const queryDocument = buildSearchQuery(relationTypeIds.infoLevel1);
+  const queryDocument = buildSearchQuery(relationTypeIds);
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
@@ -76,6 +76,6 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
 
   console.log('searchManyPublic result:', result);
 
-  const { data, invalidEntities } = parseResult(result, type, relationTypeIds.infoLevel1);
+  const { data, invalidEntities } = parseResult(result, type, relationTypeIds);
   return { data, invalidEntities };
 };

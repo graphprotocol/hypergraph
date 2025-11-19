@@ -206,7 +206,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   }
 
   // Build the query dynamically with aliases for each relation type ID
-  const queryDocument = buildEntitiesQuery(relationTypeIds.infoLevel1, Boolean(orderBy));
+  const queryDocument = buildEntitiesQuery(relationTypeIds, Boolean(orderBy));
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
@@ -232,6 +232,6 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);
 
-  const { data, invalidEntities } = parseResult(result, type, relationTypeIds.infoLevel1);
+  const { data, invalidEntities } = parseResult(result, type, relationTypeIds);
   return { data, invalidEntities };
 };
