@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.8.9
+### Patch Changes
+
+- 5ea0ad9: extend filter capability to check for existing relation e.g. `filter: { cover: { exists: true } }`
+
 ## 0.8.8
 ### Patch Changes
 
