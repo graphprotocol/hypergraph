@@ -64,23 +64,34 @@ export type CrossFieldFilter<T> = {
   not?: CrossFieldFilter<T>;
 };
 
+type RelationExistsFilter<T> = [T] extends [readonly unknown[] | undefined]
+  ? {
+      exists?: boolean;
+    }
+  : Record<never, never>;
+
+type ScalarFieldFilter<T> = [T] extends [readonly unknown[] | undefined]
+  ? Record<never, never>
+  : T extends boolean
+    ? {
+        is?: boolean;
+      }
+    : T extends number
+      ? {
+          greaterThan?: number;
+          lessThan?: number;
+        }
+      : T extends string
+        ? {
+            startsWith?: string;
+            endsWith?: string;
+            contains?: string;
+          }
+        : Record<string, never>;
+
 export type EntityFieldFilter<T> = {
   is?: T;
-} & (T extends boolean
-  ? {
-      is?: boolean;
-    }
-  : T extends number
-    ? {
-        greaterThan?: number;
-        lessThan?: number;
-      }
-    : T extends string
-      ? {
-          startsWith?: string;
-          endsWith?: string;
-          contains?: string;
-        }
-      : Record<string, never>);
+} & RelationExistsFilter<T> &
+  ScalarFieldFilter<T>;
 
 export type EntityFilter<T> = CrossFieldFilter<T>;

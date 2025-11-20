@@ -127,8 +127,6 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
       ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1),
     };
 
-    console.log('rawEntity', rawEntity);
-
     const decodeResult = decode({
       ...rawEntity,
       __deleted: false,
