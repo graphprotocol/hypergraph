@@ -3,7 +3,7 @@ import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 
-export type RelationListField = 'relationsList' | 'backlinksList';
+export type RelationListField = 'relations' | 'backlinks';
 
 export type RelationTypeIdInfo = {
   typeId: string;
@@ -30,7 +30,7 @@ export const getRelationTypeIds = (
       const isBacklink = SchemaAST.getAnnotation<boolean>(Constants.RelationBacklinkSymbol)(prop.type).pipe(
         Option.getOrElse(() => false),
       );
-      const listField: RelationListField = isBacklink ? 'backlinksList' : 'relationsList';
+      const listField: RelationListField = isBacklink ? 'backlinks' : 'relations';
       const level1Info: RelationTypeIdInfo = {
         typeId: result.value,
         propertyName: String(prop.name),
@@ -62,7 +62,7 @@ export const getRelationTypeIds = (
           const nestedIsBacklink = SchemaAST.getAnnotation<boolean>(Constants.RelationBacklinkSymbol)(
             nestedProp.type,
           ).pipe(Option.getOrElse(() => false));
-          const nestedListField: RelationListField = nestedIsBacklink ? 'backlinksList' : 'relationsList';
+          const nestedListField: RelationListField = nestedIsBacklink ? 'backlinks' : 'relations';
           const nestedInfo: RelationTypeIdInfo = {
             typeId: nestedResult.value,
             propertyName: String(nestedProp.name),

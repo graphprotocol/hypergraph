@@ -1,43 +1,46 @@
 import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
 
-export const getRelationAlias = (typeId: string) => `relationsList_${typeId.replace(/-/g, '_')}`;
+export const getRelationAlias = (typeId: string) => `relations_${typeId.replace(/-/g, '_')}`;
 
 const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2) => {
   const alias = getRelationAlias(info.typeId);
   const nestedPlaceholder = level === 1 ? '__LEVEL2_RELATIONS__' : '';
-  const listField = info.listField ?? 'relationsList';
-  const toEntityField = listField === 'backlinksList' ? 'fromEntity' : 'toEntity';
+  const listField = info.listField ?? 'relations';
+  const connectionField = listField === 'backlinks' ? 'backlinks' : 'relations';
+  const toEntityField = listField === 'backlinks' ? 'fromEntity' : 'toEntity';
   const toEntitySelectionHeader = toEntityField === 'toEntity' ? 'toEntity' : `toEntity: ${toEntityField}`;
 
   return `
-    ${alias}: ${listField}(
+    ${alias}: ${connectionField}(
       filter: {spaceId: {is: $spaceId}, typeId: {is: "${info.typeId}"}},
     ) {
-      id
-      entity {
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
-        }
-      }
-      ${toEntitySelectionHeader} {
+      nodes {
         id
-        name
-        valuesList(filter: {spaceId: {is: $spaceId}}) {
-          propertyId
-          string
-          boolean
-          number
-          time
-          point
+        entity {
+          valuesList(filter: {spaceId: {is: $spaceId}}) {
+            propertyId
+            string
+            boolean
+            number
+            time
+            point
+          }
         }
-        ${nestedPlaceholder}
+        ${toEntitySelectionHeader} {
+          id
+          name
+          valuesList(filter: {spaceId: {is: $spaceId}}) {
+            propertyId
+            string
+            boolean
+            number
+            time
+            point
+          }
+          ${nestedPlaceholder}
+        }
+        typeId
       }
-      typeId
     }`;
 };
 

@@ -5,6 +5,7 @@ import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { request } from 'graphql-request';
+import type { RelationsListWithNodes } from '../utils/convert-relations.js';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 
@@ -68,26 +69,6 @@ type ValuesList = {
   point: string;
 }[];
 
-type RelationsListItem = {
-  id: string;
-  entity: {
-    valuesList: ValuesList;
-  };
-  toEntity: {
-    id: string;
-    name: string;
-    valuesList: ValuesList;
-  } & {
-    // For nested aliased relationsList_* fields at level 2
-    [K: `relationsList_${string}`]: RelationsListWithTotalCount;
-  };
-  typeId: string;
-};
-
-type RelationsListWithTotalCount = {
-  totalCount: number;
-} & RelationsListItem[];
-
 export type EntityQueryResult = {
   entities: ({
     id: string;
@@ -97,8 +78,8 @@ export type EntityQueryResult = {
       totalCount: number;
     } | null;
   } & {
-    // For aliased relationsList_* fields - provides proper typing with totalCount
-    [K: `relationsList_${string}`]: RelationsListWithTotalCount;
+    // For aliased relations_* fields - provides proper typing with totalCount
+    [K: `relations_${string}`]: RelationsListWithNodes | undefined;
   })[];
 };
 
