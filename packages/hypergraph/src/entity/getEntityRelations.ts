@@ -5,27 +5,32 @@ import { PropertyIdSymbol, RelationSchemaSymbol } from '../constants.js';
 import { isRelation } from '../utils/isRelation.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import { decodeFromGrc20Json } from './schema.js';
-import type { DocumentContent, Entity } from './types.js';
+import type { DocumentContent, Entity, EntityInclude } from './types.js';
 
 export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(
   entityId: string,
   type: S,
   doc: DocumentContent,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
+  include: EntityInclude<S> | undefined,
 ) => {
-  const relations: Record<string, Entity<Schema.Schema.AnyNoContext>> = {};
+  const relations: Record<string, unknown> = {};
   const ast = type.ast as SchemaAST.TypeLiteral;
 
   for (const prop of ast.propertySignatures) {
     if (!isRelation(prop.type)) continue;
 
     const fieldName = String(prop.name);
-    if (!include?.[fieldName]) {
+    const includeNodes = Boolean(include?.[fieldName]);
+    const includeTotalCount = Boolean(include?.[`${fieldName}TotalCount`]);
+
+    if (!includeNodes && !includeTotalCount) {
       relations[fieldName] = [];
       continue;
     }
 
     const relationEntities: Array<Entity<Schema.Schema.AnyNoContext>> = [];
+
+    let relationCount = 0;
 
     for (const [relationId, relation] of Object.entries(doc.relations ?? {})) {
       const result = SchemaAST.getAnnotation<string>(PropertyIdSymbol)(prop.type);
@@ -38,10 +43,16 @@ export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(
         const decodedRelationEntity = { ...decodeFromGrc20Json(schema.value, { ...relationEntity, id: relation.to }) };
         if (!hasValidTypesProperty(relationEntity)) continue;
 
-        relationEntities.push({ ...decodedRelationEntity, id: relation.to, _relation: { id: relationId } });
+        relationCount += 1;
+        if (includeNodes) {
+          relationEntities.push({ ...decodedRelationEntity, id: relation.to, _relation: { id: relationId } });
+        }
       }
     }
-    relations[String(prop.name)] = relationEntities;
+    relations[String(prop.name)] = includeNodes ? relationEntities : [];
+    if (includeTotalCount) {
+      relations[`${fieldName}TotalCount`] = relationCount;
+    }
   }
 
   return relations;

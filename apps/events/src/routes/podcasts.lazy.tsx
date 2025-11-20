@@ -44,8 +44,11 @@ function RouteComponent() {
       listenOn: {},
       hosts: {
         avatar: {},
+        avatarTotalCount: true,
       },
+      hostsTotalCount: true,
       episodes: {},
+      episodesTotalCount: true,
     },
     orderBy: { property: 'dateFounded', direction: 'asc' },
     backlinksTotalCountsTypeId1: '972d201a-d780-4568-9e01-543f67b26bee',
@@ -67,6 +70,8 @@ function RouteComponent() {
               <div>--{listenOn._relation.website}</div>
             </div>
           ))}
+          <div>Total hosts: {podcast.hostsTotalCount ?? 0}</div>
+          <div>Total episodes: {podcast.episodesTotalCount ?? 0}</div>
         </div>
       ))}
     </>

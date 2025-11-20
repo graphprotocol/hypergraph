@@ -29,6 +29,16 @@ type RelationOptions<RP extends RelationPropertiesDefinition> = RelationOptionsB
   properties: RP;
 };
 
+export const relationSchemaBrand = '__hypergraphRelationSchema' as const;
+type RelationSchemaMarker = {
+  readonly [relationSchemaBrand]: true;
+};
+
+export const relationBuilderBrand = '__hypergraphRelationBuilder' as const;
+type RelationBuilderMarker = {
+  readonly [relationBuilderBrand]: true;
+};
+
 const hasRelationProperties = (
   options: RelationOptionsBase | RelationOptions<RelationPropertiesDefinition> | undefined,
 ): options is RelationOptions<RelationPropertiesDefinition> => {
@@ -66,6 +76,32 @@ type RelationMetadata<RP extends RelationPropertiesDefinition | undefined> = {
 type RelationMetadataEncoded<RP extends RelationPropertiesDefinition | undefined> = {
   readonly id: string;
 } & RelationPropertyEncoded<RP>;
+
+type RelationSchema<
+  S extends Schema.Schema.AnyNoContext,
+  RP extends RelationPropertiesDefinition | undefined = undefined,
+> = Schema.Schema<
+  readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<RP> })[],
+  readonly (Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: RelationMetadataEncoded<RP> })[],
+  never
+> &
+  RelationSchemaMarker;
+
+type RelationSchemaBuilder<
+  S extends Schema.Schema.AnyNoContext,
+  RP extends RelationPropertiesDefinition | undefined = undefined,
+> = ((mapping: RelationMappingInput<RP>) => RelationSchema<S, RP>) & RelationBuilderMarker;
+
+export type AnyRelationSchema =
+  // biome-ignore lint/suspicious/noExplicitAny: relation schema branding requires broad typing
+  | (Schema.Schema<any, any, any> & RelationSchemaMarker)
+  // biome-ignore lint/suspicious/noExplicitAny: relation schema branding requires broad typing
+  | (Schema.PropertySignature<any, any, any, any, any, any, any> & RelationSchemaMarker);
+
+export type AnyRelationBuilder = RelationSchemaBuilder<
+  Schema.Schema.AnyNoContext,
+  RelationPropertiesDefinition | undefined
+>;
 
 /**
  * Creates a String schema with the specified GRC-20 property ID
@@ -111,24 +147,11 @@ export const Point = (propertyId: string) =>
 export function Relation<S extends Schema.Schema.AnyNoContext>(
   schema: S,
   options?: RelationOptionsBase,
-): (mapping: RelationMappingInput<undefined>) => Schema.Schema<
-  readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<undefined> })[],
-  readonly (Schema.Schema.Encoded<S> & {
-    readonly id: string;
-    readonly _relation: RelationMetadataEncoded<undefined>;
-  })[],
-  never
->;
+): RelationSchemaBuilder<S, undefined>;
 export function Relation<S extends Schema.Schema.AnyNoContext, RP extends RelationPropertiesDefinition>(
   schema: S,
   options: RelationOptions<RP>,
-): (
-  mapping: RelationMappingInput<RP>,
-) => Schema.Schema<
-  readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<RP> })[],
-  readonly (Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: RelationMetadataEncoded<RP> })[],
-  never
->;
+): RelationSchemaBuilder<S, RP>;
 export function Relation<
   S extends Schema.Schema.AnyNoContext,
   RP extends RelationPropertiesDefinition | undefined = undefined,
@@ -191,7 +214,7 @@ export function Relation<
 
     const isBacklinkRelation = !!normalizedOptions?.backlink;
 
-    return Schema.Array(schemaWithId).pipe(
+    const relationSchema = Schema.Array(schemaWithId).pipe(
       Schema.annotations({
         [PropertyIdSymbol]: propertyId,
         [RelationSchemaSymbol]: schema,
@@ -199,11 +222,15 @@ export function Relation<
         [PropertyTypeSymbol]: 'relation',
         [RelationBacklinkSymbol]: isBacklinkRelation,
       }),
-    ) as Schema.Schema<
-      readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<RP> })[],
-      readonly (Schema.Schema.Encoded<S> & { readonly id: string; readonly _relation: RelationMetadataEncoded<RP> })[],
-      never
-    >;
+    );
+
+    Object.defineProperty(relationSchema, relationSchemaBrand, {
+      value: true,
+      enumerable: false,
+      configurable: false,
+    });
+
+    return relationSchema as unknown as RelationSchema<S, RP>;
   };
 }
 
@@ -222,5 +249,13 @@ export const optional =
   <S extends Schema.Schema.AnyNoContext>(schemaFn: (propertyId: string) => S) =>
   (propertyId: string) => {
     const innerSchema = schemaFn(propertyId);
-    return Schema.optional(innerSchema);
+    const optionalSchema = Schema.optional(innerSchema);
+    if (relationSchemaBrand in (innerSchema as object)) {
+      Object.defineProperty(optionalSchema, relationSchemaBrand, {
+        value: true,
+        enumerable: false,
+        configurable: false,
+      });
+    }
+    return optionalSchema as typeof optionalSchema & RelationSchemaMarker;
   };

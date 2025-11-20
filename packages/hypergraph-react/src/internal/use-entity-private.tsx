@@ -10,7 +10,7 @@ export function useEntityPrivate<const S extends Schema.Schema.AnyNoContext>(
     id: string | Id;
     enabled?: boolean;
     space?: string;
-    include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
+    include?: Entity.EntityInclude<S> | undefined;
   },
 ) {
   const { space: spaceFromContext } = useHypergraphSpaceInternal();

@@ -24,9 +24,10 @@ type RelationsListItem = {
   typeId: string;
 };
 
-type RelationsListWithTotalCount = {
-  totalCount: number;
-} & RelationsListItem[];
+export type RelationsListWithNodes = {
+  nodes?: RelationsListItem[];
+  totalCount?: number;
+};
 
 // A recursive representation of the entity structure returned by the public GraphQL
 // endpoint. `values` and `relations` are optional because the nested `to` selections
@@ -36,16 +37,15 @@ type RecursiveQueryEntity = {
   id: string;
   name: string;
   valuesList?: ValueList;
-  relationsList?: RelationsListItem[];
+  relations?: RelationsListItem[];
 } & {
-  // For aliased relationsList_* fields with proper typing
-  [K: `relationsList_${string}`]: RelationsListWithTotalCount;
+  // For aliased relations_* fields with proper typing
+  [K: `relations_${string}`]: RelationsListWithNodes | undefined;
 };
 
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
 type RawEntity = Record<string, RawEntityValue>;
 type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, RawEntityValue> };
-
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   ast: SchemaAST.TypeLiteral,
@@ -81,17 +81,16 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
       );
 
       // Get relations from aliased field if we have relationInfo for this property, otherwise fallback to old behavior
-      let allRelationsWithTheCorrectPropertyTypeId: RecursiveQueryEntity['relationsList'];
+      let allRelationsWithTheCorrectPropertyTypeId: RelationsListItem[] | undefined;
+      let relationConnection: RelationsListWithNodes | undefined;
 
       if (relationMetadata) {
         // Use the aliased field to get relations for this specific type ID
         const alias = getRelationAlias(result.value);
-        allRelationsWithTheCorrectPropertyTypeId = queryEntity[
-          alias as keyof RecursiveQueryEntity
-        ] as RecursiveQueryEntity['relationsList'];
-      } else {
-        // Fallback to old behavior (filtering from a single relationsList)
-        allRelationsWithTheCorrectPropertyTypeId = queryEntity.relationsList?.filter((a) => a.typeId === result.value);
+        relationConnection = queryEntity[alias as keyof RecursiveQueryEntity] as RelationsListWithNodes | undefined;
+        if (relationMetadata.includeNodes) {
+          allRelationsWithTheCorrectPropertyTypeId = relationConnection?.nodes;
+        }
       }
 
       if (allRelationsWithTheCorrectPropertyTypeId) {
@@ -160,6 +159,10 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
           // TODO: in the end every entry should be validated using the Schema?!?
           rawEntity[String(prop.name)] = [...(rawEntity[String(prop.name)] as unknown[]), nestedRawEntity];
         }
+      }
+
+      if (relationMetadata?.includeTotalCount) {
+        rawEntity[`${String(prop.name)}TotalCount`] = relationConnection?.totalCount ?? 0;
       }
     }
   }
