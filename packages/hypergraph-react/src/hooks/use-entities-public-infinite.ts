@@ -1,4 +1,4 @@
-import { Constants, Entity, Utils } from '@graphprotocol/hypergraph';
+import { Constants, Entity } from '@graphprotocol/hypergraph';
 import { useInfiniteQuery as useInfiniteQueryTanstack } from '@tanstack/react-query';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
@@ -13,24 +13,12 @@ export const useEntitiesPublicInfinite = <S extends Schema.Schema.AnyNoContext>(
   const { enabled = true, filter, include, space: spaceFromParams, first = 2, offset = 0 } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
-
-  // constructing the relation type ids for the query
-  const relationTypeIds = Utils.getRelationTypeIds(type, include);
-
   const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
   );
 
   const result = useInfiniteQueryTanstack({
-    queryKey: [
-      'hypergraph-public-entities',
-      space,
-      typeIds,
-      relationTypeIds.level1,
-      relationTypeIds.level2,
-      filter,
-      'infinite',
-    ],
+    queryKey: ['hypergraph-public-entities', space, typeIds, include, filter, 'infinite'],
     queryFn: async ({ pageParam }) => {
       return Entity.findManyPublic(type, { filter, include, space, first, offset: pageParam });
     },

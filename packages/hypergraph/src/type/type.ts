@@ -4,6 +4,7 @@ import * as SchemaAST from 'effect/SchemaAST';
 import {
   PropertyIdSymbol,
   PropertyTypeSymbol,
+  RelationBacklinkSymbol,
   RelationPropertiesSymbol,
   RelationSchemaSymbol,
   RelationSymbol,
@@ -20,8 +21,19 @@ type SchemaBuilder = (propertyId: any) => SchemaBuilderReturn;
 
 type RelationPropertiesDefinition = Record<string, SchemaBuilder>;
 
-type RelationOptions<RP extends RelationPropertiesDefinition> = {
+type RelationOptionsBase = {
+  backlink?: boolean;
+};
+
+type RelationOptions<RP extends RelationPropertiesDefinition> = RelationOptionsBase & {
   properties: RP;
+};
+
+const hasRelationProperties = (
+  options: RelationOptionsBase | RelationOptions<RelationPropertiesDefinition> | undefined,
+): options is RelationOptions<RelationPropertiesDefinition> => {
+  if (!options) return false;
+  return 'properties' in options;
 };
 
 type RelationMappingInput<RP extends RelationPropertiesDefinition | undefined> = RP extends RelationPropertiesDefinition
@@ -98,6 +110,7 @@ export const Point = (propertyId: string) =>
 
 export function Relation<S extends Schema.Schema.AnyNoContext>(
   schema: S,
+  options?: RelationOptionsBase,
 ): (mapping: RelationMappingInput<undefined>) => Schema.Schema<
   readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<undefined> })[],
   readonly (Schema.Schema.Encoded<S> & {
@@ -120,7 +133,7 @@ export function Relation<
   S extends Schema.Schema.AnyNoContext,
   RP extends RelationPropertiesDefinition | undefined = undefined,
   // biome-ignore lint/suspicious/noExplicitAny: implementation signature for overloads must use any
->(schema: S, options?: RP extends RelationPropertiesDefinition ? RelationOptions<RP> : undefined): any {
+>(schema: S, options?: RP extends RelationPropertiesDefinition ? RelationOptions<RP> : RelationOptionsBase): any {
   return (mapping: RelationMappingInput<RP>) => {
     const { propertyId, relationPropertyIds } =
       typeof mapping === 'string'
@@ -135,8 +148,15 @@ export function Relation<
 
     const relationEntityPropertiesSchemas: Record<string, SchemaBuilderReturn> = {};
 
-    if (options?.properties) {
-      for (const [key, schemaType] of Object.entries(options.properties)) {
+    const normalizedOptions = options as
+      | RelationOptionsBase
+      | RelationOptions<RelationPropertiesDefinition>
+      | undefined;
+
+    const relationProperties = hasRelationProperties(normalizedOptions) ? normalizedOptions.properties : undefined;
+
+    if (relationProperties) {
+      for (const [key, schemaType] of Object.entries(relationProperties)) {
         const propertyMapping = relationPropertyIds?.[key];
         relationEntityPropertiesSchemas[key] = schemaType(propertyMapping);
       }
@@ -169,12 +189,15 @@ export function Relation<
       never
     >;
 
+    const isBacklinkRelation = !!normalizedOptions?.backlink;
+
     return Schema.Array(schemaWithId).pipe(
       Schema.annotations({
         [PropertyIdSymbol]: propertyId,
         [RelationSchemaSymbol]: schema,
         [RelationSymbol]: true,
         [PropertyTypeSymbol]: 'relation',
+        [RelationBacklinkSymbol]: isBacklinkRelation,
       }),
     ) as Schema.Schema<
       readonly (Schema.Schema.Type<S> & { readonly id: string; readonly _relation: RelationMetadata<RP> })[],
@@ -182,6 +205,17 @@ export function Relation<
       never
     >;
   };
+}
+
+export function Backlink<
+  S extends Schema.Schema.AnyNoContext,
+  RP extends RelationPropertiesDefinition | undefined = undefined,
+>(schema: S, options?: RP extends RelationPropertiesDefinition ? RelationOptions<RP> : RelationOptionsBase) {
+  const normalizedOptions = {
+    ...(options ?? {}),
+    backlink: true,
+  } as RP extends RelationPropertiesDefinition ? RelationOptions<RP> : RelationOptionsBase;
+  return Relation(schema, normalizedOptions);
 }
 
 export const optional =
