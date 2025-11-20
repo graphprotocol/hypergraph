@@ -29,12 +29,12 @@ type RelationOptions<RP extends RelationPropertiesDefinition> = RelationOptionsB
   properties: RP;
 };
 
-export const relationSchemaBrand: unique symbol = Symbol('RelationSchema');
+export const relationSchemaBrand = '__hypergraphRelationSchema' as const;
 type RelationSchemaMarker = {
   readonly [relationSchemaBrand]: true;
 };
 
-export const relationBuilderBrand: unique symbol = Symbol('RelationBuilder');
+export const relationBuilderBrand = '__hypergraphRelationBuilder' as const;
 type RelationBuilderMarker = {
   readonly [relationBuilderBrand]: true;
 };
