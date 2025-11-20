@@ -108,7 +108,6 @@ export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: 
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
 
   const queryDocument = buildEntityQuery(relationTypeIds);
-  console.log({ queryDocument });
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
     id,

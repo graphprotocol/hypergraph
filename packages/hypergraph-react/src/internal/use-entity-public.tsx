@@ -34,5 +34,5 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
     enabled: enabled && !!id && !!space,
   });
 
-  return { ...result, data: result.data || null, invalidEntity: null };
+  return { ...result, data: result.data ?? null, invalidEntity: null };
 };

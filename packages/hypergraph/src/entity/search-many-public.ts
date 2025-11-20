@@ -74,8 +74,6 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     offset,
   });
 
-  console.log('searchManyPublic result:', result);
-
   const { data, invalidEntities } = parseResult(result, type, relationTypeIds);
   return { data, invalidEntities };
 };
