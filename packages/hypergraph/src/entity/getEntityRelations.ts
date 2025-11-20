@@ -13,7 +13,7 @@ export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(
   doc: DocumentContent,
   include: EntityInclude<S> | undefined,
 ) => {
-  const relations: Record<string, Entity<Schema.Schema.AnyNoContext>> = {};
+  const relations: Record<string, unknown> = {};
   const ast = type.ast as SchemaAST.TypeLiteral;
 
   for (const prop of ast.propertySignatures) {
@@ -49,15 +49,10 @@ export const getEntityRelations = <const S extends Schema.Schema.AnyNoContext>(
         }
       }
     }
-    const relationList = (includeNodes ? relationEntities : []) as Array<Entity<Schema.Schema.AnyNoContext>> & {
-      totalCount?: number;
-    };
-
+    relations[String(prop.name)] = includeNodes ? relationEntities : [];
     if (includeTotalCount) {
-      relationList.totalCount = relationCount;
+      relations[`${fieldName}TotalCount`] = relationCount;
     }
-
-    relations[String(prop.name)] = relationList;
   }
 
   return relations;

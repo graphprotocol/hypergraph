@@ -46,8 +46,6 @@ type RecursiveQueryEntity = {
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
 type RawEntity = Record<string, RawEntityValue>;
 type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, RawEntityValue> };
-type RelationArray = NestedRawEntity[] & { totalCount?: number };
-
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   ast: SchemaAST.TypeLiteral,
@@ -164,8 +162,7 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
       }
 
       if (relationMetadata?.includeTotalCount) {
-        const relationList = rawEntity[String(prop.name)] as RelationArray;
-        relationList.totalCount = relationConnection?.totalCount ?? 0;
+        rawEntity[`${String(prop.name)}TotalCount`] = relationConnection?.totalCount ?? 0;
       }
     }
   }

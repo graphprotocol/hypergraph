@@ -3,6 +3,8 @@ import * as Option from 'effect/Option';
 import * as EffectSchema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
+import type { AnyRelationSchema } from '../type/type.js';
+import { relationSchemaBrand } from '../type/type.js';
 
 /**
  * Entity function for creating schemas with a nicer API.
@@ -19,12 +21,25 @@ import { PropertyIdSymbol, TypeIdsSymbol } from '../constants.js';
  * });
  * ```
  */
+type SchemaBuilder = (
+  // biome-ignore lint/suspicious/noExplicitAny: property builders accept varied property ids
+  propertyId: any,
+  // biome-ignore lint/suspicious/noExplicitAny: property builders accept varied property ids
+) => EffectSchema.Schema<any, any, any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>;
+
+type RelationKeys<T extends Record<string, SchemaBuilder>> = {
+  [K in keyof T]: ReturnType<T[K]> extends AnyRelationSchema ? K : never;
+}[keyof T];
+
+const relationTotalCountSchema = EffectSchema.optional(EffectSchema.Number);
+type RelationTotalCountSchema = typeof relationTotalCountSchema;
+
+type RelationTotalCountFields<T extends Record<string, SchemaBuilder>> = {
+  [K in RelationKeys<T> as `${Extract<K, string>}TotalCount`]: RelationTotalCountSchema;
+};
+
 export function Schema<
-  const T extends Record<
-    string,
-    // biome-ignore lint/suspicious/noExplicitAny: any
-    (propertyId: any) => EffectSchema.Schema<any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>
-  >,
+  const T extends Record<string, SchemaBuilder>,
   const P extends {
     [K in keyof T]: Parameters<T[K]>[0];
   },
@@ -34,18 +49,26 @@ export function Schema<
     types: Array<string>;
     properties: P;
   },
-): EffectSchema.Struct<{
-  [K in keyof T]: ReturnType<T[K]> & { id: string };
-}> {
+): EffectSchema.Struct<
+  {
+    [K in keyof T]: ReturnType<T[K]> & { id: string };
+  } & RelationTotalCountFields<T>
+> {
   const properties: Record<
     string,
-    // biome-ignore lint/suspicious/noExplicitAny: any
-    EffectSchema.Schema<any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>
+    // biome-ignore lint/suspicious/noExplicitAny: schema map intentionally loose
+    EffectSchema.Schema<any, any, any> | EffectSchema.PropertySignature<any, any, any, any, any, any, any>
   > = {};
 
   for (const [key, schemaType] of Object.entries(schemaTypes)) {
     const propertyMapping = mapping.properties[key as keyof P];
-    properties[key] = schemaType(propertyMapping);
+    const builtSchema = schemaType(propertyMapping);
+    properties[key] = builtSchema;
+
+    if (relationSchemaBrand in (builtSchema as object)) {
+      const totalCountKey = `${key}TotalCount`;
+      properties[totalCountKey] = relationTotalCountSchema;
+    }
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: any

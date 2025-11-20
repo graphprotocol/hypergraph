@@ -6,8 +6,9 @@ export type RelationIncludeBranch = {
   [key: string]: RelationIncludeBranch | boolean | undefined;
 };
 
-export type EntityInclude<S extends Schema.Schema.AnyNoContext> = Partial<Record<SchemaKey<S>, RelationIncludeBranch>> &
-  Partial<Record<`${SchemaKey<S>}TotalCount`, boolean>>;
+export type EntityInclude<S extends Schema.Schema.AnyNoContext> = Partial<
+  Record<SchemaKey<S>, RelationIncludeBranch | boolean>
+>;
 
 export type Entity<S extends Schema.Schema.AnyNoContext> = Schema.Schema.Type<S> & {
   id: string;
