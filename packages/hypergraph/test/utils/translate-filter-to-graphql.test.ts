@@ -164,6 +164,7 @@ describe('translateFilterToGraphql number filters', () => {
 describe('translateFilterToGraphql relation filters', () => {
   it('should translate relation `exists` filter correctly', () => {
     const filter: TodoFilter = {
+      // @ts-expect-error - this is a test
       assignees: { exists: true },
     };
 
@@ -172,13 +173,7 @@ describe('translateFilterToGraphql relation filters', () => {
     expect(result).toEqual({
       relations: {
         some: {
-          toEntity: {
-            values: {
-              some: {
-                propertyId: { is: 'f399677c-2bf9-40c3-9622-815be7b83344' },
-              },
-            },
-          },
+          typeId: { is: 'f399677c-2bf9-40c3-9622-815be7b83344' },
         },
       },
     });
@@ -186,6 +181,7 @@ describe('translateFilterToGraphql relation filters', () => {
 
   it('should translate relation `exists: false` filter correctly', () => {
     const filter: TodoFilter = {
+      // @ts-expect-error - this is a test
       assignees: { exists: false },
     };
 
@@ -195,13 +191,7 @@ describe('translateFilterToGraphql relation filters', () => {
       not: {
         relations: {
           some: {
-            toEntity: {
-              values: {
-                some: {
-                  propertyId: { is: 'f399677c-2bf9-40c3-9622-815be7b83344' },
-                },
-              },
-            },
+            typeId: { is: 'f399677c-2bf9-40c3-9622-815be7b83344' },
           },
         },
       },
