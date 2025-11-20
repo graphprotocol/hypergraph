@@ -8,7 +8,7 @@ type QueryParams<S extends Schema.Schema.AnyNoContext> = {
   space?: string | undefined;
   enabled: boolean;
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
-  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
+  include?: Entity.EntityInclude<S> | undefined;
 };
 
 export function useEntitiesPrivate<const S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryParams<S>) {

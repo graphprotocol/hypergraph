@@ -16,6 +16,7 @@ import type {
   Entity,
   EntityFieldFilter,
   EntityFilter,
+  EntityInclude,
   EntityNumberFilter,
   EntityStringFilter,
 } from './types.js';
@@ -77,7 +78,7 @@ const subscribeToDocumentChanges = (handle: DocHandle<DocumentContent>) => {
         const cacheEntry = decodedEntitiesCache.get(typeId);
         if (!cacheEntry) continue;
 
-        let includeFromAllQueries = {};
+        let includeFromAllQueries: EntityInclude<Schema.Schema.AnyNoContext> = {};
         for (const [, query] of cacheEntry.queries) {
           includeFromAllQueries = deepMerge(includeFromAllQueries, query.include);
         }
@@ -244,7 +245,7 @@ export function findManyPrivate<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: EntityFilter<Schema.Schema.Type<S>> | undefined,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
+  include: EntityInclude<S> | undefined,
 ): { entities: Readonly<Array<Entity<S>>>; corruptEntityIds: Readonly<Array<string>> } {
   const typeId = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
@@ -413,7 +414,7 @@ export function subscribeToFindMany<const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
   filter: { [K in keyof Schema.Schema.Type<S>]?: EntityFieldFilter<Schema.Schema.Type<S>[K]> } | undefined,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined,
+  include: EntityInclude<S> | undefined,
 ): FindManySubscription<S> {
   const queryKey = filter ? canonicalize(filter) : 'all';
   const typeIds = SchemaAST.getAnnotation<string[]>(TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(

@@ -11,8 +11,8 @@ import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 
 export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
-  // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
-  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
+  // TODO: restrict multi-level nesting to the actual relation keys
+  include?: Entity.EntityInclude<S> | undefined;
   space: string;
   first?: number | undefined;
   offset?: number | undefined;
@@ -126,6 +126,8 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
       ...rawEntity,
       ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1),
     };
+
+    console.log('rawEntity', rawEntity);
 
     const decodeResult = decode({
       ...rawEntity,

@@ -1,6 +1,6 @@
+import { Podcast } from '@/schema';
 import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Podcast } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,
@@ -42,9 +42,10 @@ function RouteComponent() {
     space: space,
     include: {
       listenOn: {},
-      hosts: {
-        avatar: {},
-      },
+      // hosts: {
+      //   avatar: {},
+      // },
+      hostsTotalCount: true,
       episodes: {},
     },
     orderBy: { property: 'dateFounded', direction: 'asc' },
@@ -67,6 +68,8 @@ function RouteComponent() {
               <div>--{listenOn._relation.website}</div>
             </div>
           ))}
+          <br />
+          TOTAL HOSTS: {podcast.hosts.totalCount}
         </div>
       ))}
     </>

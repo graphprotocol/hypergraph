@@ -11,8 +11,8 @@ import { type EntityQueryResult, parseResult } from './find-many-public.js';
 export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   query: string;
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
-  // TODO: for multi-level nesting it should only allow the allowed properties instead of Record<string, Record<string, never>>
-  include?: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined;
+  // TODO: restrict multi-level nesting to the actual relation keys
+  include?: Entity.EntityInclude<S> | undefined;
   space: string | undefined;
   first?: number | undefined;
   offset?: number | undefined;

@@ -6,12 +6,12 @@ import { TypeIdsSymbol } from '../constants.js';
 import { getEntityRelations } from './getEntityRelations.js';
 import { hasValidTypesProperty } from './hasValidTypesProperty.js';
 import { decodeFromGrc20Json } from './schema.js';
-import type { DocumentContent, Entity } from './types.js';
+import type { DocumentContent, Entity, EntityInclude } from './types.js';
 
 export const findOne = <const S extends Schema.Schema.AnyNoContext>(
   handle: DocHandle<DocumentContent>,
   type: S,
-  include: { [K in keyof Schema.Schema.Type<S>]?: Record<string, Record<string, never>> } | undefined = undefined,
+  include: EntityInclude<S> | undefined = undefined,
 ) => {
   return (id: string): Entity<S> | undefined => {
     // TODO: Instead of this insane filtering logic, we should be keeping track of the entities in

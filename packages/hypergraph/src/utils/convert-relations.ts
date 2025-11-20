@@ -25,7 +25,7 @@ type RelationsListItem = {
 };
 
 export type RelationsListWithNodes = {
-  nodes: RelationsListItem[];
+  nodes?: RelationsListItem[];
   totalCount?: number;
 };
 
@@ -46,6 +46,7 @@ type RecursiveQueryEntity = {
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
 type RawEntity = Record<string, RawEntityValue>;
 type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, RawEntityValue> };
+type RelationArray = NestedRawEntity[] & { totalCount?: number };
 
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
@@ -83,12 +84,15 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
 
       // Get relations from aliased field if we have relationInfo for this property, otherwise fallback to old behavior
       let allRelationsWithTheCorrectPropertyTypeId: RelationsListItem[] | undefined;
+      let relationConnection: RelationsListWithNodes | undefined;
 
       if (relationMetadata) {
         // Use the aliased field to get relations for this specific type ID
         const alias = getRelationAlias(result.value);
-        const connection = queryEntity[alias as keyof RecursiveQueryEntity] as RelationsListWithNodes | undefined;
-        allRelationsWithTheCorrectPropertyTypeId = connection?.nodes;
+        relationConnection = queryEntity[alias as keyof RecursiveQueryEntity] as RelationsListWithNodes | undefined;
+        if (relationMetadata.includeNodes) {
+          allRelationsWithTheCorrectPropertyTypeId = relationConnection?.nodes;
+        }
       }
 
       if (allRelationsWithTheCorrectPropertyTypeId) {
@@ -157,6 +161,11 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
           // TODO: in the end every entry should be validated using the Schema?!?
           rawEntity[String(prop.name)] = [...(rawEntity[String(prop.name)] as unknown[]), nestedRawEntity];
         }
+      }
+
+      if (relationMetadata?.includeTotalCount) {
+        const relationList = rawEntity[String(prop.name)] as RelationArray;
+        relationList.totalCount = relationConnection?.totalCount ?? 0;
       }
     }
   }
