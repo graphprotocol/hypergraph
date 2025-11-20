@@ -4,11 +4,24 @@ import type * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';
 import { translateFilterToGraphql } from '../../src/utils/translate-filter-to-graphql.js';
 
+export const User = Entity.Schema(
+  {
+    username: Type.String,
+  },
+  {
+    types: [Id('f6fa5a6a-7dbf-4c31-aba5-7b4cd0a9b2de')],
+    properties: {
+      username: Id('f0dfb5c0-3c90-4d30-98a3-6a139c8b5943'),
+    },
+  },
+);
+
 export const Todo = Entity.Schema(
   {
     name: Type.String,
     completed: Type.Boolean,
     priority: Type.Number,
+    assignees: Type.Relation(User),
   },
   {
     types: [Id('a288444f-06a3-4037-9ace-66fe325864d0')],
@@ -16,6 +29,7 @@ export const Todo = Entity.Schema(
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       completed: Id('d2d64cd3-a337-4784-9e30-25bea0349471'),
       priority: Id('ee920534-42ce-4113-a63b-8f3c889dd772'),
+      assignees: Id('f399677c-2bf9-40c3-9622-815be7b83344'),
     },
   },
 );
@@ -141,6 +155,44 @@ describe('translateFilterToGraphql number filters', () => {
         some: {
           propertyId: { is: 'ee920534-42ce-4113-a63b-8f3c889dd772' },
           number: { greaterThan: Graph.serializeNumber(1) },
+        },
+      },
+    });
+  });
+});
+
+describe('translateFilterToGraphql relation filters', () => {
+  it('should translate relation `exists` filter correctly', () => {
+    const filter: TodoFilter = {
+      // @ts-expect-error - this is a test
+      assignees: { exists: true },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      relations: {
+        some: {
+          typeId: { is: 'f399677c-2bf9-40c3-9622-815be7b83344' },
+        },
+      },
+    });
+  });
+
+  it('should translate relation `exists: false` filter correctly', () => {
+    const filter: TodoFilter = {
+      // @ts-expect-error - this is a test
+      assignees: { exists: false },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      not: {
+        relations: {
+          some: {
+            typeId: { is: 'f399677c-2bf9-40c3-9622-815be7b83344' },
+          },
         },
       },
     });

@@ -1,6 +1,6 @@
 import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Podcast } from '@/schema';
+import { Podcast, Topic } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,
@@ -53,6 +53,23 @@ function RouteComponent() {
     orderBy: { property: 'dateFounded', direction: 'asc' },
     backlinksTotalCountsTypeId1: '972d201a-d780-4568-9e01-543f67b26bee',
   });
+
+  const { data: topics } = useEntities(Topic, {
+    mode: 'public',
+    first: 10,
+    space: space,
+    filter: {
+      cover: {
+        exists: true,
+      },
+    },
+    include: {
+      cover: {},
+    },
+  });
+
+  console.log({ topics });
+
   console.log({ data, isLoading, isError });
   return (
     <>

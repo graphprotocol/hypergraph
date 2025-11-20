@@ -31,6 +31,13 @@ type GraphqlFilterEntry =
   | {
       and: GraphqlFilterEntry[];
     }
+  | {
+      relations: {
+        some: {
+          typeId: { is: string };
+        };
+      };
+    }
   | { [k: string]: never };
 
 /**
@@ -46,6 +53,14 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
   }
 
   const graphqlFilter: GraphqlFilterEntry[] = [];
+
+  const buildRelationExistsFilter = (propertyId: string): GraphqlFilterEntry => ({
+    relations: {
+      some: {
+        typeId: { is: propertyId },
+      },
+    },
+  });
 
   for (const [fieldName, fieldFilter] of Object.entries(filter)) {
     if (fieldName === 'or') {
@@ -76,6 +91,23 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
     const propertyType = SchemaAST.getAnnotation<string>(Constants.PropertyTypeSymbol)(propertySignature.type);
 
     if (!Option.isSome(propertyId) || !Option.isSome(propertyType)) continue;
+
+    if (propertyType.value === 'relation') {
+      const relationFilter = fieldFilter as { exists?: boolean };
+
+      if (relationFilter.exists === true) {
+        graphqlFilter.push(buildRelationExistsFilter(propertyId.value));
+        continue;
+      }
+
+      if (relationFilter.exists === false) {
+        const existsFilter = buildRelationExistsFilter(propertyId.value);
+        graphqlFilter.push({
+          not: existsFilter,
+        });
+        continue;
+      }
+    }
 
     if (
       propertyType.value === 'string' &&
