@@ -71,6 +71,24 @@ The filter API supports different filters for different property types and offer
 }
 ```
 
+## Filtering by entity id
+
+When you already know the entity you want to retrieve, you can target its `id` directly.
+
+```tsx
+const { data } = useEntities(Person, {
+  filter: {
+    id: { is: 'fe9f0c57-3682-4a77-8ef4-205da3cd0a33' },
+  },
+});
+```
+
+This translates to the following GraphQL filter:
+
+```
+id: { is: $filterId }
+```
+
 ## Combining logical filters
 
 ```tsx
