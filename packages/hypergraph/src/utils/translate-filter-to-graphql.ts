@@ -88,7 +88,7 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
     if (!fieldFilter) continue;
 
     if (fieldName === 'id') {
-      const idFilter = fieldFilter as Entity.EntityFieldFilter<string>;
+      const idFilter = fieldFilter as Entity.EntityIdFilter;
       if (typeof idFilter.is === 'string') {
         graphqlFilter.push({
           id: { is: idFilter.is },
