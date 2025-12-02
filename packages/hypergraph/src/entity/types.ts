@@ -57,12 +57,16 @@ export type EntityStringFilter = {
   contains?: string;
 };
 
-export type CrossFieldFilter<T> = {
-  [K in keyof T]?: EntityFieldFilter<T[K]>;
-} & {
-  or?: Array<CrossFieldFilter<T>>;
-  not?: CrossFieldFilter<T>;
+export type EntityIdFilter = {
+  is?: string;
 };
+
+export type CrossFieldFilter<T, Extra extends object = Record<never, never>> = {
+  [K in keyof T]?: EntityFieldFilter<T[K]>;
+} & Extra & {
+    or?: Array<CrossFieldFilter<T, Extra>>;
+    not?: CrossFieldFilter<T, Extra>;
+  };
 
 type RelationExistsFilter<T> = [T] extends [readonly unknown[] | undefined]
   ? {
@@ -94,4 +98,9 @@ export type EntityFieldFilter<T> = {
 } & RelationExistsFilter<T> &
   ScalarFieldFilter<T>;
 
-export type EntityFilter<T> = CrossFieldFilter<T>;
+export type EntityFilter<T> = CrossFieldFilter<
+  T,
+  {
+    id?: EntityIdFilter;
+  }
+>;
