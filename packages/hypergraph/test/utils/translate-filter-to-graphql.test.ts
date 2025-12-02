@@ -161,6 +161,43 @@ describe('translateFilterToGraphql number filters', () => {
   });
 });
 
+describe('translateFilterToGraphql id filters', () => {
+  it('should translate id `is` filter correctly', () => {
+    const filter: TodoFilter = {
+      id: { is: 'entity-id' },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      id: { is: 'entity-id' },
+    });
+  });
+
+  it('should combine id filter with other property filters', () => {
+    const filter: TodoFilter = {
+      id: { is: 'entity-id' },
+      name: { is: 'test' },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      and: [
+        { id: { is: 'entity-id' } },
+        {
+          values: {
+            some: {
+              propertyId: { is: 'a126ca53-0c8e-48d5-b888-82c734c38935' },
+              string: { is: 'test' },
+            },
+          },
+        },
+      ],
+    });
+  });
+});
+
 describe('translateFilterToGraphql relation filters', () => {
   it('should translate relation `exists` filter correctly', () => {
     const filter: TodoFilter = {

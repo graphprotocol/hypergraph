@@ -38,6 +38,11 @@ type GraphqlFilterEntry =
         };
       };
     }
+  | {
+      id: {
+        is: string;
+      };
+    }
   | { [k: string]: never };
 
 /**
@@ -81,6 +86,16 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
     }
 
     if (!fieldFilter) continue;
+
+    if (fieldName === 'id') {
+      const idFilter = fieldFilter as Entity.EntityFieldFilter<string>;
+      if (typeof idFilter.is === 'string') {
+        graphqlFilter.push({
+          id: { is: idFilter.is },
+        });
+      }
+      continue;
+    }
 
     const ast = type.ast as SchemaAST.TypeLiteral;
     const propertySignature = ast.propertySignatures.find((a) => a.name === fieldName);
