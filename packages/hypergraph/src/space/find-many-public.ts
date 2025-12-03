@@ -3,25 +3,45 @@ import * as Either from 'effect/Either';
 import * as EffectSchema from 'effect/Schema';
 import { request } from 'graphql-request';
 
-const spacesQueryDocument = `
-query spaces {
-  spaces {
-    id
-    page {
-      name
-      relationsList(filter: {
-        typeId: { is: "${ContentIds.AVATAR_PROPERTY}"}
-      }) {
-        toEntity {
-          valuesList(filter: {
-            propertyId: { is: "${SystemIds.IMAGE_URL_PROPERTY}"}
-          }) {
-            propertyId
-            string
-          }
+const spaceFields = `
+  id
+  page {
+    name
+    relationsList(filter: {
+      typeId: { is: "${ContentIds.AVATAR_PROPERTY}"}
+    }) {
+      toEntity {
+        valuesList(filter: {
+          propertyId: { is: "${SystemIds.IMAGE_URL_PROPERTY}"}
+        }) {
+          propertyId
+          string
         }
       }
     }
+  }
+`;
+
+const spacesQueryDocument = `
+query spaces {
+  spaces {
+    ${spaceFields}
+  }
+}
+`;
+
+const memberSpacesQueryDocument = `
+query memberSpaces($accountAddress: String!) {
+  spaces(filter: {members: {some: {address: {is: $accountAddress}}}}) {
+    ${spaceFields}
+  }
+}
+`;
+
+const editorSpacesQueryDocument = `
+query editorSpaces($accountAddress: String!) {
+  spaces(filter: {editors: {some: {address: {is: $accountAddress}}}}) {
+    ${spaceFields}
   }
 }
 `;
@@ -49,6 +69,10 @@ type SpacesQueryResult = {
       }[];
     } | null;
   }[];
+};
+
+type SpacesQueryVariables = {
+  accountAddress: string;
 };
 
 type SpaceQueryEntry = NonNullable<SpacesQueryResult['spaces']>[number];
@@ -89,7 +113,40 @@ export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
   return { data, invalidSpaces };
 };
 
-export const findManyPublic = async () => {
-  const queryResult = await request<SpacesQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, spacesQueryDocument);
+export type FindManyPublicFilter =
+  | Readonly<{ memberAccountAddress: string; editorAccountAddress?: never }>
+  | Readonly<{ editorAccountAddress: string; memberAccountAddress?: never }>
+  | Readonly<{ memberAccountAddress?: undefined; editorAccountAddress?: undefined }>;
+
+export type FindManyPublicParams = Readonly<{
+  filter?: FindManyPublicFilter;
+}>;
+
+export const findManyPublic = async (params?: FindManyPublicParams) => {
+  const filter = params?.filter;
+  const memberAccountAddress = filter?.memberAccountAddress;
+  const editorAccountAddress = filter?.editorAccountAddress;
+
+  if (memberAccountAddress && editorAccountAddress) {
+    throw new Error('Provide only one of memberAccountAddress or editorAccountAddress when calling findManyPublic().');
+  }
+
+  const endpoint = `${Graph.TESTNET_API_ORIGIN}/graphql`;
+
+  if (memberAccountAddress) {
+    const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, memberSpacesQueryDocument, {
+      accountAddress: memberAccountAddress,
+    });
+    return parseSpacesQueryResult(queryResult);
+  }
+
+  if (editorAccountAddress) {
+    const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, editorSpacesQueryDocument, {
+      accountAddress: editorAccountAddress,
+    });
+    return parseSpacesQueryResult(queryResult);
+  }
+
+  const queryResult = await request<SpacesQueryResult>(endpoint, spacesQueryDocument);
   return parseSpacesQueryResult(queryResult);
 };

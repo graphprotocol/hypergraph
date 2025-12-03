@@ -76,7 +76,9 @@ function RouteComponent() {
 
   console.log({ topics });
 
-  const { data: spaces } = usePublicSpaces();
+  const { data: spaces } = usePublicSpaces({
+    filter: { memberAccountAddress: '0xE86b4a182779ae6320cA04ad43Fe6a1bed051e24' },
+  });
   console.log('spaces', spaces);
 
   return (

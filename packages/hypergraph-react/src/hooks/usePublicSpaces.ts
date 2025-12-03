@@ -1,10 +1,21 @@
 import { Space } from '@graphprotocol/hypergraph';
 import { useQuery } from '@tanstack/react-query';
 
-export const usePublicSpaces = () => {
+type UsePublicSpacesParams = Readonly<{
+  filter?: Space.FindManyPublicParams['filter'];
+  enabled?: boolean;
+}>;
+
+export const usePublicSpaces = (params?: UsePublicSpacesParams) => {
+  const { filter, enabled = true } = params ?? {};
+
   const result = useQuery({
-    queryKey: ['hypergraph-public-spaces'],
-    queryFn: Space.findManyPublic,
+    queryKey: ['hypergraph-public-spaces', filter],
+    queryFn: () =>
+      Space.findManyPublic({
+        filter,
+      }),
+    enabled,
   });
 
   return {
