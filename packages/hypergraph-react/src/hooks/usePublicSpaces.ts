@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 export const usePublicSpaces = () => {
   const result = useQuery({
     queryKey: ['hypergraph-public-spaces'],
-    queryFn: Space.findSpaces,
+    queryFn: Space.findManyPublic,
   });
 
   return {

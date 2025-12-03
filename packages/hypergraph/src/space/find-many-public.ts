@@ -89,7 +89,7 @@ export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
   return { data, invalidSpaces };
 };
 
-export const findSpaces = async () => {
+export const findManyPublic = async () => {
   const queryResult = await request<SpacesQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, spacesQueryDocument);
   return parseSpacesQueryResult(queryResult);
 };
