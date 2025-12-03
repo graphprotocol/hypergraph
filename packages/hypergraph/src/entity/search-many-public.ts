@@ -19,7 +19,7 @@ export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
 };
 
 const buildSearchQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
-  const relationsSelection = buildRelationsSelection(relationInfoLevel1);
+  const relationsSelection = buildRelationsSelection(relationInfoLevel1, 'single');
 
   return `
 query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {

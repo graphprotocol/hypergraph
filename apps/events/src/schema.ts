@@ -1,3 +1,4 @@
+import { SystemIds } from '@graphprotocol/grc-20';
 import { Entity, Id, Type } from '@graphprotocol/hypergraph';
 
 export const User = Entity.Schema(
@@ -304,3 +305,19 @@ export const Episode = Entity.Schema(
     },
   },
 );
+
+export const Space = Entity.Schema(
+  {
+    name: Type.String,
+    avatar: Type.Relation(Image),
+  },
+  {
+    types: [Id('362c1dbd-dc64-44bb-a3c4-652f38a642d7')],
+    properties: {
+      name: Id(SystemIds.NAME_PROPERTY),
+      avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
+    },
+  },
+);
+
+export type Space = Entity.Entity<typeof Space>;

@@ -8,12 +8,14 @@ import { request } from 'graphql-request';
 import type { RelationsListWithNodes } from '../utils/convert-relations.js';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
+import type { SpaceSelection } from './internal/space-selection.js';
+import { normalizeSpaceSelection } from './internal/space-selection.js';
+import type { SpaceSelectionInput } from './types.js';
 
-export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
+export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = SpaceSelectionInput & {
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
-  space: string;
   first?: number | undefined;
   offset?: number | undefined;
   orderBy?:
@@ -25,26 +27,65 @@ export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   backlinksTotalCountsTypeId1?: string | undefined;
 };
 
-const buildEntitiesQuery = (relationInfoLevel1: RelationTypeIdInfo[], useOrderBy: boolean) => {
-  const level1Relations = buildRelationsSelection(relationInfoLevel1);
+const buildEntitiesQuery = (
+  relationInfoLevel1: RelationTypeIdInfo[],
+  useOrderBy: boolean,
+  spaceSelection: SpaceSelection,
+) => {
+  const level1Relations = buildRelationsSelection(relationInfoLevel1, spaceSelection.mode);
 
   const queryName = useOrderBy ? 'entitiesOrderedByProperty' : 'entities';
-  const orderByParams = useOrderBy ? '$propertyId: UUID!, $sortDirection: SortOrder!, ' : '';
+  const variableDefinitions = [
+    spaceSelection.mode === 'single'
+      ? '$spaceId: UUID!'
+      : spaceSelection.mode === 'many'
+        ? '$spaceIds: [UUID!]!'
+        : undefined,
+    '$typeIds: [UUID!]!',
+    useOrderBy ? '$propertyId: UUID!' : undefined,
+    useOrderBy ? '$sortDirection: SortOrder!' : undefined,
+    '$first: Int',
+    '$filter: EntityFilter!',
+    '$offset: Int',
+    '$backlinksTotalCountsTypeId1: UUID',
+    '$backlinksTotalCountsTypeId1Present: Boolean!',
+  ]
+    .filter(Boolean)
+    .join(', ');
+
   const orderByArgs = useOrderBy ? 'propertyId: $propertyId\n    sortDirection: $sortDirection\n    ' : '';
+  const entitySpaceFilter =
+    spaceSelection.mode === 'single'
+      ? 'spaceIds: {in: [$spaceId]},'
+      : spaceSelection.mode === 'many'
+        ? 'spaceIds: {in: $spaceIds},'
+        : '';
+  const valuesListFilter =
+    spaceSelection.mode === 'single'
+      ? '(filter: { spaceId: { is: $spaceId } })'
+      : spaceSelection.mode === 'many'
+        ? '(filter: { spaceId: { in: $spaceIds } })'
+        : '';
+  const backlinksSpaceFilter =
+    spaceSelection.mode === 'single'
+      ? 'spaceId: {is: $spaceId}, '
+      : spaceSelection.mode === 'many'
+        ? 'spaceId: {in: $spaceIds}, '
+        : '';
 
   return `
-query ${queryName}($spaceId: UUID!, $typeIds: [UUID!]!, ${orderByParams}$first: Int, $filter: EntityFilter!, $offset: Int, $backlinksTotalCountsTypeId1: UUID, $backlinksTotalCountsTypeId1Present: Boolean!) {
+query ${queryName}(${variableDefinitions}) {
   entities: ${queryName}(
     ${orderByArgs}filter: { and: [{
       relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
-      spaceIds: {in: [$spaceId]},
+      ${entitySpaceFilter}
     }, $filter]}
     first: $first
     offset: $offset
   ) {
     id
     name
-    valuesList(filter: {spaceId: {is: $spaceId}}) {
+    valuesList${valuesListFilter} {
       propertyId
       string
       boolean
@@ -52,7 +93,7 @@ query ${queryName}($spaceId: UUID!, $typeIds: [UUID!]!, ${orderByParams}$first: 
       time
       point
     }
-    backlinksTotalCountsTypeId1: backlinks(filter: { spaceId: {is: $spaceId}, fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
+    backlinksTotalCountsTypeId1: backlinks(filter: { ${backlinksSpaceFilter}fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
       totalCount
     }
     ${level1Relations}
@@ -150,7 +191,16 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   type: S,
   params?: FindManyPublicParams<S>,
 ) => {
-  const { filter, include, space, first = 100, offset = 0, orderBy, backlinksTotalCountsTypeId1 } = params ?? {};
+  const {
+    filter,
+    include,
+    space,
+    spaces,
+    first = 100,
+    offset = 0,
+    orderBy,
+    backlinksTotalCountsTypeId1,
+  } = params ?? {};
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -187,17 +237,25 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   }
 
   // Build the query dynamically with aliases for each relation type ID
-  const queryDocument = buildEntitiesQuery(relationTypeIds, Boolean(orderBy));
+  const spaceSelection = normalizeSpaceSelection(space, spaces);
+
+  // Build the query dynamically with aliases for each relation type ID
+  const queryDocument = buildEntitiesQuery(relationTypeIds, Boolean(orderBy), spaceSelection);
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
   const queryVariables: Record<string, unknown> = {
-    spaceId: space,
     typeIds,
     first,
     filter: filterParams,
     offset,
   };
+
+  if (spaceSelection.mode === 'single') {
+    queryVariables.spaceId = spaceSelection.spaceId;
+  } else if (spaceSelection.mode === 'many') {
+    queryVariables.spaceIds = spaceSelection.spaceIds;
+  }
 
   if (orderByPropertyId && sortDirection) {
     queryVariables.propertyId = orderByPropertyId;

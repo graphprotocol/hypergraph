@@ -2,13 +2,21 @@ import type { Entity } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { useEntitiesPrivate } from '../internal/use-entities-private.js';
 import { useEntitiesPublic } from '../internal/use-entities-public.js';
+import { useHypergraphSpaceInternal } from '../internal/use-hypergraph-space-internal.js';
 
-type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = {
+type SpaceSelectionInputOptionInContext = {
+  space?: never;
+  spaces?: never;
+};
+
+type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = (
+  | Entity.SpaceSelectionInput
+  | SpaceSelectionInputOptionInContext
+) & {
   mode: 'public' | 'private';
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
-  space?: string | undefined;
   first?: number | undefined;
   offset?: number | undefined;
   orderBy?:
@@ -21,18 +29,21 @@ type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = {
 };
 
 export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntitiesParams<S>) {
-  const { mode, filter, include, space, first, offset, orderBy, backlinksTotalCountsTypeId1 } = params;
+  const { mode, filter, include, space, spaces, first, offset, orderBy, backlinksTotalCountsTypeId1 } = params;
+  const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const resolvedSpace = space ?? spaceFromContext;
+  const publicSpaceParams = spaces ? { spaces } : { space: resolvedSpace };
   const publicResult = useEntitiesPublic(type, {
     enabled: mode === 'public',
     filter,
     include,
     first,
     offset,
-    space,
     orderBy,
     backlinksTotalCountsTypeId1,
+    ...publicSpaceParams,
   });
-  const localResult = useEntitiesPrivate(type, { enabled: mode === 'private', filter, include, space });
+  const localResult = useEntitiesPrivate(type, { enabled: mode === 'private', filter, include, space: resolvedSpace });
 
   if (mode === 'public') {
     return {

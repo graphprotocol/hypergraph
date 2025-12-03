@@ -10,17 +10,24 @@ export const useEntitiesPublicInfinite = <S extends Schema.Schema.AnyNoContext>(
   type: S,
   params?: QueryPublicParams<S>,
 ) => {
-  const { enabled = true, filter, include, space: spaceFromParams, first = 2, offset = 0 } = params ?? {};
+  const { enabled = true, filter, include, space: spaceFromParams, spaces, first = 2, offset = 0 } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
+  const spaceSelectionKey = spaces ?? space;
   const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
   );
 
   const result = useInfiniteQueryTanstack({
-    queryKey: ['hypergraph-public-entities', space, typeIds, include, filter, 'infinite'],
+    queryKey: ['hypergraph-public-entities', spaceSelectionKey, typeIds, include, filter, 'infinite'],
     queryFn: async ({ pageParam }) => {
-      return Entity.findManyPublic(type, { filter, include, space, first, offset: pageParam });
+      return Entity.findManyPublic(type, {
+        filter,
+        include,
+        ...(spaces ? { spaces } : { space }),
+        first,
+        offset: pageParam,
+      });
     },
     getNextPageParam: (_lastPage, pages) => {
       return offset + pages.length * first;

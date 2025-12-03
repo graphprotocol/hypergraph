@@ -21,7 +21,7 @@ export type FindOnePublicParams<S extends Schema.Schema.AnyNoContext> = {
 };
 
 const buildEntityQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
-  const relationsSelection = buildRelationsSelection(relationInfoLevel1);
+  const relationsSelection = buildRelationsSelection(relationInfoLevel1, 'single');
   const relationsSelectionBlock = relationsSelection ? `\n    ${relationsSelection}\n` : '';
   return `
 query entity($id: UUID!, $spaceId: UUID!) {
