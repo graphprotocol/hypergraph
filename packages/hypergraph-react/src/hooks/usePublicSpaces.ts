@@ -11,10 +11,7 @@ export const usePublicSpaces = (params?: UsePublicSpacesParams) => {
 
   const result = useQuery({
     queryKey: ['hypergraph-public-spaces', filter],
-    queryFn: () =>
-      Space.findManyPublic({
-        filter,
-      }),
+    queryFn: () => (filter ? Space.findManyPublic({ filter }) : Space.findManyPublic()),
     enabled,
   });
 
