@@ -12,6 +12,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
     filter,
     include,
     space: spaceFromParams,
+    spaces,
     first = 100,
     offset,
     orderBy,
@@ -19,6 +20,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
   } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
+  const spaceSelectionKey = spaces ?? space;
   const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
     Option.getOrElse(() => []),
   );
@@ -26,7 +28,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
   const result = useQueryTanstack({
     queryKey: [
       'hypergraph-public-entities',
-      space,
+      spaceSelectionKey,
       typeIds,
       include,
       filter,
@@ -39,7 +41,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
       return Entity.findManyPublic(type, {
         filter,
         include,
-        space,
+        ...(spaces ? { spaces } : { space }),
         first,
         offset,
         orderBy,

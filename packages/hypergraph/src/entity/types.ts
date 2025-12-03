@@ -104,3 +104,17 @@ export type EntityFilter<T> = CrossFieldFilter<
     id?: EntityIdFilter;
   }
 >;
+
+export type SpaceSelectionInput =
+  | {
+      space: string;
+      spaces?: never;
+    }
+  | {
+      space?: never;
+      spaces: readonly [string, ...string[]];
+    }
+  | {
+      space?: never;
+      spaces: 'all';
+    };

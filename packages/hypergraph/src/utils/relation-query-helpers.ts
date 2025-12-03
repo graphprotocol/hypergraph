@@ -1,14 +1,38 @@
 import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
 
+type SpaceSelectionMode = 'single' | 'many' | 'all';
+
+const buildValuesListFilter = (spaceSelectionMode: SpaceSelectionMode) => {
+  if (spaceSelectionMode === 'single') {
+    return '(filter: {spaceId: {is: $spaceId}})';
+  }
+  if (spaceSelectionMode === 'many') {
+    return '(filter: {spaceId: {in: $spaceIds}})';
+  }
+  return '';
+};
+
+const buildRelationSpaceFilter = (spaceSelectionMode: SpaceSelectionMode) => {
+  if (spaceSelectionMode === 'single') {
+    return 'spaceId: {is: $spaceId}, ';
+  }
+  if (spaceSelectionMode === 'many') {
+    return 'spaceId: {in: $spaceIds}, ';
+  }
+  return '';
+};
+
 export const getRelationAlias = (typeId: string) => `relations_${typeId.replace(/-/g, '_')}`;
 
-const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2) => {
+const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spaceSelectionMode: SpaceSelectionMode) => {
   const alias = getRelationAlias(info.typeId);
   const nestedPlaceholder = info.includeNodes && level === 1 ? '__LEVEL2_RELATIONS__' : '';
   const listField = info.listField ?? 'relations';
   const connectionField = listField === 'backlinks' ? 'backlinks' : 'relations';
   const toEntityField = listField === 'backlinks' ? 'fromEntity' : 'toEntity';
   const toEntitySelectionHeader = toEntityField === 'toEntity' ? 'toEntity' : `toEntity: ${toEntityField}`;
+  const valuesListFilter = buildValuesListFilter(spaceSelectionMode);
+  const relationSpaceFilter = buildRelationSpaceFilter(spaceSelectionMode);
 
   if (!info.includeNodes && !info.includeTotalCount) {
     return '';
@@ -24,7 +48,7 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2) => {
       nodes {
         id
         entity {
-          valuesList(filter: {spaceId: {is: $spaceId}}) {
+          valuesList${valuesListFilter} {
             propertyId
             string
             boolean
@@ -36,7 +60,7 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2) => {
         ${toEntitySelectionHeader} {
           id
           name
-          valuesList(filter: {spaceId: {is: $spaceId}}) {
+          valuesList${valuesListFilter} {
             propertyId
             string
             boolean
@@ -52,28 +76,36 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2) => {
 
   return `
     ${alias}: ${connectionField}(
-      filter: {spaceId: {is: $spaceId}, typeId: {is: "${info.typeId}"}},
+      filter: {${relationSpaceFilter}typeId: {is: "${info.typeId}"}},
     ) {${totalCountSelection}${nodesSelection}
     }`;
 };
 
-const buildLevel2RelationsFragment = (relationInfoLevel2: RelationTypeIdInfo[]) => {
+const buildLevel2RelationsFragment = (
+  relationInfoLevel2: RelationTypeIdInfo[],
+  spaceSelectionMode: SpaceSelectionMode,
+) => {
   if (relationInfoLevel2.length === 0) return '';
 
-  return relationInfoLevel2.map((info) => buildRelationsListFragment(info, 2)).join('\n');
+  return relationInfoLevel2.map((info) => buildRelationsListFragment(info, 2, spaceSelectionMode)).join('\n');
 };
 
-const buildLevel1RelationsFragment = (relationInfoLevel1: RelationTypeIdInfo[]) => {
+const buildLevel1RelationsFragment = (
+  relationInfoLevel1: RelationTypeIdInfo[],
+  spaceSelectionMode: SpaceSelectionMode,
+) => {
   if (relationInfoLevel1.length === 0) return '';
 
   return relationInfoLevel1
     .map((info) => {
-      const level2Fragment = buildLevel2RelationsFragment(info.children ?? []);
-      const fragment = buildRelationsListFragment(info, 1);
+      const level2Fragment = buildLevel2RelationsFragment(info.children ?? [], spaceSelectionMode);
+      const fragment = buildRelationsListFragment(info, 1, spaceSelectionMode);
       return fragment.replace('__LEVEL2_RELATIONS__', level2Fragment);
     })
     .join('\n');
 };
 
-export const buildRelationsSelection = (relationInfoLevel1: RelationTypeIdInfo[]) =>
-  buildLevel1RelationsFragment(relationInfoLevel1);
+export const buildRelationsSelection = (
+  relationInfoLevel1: RelationTypeIdInfo[],
+  spaceSelectionMode: SpaceSelectionMode,
+) => buildLevel1RelationsFragment(relationInfoLevel1, spaceSelectionMode);
