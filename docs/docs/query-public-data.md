@@ -40,7 +40,7 @@ await Space.findManyPublic({
 
 ## useEntities
 
-In order to query private data, you need to pass in the schema type and set the mode to `public`.
+In order to query public data, you need to pass in the schema type and set the mode to `public`.
 
 ```ts
 import { useEntities } from '@graphprotocol/hypergraph-react';
