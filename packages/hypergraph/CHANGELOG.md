@@ -1,5 +1,23 @@
 # @graphprotocol/hypergraph
 
+## 0.8.10
+### Patch Changes
+
+- b8bae14: Add filtering entities by id e.g.
+  
+  ```ts
+  const { data } = useEntities(Person, {
+    filter: {
+      or: [
+        { id: { is: 'fe9f0c57-3682-4a77-8ef4-205da3cd0a33' } },
+        { id: { is: '1e5dcefd-bae0-4133-b743-6d2d7bebc5b9' } },
+      ],
+    },
+  });
+  ```
+- 4642397: Add Space.findManyPublic plus the usePublicSpaces hook so apps can fetch and render public spaces (with invalid entries surfaced) via one shared SDK call
+- 40111af: Add support for querying public entities across multiple spaces (including an `all` scope) and expose the new API through the React hooks
+
 ## 0.8.9
 ### Patch Changes
 
