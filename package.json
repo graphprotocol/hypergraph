@@ -18,7 +18,7 @@
     "@babel/cli": "^7.28.3",
     "@babel/core": "^7.28.3",
     "@biomejs/biome": "^2.2.0",
-    "@changesets/cli": "^2.29.6",
+    "@changesets/cli": "^2.29.8",
     "@effect/language-service": "^0.40.0",
     "@effect/vitest": "^0.25.1",
     "@graphprotocol/grc-20": "^0.25.2",
