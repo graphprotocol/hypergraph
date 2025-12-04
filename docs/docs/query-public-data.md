@@ -2,9 +2,45 @@
 
 Based on your schema, you can query public data that you created using Hypergraph. It works very much like [querying private data](/docs/query-private-data).
 
+## Fetching public spaces
+
+When you only need the list of public spaces (with optional avatar metadata) you can call the lower-level `Space.findManyPublic` helper directly in any Node/Edge environment, or use the `usePublicSpaces` hook inside React components. Both helpers expose the parsed space list (`data`) as well as any records that failed schema validation (`invalidSpaces`) so you can surface misconfigured entries during development.
+
+### `usePublicSpaces`
+
+```tsx
+import { usePublicSpaces } from '@graphprotocol/hypergraph-react';
+
+const { data: spaces, invalidSpaces, isPending } = usePublicSpaces({
+  filter: { editorAccountAddress: '0x1234...' },
+});
+```
+
+The hook wraps the same finder in React Query, so you also inherit caching, refetching, and loading state management. Omit `filter` to list every public space that is indexed by the Geo testnet.
+
+### `Space.findManyPublic`
+
+```ts
+import { Space } from '@graphprotocol/hypergraph';
+
+const { data, invalidSpaces } = await Space.findManyPublic();
+```
+
+You can restrict the result set to spaces where a given account is a member or an editor with the mutually exclusive `filter` options:
+
+```ts
+await Space.findManyPublic({
+  filter: { memberAccountAddress: '0x1234...' },
+});
+
+await Space.findManyPublic({
+  filter: { editorAccountAddress: '0x1234...' },
+});
+```
+
 ## useEntities
 
-In order to query private data, you need to pass in the schema type and set the mode to `public`.
+In order to query public data, you need to pass in the schema type and set the mode to `public`.
 
 ```ts
 import { useEntities } from '@graphprotocol/hypergraph-react';
@@ -58,6 +94,41 @@ In addition you have access to the full response from `@tanstack/react-query`'s 
 
 ```ts
 const { data, isPending, isError } = useEntities(Event, { mode: 'public' });
+```
+
+## Fetching a single public entity
+
+When you only need a single entity—for example to power a detail page—you can stay within React by calling `useEntity`, or drop down to the SDK-level helper `Entity.findOnePublic` for server-side scripts and non-React environments.
+
+### `useEntity`
+
+```tsx
+import { useEntity } from '@graphprotocol/hypergraph-react';
+import { Project } from '../schema';
+
+const { data: project, isPending, isError } = useEntity(Project, {
+  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  mode: 'public',
+  include: {
+    contributors: {},
+  },
+});
+```
+
+### `Entity.findOnePublic`
+
+```ts
+import { Entity } from '@graphprotocol/hypergraph';
+import { Project } from '../schema';
+
+const project = await Entity.findOnePublic(Project, {
+  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  include: {
+    contributors: {},
+  },
+});
 ```
 
 ## Querying Public Data from Geo Testnet using useQuery

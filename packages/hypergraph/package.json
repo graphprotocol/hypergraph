@@ -32,6 +32,7 @@
     "./key": "./dist/key/index.js",
     "./mapping": "./dist/mapping/index.js",
     "./messages": "./dist/messages/index.js",
+    "./space": "./dist/space/index.js",
     "./space-events": "./dist/space-events/index.js",
     "./space-info": "./dist/space-info/index.js",
     "./store": "./dist/store.js",
