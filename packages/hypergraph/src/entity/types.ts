@@ -12,7 +12,7 @@ export type RelationIncludeConfig = {
 export type RelationIncludeBranch = {
   _config?: RelationIncludeConfig;
 } & {
-  [key: string]: RelationIncludeBranch | boolean | undefined;
+  [key: string]: RelationIncludeBranch | RelationIncludeConfig | boolean | undefined;
 };
 
 export type EntityInclude<S extends Schema.Schema.AnyNoContext> = Partial<
