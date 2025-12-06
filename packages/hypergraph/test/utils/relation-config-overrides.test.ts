@@ -104,4 +104,21 @@ describe('relation include config overrides', () => {
     expect(selection).not.toContain('valuesList(filter: {spaceId: {is: $spaceId}})');
     expect(selection).not.toContain('valuesList(filter: {spaceId: {in: $spaceIds}})');
   });
+
+  it('renders match-nothing filters when overrides are empty arrays', () => {
+    const include = {
+      children: {
+        _config: {
+          relationSpaces: [],
+          valueSpaces: [],
+        },
+      },
+    } satisfies Entity.EntityInclude<typeof Parent>;
+
+    const relationInfo = getRelationTypeIds(Parent, include);
+    const selection = buildRelationsSelection(relationInfo, 'single');
+
+    expect(selection).toContain('spaceId: {in: []}');
+    expect(selection).toContain('valuesList(filter: {spaceId: {in: []}})');
+  });
 });

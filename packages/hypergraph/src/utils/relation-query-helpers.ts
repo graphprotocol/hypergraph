@@ -2,7 +2,8 @@ import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
 
 type SpaceSelectionMode = 'single' | 'many' | 'all';
 
-const stringifyUuidList = (spaces: readonly string[]) => `[${spaces.map((space) => JSON.stringify(space)).join(', ')}]`;
+const formatGraphQLStringArray = (values: readonly string[]) =>
+  `[${values.map((value) => JSON.stringify(value)).join(', ')}]`;
 
 const buildValuesListFilter = (
   spaceSelectionMode: SpaceSelectionMode,
@@ -23,10 +24,11 @@ const buildValuesListFilter = (
   }
 
   if (override.length === 0) {
-    return '';
+    // Explicit empty overrides should produce a match-nothing filter.
+    return '(filter: {spaceId: {in: []}})';
   }
 
-  return `(filter: {spaceId: {in: ${stringifyUuidList(override)}}})`;
+  return `(filter: {spaceId: {in: ${formatGraphQLStringArray(override)}}})`;
 };
 
 const buildRelationSpaceFilter = (
@@ -48,10 +50,10 @@ const buildRelationSpaceFilter = (
   }
 
   if (override.length === 0) {
-    return '';
+    return 'spaceId: {in: []}, ';
   }
 
-  return `spaceId: {in: ${stringifyUuidList(override)}}, `;
+  return `spaceId: {in: ${formatGraphQLStringArray(override)}}, `;
 };
 
 export const getRelationAlias = (typeId: string) => `relations_${typeId.replace(/-/g, '_')}`;
