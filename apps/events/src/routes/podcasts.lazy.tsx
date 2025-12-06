@@ -1,4 +1,4 @@
-import { useEntities, usePublicSpaces } from '@graphprotocol/hypergraph-react';
+import { useEntities, useEntity, usePublicSpaces } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { Podcast, Topic } from '@/schema';
 
@@ -22,19 +22,23 @@ function RouteComponent() {
   //   }, 1000);
   // }, []);
 
-  // const { data: podcast } = useEntity(Podcast, {
-  //   id: 'f5d27d3e-3a51-452d-bac2-702574381633',
-  //   mode: 'public',
-  //   space: space,
-  //   include: {
-  //     listenOn: {},
-  //     hosts: {
-  //       avatar: {},
-  //     },
-  //     episodes: {},
-  //   },
-  // });
-  // console.log({ podcast });
+  const {
+    data: podcast,
+    invalidEntity,
+    invalidRelationEntities,
+  } = useEntity(Podcast, {
+    id: 'f5d27d3e-3a51-452d-bac2-702574381633',
+    mode: 'public',
+    space: space,
+    include: {
+      listenOn: {},
+      hosts: {
+        avatar: {},
+      },
+      episodes: {},
+    },
+  });
+  console.log({ podcast, invalidEntity, invalidRelationEntities });
 
   const { data, isLoading, isError } = useEntities(Podcast, {
     mode: 'public',

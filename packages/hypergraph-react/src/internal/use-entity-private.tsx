@@ -18,7 +18,7 @@ export function useEntityPrivate<const S extends Schema.Schema.AnyNoContext>(
   const handle = useSubscribeToSpaceAndGetHandle({ spaceId: spaceFromParams ?? spaceFromContext, enabled });
   const prevEntityRef = useRef<{
     data: Entity.Entity<S> | undefined;
-    invalidEntity: Record<string, string | boolean | number | Date> | undefined;
+    invalidEntity: Entity.InvalidEntity | undefined;
     isPending: boolean;
     isError: boolean;
   }>({ data: undefined, invalidEntity: undefined, isPending: false, isError: false });

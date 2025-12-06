@@ -51,5 +51,10 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
     enabled,
   });
 
-  return { ...result, data: result.data?.data || [], invalidEntities: result.data?.invalidEntities || [] };
+  return {
+    ...result,
+    data: result.data?.data || [],
+    invalidEntities: result.data?.invalidEntities || [],
+    invalidRelationEntities: result.data?.invalidRelationEntities || [],
+  };
 };

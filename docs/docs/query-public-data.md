@@ -86,14 +86,15 @@ Please learn more about filtering in the [Filtering query results](#filtering-qu
 useEntities for private data returns:
 
 - data - a list of entities defined in your schema
-- invalidEntities - a list of entities that are in your space storage with correct type, but can't be parsed to your schema
+- invalidEntities - each entry includes the invalid raw payload (`raw`) plus the corresponding `error` explaining why decoding failed
+- invalidRelationEntities - each entry includes the invalid raw payload (`raw`) plus the corresponding `error` explaining why decoding failed
 - isPending - a boolean indicating if the query is loading
 - isError - a boolean indicating if the query failed
 
 In addition you have access to the full response from `@tanstack/react-query`'s `useQuery` hook, which is used internally to query the public data.
 
 ```ts
-const { data, isPending, isError } = useEntities(Event, { mode: 'public' });
+const { data, invalidEntities, invalidRelationEntities, isPending, isError } = useEntities(Event, { mode: 'public' });
 ```
 
 ## Fetching a single public entity
@@ -106,7 +107,7 @@ When you only need a single entity—for example to power a detail page—you ca
 import { useEntity } from '@graphprotocol/hypergraph-react';
 import { Project } from '../schema';
 
-const { data: project, isPending, isError } = useEntity(Project, {
+const { data: project, invalidEntity, invalidRelationEntities, isPending, isError } = useEntity(Project, {
   id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
   space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
   mode: 'public',

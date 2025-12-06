@@ -19,5 +19,10 @@ export function useEntity<const S extends Schema.Schema.AnyNoContext>(
     return resultPublic;
   }
 
-  return resultPrivate;
+  return {
+    ...resultPublic,
+    data: resultPrivate.data,
+    invalidEntity: resultPrivate.invalidEntity,
+    invalidRelationEntities: [],
+  };
 }

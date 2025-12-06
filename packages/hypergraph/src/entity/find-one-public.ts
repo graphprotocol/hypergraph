@@ -49,7 +49,11 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
   relationInfoLevel1: RelationTypeIdInfo[],
 ) => {
   if (!queryData.entity) {
-    return null;
+    return {
+      entity: null,
+      invalidEntity: null,
+      invalidRelationEntities: [],
+    };
   }
 
   const schemaWithId = Utils.addIdSchemaField(type);
@@ -80,11 +84,19 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
     }
   }
 
+  const { rawEntity: relationEntities, invalidRelations } = Utils.convertRelations(
+    queryEntity,
+    ast,
+    relationInfoLevel1,
+  );
   // @ts-expect-error
   rawEntity = {
     ...rawEntity,
-    ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1),
+    ...relationEntities,
   };
+  if (invalidRelations.length > 0) {
+    console.warn('Relation entities where decoding failed were dropped', invalidRelations);
+  }
 
   const decodeResult = decode({
     ...rawEntity,
@@ -92,13 +104,19 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
   });
 
   if (Either.isRight(decodeResult)) {
-    return { ...decodeResult.right } as Entity.Entity<S>;
+    return {
+      entity: { ...decodeResult.right } as Entity.Entity<S>,
+      invalidEntity: null,
+      invalidRelationEntities: invalidRelations,
+    };
   }
 
-  // if (process.env.NODE_ENV !== 'production') {
-  console.warn('Invalid entity', rawEntity);
-  // }
-  throw new Error('Invalid entity');
+  console.warn('Entity decoding failed', { raw: rawEntity, error: decodeResult.left });
+  return {
+    entity: null,
+    invalidEntity: { raw: rawEntity, error: decodeResult.left },
+    invalidRelationEntities: invalidRelations,
+  };
 };
 
 export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: S, params: FindOnePublicParams<S>) => {
