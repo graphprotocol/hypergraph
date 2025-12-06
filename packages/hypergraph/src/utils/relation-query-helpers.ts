@@ -2,24 +2,56 @@ import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
 
 type SpaceSelectionMode = 'single' | 'many' | 'all';
 
-const buildValuesListFilter = (spaceSelectionMode: SpaceSelectionMode) => {
-  if (spaceSelectionMode === 'single') {
-    return '(filter: {spaceId: {is: $spaceId}})';
+const stringifyUuidList = (spaces: readonly string[]) => `[${spaces.map((space) => JSON.stringify(space)).join(', ')}]`;
+
+const buildValuesListFilter = (
+  spaceSelectionMode: SpaceSelectionMode,
+  override?: RelationTypeIdInfo['valueSpaces'],
+) => {
+  if (!override) {
+    if (spaceSelectionMode === 'single') {
+      return '(filter: {spaceId: {is: $spaceId}})';
+    }
+    if (spaceSelectionMode === 'many') {
+      return '(filter: {spaceId: {in: $spaceIds}})';
+    }
+    return '';
   }
-  if (spaceSelectionMode === 'many') {
-    return '(filter: {spaceId: {in: $spaceIds}})';
+
+  if (override === 'all') {
+    return '';
   }
-  return '';
+
+  if (override.length === 0) {
+    return '';
+  }
+
+  return `(filter: {spaceId: {in: ${stringifyUuidList(override)}}})`;
 };
 
-const buildRelationSpaceFilter = (spaceSelectionMode: SpaceSelectionMode) => {
-  if (spaceSelectionMode === 'single') {
-    return 'spaceId: {is: $spaceId}, ';
+const buildRelationSpaceFilter = (
+  spaceSelectionMode: SpaceSelectionMode,
+  override?: RelationTypeIdInfo['relationSpaces'],
+) => {
+  if (!override) {
+    if (spaceSelectionMode === 'single') {
+      return 'spaceId: {is: $spaceId}, ';
+    }
+    if (spaceSelectionMode === 'many') {
+      return 'spaceId: {in: $spaceIds}, ';
+    }
+    return '';
   }
-  if (spaceSelectionMode === 'many') {
-    return 'spaceId: {in: $spaceIds}, ';
+
+  if (override === 'all') {
+    return '';
   }
-  return '';
+
+  if (override.length === 0) {
+    return '';
+  }
+
+  return `spaceId: {in: ${stringifyUuidList(override)}}, `;
 };
 
 export const getRelationAlias = (typeId: string) => `relations_${typeId.replace(/-/g, '_')}`;
@@ -31,8 +63,8 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spac
   const connectionField = listField === 'backlinks' ? 'backlinks' : 'relations';
   const toEntityField = listField === 'backlinks' ? 'fromEntity' : 'toEntity';
   const toEntitySelectionHeader = toEntityField === 'toEntity' ? 'toEntity' : `toEntity: ${toEntityField}`;
-  const valuesListFilter = buildValuesListFilter(spaceSelectionMode);
-  const relationSpaceFilter = buildRelationSpaceFilter(spaceSelectionMode);
+  const valuesListFilter = buildValuesListFilter(spaceSelectionMode, info.valueSpaces);
+  const relationSpaceFilter = buildRelationSpaceFilter(spaceSelectionMode, info.relationSpaces);
 
   if (!info.includeNodes && !info.includeTotalCount) {
     return '';
