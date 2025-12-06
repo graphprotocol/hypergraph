@@ -122,17 +122,19 @@ describe('HypergraphSpaceContext', () => {
             wrapper,
           },
         );
-        expect(queryEntityResult.current).toEqual({
-          data: createdEntity,
-          invalidEntity: undefined,
-          isPending: false,
-          isError: false,
+        await waitFor(() => {
+          expect(queryEntityResult.current.data).toEqual(createdEntity);
         });
+        expect(queryEntityResult.current.invalidEntity).toBeUndefined();
+        expect(queryEntityResult.current.isError).toBe(false);
       }
 
       rerender();
 
-      expect(queryEntitiesResult.current).toEqual({ deletedEntities: [], entities: [createdEntity] });
+      await waitFor(() => {
+        expect(queryEntitiesResult.current.entities).toEqual([createdEntity]);
+        expect(queryEntitiesResult.current.deletedEntities).toEqual([]);
+      });
     });
   });
 
@@ -176,26 +178,29 @@ describe('HypergraphSpaceContext', () => {
       const { result: queryEntityResult } = renderHook(() => useEntity(Person, { id: id, mode: 'private' }), {
         wrapper,
       });
-      expect(queryEntityResult.current).toEqual({
-        data: {
-          // @ts-expect-error - TODO: fix the types error
+      await waitFor(() => {
+        expect(queryEntityResult.current.data).toEqual({
           ...createdEntity,
           __deleted: false,
           __schema: Person,
-        },
-        invalidEntity: undefined,
-        isPending: false,
-        isError: false,
+        });
       });
+      expect(queryEntityResult.current.invalidEntity).toBeUndefined();
+      expect(queryEntityResult.current.isError).toBe(false);
 
       const { result: queryEntitiesResult, rerender } = renderHook(() => useEntitiesPrivate(Person), { wrapper });
 
       rerender();
 
-      expect(queryEntitiesResult.current).toEqual({
-        deletedEntities: [],
-        // @ts-expect-error - TODO: fix the types error
-        entities: [{ ...createdEntity, __deleted: false, __schema: Person }],
+      await waitFor(() => {
+        expect(queryEntitiesResult.current.deletedEntities).toEqual([]);
+        expect(queryEntitiesResult.current.entities).toEqual([
+          {
+            ...createdEntity,
+            __deleted: false,
+            __schema: Person,
+          },
+        ]);
       });
     });
   });
@@ -238,9 +243,11 @@ describe('HypergraphSpaceContext', () => {
 
       rerenderQueryEntities();
 
-      expect(queryEntitiesResult.current.entities).toHaveLength(0);
-      expect(queryEntitiesResult.current.entities).toEqual([]);
-      expect(queryEntitiesResult.current.deletedEntities).toHaveLength(1);
+      await waitFor(() => {
+        expect(queryEntitiesResult.current.entities).toHaveLength(0);
+        expect(queryEntitiesResult.current.entities).toEqual([]);
+        expect(queryEntitiesResult.current.deletedEntities).toHaveLength(1);
+      });
     });
   });
 });

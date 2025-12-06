@@ -1,10 +1,10 @@
 import { Id } from '@graphprotocol/grc-20';
 import { describe, expect, it } from 'vitest';
-import * as Entity from '../../src/entity/index.js';
 import { parseResult } from '../../src/entity/find-many-public.js';
+import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
-import { getRelationAlias } from '../../src/utils/relation-query-helpers.js';
 import { getRelationTypeIds } from '../../src/utils/get-relation-type-ids.js';
+import { getRelationAlias } from '../../src/utils/relation-query-helpers.js';
 
 const TITLE_PROPERTY_ID = Id('79c1a951-0074-4010-87d0-7501ef9d7b3d');
 const CHILDREN_RELATION_PROPERTY_ID = Id('ca7c7167-2502-49c4-90b0-84c147f9b12b');
@@ -36,7 +36,10 @@ const Parent = Entity.Schema(
   },
 );
 
-const buildValueEntry = (propertyId: string, value: Partial<{ string: string; boolean: boolean; number: number; time: string; point: string }> = {}) => ({
+const buildValueEntry = (
+  propertyId: string,
+  value: Partial<{ string: string; boolean: boolean; number: number; time: string; point: string }> = {},
+) => ({
   propertyId,
   string: value.string ?? '',
   boolean: value.boolean ?? false,
@@ -101,6 +104,7 @@ describe('findManyPublic parseResult', () => {
       ],
     };
 
+    // @ts-expect-error
     const result = parseResult(queryData, Parent, relationInfo);
 
     expect(result.data).toHaveLength(1);
@@ -113,5 +117,3 @@ describe('findManyPublic parseResult', () => {
     });
   });
 });
-
-

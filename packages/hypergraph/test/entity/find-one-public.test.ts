@@ -1,7 +1,7 @@
 import { Id } from '@graphprotocol/grc-20';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as Entity from '../../src/entity/index.js';
 import { findOnePublic } from '../../src/entity/find-one-public.js';
+import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { getRelationAlias } from '../../src/utils/relation-query-helpers.js';
 
@@ -41,7 +41,10 @@ const Parent = Entity.Schema(
   },
 );
 
-const buildValueEntry = (propertyId: string, value: Partial<{ string: string; boolean: boolean; number: number; time: string; point: string }> = {}) => ({
+const buildValueEntry = (
+  propertyId: string,
+  value: Partial<{ string: string; boolean: boolean; number: number; time: string; point: string }> = {},
+) => ({
   propertyId,
   string: value.string ?? '',
   boolean: value.boolean ?? false,
@@ -118,5 +121,3 @@ describe('findOnePublic', () => {
     });
   });
 });
-
-
