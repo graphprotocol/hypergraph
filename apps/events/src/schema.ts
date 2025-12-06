@@ -1,4 +1,4 @@
-import { SystemIds } from '@graphprotocol/grc-20';
+import { ContentIds, SystemIds } from '@graphprotocol/grc-20';
 import { Entity, Id, Type } from '@graphprotocol/hypergraph';
 
 export const User = Entity.Schema(
@@ -119,11 +119,24 @@ export const Project = Entity.Schema(
   },
 );
 
+export const Skill = Entity.Schema(
+  {
+    name: Type.String,
+  },
+  {
+    types: [ContentIds.SKILL_TYPE],
+    properties: {
+      name: SystemIds.NAME_PROPERTY,
+    },
+  },
+);
+
 export const Person = Entity.Schema(
   {
     name: Type.String,
     description: Type.optional(Type.String),
     avatar: Type.Relation(Image),
+    skills: Type.Relation(Skill),
   },
   {
     types: [Id('7ed45f2b-c48b-419e-8e46-64d5ff680b0d')],
@@ -131,6 +144,7 @@ export const Person = Entity.Schema(
       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
       description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
       avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
+      skills: Id(ContentIds.SKILLS_PROPERTY),
     },
   },
 );

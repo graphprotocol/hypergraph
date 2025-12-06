@@ -1,6 +1,6 @@
 import { useEntities, useEntity, usePublicSpaces } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Podcast, Topic } from '@/schema';
+import { Person, Podcast, Topic } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,
@@ -21,6 +21,25 @@ function RouteComponent() {
   //     console.log('searchManyPublic result:', result);
   //   }, 1000);
   // }, []);
+
+  const {
+    data: person,
+    invalidEntity: personInvalidEntity,
+    invalidRelationEntities: personInvalidRelationEntities,
+  } = useEntity(Person, {
+    id: '9800a4e8-8437-4310-9af6-ac91644f7c26',
+    mode: 'public',
+    space: '95a4a1cc-bfcc-4038-b7a1-02c513d27700',
+    include: {
+      skills: {
+        _config: {
+          relationSpaces: ['95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+          valueSpaces: ['021265e2-d839-47c3-8d03-0ee3dfb29ffc', '95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+        },
+      },
+    },
+  });
+  console.log({ person, personInvalidEntity, personInvalidRelationEntities });
 
   const {
     data: podcast,
