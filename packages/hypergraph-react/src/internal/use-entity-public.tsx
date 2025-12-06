@@ -24,7 +24,7 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
   );
 
   const result = useQueryTanstack({
-    queryKey: ['hypergraph-public-entity', id, typeIds, space, include, logInvalidResults],
+    queryKey: ['hypergraph-public-entity', id, typeIds, space, include],
     queryFn: async () => {
       return Entity.findOnePublic(type, {
         id,
