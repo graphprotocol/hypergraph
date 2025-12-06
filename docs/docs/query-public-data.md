@@ -90,7 +90,7 @@ const { data: project } = useEntity(Project, {
 - `relationSpaces` controls which spaces are searched for the relation edges themselves (`relations`/`backlinks`). Pass an array to whitelist specific spaces, `'all'` to drop the filter entirely, or `[]` if you intentionally want the branch to match nothing.
 - `valueSpaces` applies the same override to the `valuesList` lookups for the related entities. This lets you fetch relation edges from one space while trusting the canonical values that live in another.
 
-Overrides cascade to nested branches, so you can attach `_config` anywhere within the two supported include levels. Mix and match the settings per branch to stitch together data that spans multiple public spaces without issuing separate queries.
+Each nested branch can have its own `_config` settings,so you can attach `_config` anywhere within the two supported include levels. Mix and match the settings per branch to stitch together data that spans multiple public spaces without issuing separate queries.
 
 ### Querying from a specific space
 
