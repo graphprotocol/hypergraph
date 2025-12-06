@@ -124,6 +124,7 @@ export type HypergraphAppCtx = {
         error: string;
       };
   syncServerUri: string;
+  logInvalidResults: boolean;
 };
 
 export const HypergraphAppContext = createContext<HypergraphAppCtx>({
@@ -209,6 +210,7 @@ export const HypergraphAppContext = createContext<HypergraphAppCtx>({
     throw new Error('processConnectAuthSuccess is missing');
   },
   syncServerUri: '',
+  logInvalidResults: true,
 });
 
 export function useHypergraphApp() {
@@ -229,6 +231,7 @@ export type HypergraphAppProviderProps = Readonly<{
   chainId?: number;
   children: ReactNode;
   appId: string;
+  logInvalidResults?: boolean;
 }>;
 
 const mockStorage = {
@@ -245,6 +248,7 @@ export function HypergraphAppProvider({
   chainId = Connect.GEO_TESTNET.id,
   appId,
   children,
+  logInvalidResults = true,
 }: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [isConnecting, setIsConnecting] = useState(true);
@@ -1567,6 +1571,7 @@ export function HypergraphAppProvider({
         redirectToConnect: redirectToConnectForContext,
         processConnectAuthSuccess: processConnectAuthSuccessForContext,
         syncServerUri,
+        logInvalidResults,
       }}
     >
       <QueryClientProvider client={queryClient}>

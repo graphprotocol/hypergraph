@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup, renderHook } from '@testing-library/react';
+import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -33,11 +33,10 @@ describe('HypergraphAppContext', () => {
     const { result: authenticatedResult } = renderHook(() => useHypergraphAuth(), { wrapper });
     // hook won't work until the Provider loaded automerge and then renders the children
     expect(authenticatedResult.current).toEqual(null);
-    // after automerge is loaded, the hook will be rendered and the authenticated state will be set
-    // TODO: use something more reliable than setTimeout
-    setTimeout(() => {
-      expect(authenticatedResult.current.authenticated).toEqual(false);
-      expect(authenticatedResult.current.identity).toBeNull();
-    }, 50);
+    // wait until automerge is loaded and the provider exposes auth state
+    await waitFor(() => {
+      expect(authenticatedResult.current?.authenticated).toEqual(false);
+    });
+    expect(authenticatedResult.current?.identity).toBeNull();
   });
 });

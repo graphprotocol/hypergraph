@@ -11,10 +11,11 @@ type UseEntityPublicParams<S extends Schema.Schema.AnyNoContext> = {
   space?: string;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
+  logInvalidResults?: boolean;
 };
 
 export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntityPublicParams<S>) => {
-  const { id, enabled = true, space: spaceFromParams, include } = params;
+  const { id, enabled = true, space: spaceFromParams, include, logInvalidResults = true } = params;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
 
@@ -29,10 +30,16 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
         id,
         space,
         include,
+        logInvalidResults,
       });
     },
     enabled: enabled && !!id && !!space,
   });
 
-  return { ...result, data: result.data ?? null, invalidEntity: null };
+  return {
+    ...result,
+    data: result.data?.entity ?? null,
+    invalidEntity: result.data?.invalidEntity ?? null,
+    invalidRelationEntities: result.data?.invalidRelationEntities ?? [],
+  };
 };

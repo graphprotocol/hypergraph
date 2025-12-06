@@ -2,10 +2,11 @@ import { Graph } from '@graphprotocol/grc-20';
 import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Either from 'effect/Either';
 import * as Option from 'effect/Option';
+import type * as ParseResult from 'effect/ParseResult';
 import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { request } from 'graphql-request';
-import type { RelationsListWithNodes } from '../utils/convert-relations.js';
+import type { InvalidRelationEntity, RelationsListWithNodes } from '../utils/convert-relations.js';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 import type { SpaceSelection } from './internal/space-selection.js';
@@ -25,6 +26,7 @@ export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = SpaceSe
       }
     | undefined;
   backlinksTotalCountsTypeId1?: string | undefined;
+  logInvalidResults?: boolean | undefined;
 };
 
 const buildEntitiesQuery = (
@@ -110,6 +112,13 @@ type ValuesList = {
   point: string;
 }[];
 
+type RawEntity = Record<string, string | boolean | number | unknown[] | Date>;
+
+export type InvalidEntity = {
+  raw: RawEntity;
+  error: ParseResult.ParseError;
+};
+
 export type EntityQueryResult = {
   entities: ({
     id: string;
@@ -134,10 +143,11 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
   const schemaWithId = Utils.addIdSchemaField(type);
   const decode = Schema.decodeUnknownEither(schemaWithId);
   const data: (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[] = [];
-  const invalidEntities: Record<string, unknown>[] = [];
+  const invalidEntities: InvalidEntity[] = [];
+  const invalidRelationEntities: InvalidRelationEntity[] = [];
 
   for (const queryEntity of queryData.entities) {
-    let rawEntity: Record<string, string | boolean | number | unknown[] | Date> = {
+    let rawEntity: RawEntity = {
       id: queryEntity.id,
     };
 
@@ -162,11 +172,19 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
       }
     }
 
+    const { rawEntity: relationEntities, invalidRelations } = Utils.convertRelations(
+      queryEntity,
+      ast,
+      relationInfoLevel1,
+    );
     // @ts-expect-error
     rawEntity = {
       ...rawEntity,
-      ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1),
+      ...relationEntities,
     };
+    if (invalidRelations.length > 0) {
+      invalidRelationEntities.push(...invalidRelations);
+    }
 
     const decodeResult = decode({
       ...rawEntity,
@@ -181,10 +199,10 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
         backlinksTotalCountsTypeId1: queryEntity.backlinksTotalCountsTypeId1?.totalCount,
       });
     } else {
-      invalidEntities.push(rawEntity);
+      invalidEntities.push({ raw: rawEntity, error: decodeResult.left });
     }
   }
-  return { data, invalidEntities };
+  return { data, invalidEntities, invalidRelationEntities };
 };
 
 export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
@@ -200,6 +218,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     offset = 0,
     orderBy,
     backlinksTotalCountsTypeId1,
+    logInvalidResults = true,
   } = params ?? {};
 
   // constructing the relation type ids for the query
@@ -271,6 +290,14 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);
 
-  const { data, invalidEntities } = parseResult(result, type, relationTypeIds);
-  return { data, invalidEntities };
+  const { data, invalidEntities, invalidRelationEntities } = parseResult(result, type, relationTypeIds);
+  if (logInvalidResults) {
+    if (invalidEntities.length > 0) {
+      console.warn('Entities where decoding failed were dropped', invalidEntities);
+    }
+    if (invalidRelationEntities.length > 0) {
+      console.warn('Relation entities where decoding failed were dropped', invalidRelationEntities);
+    }
+  }
+  return { data, invalidEntities, invalidRelationEntities };
 };

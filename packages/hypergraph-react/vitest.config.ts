@@ -7,6 +7,8 @@ const config: UserConfigExport = {
   plugins: [react()],
   test: {
     environment: 'jsdom',
+    include: ['test/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['build/**', 'dist/**', 'publish/**', 'node_modules/**'],
   },
 };
 

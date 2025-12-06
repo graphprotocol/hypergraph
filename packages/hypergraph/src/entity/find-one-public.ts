@@ -18,6 +18,7 @@ export type FindOnePublicParams<S extends Schema.Schema.AnyNoContext> = {
   space: string;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
+  logInvalidResults?: boolean | undefined;
 };
 
 const buildEntityQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
@@ -49,7 +50,11 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
   relationInfoLevel1: RelationTypeIdInfo[],
 ) => {
   if (!queryData.entity) {
-    return null;
+    return {
+      entity: null,
+      invalidEntity: null,
+      invalidRelationEntities: [],
+    };
   }
 
   const schemaWithId = Utils.addIdSchemaField(type);
@@ -80,29 +85,38 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
     }
   }
 
+  const { rawEntity: relationEntities, invalidRelations } = Utils.convertRelations(
+    queryEntity,
+    ast,
+    relationInfoLevel1,
+  );
   // @ts-expect-error
   rawEntity = {
     ...rawEntity,
-    ...Utils.convertRelations(queryEntity, ast, relationInfoLevel1),
+    ...relationEntities,
   };
-
   const decodeResult = decode({
     ...rawEntity,
     __deleted: false,
   });
 
   if (Either.isRight(decodeResult)) {
-    return { ...decodeResult.right } as Entity.Entity<S>;
+    return {
+      entity: { ...decodeResult.right } as Entity.Entity<S>,
+      invalidEntity: null,
+      invalidRelationEntities: invalidRelations,
+    };
   }
 
-  // if (process.env.NODE_ENV !== 'production') {
-  console.warn('Invalid entity', rawEntity);
-  // }
-  throw new Error('Invalid entity');
+  return {
+    entity: null,
+    invalidEntity: { raw: rawEntity, error: decodeResult.left },
+    invalidRelationEntities: invalidRelations,
+  };
 };
 
 export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: S, params: FindOnePublicParams<S>) => {
-  const { id, space, include } = params;
+  const { id, space, include, logInvalidResults = true } = params;
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -114,5 +128,14 @@ export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: 
     spaceId: space,
   });
 
-  return parseResult(result, type, relationTypeIds);
+  const parsed = parseResult(result, type, relationTypeIds);
+  if (logInvalidResults) {
+    if (parsed.invalidEntity) {
+      console.warn('Entity decoding failed', parsed.invalidEntity);
+    }
+    if (parsed.invalidRelationEntities.length > 0) {
+      console.warn('Relation entities where decoding failed were dropped', parsed.invalidRelationEntities);
+    }
+  }
+  return parsed;
 };

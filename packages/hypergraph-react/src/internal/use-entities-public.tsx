@@ -17,6 +17,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
     offset,
     orderBy,
     backlinksTotalCountsTypeId1,
+    logInvalidResults = true,
   } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
@@ -46,10 +47,16 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
         offset,
         orderBy,
         backlinksTotalCountsTypeId1,
+        logInvalidResults,
       });
     },
     enabled,
   });
 
-  return { ...result, data: result.data?.data || [], invalidEntities: result.data?.invalidEntities || [] };
+  return {
+    ...result,
+    data: result.data?.data || [],
+    invalidEntities: result.data?.invalidEntities || [],
+    invalidRelationEntities: result.data?.invalidRelationEntities || [],
+  };
 };

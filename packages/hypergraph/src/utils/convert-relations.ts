@@ -1,6 +1,8 @@
 import { Constants, Utils } from '@graphprotocol/hypergraph';
+import * as Either from 'effect/Either';
 import * as Option from 'effect/Option';
-import type * as Schema from 'effect/Schema';
+import type * as ParseResult from 'effect/ParseResult';
+import * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { convertPropertyValue } from './convert-property-value.js';
 import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
@@ -46,12 +48,30 @@ type RecursiveQueryEntity = {
 type RawEntityValue = string | boolean | number | unknown[] | Date | { id: string };
 type RawEntity = Record<string, RawEntityValue>;
 type NestedRawEntity = RawEntity & { _relation: { id: string } & Record<string, RawEntityValue> };
+
+export type InvalidRelationEntity = {
+  parentEntityId: string;
+  propertyName: string;
+  propertyTypeId: string;
+  relationId: string;
+  relationTypeId: string;
+  toEntityId: string;
+  raw: NestedRawEntity;
+  error: ParseResult.ParseError;
+};
+
+type ConvertRelationsResult = {
+  rawEntity: RawEntity;
+  invalidRelations: InvalidRelationEntity[];
+};
+
 export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
   queryEntity: RecursiveQueryEntity,
   ast: SchemaAST.TypeLiteral,
   relationInfo: RelationTypeIdInfo[] = [],
-) => {
+): ConvertRelationsResult => {
   const rawEntity: RawEntity = {};
+  const invalidRelations: InvalidRelationEntity[] = [];
 
   for (const prop of ast.propertySignatures) {
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
@@ -93,6 +113,9 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
         }
       }
 
+      const relationSchema = Schema.make(relationTransformation);
+      const decodeRelation = Schema.decodeUnknownEither(relationSchema);
+
       if (allRelationsWithTheCorrectPropertyTypeId) {
         for (const relationEntry of allRelationsWithTheCorrectPropertyTypeId) {
           let nestedRawEntity: NestedRawEntity = {
@@ -102,7 +125,7 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
             },
           };
 
-          const relationsForRawNestedEntity = convertRelations(
+          const childConversion = convertRelations(
             relationEntry.toEntity,
             relationTransformation,
             relationMetadata?.children ?? [],
@@ -110,8 +133,9 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
 
           nestedRawEntity = {
             ...nestedRawEntity,
-            ...relationsForRawNestedEntity,
+            ...childConversion.rawEntity,
           };
+          invalidRelations.push(...childConversion.invalidRelations);
 
           for (const nestedProp of relationTransformation.propertySignatures) {
             const propType =
@@ -156,8 +180,21 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
             }
           }
 
-          // TODO: in the end every entry should be validated using the Schema?!?
-          rawEntity[String(prop.name)] = [...(rawEntity[String(prop.name)] as unknown[]), nestedRawEntity];
+          const decodedRelation = decodeRelation(nestedRawEntity);
+          if (Either.isRight(decodedRelation)) {
+            rawEntity[String(prop.name)] = [...(rawEntity[String(prop.name)] as unknown[]), nestedRawEntity];
+          } else {
+            invalidRelations.push({
+              parentEntityId: queryEntity.id,
+              propertyName: String(prop.name),
+              propertyTypeId: result.value,
+              relationId: relationEntry.id,
+              relationTypeId: relationEntry.typeId,
+              toEntityId: relationEntry.toEntity.id,
+              raw: nestedRawEntity,
+              error: decodedRelation.left,
+            });
+          }
         }
       }
 
@@ -167,5 +204,5 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
     }
   }
 
-  return rawEntity;
+  return { rawEntity, invalidRelations };
 };
