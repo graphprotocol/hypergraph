@@ -83,7 +83,7 @@ Please learn more about filtering in the [Filtering query results](#filtering-qu
 
 ### Returned data
 
-useEntities for private data returns:
+useEntities for public data returns:
 
 - data - a list of entities defined in your schema
 - invalidEntities - each entry includes the invalid raw payload (`raw`) plus the corresponding `error` explaining why decoding failed
