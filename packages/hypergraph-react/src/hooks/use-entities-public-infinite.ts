@@ -3,6 +3,7 @@ import { useInfiniteQuery as useInfiniteQueryTanstack } from '@tanstack/react-qu
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
+import { useHypergraphApp } from '../HypergraphAppContext.js';
 import type { QueryPublicParams } from '../internal/types.js';
 import { useHypergraphSpaceInternal } from '../internal/use-hypergraph-space-internal.js';
 
@@ -10,8 +11,19 @@ export const useEntitiesPublicInfinite = <S extends Schema.Schema.AnyNoContext>(
   type: S,
   params?: QueryPublicParams<S>,
 ) => {
-  const { enabled = true, filter, include, space: spaceFromParams, spaces, first = 2, offset = 0 } = params ?? {};
+  const {
+    enabled = true,
+    filter,
+    include,
+    space: spaceFromParams,
+    spaces,
+    first = 2,
+    offset = 0,
+    logInvalidResults: logInvalidResultsParam,
+  } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
+  const { logInvalidResults: contextLogInvalidResults = true } = useHypergraphApp();
+  const logInvalidResults = logInvalidResultsParam ?? contextLogInvalidResults ?? true;
   const space = spaceFromParams ?? spaceFromContext;
   const spaceSelectionKey = spaces ?? space;
   const typeIds = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(type.ast as SchemaAST.TypeLiteral).pipe(
@@ -27,6 +39,7 @@ export const useEntitiesPublicInfinite = <S extends Schema.Schema.AnyNoContext>(
         ...(spaces ? { spaces } : { space }),
         first,
         offset: pageParam,
+        logInvalidResults,
       });
     },
     getNextPageParam: (_lastPage, pages) => {

@@ -26,6 +26,7 @@ export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = SpaceSe
       }
     | undefined;
   backlinksTotalCountsTypeId1?: string | undefined;
+  logInvalidResults?: boolean | undefined;
 };
 
 const buildEntitiesQuery = (
@@ -217,6 +218,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     offset = 0,
     orderBy,
     backlinksTotalCountsTypeId1,
+    logInvalidResults = true,
   } = params ?? {};
 
   // constructing the relation type ids for the query
@@ -289,11 +291,13 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);
 
   const { data, invalidEntities, invalidRelationEntities } = parseResult(result, type, relationTypeIds);
-  if (invalidEntities.length > 0) {
-    console.warn('Entities where decoding failed were dropped', invalidEntities);
-  }
-  if (invalidRelationEntities.length > 0) {
-    console.warn('Relation entities where decoding failed were dropped', invalidRelationEntities);
+  if (logInvalidResults) {
+    if (invalidEntities.length > 0) {
+      console.warn('Entities where decoding failed were dropped', invalidEntities);
+    }
+    if (invalidRelationEntities.length > 0) {
+      console.warn('Relation entities where decoding failed were dropped', invalidRelationEntities);
+    }
   }
   return { data, invalidEntities, invalidRelationEntities };
 };

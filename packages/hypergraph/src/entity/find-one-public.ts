@@ -18,6 +18,7 @@ export type FindOnePublicParams<S extends Schema.Schema.AnyNoContext> = {
   space: string;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
+  logInvalidResults?: boolean | undefined;
 };
 
 const buildEntityQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
@@ -94,10 +95,6 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
     ...rawEntity,
     ...relationEntities,
   };
-  if (invalidRelations.length > 0) {
-    console.warn('Relation entities where decoding failed were dropped', invalidRelations);
-  }
-
   const decodeResult = decode({
     ...rawEntity,
     __deleted: false,
@@ -111,7 +108,6 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
     };
   }
 
-  console.warn('Entity decoding failed', { raw: rawEntity, error: decodeResult.left });
   return {
     entity: null,
     invalidEntity: { raw: rawEntity, error: decodeResult.left },
@@ -120,7 +116,7 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
 };
 
 export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: S, params: FindOnePublicParams<S>) => {
-  const { id, space, include } = params;
+  const { id, space, include, logInvalidResults = true } = params;
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -132,5 +128,14 @@ export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: 
     spaceId: space,
   });
 
-  return parseResult(result, type, relationTypeIds);
+  const parsed = parseResult(result, type, relationTypeIds);
+  if (logInvalidResults) {
+    if (parsed.invalidEntity) {
+      console.warn('Entity decoding failed', parsed.invalidEntity);
+    }
+    if (parsed.invalidRelationEntities.length > 0) {
+      console.warn('Relation entities where decoding failed were dropped', parsed.invalidRelationEntities);
+    }
+  }
+  return parsed;
 };

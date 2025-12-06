@@ -1,5 +1,6 @@
 import type { Entity, Id } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
+import { useHypergraphApp } from '../HypergraphAppContext.js';
 import { useEntityPrivate } from '../internal/use-entity-private.js';
 import { useEntityPublic } from '../internal/use-entity-public.js';
 
@@ -10,12 +11,20 @@ export function useEntity<const S extends Schema.Schema.AnyNoContext>(
     space?: string;
     mode: 'private' | 'public';
     include?: Entity.EntityInclude<S> | undefined;
+    logInvalidResults?: boolean;
   },
 ) {
-  const resultPublic = useEntityPublic(type, { ...params, enabled: params.mode === 'public' });
-  const resultPrivate = useEntityPrivate(type, { ...params, enabled: params.mode === 'private' });
+  const { mode, logInvalidResults: logInvalidResultsParam, ...restParams } = params;
+  const { logInvalidResults: contextLogInvalidResults = true } = useHypergraphApp();
+  const logInvalidResults = logInvalidResultsParam ?? contextLogInvalidResults ?? true;
+  const resultPublic = useEntityPublic(type, {
+    ...restParams,
+    logInvalidResults,
+    enabled: mode === 'public',
+  });
+  const resultPrivate = useEntityPrivate(type, { ...restParams, enabled: mode === 'private' });
 
-  if (params.mode === 'public') {
+  if (mode === 'public') {
     return resultPublic;
   }
 
