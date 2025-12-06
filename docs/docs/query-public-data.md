@@ -62,6 +62,36 @@ const { data, isPending, isError } = useEntities(Event, {
 
 For deeper relations you can use the `include` parameter multiple levels deep. Currently two levels of relations are supported for public data.
 
+#### Controlling include scopes with `_config`
+
+Each branch within `include` can optionally carry a `_config` object that lets you override which spaces Hypergraph will inspect for the relation edges and the related entity values. When you omit `_config`, the query automatically reuses the `space`/`spaces` selection you passed to `useEntities`, `useEntity`, `Entity.findOnePublic`, `Entity.findManyPublic` and `Entity.searchManyPublic` helpers.
+
+```ts
+const { data: project } = useEntity(Project, {
+  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  mode: 'public',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  include: {
+    contributors: {
+      _config: {
+        relationSpaces: ['3f32353d-3b27-4a13-b71a-746f06e1f7db', '95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+        valueSpaces: 'all',
+      },
+      organizations: {
+        _config: {
+          valueSpaces: ['95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+        },
+      },
+    },
+  },
+});
+```
+
+- `relationSpaces` controls which spaces are searched for the relation edges themselves (`relations`/`backlinks`). Pass an array to whitelist specific spaces, `'all'` to drop the filter entirely, or `[]` if you intentionally want the branch to match nothing.
+- `valueSpaces` applies the same override to the `valuesList` lookups for the related entities. This lets you fetch relation edges from one space while trusting the canonical values that live in another.
+
+Overrides cascade to nested branches, so you can attach `_config` anywhere within the two supported include levels. Mix and match the settings per branch to stitch together data that spans multiple public spaces without issuing separate queries.
+
 ### Querying from a specific space
 
 You can also query from a specific space by passing in the `space` parameter.
