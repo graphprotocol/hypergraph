@@ -58,6 +58,12 @@ const buildRelationSpaceFilter = (
 
 export const getRelationAlias = (typeId: string) => `relations_${typeId.replace(/-/g, '_')}`;
 
+const buildRelationTypeIdsFilter = (listField: RelationTypeIdInfo['listField'], typeIds?: readonly string[]) => {
+  if (!typeIds || typeIds.length === 0) return '';
+  const relationField = listField === 'backlinks' ? 'fromEntity' : 'toEntity';
+  return `${relationField}: { typeIds: { in: ${formatGraphQLStringArray(typeIds)} } }, `;
+};
+
 const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spaceSelectionMode: SpaceSelectionMode) => {
   const alias = getRelationAlias(info.typeId);
   const nestedPlaceholder = info.includeNodes && level === 1 ? '__LEVEL2_RELATIONS__' : '';
@@ -67,6 +73,7 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spac
   const toEntitySelectionHeader = toEntityField === 'toEntity' ? 'toEntity' : `toEntity: ${toEntityField}`;
   const valuesListFilter = buildValuesListFilter(spaceSelectionMode, info.valueSpaces);
   const relationSpaceFilter = buildRelationSpaceFilter(spaceSelectionMode, info.relationSpaces);
+  const relationEntityTypeFilter = buildRelationTypeIdsFilter(listField, info.targetTypeIds);
 
   if (!info.includeNodes && !info.includeTotalCount) {
     return '';
@@ -110,7 +117,7 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spac
 
   return `
     ${alias}: ${connectionField}(
-      filter: {${relationSpaceFilter}typeId: {is: "${info.typeId}"}},
+      filter: {${relationSpaceFilter}${relationEntityTypeFilter}typeId: {is: "${info.typeId}"}},
     ) {${totalCountSelection}${nodesSelection}
     }`;
 };
