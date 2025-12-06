@@ -50,15 +50,24 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
         Option.getOrElse(() => false),
       );
       const listField: RelationListField = isBacklink ? 'backlinks' : 'relations';
-      const level1Info: RelationTypeIdInfo = {
+      const relationSpaces = includeBranch?._config?.relationSpaces;
+      const valueSpaces = includeBranch?._config?.valueSpaces;
+
+      const level1InfoBase: RelationTypeIdInfo = {
         typeId: result.value,
         propertyName,
         listField,
         includeNodes,
         includeTotalCount,
-        relationSpaces: includeBranch?._config?.relationSpaces,
-        valueSpaces: includeBranch?._config?.valueSpaces,
       };
+      const level1Info: RelationTypeIdInfo =
+        relationSpaces === undefined && valueSpaces === undefined
+          ? level1InfoBase
+          : {
+              ...level1InfoBase,
+              ...(relationSpaces !== undefined ? { relationSpaces } : {}),
+              ...(valueSpaces !== undefined ? { valueSpaces } : {}),
+            };
       const nestedRelations: RelationTypeIdInfo[] = [];
 
       if (!SchemaAST.isTupleType(prop.type)) {
@@ -98,15 +107,23 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
               nestedProp.type,
             ).pipe(Option.getOrElse(() => false));
             const nestedListField: RelationListField = nestedIsBacklink ? 'backlinks' : 'relations';
-            const nestedInfo: RelationTypeIdInfo = {
+            const nestedRelationSpaces = nestedIncludeBranch?._config?.relationSpaces;
+            const nestedValueSpaces = nestedIncludeBranch?._config?.valueSpaces;
+            const nestedInfoBase: RelationTypeIdInfo = {
               typeId: nestedResult.value,
               propertyName: nestedPropertyName,
               listField: nestedListField,
               includeNodes: nestedIncludeNodes,
               includeTotalCount: nestedIncludeTotalCount,
-              relationSpaces: nestedIncludeBranch?._config?.relationSpaces,
-              valueSpaces: nestedIncludeBranch?._config?.valueSpaces,
             };
+            const nestedInfo: RelationTypeIdInfo =
+              nestedRelationSpaces === undefined && nestedValueSpaces === undefined
+                ? nestedInfoBase
+                : {
+                    ...nestedInfoBase,
+                    ...(nestedRelationSpaces !== undefined ? { relationSpaces: nestedRelationSpaces } : {}),
+                    ...(nestedValueSpaces !== undefined ? { valueSpaces: nestedValueSpaces } : {}),
+                  };
             nestedRelations.push(nestedInfo);
           }
         }
