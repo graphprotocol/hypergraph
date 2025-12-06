@@ -2,8 +2,17 @@ import type * as Schema from 'effect/Schema';
 
 type SchemaKey<S extends Schema.Schema.AnyNoContext> = Extract<keyof Schema.Schema.Type<S>, string>;
 
+export type RelationSpacesOverride = 'all' | readonly string[];
+
+export type RelationIncludeConfig = {
+  relationSpaces?: RelationSpacesOverride;
+  valueSpaces?: RelationSpacesOverride;
+};
+
 export type RelationIncludeBranch = {
-  [key: string]: RelationIncludeBranch | boolean | undefined;
+  _config?: RelationIncludeConfig;
+} & {
+  [key: string]: RelationIncludeBranch | RelationIncludeConfig | boolean | undefined;
 };
 
 export type EntityInclude<S extends Schema.Schema.AnyNoContext> = Partial<

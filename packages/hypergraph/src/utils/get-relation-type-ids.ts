@@ -2,7 +2,7 @@ import { Constants, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
-import type { EntityInclude, RelationIncludeBranch } from '../entity/types.js';
+import type { EntityInclude, RelationIncludeBranch, RelationSpacesOverride } from '../entity/types.js';
 
 export type RelationListField = 'relations' | 'backlinks';
 
@@ -12,6 +12,8 @@ export type RelationTypeIdInfo = {
   listField: RelationListField;
   includeNodes: boolean;
   includeTotalCount: boolean;
+  relationSpaces?: RelationSpacesOverride;
+  valueSpaces?: RelationSpacesOverride;
   children?: RelationTypeIdInfo[];
 };
 
@@ -35,8 +37,9 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
     const result = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(prop.type);
     if (Option.isSome(result)) {
       const propertyName = String(prop.name);
-      const includeBranch = include?.[propertyName as keyof EntityInclude<S>] as RelationIncludeBranch | undefined;
-      const includeNodes = isRelationIncludeBranch(includeBranch);
+      const includeBranchCandidate = include?.[propertyName as keyof EntityInclude<S>];
+      const includeBranch = isRelationIncludeBranch(includeBranchCandidate) ? includeBranchCandidate : undefined;
+      const includeNodes = Boolean(includeBranch);
       const includeTotalCount = hasTotalCountFlag(include as Record<string, unknown> | undefined, propertyName);
 
       if (!includeNodes && !includeTotalCount) {
@@ -47,13 +50,24 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
         Option.getOrElse(() => false),
       );
       const listField: RelationListField = isBacklink ? 'backlinks' : 'relations';
-      const level1Info: RelationTypeIdInfo = {
+      const relationSpaces = includeBranch?._config?.relationSpaces;
+      const valueSpaces = includeBranch?._config?.valueSpaces;
+
+      const level1InfoBase: RelationTypeIdInfo = {
         typeId: result.value,
         propertyName,
         listField,
         includeNodes,
         includeTotalCount,
       };
+      const level1Info: RelationTypeIdInfo =
+        relationSpaces === undefined && valueSpaces === undefined
+          ? level1InfoBase
+          : {
+              ...level1InfoBase,
+              ...(relationSpaces !== undefined ? { relationSpaces } : {}),
+              ...(valueSpaces !== undefined ? { valueSpaces } : {}),
+            };
       const nestedRelations: RelationTypeIdInfo[] = [];
 
       if (!SchemaAST.isTupleType(prop.type)) {
@@ -78,8 +92,11 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
 
           const nestedResult = SchemaAST.getAnnotation<string>(Constants.PropertyIdSymbol)(nestedProp.type);
           const nestedPropertyName = String(nestedProp.name);
-          const nestedIncludeBranch = includeBranch?.[nestedPropertyName];
-          const nestedIncludeNodes = isRelationIncludeBranch(nestedIncludeBranch);
+          const nestedIncludeBranchCandidate = includeBranch?.[nestedPropertyName];
+          const nestedIncludeBranch = isRelationIncludeBranch(nestedIncludeBranchCandidate)
+            ? nestedIncludeBranchCandidate
+            : undefined;
+          const nestedIncludeNodes = Boolean(nestedIncludeBranch);
           const nestedIncludeTotalCount = hasTotalCountFlag(
             includeBranch as Record<string, unknown> | undefined,
             nestedPropertyName,
@@ -90,13 +107,23 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
               nestedProp.type,
             ).pipe(Option.getOrElse(() => false));
             const nestedListField: RelationListField = nestedIsBacklink ? 'backlinks' : 'relations';
-            const nestedInfo: RelationTypeIdInfo = {
+            const nestedRelationSpaces = nestedIncludeBranch?._config?.relationSpaces;
+            const nestedValueSpaces = nestedIncludeBranch?._config?.valueSpaces;
+            const nestedInfoBase: RelationTypeIdInfo = {
               typeId: nestedResult.value,
               propertyName: nestedPropertyName,
               listField: nestedListField,
               includeNodes: nestedIncludeNodes,
               includeTotalCount: nestedIncludeTotalCount,
             };
+            const nestedInfo: RelationTypeIdInfo =
+              nestedRelationSpaces === undefined && nestedValueSpaces === undefined
+                ? nestedInfoBase
+                : {
+                    ...nestedInfoBase,
+                    ...(nestedRelationSpaces !== undefined ? { relationSpaces: nestedRelationSpaces } : {}),
+                    ...(nestedValueSpaces !== undefined ? { valueSpaces: nestedValueSpaces } : {}),
+                  };
             nestedRelations.push(nestedInfo);
           }
         }
