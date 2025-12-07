@@ -1,29 +1,52 @@
 import { Constants, Entity } from '@graphprotocol/hypergraph';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 
-type UseEntityPublicParams<S extends Schema.Schema.AnyNoContext> = {
+type UseEntityPublicParams<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined = boolean | undefined,
+> = {
   id: string;
   enabled?: boolean;
   space?: string;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
-  includeSpaceIds?: boolean | undefined;
+  includeSpaceIds?: IncludeSpaceIds;
   logInvalidResults?: boolean;
 };
 
-export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntityPublicParams<S>) => {
+type FindOnePublicResult<S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined> = Awaited<
+  ReturnType<typeof Entity.findOnePublic<S, IncludeSpaceIds>>
+>;
+
+export type UseEntityPublicResult<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined,
+> = Omit<UseQueryResult<FindOnePublicResult<S, IncludeSpaceIds>, Error>, 'data'> & {
+  data: FindOnePublicResult<S, IncludeSpaceIds>['entity'];
+  invalidEntity: FindOnePublicResult<S, IncludeSpaceIds>['invalidEntity'];
+  invalidRelationEntities: FindOnePublicResult<S, IncludeSpaceIds>['invalidRelationEntities'];
+};
+
+type UseEntityPublicFn = <S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined = false>(
+  type: S,
+  params: UseEntityPublicParams<S, IncludeSpaceIds>,
+) => UseEntityPublicResult<S, IncludeSpaceIds>;
+
+export const useEntityPublic: UseEntityPublicFn = (type, params) => {
   const {
     id,
     enabled = true,
     space: spaceFromParams,
     include,
-    includeSpaceIds = false,
+    includeSpaceIds: includeSpaceIdsParam,
     logInvalidResults = true,
   } = params;
+  const includeSpaceIds = includeSpaceIdsParam ?? false;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
 
@@ -38,7 +61,7 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
         id,
         space,
         include,
-        includeSpaceIds,
+        ...(includeSpaceIdsParam !== undefined ? { includeSpaceIds: includeSpaceIdsParam } : {}),
         logInvalidResults,
       });
     },

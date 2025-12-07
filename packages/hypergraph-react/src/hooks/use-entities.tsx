@@ -2,7 +2,7 @@ import type { Entity } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { useHypergraphApp } from '../HypergraphAppContext.js';
 import { useEntitiesPrivate } from '../internal/use-entities-private.js';
-import { useEntitiesPublic } from '../internal/use-entities-public.js';
+import { type UseEntitiesPublicResult, useEntitiesPublic } from '../internal/use-entities-public.js';
 import { useHypergraphSpaceInternal } from '../internal/use-hypergraph-space-internal.js';
 
 type SpaceSelectionInputOptionInContext = {
@@ -10,11 +10,12 @@ type SpaceSelectionInputOptionInContext = {
   spaces?: never;
 };
 
-type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = (
-  | Entity.SpaceSelectionInput
-  | SpaceSelectionInputOptionInContext
-) & {
-  mode: 'public' | 'private';
+type UseEntitiesParams<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined = boolean | undefined,
+  Mode extends 'public' | 'private' = 'public' | 'private',
+> = (Entity.SpaceSelectionInput | SpaceSelectionInputOptionInContext) & {
+  mode: Mode;
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
@@ -27,11 +28,34 @@ type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = (
       }
     | undefined;
   backlinksTotalCountsTypeId1?: string | undefined;
-  includeSpaceIds?: boolean | undefined;
+  includeSpaceIds?: IncludeSpaceIds;
   logInvalidResults?: boolean;
 };
 
-export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntitiesParams<S>) {
+type UseEntitiesPublicReturn<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined,
+> = UseEntitiesPublicResult<S, IncludeSpaceIds> & { deleted: [] };
+
+type UseEntitiesPrivateResult<S extends Schema.Schema.AnyNoContext> = Omit<
+  UseEntitiesPublicResult<S, false>,
+  'data'
+> & {
+  data: (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[];
+  deleted: Entity.Entity<S>[];
+};
+
+type UseEntitiesResult<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined,
+  Mode extends 'public' | 'private',
+> = Mode extends 'public' ? UseEntitiesPublicReturn<S, IncludeSpaceIds> : UseEntitiesPrivateResult<S>;
+
+export function useEntities<
+  const S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined = false,
+  Mode extends 'public' | 'private' = 'public',
+>(type: S, params: UseEntitiesParams<S, IncludeSpaceIds, Mode>): UseEntitiesResult<S, IncludeSpaceIds, Mode> {
   const {
     mode,
     filter,
@@ -50,7 +74,7 @@ export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S,
   const logInvalidResults = logInvalidResultsParam ?? contextLogInvalidResults ?? true;
   const resolvedSpace = space ?? spaceFromContext;
   const publicSpaceParams = spaces ? { spaces } : { space: resolvedSpace };
-  const publicResult = useEntitiesPublic(type, {
+  const publicResult = useEntitiesPublic<S, IncludeSpaceIds>(type, {
     enabled: mode === 'public',
     filter,
     include,
@@ -58,7 +82,7 @@ export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S,
     offset,
     orderBy,
     backlinksTotalCountsTypeId1,
-    includeSpaceIds,
+    ...(includeSpaceIds !== undefined ? { includeSpaceIds } : {}),
     ...publicSpaceParams,
     logInvalidResults,
   });
@@ -68,12 +92,12 @@ export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S,
     return {
       ...publicResult,
       deleted: [],
-    };
+    } as UseEntitiesResult<S, IncludeSpaceIds, Mode>;
   }
 
   return {
     ...publicResult,
     data: localResult.entities as (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[],
     deleted: localResult.deletedEntities,
-  };
+  } as UseEntitiesResult<S, IncludeSpaceIds, Mode>;
 }

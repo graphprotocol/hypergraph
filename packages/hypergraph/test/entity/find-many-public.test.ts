@@ -56,14 +56,14 @@ describe('findManyPublic parseResult', () => {
           id: 'parent-valid',
           name: 'Parent valid',
           valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { string: 'Parent valid' })],
-          spaceIds: null,
+          spaceIds: [],
           backlinksTotalCountsTypeId1: null,
         },
         {
           id: 'parent-invalid',
           name: 'Parent invalid',
           valuesList: [],
-          spaceIds: null,
+          spaceIds: [],
           backlinksTotalCountsTypeId1: null,
         },
       ],
@@ -87,7 +87,7 @@ describe('findManyPublic parseResult', () => {
           id: 'parent-with-invalid-child',
           name: 'Parent with invalid child',
           valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { string: 'Parent with invalid child' })],
-          spaceIds: null,
+          spaceIds: [],
           backlinksTotalCountsTypeId1: null,
           [relationAlias]: {
             nodes: [
@@ -136,6 +136,7 @@ describe('findManyPublic parseResult', () => {
     const result = parseResult(queryData, Parent, [], { includeSpaceIds: true });
 
     expect(result.data).toHaveLength(1);
-    expect(result.data[0].spaceIds).toEqual(['space-1', 'space-2']);
+    const entityWithSpaceIds = result.data[0] as { spaceIds?: string[] };
+    expect(entityWithSpaceIds.spaceIds).toEqual(['space-1', 'space-2']);
   });
 });
