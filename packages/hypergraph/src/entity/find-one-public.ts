@@ -68,7 +68,7 @@ const parseResult = <S extends Schema.Schema.AnyNoContext, IncludeSpaceIds exten
   relationInfoLevel1: RelationTypeIdInfo[],
   options?: { includeSpaceIds?: IncludeSpaceIds },
 ): ParseResultResult<S, IncludeSpaceIds> => {
-  const includeSpaceIds = (options?.includeSpaceIds ?? false) as IncludeSpaceIds;
+  const includeSpaceIds = options?.includeSpaceIds;
   if (!queryData.entity) {
     return {
       entity: null,
