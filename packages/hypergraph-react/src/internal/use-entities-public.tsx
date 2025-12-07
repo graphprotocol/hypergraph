@@ -35,7 +35,6 @@ export const useEntitiesPublic: UseEntitiesPublicFn = (type, params) => {
     first = 100,
     offset,
     orderBy,
-    backlinksTotalCountsTypeId1,
     includeSpaceIds: includeSpaceIdsParam,
     logInvalidResults = true,
   } = params ?? {};
@@ -57,7 +56,6 @@ export const useEntitiesPublic: UseEntitiesPublicFn = (type, params) => {
       first,
       offset,
       orderBy,
-      backlinksTotalCountsTypeId1,
       includeSpaceIds,
     ],
     queryFn: async () => {
@@ -68,7 +66,6 @@ export const useEntitiesPublic: UseEntitiesPublicFn = (type, params) => {
         first,
         offset,
         orderBy,
-        backlinksTotalCountsTypeId1,
         ...(includeSpaceIdsParam !== undefined ? { includeSpaceIds: includeSpaceIdsParam } : {}),
         logInvalidResults,
       });

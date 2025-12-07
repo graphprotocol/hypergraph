@@ -29,7 +29,6 @@ export type FindManyPublicParams<
         direction: 'asc' | 'desc';
       }
     | undefined;
-  backlinksTotalCountsTypeId1?: string | undefined;
   includeSpaceIds?: IncludeSpaceIds;
   logInvalidResults?: boolean | undefined;
 };
@@ -56,8 +55,6 @@ const buildEntitiesQuery = (
     '$first: Int',
     '$filter: EntityFilter!',
     '$offset: Int',
-    '$backlinksTotalCountsTypeId1: UUID',
-    '$backlinksTotalCountsTypeId1Present: Boolean!',
   ]
     .filter(Boolean)
     .join(', ');
@@ -74,12 +71,6 @@ const buildEntitiesQuery = (
       ? '(filter: { spaceId: { is: $spaceId } })'
       : spaceSelection.mode === 'many'
         ? '(filter: { spaceId: { in: $spaceIds } })'
-        : '';
-  const backlinksSpaceFilter =
-    spaceSelection.mode === 'single'
-      ? 'spaceId: {is: $spaceId}, '
-      : spaceSelection.mode === 'many'
-        ? 'spaceId: {in: $spaceIds}, '
         : '';
 
   return `
@@ -101,9 +92,6 @@ query ${queryName}(${variableDefinitions}) {
       number
       time
       point
-    }
-    backlinksTotalCountsTypeId1: backlinks(filter: { ${backlinksSpaceFilter}fromEntity: { typeIds: { is: [$backlinksTotalCountsTypeId1] } }}) @include(if: $backlinksTotalCountsTypeId1Present) {
-      totalCount
     }
     ${level1Relations}
   }
@@ -132,9 +120,6 @@ export type EntityQueryResult = {
     name: string;
     spaceIds: readonly (string | null)[] | null;
     valuesList: ValuesList;
-    backlinksTotalCountsTypeId1: {
-      totalCount: number;
-    } | null;
   } & {
     // For aliased relations_* fields - provides proper typing with totalCount
     [K: `relations_${string}`]: RelationsListWithNodes | undefined;
@@ -148,7 +133,6 @@ type ParsedEntity<
   IncludeSpaceIds extends boolean | undefined,
 > = Entity.WithSpaceIds<Entity.Entity<S>, IncludeSpaceIds> & {
   __schema: S;
-  backlinksTotalCountsTypeId1?: number;
 };
 
 export type FindManyParseResult<S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined> = {
@@ -219,7 +203,6 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext, IncludeSpaceId
       const baseEntity = {
         ...decodeResult.right,
         __schema: type,
-        backlinksTotalCountsTypeId1: queryEntity.backlinksTotalCountsTypeId1?.totalCount,
       };
       const entityWithSpaceIds = (
         includeSpaceIds
@@ -259,7 +242,6 @@ export const findManyPublic = async <
     first = 100,
     offset = 0,
     orderBy,
-    backlinksTotalCountsTypeId1,
     includeSpaceIds: includeSpaceIdsParam,
     logInvalidResults = true,
   } = params ?? {};
@@ -323,13 +305,6 @@ export const findManyPublic = async <
   if (orderByPropertyId && sortDirection) {
     queryVariables.propertyId = orderByPropertyId;
     queryVariables.sortDirection = sortDirection;
-  }
-
-  if (backlinksTotalCountsTypeId1) {
-    queryVariables.backlinksTotalCountsTypeId1 = backlinksTotalCountsTypeId1;
-    queryVariables.backlinksTotalCountsTypeId1Present = true;
-  } else {
-    queryVariables.backlinksTotalCountsTypeId1Present = false;
   }
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);

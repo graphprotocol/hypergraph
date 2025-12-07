@@ -27,7 +27,6 @@ type UseEntitiesParams<
         direction: 'asc' | 'desc';
       }
     | undefined;
-  backlinksTotalCountsTypeId1?: string | undefined;
   includeSpaceIds?: IncludeSpaceIds;
   logInvalidResults?: boolean;
 };
@@ -41,7 +40,7 @@ type UseEntitiesPrivateResult<S extends Schema.Schema.AnyNoContext> = Omit<
   UseEntitiesPublicResult<S, false>,
   'data'
 > & {
-  data: (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[];
+  data: Entity.Entity<S>[];
   deleted: Entity.Entity<S>[];
 };
 
@@ -65,7 +64,6 @@ export function useEntities<
     first,
     offset,
     orderBy,
-    backlinksTotalCountsTypeId1,
     includeSpaceIds,
     logInvalidResults: logInvalidResultsParam,
   } = params;
@@ -81,7 +79,6 @@ export function useEntities<
     first,
     offset,
     orderBy,
-    backlinksTotalCountsTypeId1,
     ...(includeSpaceIds !== undefined ? { includeSpaceIds } : {}),
     ...publicSpaceParams,
     logInvalidResults,
@@ -97,7 +94,7 @@ export function useEntities<
 
   return {
     ...publicResult,
-    data: localResult.entities as (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[],
+    data: localResult.entities,
     deleted: localResult.deletedEntities,
   } as UseEntitiesResult<S, IncludeSpaceIds, Mode>;
 }

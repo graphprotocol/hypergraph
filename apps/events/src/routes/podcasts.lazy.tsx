@@ -79,7 +79,6 @@ function RouteComponent() {
       episodesTotalCount: true,
     },
     orderBy: { property: 'dateFounded', direction: 'asc' },
-    backlinksTotalCountsTypeId1: '972d201a-d780-4568-9e01-543f67b26bee',
   });
 
   console.log({ data, isLoading, isError });
@@ -117,7 +116,7 @@ function RouteComponent() {
       {data?.map((podcast) => (
         <div key={podcast.id}>
           <h2>
-            {podcast.backlinksTotalCountsTypeId1} - {podcast.dateFounded.toISOString()} {podcast.name} - {podcast.id}
+            {podcast.dateFounded.toISOString()} {podcast.name} - {podcast.id}
           </h2>
           {podcast.listenOn.map((listenOn) => (
             <div key={listenOn._relation.id}>
