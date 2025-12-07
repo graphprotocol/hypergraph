@@ -16,10 +16,12 @@ export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   space: string | undefined;
   first?: number | undefined;
   offset?: number | undefined;
+  includeSpaceIds?: boolean | undefined;
 };
 
-const buildSearchQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
+const buildSearchQuery = (relationInfoLevel1: RelationTypeIdInfo[], includeSpaceIds: boolean) => {
   const relationsSelection = buildRelationsSelection(relationInfoLevel1, 'single');
+  const spaceIdsSelection = includeSpaceIds ? '\n    spaceIds' : '';
 
   return `
 query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
@@ -34,7 +36,7 @@ query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $firs
     offset: $offset
   ) {
     id
-    name
+    name${spaceIdsSelection}
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
       string
@@ -52,7 +54,7 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   type: S,
   params?: SearchManyPublicParams<S>,
 ) => {
-  const { query, filter, include, space, first = 100, offset = 0 } = params ?? {};
+  const { query, filter, include, space, first = 100, offset = 0, includeSpaceIds = false } = params ?? {};
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -61,7 +63,7 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     Option.getOrElse(() => []),
   );
 
-  const queryDocument = buildSearchQuery(relationTypeIds);
+  const queryDocument = buildSearchQuery(relationTypeIds, includeSpaceIds);
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
@@ -74,6 +76,8 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     offset,
   });
 
-  const { data, invalidEntities, invalidRelationEntities } = parseResult(result, type, relationTypeIds);
+  const { data, invalidEntities, invalidRelationEntities } = parseResult(result, type, relationTypeIds, {
+    includeSpaceIds,
+  });
   return { data, invalidEntities, invalidRelationEntities };
 };

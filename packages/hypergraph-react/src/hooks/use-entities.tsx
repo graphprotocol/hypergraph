@@ -27,6 +27,7 @@ type UseEntitiesParams<S extends Schema.Schema.AnyNoContext> = (
       }
     | undefined;
   backlinksTotalCountsTypeId1?: string | undefined;
+  includeSpaceIds?: boolean | undefined;
   logInvalidResults?: boolean;
 };
 
@@ -41,6 +42,7 @@ export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S,
     offset,
     orderBy,
     backlinksTotalCountsTypeId1,
+    includeSpaceIds,
     logInvalidResults: logInvalidResultsParam,
   } = params;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
@@ -56,6 +58,7 @@ export function useEntities<const S extends Schema.Schema.AnyNoContext>(type: S,
     offset,
     orderBy,
     backlinksTotalCountsTypeId1,
+    includeSpaceIds,
     ...publicSpaceParams,
     logInvalidResults,
   });

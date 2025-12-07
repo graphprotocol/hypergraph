@@ -11,11 +11,19 @@ type UseEntityPublicParams<S extends Schema.Schema.AnyNoContext> = {
   space?: string;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
+  includeSpaceIds?: boolean | undefined;
   logInvalidResults?: boolean;
 };
 
 export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params: UseEntityPublicParams<S>) => {
-  const { id, enabled = true, space: spaceFromParams, include, logInvalidResults = true } = params;
+  const {
+    id,
+    enabled = true,
+    space: spaceFromParams,
+    include,
+    includeSpaceIds = false,
+    logInvalidResults = true,
+  } = params;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
 
@@ -24,12 +32,13 @@ export const useEntityPublic = <S extends Schema.Schema.AnyNoContext>(type: S, p
   );
 
   const result = useQueryTanstack({
-    queryKey: ['hypergraph-public-entity', id, typeIds, space, include],
+    queryKey: ['hypergraph-public-entity', id, typeIds, space, include, includeSpaceIds],
     queryFn: async () => {
       return Entity.findOnePublic(type, {
         id,
         space,
         include,
+        includeSpaceIds,
         logInvalidResults,
       });
     },

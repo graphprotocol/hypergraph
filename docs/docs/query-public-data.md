@@ -92,6 +92,26 @@ const { data: project } = useEntity(Project, {
 
 Each nested branch can have its own `_config` settings,so you can attach `_config` anywhere within the two supported include levels. Mix and match the settings per branch to stitch together data that spans multiple public spaces without issuing separate queries.
 
+### Accessing space IDs
+
+Public entities can live in multiple spaces. Set `includeSpaceIds: true` on `useEntities`, `useEntity`, `Entity.findOnePublic`, `Entity.findManyPublic`, or `Entity.searchManyPublic` whenever you want the response entities to include a `spaceIds: string[]` array. The IDs are normalized (null entries removed) and the flag defaults to `false` to keep the GraphQL responses as small as possible.
+
+```tsx
+const { data: projects } = useEntities(Project, {
+  mode: 'public',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  includeSpaceIds: true,
+});
+```
+
+```ts
+const project = await Entity.findOnePublic(Project, {
+  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  includeSpaceIds: true,
+});
+```
+
 ### Querying from a specific space
 
 You can also query from a specific space by passing in the `space` parameter.

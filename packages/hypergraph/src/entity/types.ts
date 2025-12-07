@@ -21,6 +21,7 @@ export type EntityInclude<S extends Schema.Schema.AnyNoContext> = Partial<
 
 export type Entity<S extends Schema.Schema.AnyNoContext> = Schema.Schema.Type<S> & {
   id: string;
+  spaceIds?: string[];
 };
 
 export type EntityWithRelation<S extends Schema.Schema.AnyNoContext> = Entity<S> & {

@@ -8,6 +8,7 @@ import { request } from 'graphql-request';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 import type { EntityQueryResult as MultiEntityQueryResult } from './find-many-public.js';
+import { normalizeSpaceIds } from './internal/normalize-space-ids.js';
 
 type EntityQueryResult = {
   entity: MultiEntityQueryResult['entities'][number] | null;
@@ -18,19 +19,21 @@ export type FindOnePublicParams<S extends Schema.Schema.AnyNoContext> = {
   space: string;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
+  includeSpaceIds?: boolean | undefined;
   logInvalidResults?: boolean | undefined;
 };
 
-const buildEntityQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
+const buildEntityQuery = (relationInfoLevel1: RelationTypeIdInfo[], includeSpaceIds: boolean) => {
   const relationsSelection = buildRelationsSelection(relationInfoLevel1, 'single');
   const relationsSelectionBlock = relationsSelection ? `\n    ${relationsSelection}\n` : '';
+  const spaceIdsSelection = includeSpaceIds ? '\n    spaceIds' : '';
   return `
 query entity($id: UUID!, $spaceId: UUID!) {
   entity(
     id: $id,
   ) {
     id
-    name
+    name${spaceIdsSelection}
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
       string
@@ -48,7 +51,9 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
   queryData: EntityQueryResult,
   type: S,
   relationInfoLevel1: RelationTypeIdInfo[],
+  options?: { includeSpaceIds?: boolean },
 ) => {
+  const includeSpaceIds = options?.includeSpaceIds ?? false;
   if (!queryData.entity) {
     return {
       entity: null,
@@ -101,34 +106,43 @@ const parseResult = <S extends Schema.Schema.AnyNoContext>(
   });
 
   if (Either.isRight(decodeResult)) {
+    const normalizedSpaceIds = includeSpaceIds ? normalizeSpaceIds(queryEntity.spaceIds) : undefined;
+    const enrichedEntity = {
+      ...decodeResult.right,
+      ...(includeSpaceIds ? { spaceIds: normalizedSpaceIds } : {}),
+    } as Entity.Entity<S>;
     return {
-      entity: { ...decodeResult.right } as Entity.Entity<S>,
+      entity: enrichedEntity,
       invalidEntity: null,
       invalidRelationEntities: invalidRelations,
     };
   }
 
+  const normalizedSpaceIds = includeSpaceIds ? normalizeSpaceIds(queryEntity.spaceIds) : undefined;
   return {
     entity: null,
-    invalidEntity: { raw: rawEntity, error: decodeResult.left },
+    invalidEntity: {
+      raw: includeSpaceIds ? { ...rawEntity, spaceIds: normalizedSpaceIds } : rawEntity,
+      error: decodeResult.left,
+    },
     invalidRelationEntities: invalidRelations,
   };
 };
 
 export const findOnePublic = async <S extends Schema.Schema.AnyNoContext>(type: S, params: FindOnePublicParams<S>) => {
-  const { id, space, include, logInvalidResults = true } = params;
+  const { id, space, include, includeSpaceIds = false, logInvalidResults = true } = params;
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
 
-  const queryDocument = buildEntityQuery(relationTypeIds);
+  const queryDocument = buildEntityQuery(relationTypeIds, includeSpaceIds);
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, {
     id,
     spaceId: space,
   });
 
-  const parsed = parseResult(result, type, relationTypeIds);
+  const parsed = parseResult(result, type, relationTypeIds, { includeSpaceIds });
   if (logInvalidResults) {
     if (parsed.invalidEntity) {
       console.warn('Entity decoding failed', parsed.invalidEntity);

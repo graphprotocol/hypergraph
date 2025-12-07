@@ -11,14 +11,16 @@ export function useEntity<const S extends Schema.Schema.AnyNoContext>(
     space?: string;
     mode: 'private' | 'public';
     include?: Entity.EntityInclude<S> | undefined;
+    includeSpaceIds?: boolean | undefined;
     logInvalidResults?: boolean;
   },
 ) {
-  const { mode, logInvalidResults: logInvalidResultsParam, ...restParams } = params;
+  const { mode, includeSpaceIds, logInvalidResults: logInvalidResultsParam, ...restParams } = params;
   const { logInvalidResults: contextLogInvalidResults = true } = useHypergraphApp();
   const logInvalidResults = logInvalidResultsParam ?? contextLogInvalidResults ?? true;
   const resultPublic = useEntityPublic(type, {
     ...restParams,
+    includeSpaceIds,
     logInvalidResults,
     enabled: mode === 'public',
   });

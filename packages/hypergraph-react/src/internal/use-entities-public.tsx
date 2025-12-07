@@ -17,6 +17,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
     offset,
     orderBy,
     backlinksTotalCountsTypeId1,
+    includeSpaceIds = false,
     logInvalidResults = true,
   } = params ?? {};
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
@@ -37,6 +38,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
       offset,
       orderBy,
       backlinksTotalCountsTypeId1,
+      includeSpaceIds,
     ],
     queryFn: async () => {
       return Entity.findManyPublic(type, {
@@ -47,6 +49,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
         offset,
         orderBy,
         backlinksTotalCountsTypeId1,
+        includeSpaceIds,
         logInvalidResults,
       });
     },
