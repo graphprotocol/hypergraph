@@ -128,15 +128,8 @@ export type EntityQueryResult = {
 
 type GraphSortDirection = 'ASC' | 'DESC';
 
-type ParsedEntity<
-  S extends Schema.Schema.AnyNoContext,
-  IncludeSpaceIds extends boolean | undefined,
-> = Entity.WithSpaceIds<Entity.Entity<S>, IncludeSpaceIds> & {
-  __schema: S;
-};
-
 export type FindManyParseResult<S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined> = {
-  data: ParsedEntity<S, IncludeSpaceIds>[];
+  data: Entity.WithSpaceIds<Entity.Entity<S>, IncludeSpaceIds>[];
   invalidEntities: InvalidEntity[];
   invalidRelationEntities: InvalidRelationEntity[];
 };
@@ -150,7 +143,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext, IncludeSpaceId
   const includeSpaceIds = options?.includeSpaceIds ?? false;
   const schemaWithId = Utils.addIdSchemaField(type);
   const decode = Schema.decodeUnknownEither(schemaWithId);
-  const data: ParsedEntity<S, IncludeSpaceIds>[] = [];
+  const data: Entity.WithSpaceIds<Entity.Entity<S>, IncludeSpaceIds>[] = [];
   const invalidEntities: InvalidEntity[] = [];
   const invalidRelationEntities: InvalidRelationEntity[] = [];
 
@@ -200,10 +193,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext, IncludeSpaceId
     });
 
     if (Either.isRight(decodeResult)) {
-      const baseEntity = {
-        ...decodeResult.right,
-        __schema: type,
-      };
+      const baseEntity = decodeResult.right;
       const entityWithSpaceIds = (
         includeSpaceIds
           ? {
@@ -211,8 +201,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext, IncludeSpaceId
               spaceIds: normalizeSpaceIds(queryEntity.spaceIds),
             }
           : baseEntity
-      ) as ParsedEntity<S, IncludeSpaceIds>;
-      // injecting the schema to the entity to be able to access it in the preparePublish function
+      ) as Entity.WithSpaceIds<Entity.Entity<S>, IncludeSpaceIds>;
       data.push(entityWithSpaceIds);
     } else {
       const invalidRawEntity = includeSpaceIds
