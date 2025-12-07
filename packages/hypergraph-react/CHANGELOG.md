@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.9.1
+### Patch Changes
+
+- f7319e0: remove injected __schema from findManyPublic and useEntities in public mode entries
+- Updated dependencies [f7319e0]
+  - @graphprotocol/hypergraph@0.9.1
+
 ## 0.9.0
 ### Minor Changes
 

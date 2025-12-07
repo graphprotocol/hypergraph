@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.9.1
+### Patch Changes
+
+- f7319e0: remove injected __schema from findManyPublic and useEntities in public mode entries
+
 ## 0.9.0
 ### Minor Changes
 
