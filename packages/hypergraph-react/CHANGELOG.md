@@ -1,5 +1,40 @@
 # @graphprotocol/hypergraph-react
 
+## 0.9.0
+### Minor Changes
+
+- 56f49c4: Change behavior of entity validation by filtering out invalid entities of relations and adding them to `invalidRelationEntities`
+- 56f49c4: enrich `invalidEntities` to expose both the raw payload and decode error for each invalid entity
+- 56f49c4: Entity.findOnePublic will return { entity: null, invalidEntity: { raw: {…}, error: … } } instead of throwing an error in case it's an invalid entity
+- 3f8c22d: GraphQL relation and backlink queries now filter for entity types for more correct resuls. This applies across findOne, findMany, searchMany, useEntity and useEntities
+
+### Patch Changes
+
+- 956aaa4: Removed the temporary `backlinksTotalCountsTypeId1` option and response field from `Entity.findManyPublic` and the React `useEntities` helpers.
+- 56f49c4: Add a logInvalidResults toggle to `Entity.findOnePublic/findManyPublic`, plus pass-through support in the React provider and hooks, so apps can selectively silence or surface schema-validation warnings while still receiving the invalid payload lists.
+- e4a7f22: Added `includeSpaceIds` parameter to `findOnePublic`, `findManyPublic`, `searchManyPublic`, `useEntities` and `useEntity`
+- e04e477: Allow relation includes to override nested relation and value space filters by adding _config: { relationSpaces, valueSpaces } to any include branch; GraphQL fragments now honor those overrides when building queries.
+  
+  ```
+  include: {
+    friends: {
+      _config: {
+        relationSpaces: ['space-a', 'space-b'],
+        valueSpaces: 'all',
+      },
+    },
+  }
+  ```
+- Updated dependencies [56f49c4]
+- Updated dependencies [56f49c4]
+- Updated dependencies [956aaa4]
+- Updated dependencies [56f49c4]
+- Updated dependencies [56f49c4]
+- Updated dependencies [3f8c22d]
+- Updated dependencies [e4a7f22]
+- Updated dependencies [e04e477]
+  - @graphprotocol/hypergraph@0.9.0
+
 ## 0.8.10
 ### Patch Changes
 
