@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { findOnePublic } from '../../src/entity/find-one-public.js';
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
+import { getRelationTypeIds } from '../../src/utils/get-relation-type-ids.js';
 import { getRelationAlias } from '../../src/utils/relation-query-helpers.js';
 
 const mockRequest = vi.hoisted(() => vi.fn());
@@ -76,7 +77,9 @@ describe('findOnePublic', () => {
   });
 
   it('collects invalidRelationEntities when nested relations fail to decode', async () => {
-    const relationAlias = getRelationAlias(CHILDREN_RELATION_PROPERTY_ID);
+    const relationInfo = getRelationTypeIds(Parent, { children: {} });
+    const childrenRelationInfo = relationInfo.find((info) => info.propertyName === 'children');
+    const relationAlias = getRelationAlias(CHILDREN_RELATION_PROPERTY_ID, childrenRelationInfo?.targetTypeIds);
 
     const entity = {
       id: 'parent-2',

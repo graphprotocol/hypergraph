@@ -106,7 +106,7 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
 
       if (relationMetadata) {
         // Use the aliased field to get relations for this specific type ID
-        const alias = getRelationAlias(result.value);
+        const alias = getRelationAlias(result.value, relationMetadata.targetTypeIds);
         relationConnection = queryEntity[alias as keyof RecursiveQueryEntity] as RelationsListWithNodes | undefined;
         if (relationMetadata.includeNodes) {
           allRelationsWithTheCorrectPropertyTypeId = relationConnection?.nodes;

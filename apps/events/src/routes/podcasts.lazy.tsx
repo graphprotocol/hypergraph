@@ -1,6 +1,6 @@
 import { useEntities, useEntity, usePublicSpaces } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Person, Podcast, Topic } from '@/schema';
+import { Person, PersonHostTest, Podcast, Topic } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,
@@ -63,6 +63,22 @@ function RouteComponent() {
     },
   });
   console.log({ podcast, invalidEntity, invalidRelationEntities });
+
+  const { data: personHostTest } = useEntities(PersonHostTest, {
+    mode: 'public',
+    first: 10,
+    filter: {
+      name: {
+        startsWith: 'Joe',
+      },
+    },
+    space: space,
+    include: {
+      hostedPostcasts: {},
+      hostedEpisodes: {},
+    },
+  });
+  console.log({ personHostTest });
 
   const { data, isLoading, isError } = useEntities(Podcast, {
     mode: 'public',

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as Entity from '../../src/entity/index.js';
 import * as Type from '../../src/type/type.js';
 import { getRelationTypeIds } from '../../src/utils/get-relation-type-ids.js';
-import { buildRelationsSelection } from '../../src/utils/relation-query-helpers.js';
+import { buildRelationsSelection, getRelationAlias } from '../../src/utils/relation-query-helpers.js';
 
 const FRIENDS_RELATION_PROPERTY_ID = Id('f44ae32a-2f13-4d3f-875f-19d2338a32b8');
 const CHILDREN_RELATION_PROPERTY_ID = Id('8a6dcb99-9c7b-4ca9-9f7b-98f2f404b405');
@@ -100,6 +100,11 @@ describe('relation include config overrides', () => {
     } satisfies Entity.EntityInclude<typeof Parent>;
 
     const relationInfo = getRelationTypeIds(Parent, include);
+    const childrenRelationInfo = relationInfo.find((info) => info.propertyName === 'children');
+    const childrenAlias = getRelationAlias(
+      childrenRelationInfo?.typeId ?? CHILDREN_RELATION_PROPERTY_ID,
+      childrenRelationInfo?.targetTypeIds,
+    );
     expect(relationInfo[0]).toMatchObject({
       relationSpaces: ['space-rel', 'space-rel-2'],
       valueSpaces: ['space-values'],
@@ -114,9 +119,7 @@ describe('relation include config overrides', () => {
     expect(selection).toContain('valuesList(filter: {spaceId: {in: ["space-values"]}})');
     expect(selection).toContain(`toEntity: { typeIds: { in: ${stringifyTypeIds(CHILD_TYPES)} } }`);
     expect(selection).toContain(`toEntity: { typeIds: { in: ${stringifyTypeIds(FRIEND_TYPES)} } }`);
-    expect(selection.split('relations_f44ae32a_2f13_4d3f_875f_19d2338a32b8')[0]).not.toContain(
-      'spaceId: {is: $spaceId}',
-    );
+    expect(selection.split(childrenAlias)[0]).not.toContain('spaceId: {is: $spaceId}');
   });
 
   it('omits filters entirely when overrides use "all"', () => {

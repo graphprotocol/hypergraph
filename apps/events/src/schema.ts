@@ -335,3 +335,43 @@ export const Space = Entity.Schema(
 );
 
 export type Space = Entity.Entity<typeof Space>;
+
+export const EpisodeHostTest = Entity.Schema(
+  {
+    name: Type.String,
+  },
+  {
+    types: [Id('972d201a-d780-4568-9e01-543f67b26bee')],
+    properties: {
+      name: Id(SystemIds.NAME_PROPERTY),
+    },
+  },
+);
+
+export const PodcastHostTest = Entity.Schema(
+  {
+    name: Type.String,
+  },
+  {
+    types: [Id('4c81561d-1f95-4131-9cdd-dd20ab831ba2')],
+    properties: {
+      name: Id(SystemIds.NAME_PROPERTY),
+    },
+  },
+);
+
+export const PersonHostTest = Entity.Schema(
+  {
+    name: Type.String,
+    hostedPostcasts: Type.Backlink(PodcastHostTest),
+    hostedEpisodes: Type.Backlink(EpisodeHostTest),
+  },
+  {
+    types: [Id('7ed45f2b-c48b-419e-8e46-64d5ff680b0d')],
+    properties: {
+      name: Id(SystemIds.NAME_PROPERTY),
+      hostedPostcasts: Id('c72d9abb-bca8-4e86-b7e8-b71e91d2b37e'),
+      hostedEpisodes: Id('c72d9abb-bca8-4e86-b7e8-b71e91d2b37e'),
+    },
+  },
+);
