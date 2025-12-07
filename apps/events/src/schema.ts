@@ -363,14 +363,14 @@ export const PodcastHostTest = Entity.Schema(
 export const PersonHostTest = Entity.Schema(
   {
     name: Type.String,
-    hostedPostcasts: Type.Backlink(PodcastHostTest),
+    hostedPodcasts: Type.Backlink(PodcastHostTest),
     hostedEpisodes: Type.Backlink(EpisodeHostTest),
   },
   {
     types: [Id('7ed45f2b-c48b-419e-8e46-64d5ff680b0d')],
     properties: {
       name: Id(SystemIds.NAME_PROPERTY),
-      hostedPostcasts: Id('c72d9abb-bca8-4e86-b7e8-b71e91d2b37e'),
+      hostedPodcasts: Id('c72d9abb-bca8-4e86-b7e8-b71e91d2b37e'),
       hostedEpisodes: Id('c72d9abb-bca8-4e86-b7e8-b71e91d2b37e'),
     },
   },

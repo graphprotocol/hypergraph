@@ -74,7 +74,7 @@ function RouteComponent() {
     },
     space: space,
     include: {
-      hostedPostcasts: {},
+      hostedPodcasts: {},
       hostedEpisodes: {},
     },
   });
