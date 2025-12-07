@@ -76,8 +76,9 @@ describe('findManyPublic parseResult', () => {
   });
 
   it('collects invalidRelationEntities when nested relations fail to decode', () => {
-    const relationAlias = getRelationAlias(CHILDREN_RELATION_PROPERTY_ID);
     const relationInfo = getRelationTypeIds(Parent, { children: {} });
+    const childrenRelationInfo = relationInfo.find((info) => info.propertyName === 'children');
+    const relationAlias = getRelationAlias(CHILDREN_RELATION_PROPERTY_ID, childrenRelationInfo?.targetTypeIds);
 
     const queryData = {
       entities: [

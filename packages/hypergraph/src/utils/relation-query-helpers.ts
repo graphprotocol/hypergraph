@@ -1,4 +1,5 @@
 import type { RelationTypeIdInfo } from './get-relation-type-ids.js';
+import { canonicalize } from './jsc.js';
 
 type SpaceSelectionMode = 'single' | 'many' | 'all';
 
@@ -56,7 +57,24 @@ const buildRelationSpaceFilter = (
   return `spaceId: {in: ${formatGraphQLStringArray(override)}}, `;
 };
 
-export const getRelationAlias = (typeId: string) => `relations_${typeId.replace(/-/g, '_')}`;
+const sanitizeAliasComponent = (value: string) => {
+  const collapsed = value.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return collapsed.length > 0 ? collapsed : 'all';
+};
+
+const buildTargetTypeAliasComponent = (targetTypeIds?: readonly string[]) => {
+  if (!targetTypeIds || targetTypeIds.length === 0) {
+    return '';
+  }
+
+  const canonicalTypeIds = canonicalize(Array.from(new Set(targetTypeIds)).sort());
+  const sanitized = sanitizeAliasComponent(canonicalTypeIds);
+
+  return sanitized.length > 0 ? `_${sanitized}` : '';
+};
+
+export const getRelationAlias = (typeId: string, targetTypeIds?: readonly string[]) =>
+  `relations_${typeId.replace(/-/g, '_')}${buildTargetTypeAliasComponent(targetTypeIds)}`;
 
 const buildRelationTypeIdsFilter = (listField: RelationTypeIdInfo['listField'], typeIds?: readonly string[]) => {
   if (!typeIds || typeIds.length === 0) return '';
@@ -65,7 +83,7 @@ const buildRelationTypeIdsFilter = (listField: RelationTypeIdInfo['listField'], 
 };
 
 const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spaceSelectionMode: SpaceSelectionMode) => {
-  const alias = getRelationAlias(info.typeId);
+  const alias = getRelationAlias(info.typeId, info.targetTypeIds);
   const nestedPlaceholder = info.includeNodes && level === 1 ? '__LEVEL2_RELATIONS__' : '';
   const listField = info.listField ?? 'relations';
   const connectionField = listField === 'backlinks' ? 'backlinks' : 'relations';
