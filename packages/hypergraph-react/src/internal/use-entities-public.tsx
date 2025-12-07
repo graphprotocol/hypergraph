@@ -1,4 +1,5 @@
 import { Constants, Entity } from '@graphprotocol/hypergraph';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery as useQueryTanstack } from '@tanstack/react-query';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
@@ -6,7 +7,25 @@ import * as SchemaAST from 'effect/SchemaAST';
 import type { QueryPublicParams } from './types.js';
 import { useHypergraphSpaceInternal } from './use-hypergraph-space-internal.js';
 
-export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S, params?: QueryPublicParams<S>) => {
+type FindManyPublicResult<S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined> = Awaited<
+  ReturnType<typeof Entity.findManyPublic<S, IncludeSpaceIds>>
+>;
+
+export type UseEntitiesPublicResult<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined,
+> = Omit<UseQueryResult<FindManyPublicResult<S, IncludeSpaceIds>, Error>, 'data'> & {
+  data: FindManyPublicResult<S, IncludeSpaceIds>['data'];
+  invalidEntities: FindManyPublicResult<S, IncludeSpaceIds>['invalidEntities'];
+  invalidRelationEntities: FindManyPublicResult<S, IncludeSpaceIds>['invalidRelationEntities'];
+};
+
+type UseEntitiesPublicFn = <S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined = false>(
+  type: S,
+  params?: QueryPublicParams<S, IncludeSpaceIds>,
+) => UseEntitiesPublicResult<S, IncludeSpaceIds>;
+
+export const useEntitiesPublic: UseEntitiesPublicFn = (type, params) => {
   const {
     enabled = true,
     filter,
@@ -17,8 +36,10 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
     offset,
     orderBy,
     backlinksTotalCountsTypeId1,
+    includeSpaceIds: includeSpaceIdsParam,
     logInvalidResults = true,
   } = params ?? {};
+  const includeSpaceIds = includeSpaceIdsParam ?? false;
   const { space: spaceFromContext } = useHypergraphSpaceInternal();
   const space = spaceFromParams ?? spaceFromContext;
   const spaceSelectionKey = spaces ?? space;
@@ -37,6 +58,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
       offset,
       orderBy,
       backlinksTotalCountsTypeId1,
+      includeSpaceIds,
     ],
     queryFn: async () => {
       return Entity.findManyPublic(type, {
@@ -47,6 +69,7 @@ export const useEntitiesPublic = <S extends Schema.Schema.AnyNoContext>(type: S,
         offset,
         orderBy,
         backlinksTotalCountsTypeId1,
+        ...(includeSpaceIdsParam !== undefined ? { includeSpaceIds: includeSpaceIdsParam } : {}),
         logInvalidResults,
       });
     },

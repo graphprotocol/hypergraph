@@ -9,11 +9,15 @@ import { request } from 'graphql-request';
 import type { InvalidRelationEntity, RelationsListWithNodes } from '../utils/convert-relations.js';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
+import { normalizeSpaceIds } from './internal/normalize-space-ids.js';
 import type { SpaceSelection } from './internal/space-selection.js';
 import { normalizeSpaceSelection } from './internal/space-selection.js';
 import type { SpaceSelectionInput } from './types.js';
 
-export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = SpaceSelectionInput & {
+export type FindManyPublicParams<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined = boolean | undefined,
+> = SpaceSelectionInput & {
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   // TODO: restrict multi-level nesting to the actual relation keys
   include?: Entity.EntityInclude<S> | undefined;
@@ -26,6 +30,7 @@ export type FindManyPublicParams<S extends Schema.Schema.AnyNoContext> = SpaceSe
       }
     | undefined;
   backlinksTotalCountsTypeId1?: string | undefined;
+  includeSpaceIds?: IncludeSpaceIds;
   logInvalidResults?: boolean | undefined;
 };
 
@@ -33,8 +38,10 @@ const buildEntitiesQuery = (
   relationInfoLevel1: RelationTypeIdInfo[],
   useOrderBy: boolean,
   spaceSelection: SpaceSelection,
+  includeSpaceIds: boolean,
 ) => {
   const level1Relations = buildRelationsSelection(relationInfoLevel1, spaceSelection.mode);
+  const spaceIdsSelection = includeSpaceIds ? '\n    spaceIds' : '';
 
   const queryName = useOrderBy ? 'entitiesOrderedByProperty' : 'entities';
   const variableDefinitions = [
@@ -86,7 +93,7 @@ query ${queryName}(${variableDefinitions}) {
     offset: $offset
   ) {
     id
-    name
+    name${spaceIdsSelection}
     valuesList${valuesListFilter} {
       propertyId
       string
@@ -112,7 +119,7 @@ type ValuesList = {
   point: string;
 }[];
 
-type RawEntity = Record<string, string | boolean | number | unknown[] | Date>;
+type RawEntity = Record<string, string | boolean | number | unknown[] | Date | string[]>;
 
 export type InvalidEntity = {
   raw: RawEntity;
@@ -123,6 +130,7 @@ export type EntityQueryResult = {
   entities: ({
     id: string;
     name: string;
+    spaceIds: readonly (string | null)[] | null;
     valuesList: ValuesList;
     backlinksTotalCountsTypeId1: {
       totalCount: number;
@@ -135,14 +143,30 @@ export type EntityQueryResult = {
 
 type GraphSortDirection = 'ASC' | 'DESC';
 
-export const parseResult = <S extends Schema.Schema.AnyNoContext>(
+type ParsedEntity<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined,
+> = Entity.WithSpaceIds<Entity.Entity<S>, IncludeSpaceIds> & {
+  __schema: S;
+  backlinksTotalCountsTypeId1?: number;
+};
+
+export type FindManyParseResult<S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined> = {
+  data: ParsedEntity<S, IncludeSpaceIds>[];
+  invalidEntities: InvalidEntity[];
+  invalidRelationEntities: InvalidRelationEntity[];
+};
+
+export const parseResult = <S extends Schema.Schema.AnyNoContext, IncludeSpaceIds extends boolean | undefined>(
   queryData: EntityQueryResult,
   type: S,
   relationInfoLevel1: RelationTypeIdInfo[],
-) => {
+  options?: { includeSpaceIds?: IncludeSpaceIds },
+): FindManyParseResult<S, IncludeSpaceIds> => {
+  const includeSpaceIds = options?.includeSpaceIds ?? false;
   const schemaWithId = Utils.addIdSchemaField(type);
   const decode = Schema.decodeUnknownEither(schemaWithId);
-  const data: (Entity.Entity<S> & { backlinksTotalCountsTypeId1?: number })[] = [];
+  const data: ParsedEntity<S, IncludeSpaceIds>[] = [];
   const invalidEntities: InvalidEntity[] = [];
   const invalidRelationEntities: InvalidRelationEntity[] = [];
 
@@ -192,22 +216,40 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext>(
     });
 
     if (Either.isRight(decodeResult)) {
-      // injecting the schema to the entity to be able to access it in the preparePublish function
-      data.push({
+      const baseEntity = {
         ...decodeResult.right,
         __schema: type,
         backlinksTotalCountsTypeId1: queryEntity.backlinksTotalCountsTypeId1?.totalCount,
-      });
+      };
+      const entityWithSpaceIds = (
+        includeSpaceIds
+          ? {
+              ...baseEntity,
+              spaceIds: normalizeSpaceIds(queryEntity.spaceIds),
+            }
+          : baseEntity
+      ) as ParsedEntity<S, IncludeSpaceIds>;
+      // injecting the schema to the entity to be able to access it in the preparePublish function
+      data.push(entityWithSpaceIds);
     } else {
-      invalidEntities.push({ raw: rawEntity, error: decodeResult.left });
+      const invalidRawEntity = includeSpaceIds
+        ? ({ ...rawEntity, spaceIds: normalizeSpaceIds(queryEntity.spaceIds) } as RawEntity)
+        : rawEntity;
+      invalidEntities.push({
+        raw: invalidRawEntity,
+        error: decodeResult.left,
+      });
     }
   }
   return { data, invalidEntities, invalidRelationEntities };
 };
 
-export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
+export const findManyPublic = async <
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined = false,
+>(
   type: S,
-  params?: FindManyPublicParams<S>,
+  params?: FindManyPublicParams<S, IncludeSpaceIds>,
 ) => {
   const {
     filter,
@@ -218,8 +260,10 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     offset = 0,
     orderBy,
     backlinksTotalCountsTypeId1,
+    includeSpaceIds: includeSpaceIdsParam,
     logInvalidResults = true,
   } = params ?? {};
+  const includeSpaceIds = includeSpaceIdsParam ?? false;
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -259,7 +303,7 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
   const spaceSelection = normalizeSpaceSelection(space, spaces);
 
   // Build the query dynamically with aliases for each relation type ID
-  const queryDocument = buildEntitiesQuery(relationTypeIds, Boolean(orderBy), spaceSelection);
+  const queryDocument = buildEntitiesQuery(relationTypeIds, Boolean(orderBy), spaceSelection, includeSpaceIds);
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
@@ -290,7 +334,12 @@ export const findManyPublic = async <S extends Schema.Schema.AnyNoContext>(
 
   const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);
 
-  const { data, invalidEntities, invalidRelationEntities } = parseResult(result, type, relationTypeIds);
+  const { data, invalidEntities, invalidRelationEntities } = parseResult<S, IncludeSpaceIds>(
+    result,
+    type,
+    relationTypeIds,
+    includeSpaceIdsParam === undefined ? undefined : { includeSpaceIds: includeSpaceIdsParam },
+  );
   if (logInvalidResults) {
     if (invalidEntities.length > 0) {
       console.warn('Entities where decoding failed were dropped', invalidEntities);

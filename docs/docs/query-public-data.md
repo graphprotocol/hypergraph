@@ -90,7 +90,76 @@ const { data: project } = useEntity(Project, {
 - `relationSpaces` controls which spaces are searched for the relation edges themselves (`relations`/`backlinks`). Pass an array to whitelist specific spaces, `'all'` to drop the filter entirely, or `[]` if you intentionally want the branch to match nothing.
 - `valueSpaces` applies the same override to the `valuesList` lookups for the related entities. This lets you fetch relation edges from one space while trusting the canonical values that live in another.
 
-Each nested branch can have its own `_config` settings,so you can attach `_config` anywhere within the two supported include levels. Mix and match the settings per branch to stitch together data that spans multiple public spaces without issuing separate queries.
+Each nested branch can have its own `_config` settings, so you can attach `_config` anywhere within the two supported include levels. Mix and match the settings per branch to stitch together data that spans multiple public spaces without issuing separate queries.
+
+### Accessing space IDs
+
+Public entities can live in multiple spaces. Set `includeSpaceIds: true` on `useEntities`, `useEntity`, `Entity.findOnePublic`, `Entity.findManyPublic`, or `Entity.searchManyPublic` whenever you want the response entities to include a normalized (no `null` entries) `spaceIds: string[]` array. The flag defaults to `false` so responses stay small unless you opt in.
+
+#### `useEntities`
+
+```tsx
+const { data: projects } = useEntities(Project, {
+  mode: 'public',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  includeSpaceIds: true,
+});
+
+projects.forEach((project) => {
+  console.log(project.id, project.spaceIds); // => ["3f3235...", "95a4a1..."]
+});
+```
+
+#### `useEntity`
+
+```tsx
+const { data: project } = useEntity(Project, {
+  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  mode: 'public',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  includeSpaceIds: true,
+});
+
+console.log(project?.spaceIds); // => ["3f3235..."]
+```
+
+#### `Entity.findOnePublic`
+
+```ts
+const project = await Entity.findOnePublic(Project, {
+  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  includeSpaceIds: true,
+});
+
+console.log(project?.spaceIds); // => ["3f3235...", "95a4a1..."]
+```
+
+#### `Entity.findManyPublic`
+
+```ts
+const { data: rounds } = await Entity.findManyPublic(InvestmentRound, {
+  spaces: ['3f32353d-3b27-4a13-b71a-746f06e1f7db', '95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+  includeSpaceIds: true,
+});
+
+rounds.map((round) => ({
+  id: round.id,
+  spaceIds: round.spaceIds,
+}));
+```
+
+#### `Entity.searchManyPublic`
+
+```ts
+const { data: searchMatches } = await Entity.searchManyPublic(Project, {
+  query: 'hypergraph',
+  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  includeSpaceIds: true,
+});
+
+console.log(searchMatches[0]?.spaceIds); // => ["3f3235..."]
+```
 
 ### Querying from a specific space
 

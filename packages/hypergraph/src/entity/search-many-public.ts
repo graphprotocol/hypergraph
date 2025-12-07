@@ -8,7 +8,10 @@ import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 import { type EntityQueryResult, parseResult } from './find-many-public.js';
 
-export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
+export type SearchManyPublicParams<
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined = boolean | undefined,
+> = {
   query: string;
   filter?: Entity.EntityFilter<Schema.Schema.Type<S>> | undefined;
   // TODO: restrict multi-level nesting to the actual relation keys
@@ -16,10 +19,12 @@ export type SearchManyPublicParams<S extends Schema.Schema.AnyNoContext> = {
   space: string | undefined;
   first?: number | undefined;
   offset?: number | undefined;
+  includeSpaceIds?: IncludeSpaceIds;
 };
 
-const buildSearchQuery = (relationInfoLevel1: RelationTypeIdInfo[]) => {
+const buildSearchQuery = (relationInfoLevel1: RelationTypeIdInfo[], includeSpaceIds: boolean) => {
   const relationsSelection = buildRelationsSelection(relationInfoLevel1, 'single');
+  const spaceIdsSelection = includeSpaceIds ? '\n    spaceIds' : '';
 
   return `
 query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $first: Int, $filter: EntityFilter!, $offset: Int) {
@@ -34,7 +39,7 @@ query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $firs
     offset: $offset
   ) {
     id
-    name
+    name${spaceIdsSelection}
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
       string
@@ -48,11 +53,23 @@ query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $firs
 }`;
 };
 
-export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
+export const searchManyPublic = async <
+  S extends Schema.Schema.AnyNoContext,
+  IncludeSpaceIds extends boolean | undefined = false,
+>(
   type: S,
-  params?: SearchManyPublicParams<S>,
+  params?: SearchManyPublicParams<S, IncludeSpaceIds>,
 ) => {
-  const { query, filter, include, space, first = 100, offset = 0 } = params ?? {};
+  const {
+    query,
+    filter,
+    include,
+    space,
+    first = 100,
+    offset = 0,
+    includeSpaceIds: includeSpaceIdsParam,
+  } = params ?? {};
+  const includeSpaceIds = includeSpaceIdsParam ?? false;
 
   // constructing the relation type ids for the query
   const relationTypeIds = Utils.getRelationTypeIds(type, include);
@@ -61,7 +78,7 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     Option.getOrElse(() => []),
   );
 
-  const queryDocument = buildSearchQuery(relationTypeIds);
+  const queryDocument = buildSearchQuery(relationTypeIds, includeSpaceIds);
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
@@ -74,6 +91,11 @@ export const searchManyPublic = async <S extends Schema.Schema.AnyNoContext>(
     offset,
   });
 
-  const { data, invalidEntities, invalidRelationEntities } = parseResult(result, type, relationTypeIds);
+  const { data, invalidEntities, invalidRelationEntities } = parseResult<S, IncludeSpaceIds>(
+    result,
+    type,
+    relationTypeIds,
+    includeSpaceIdsParam === undefined ? undefined : { includeSpaceIds: includeSpaceIdsParam },
+  );
   return { data, invalidEntities, invalidRelationEntities };
 };
