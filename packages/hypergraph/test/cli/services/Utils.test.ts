@@ -165,28 +165,28 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
       // Use mapping from events app
       const mapping: Mapping = {
         Event: {
-          typeIds: [Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+          typeIds: [Id('7f9562d4034d4385bf5cf02cdebba47a')],
           properties: {
-            name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+            name: Id('a126ca530c8e48d5b88882c734c38935'),
           },
           relations: {
-            sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
+            sponsors: Id('6860bfacf7034289b789972d0aaf3abe'),
           },
         },
         Company: {
-          typeIds: [Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
+          typeIds: [Id('6c504df51a8f43d1bf2d1ef9fa5b08b5')],
           properties: {
-            name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+            name: Id('a126ca530c8e48d5b88882c734c38935'),
           },
           relations: {
-            jobOffers: Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
+            jobOffers: Id('1203064e9741423589d497f4b22eddfb'),
           },
         },
         JobOffer: {
-          typeIds: [Id('f60585af-71b6-4674-9a26-b74ca6c1cceb')],
+          typeIds: [Id('f60585af71b646749a26b74ca6c1cceb')],
           properties: {
-            name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-            salary: Id('baa36ac9-78ac-4cf7-8394-6b2d3006bebe'),
+            name: Id('a126ca530c8e48d5b88882c734c38935'),
+            salary: Id('baa36ac978ac4cf783946b2d3006bebe'),
           },
         },
       };
@@ -199,56 +199,56 @@ export class JobOffer extends Entity.Class<JobOffer>('JobOffer')({
         // Check Event entity with resolved IDs
         const eventEntity = result.types.find((t) => t.name === 'Event');
         expect(eventEntity).toBeDefined();
-        expect(eventEntity?.knowledgeGraphId).toBe('7f9562d4-034d-4385-bf5c-f02cdebba47a');
+        expect(eventEntity?.knowledgeGraphId).toBe('7f9562d4034d4385bf5cf02cdebba47a');
         expect(eventEntity?.properties).toHaveLength(2);
         expect(eventEntity?.properties[0]).toMatchObject({
           name: 'name',
           dataType: 'String',
-          knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
           status: 'published',
         });
         expect(eventEntity?.properties[1]).toMatchObject({
           name: 'sponsors',
           dataType: 'Relation(Company)',
           relationType: 'Company',
-          knowledgeGraphId: '6860bfac-f703-4289-b789-972d0aaf3abe',
+          knowledgeGraphId: '6860bfacf7034289b789972d0aaf3abe',
           status: 'published',
         });
 
         // Check Company entity with resolved IDs
         const companyEntity = result.types.find((t) => t.name === 'Company');
         expect(companyEntity).toBeDefined();
-        expect(companyEntity?.knowledgeGraphId).toBe('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5');
+        expect(companyEntity?.knowledgeGraphId).toBe('6c504df51a8f43d1bf2d1ef9fa5b08b5');
         expect(companyEntity?.properties).toHaveLength(2);
         expect(companyEntity?.properties[0]).toMatchObject({
           name: 'name',
           dataType: 'String',
-          knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
           status: 'published',
         });
         expect(companyEntity?.properties[1]).toMatchObject({
           name: 'jobOffers',
           dataType: 'Relation(JobOffer)',
           relationType: 'JobOffer',
-          knowledgeGraphId: '1203064e-9741-4235-89d4-97f4b22eddfb',
+          knowledgeGraphId: '1203064e9741423589d497f4b22eddfb',
           status: 'published',
         });
 
         // Check JobOffer entity with resolved IDs
         const jobOfferEntity = result.types.find((t) => t.name === 'JobOffer');
         expect(jobOfferEntity).toBeDefined();
-        expect(jobOfferEntity?.knowledgeGraphId).toBe('f60585af-71b6-4674-9a26-b74ca6c1cceb');
+        expect(jobOfferEntity?.knowledgeGraphId).toBe('f60585af71b646749a26b74ca6c1cceb');
         expect(jobOfferEntity?.properties).toHaveLength(2);
         expect(jobOfferEntity?.properties[0]).toMatchObject({
           name: 'name',
           dataType: 'String',
-          knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+          knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
           status: 'published',
         });
         expect(jobOfferEntity?.properties[1]).toMatchObject({
           name: 'salary',
           dataType: 'Number',
-          knowledgeGraphId: 'baa36ac9-78ac-4cf7-8394-6b2d3006bebe',
+          knowledgeGraphId: 'baa36ac978ac4cf783946b2d3006bebe',
           status: 'published',
         });
       });
@@ -385,9 +385,9 @@ describe('parseHypergraphMapping', () => {
   it('should return the single mapping when only one valid mapping found', ({ expect }) => {
     const mapping: Mapping = {
       User: {
-        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
         properties: {
-          name: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+          name: Id('994edcff69964a779797a13e5e3efad8'),
         },
       },
     };
@@ -404,13 +404,13 @@ describe('parseHypergraphMapping', () => {
   it('should prefer "mapping" when multiple valid mappings exist', ({ expect }) => {
     const mappingPreferred: Mapping = {
       User: {
-        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
     const otherMapping: Mapping = {
       Post: {
-        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
@@ -426,13 +426,13 @@ describe('parseHypergraphMapping', () => {
   it('should prefer "default" when multiple valid mappings exist but no "mapping"', ({ expect }) => {
     const defaultMapping: Mapping = {
       User: {
-        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
     const otherMapping: Mapping = {
       Post: {
-        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
@@ -448,13 +448,13 @@ describe('parseHypergraphMapping', () => {
   it('should prefer "config" when no "mapping" or "default" exists', ({ expect }) => {
     const configMapping: Mapping = {
       User: {
-        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
     const otherMapping: Mapping = {
       Post: {
-        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
@@ -470,13 +470,13 @@ describe('parseHypergraphMapping', () => {
   it('should return first mapping when multiple exist with no preferred names', ({ expect }) => {
     const firstMapping: Mapping = {
       User: {
-        typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
     const secondMapping: Mapping = {
       Post: {
-        typeIds: [Id('b5fd07b1-120f-46c6-b46f-387ef98396a6')],
+        typeIds: [Id('b5fd07b1120f46c6b46f387ef98396a6')],
       },
     };
 
@@ -492,21 +492,21 @@ describe('parseHypergraphMapping', () => {
   it('should handle mappings with full structure including properties and relations', ({ expect }) => {
     const complexMapping: Mapping = {
       Event: {
-        typeIds: [Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+        typeIds: [Id('7f9562d4034d4385bf5cf02cdebba47a')],
         properties: {
-          name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+          name: Id('a126ca530c8e48d5b88882c734c38935'),
         },
         relations: {
-          sponsors: Id('6860bfac-f703-4289-b789-972d0aaf3abe'),
+          sponsors: Id('6860bfacf7034289b789972d0aaf3abe'),
         },
       },
       Company: {
-        typeIds: [Id('6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5')],
+        typeIds: [Id('6c504df51a8f43d1bf2d1ef9fa5b08b5')],
         properties: {
-          name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+          name: Id('a126ca530c8e48d5b88882c734c38935'),
         },
         relations: {
-          jobOffers: Id('1203064e-9741-4235-89d4-97f4b22eddfb'),
+          jobOffers: Id('1203064e9741423589d497f4b22eddfb'),
         },
       },
     };
@@ -521,7 +521,7 @@ describe('parseHypergraphMapping', () => {
       User: {
         typeIds: [],
         properties: {
-          name: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+          name: Id('994edcff69964a779797a13e5e3efad8'),
         },
       },
     };
@@ -536,7 +536,7 @@ describe('parseHypergraphMapping', () => {
       User: {
         typeIds: 'not-an-array',
         properties: {
-          name: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+          name: Id('994edcff69964a779797a13e5e3efad8'),
         },
       },
     };
@@ -1010,20 +1010,20 @@ export class User extends Entity.Class<User>('User')({
       types: [
         {
           name: 'User',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'email',
               dataType: 'String' as const,
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: true,
               status: 'published' as const,
             },
@@ -1031,27 +1031,27 @@ export class User extends Entity.Class<User>('User')({
         },
         {
           name: 'Event',
-          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '8f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'title',
               dataType: 'String' as const,
-              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'c126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'start_date',
               dataType: 'Date' as const,
-              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'd126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'location',
               dataType: 'Point' as const,
-              knowledgeGraphId: 'e126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'e126ca530c8e48d5b88882c734c38935',
               optional: true,
               status: 'published' as const,
             },
@@ -1059,7 +1059,7 @@ export class User extends Entity.Class<User>('User')({
               name: 'organizer',
               dataType: 'Relation(User)' as const,
               relationType: 'User',
-              knowledgeGraphId: 'f126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'f126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1172,13 +1172,13 @@ describe('buildMappingFileFromSchema', () => {
       types: [
         {
           name: 'User',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1193,9 +1193,9 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   User: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("a126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1208,13 +1208,13 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'User',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1222,13 +1222,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'Post',
-          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '8f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'title',
               dataType: 'String' as const,
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1243,15 +1243,15 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   User: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("a126ca530c8e48d5b88882c734c38935")
     },
   },
   Post: {
-    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("8f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      title: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+      title: Id("b126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1264,27 +1264,27 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'Product',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'price',
               dataType: 'Number' as const,
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'available',
               dataType: 'Boolean' as const,
-              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'c126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1299,11 +1299,11 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Product: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
-      price: Id("b126ca53-0c8e-48d5-b888-82c734c38935"),
-      available: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("a126ca530c8e48d5b88882c734c38935"),
+      price: Id("b126ca530c8e48d5b88882c734c38935"),
+      available: Id("c126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1316,13 +1316,13 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'Post',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'title',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1330,7 +1330,7 @@ export const mapping: Mapping = {
               name: 'author',
               dataType: 'Relation(User)' as const,
               relationType: 'User',
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1338,13 +1338,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'User',
-          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '8f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'c126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1359,18 +1359,18 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Post: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      title: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+      title: Id("a126ca530c8e48d5b88882c734c38935")
     },
     relations: {
-      author: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+      author: Id("b126ca530c8e48d5b88882c734c38935")
     },
   },
   User: {
-    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("8f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("c126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1383,20 +1383,20 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'Event',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'description',
               dataType: 'String' as const,
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1404,7 +1404,7 @@ export const mapping: Mapping = {
               name: 'sponsors',
               dataType: 'Relation(Company)' as const,
               relationType: 'Company',
-              knowledgeGraphId: '6860bfac-f703-4289-b789-972d0aaf3abe',
+              knowledgeGraphId: '6860bfacf7034289b789972d0aaf3abe',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1412,7 +1412,7 @@ export const mapping: Mapping = {
               name: 'attendees',
               dataType: 'Relation(User)' as const,
               relationType: 'User',
-              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'd126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1420,13 +1420,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'Company',
-          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '8f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'e126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'e126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1434,13 +1434,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'User',
-          knowledgeGraphId: '9f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '9f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'f126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'f126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1455,26 +1455,26 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Event: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
-      description: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("a126ca530c8e48d5b88882c734c38935"),
+      description: Id("b126ca530c8e48d5b88882c734c38935")
     },
     relations: {
-      sponsors: Id("6860bfac-f703-4289-b789-972d0aaf3abe"),
-      attendees: Id("d126ca53-0c8e-48d5-b888-82c734c38935")
+      sponsors: Id("6860bfacf7034289b789972d0aaf3abe"),
+      attendees: Id("d126ca530c8e48d5b88882c734c38935")
     },
   },
   Company: {
-    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("8f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("e126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("e126ca530c8e48d5b88882c734c38935")
     },
   },
   User: {
-    typeIds: [Id("9f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("9f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("f126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("f126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1520,20 +1520,20 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'Settings',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'theme',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'notifications_enabled',
               dataType: 'Boolean' as const,
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1548,10 +1548,10 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Settings: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      theme: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
-      notificationsEnabled: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+      theme: Id("a126ca530c8e48d5b88882c734c38935"),
+      notificationsEnabled: Id("b126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1564,14 +1564,14 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'Friendship',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'user1',
               dataType: 'Relation(User)' as const,
               relationType: 'User',
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1579,7 +1579,7 @@ export const mapping: Mapping = {
               name: 'user2',
               dataType: 'Relation(User)' as const,
               relationType: 'User',
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1587,13 +1587,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'User',
-          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '8f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'c126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1608,16 +1608,16 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Friendship: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     relations: {
-      user1: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
-      user2: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+      user1: Id("a126ca530c8e48d5b88882c734c38935"),
+      user2: Id("b126ca530c8e48d5b88882c734c38935")
     },
   },
   User: {
-    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("8f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("c126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1630,20 +1630,20 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'UserProfile',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'first_name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'last_name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'b126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'b126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1651,7 +1651,7 @@ export const mapping: Mapping = {
               name: 'profile_picture',
               dataType: 'Relation(Image)' as const,
               relationType: 'Image',
-              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'c126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1659,13 +1659,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'Image',
-          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '8f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'url',
               dataType: 'String' as const,
-              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'd126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1680,19 +1680,19 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   UserProfile: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      firstName: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
-      lastName: Id("b126ca53-0c8e-48d5-b888-82c734c38935")
+      firstName: Id("a126ca530c8e48d5b88882c734c38935"),
+      lastName: Id("b126ca530c8e48d5b88882c734c38935")
     },
     relations: {
-      profilePicture: Id("c126ca53-0c8e-48d5-b888-82c734c38935")
+      profilePicture: Id("c126ca530c8e48d5b88882c734c38935")
     },
   },
   Image: {
-    typeIds: [Id("8f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("8f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      url: Id("d126ca53-0c8e-48d5-b888-82c734c38935")
+      url: Id("d126ca530c8e48d5b88882c734c38935")
     },
   },
 }`;
@@ -1705,13 +1705,13 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'Article',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'title',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1726,7 +1726,7 @@ export const mapping: Mapping = {
               name: 'author',
               dataType: 'Relation(User)' as const,
               relationType: 'User',
-              knowledgeGraphId: 'c126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'c126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1734,13 +1734,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'User',
-          knowledgeGraphId: '8f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '8f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'd126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'd126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1752,8 +1752,8 @@ export const mapping: Mapping = {
     const result = buildMappingFileFromSchema(schema);
 
     // Check structure and that title and author have the expected IDs
-    expect(result).toMatch(/title: Id\("a126ca53-0c8e-48d5-b888-82c734c38935"\)/);
-    expect(result).toMatch(/author: Id\("c126ca53-0c8e-48d5-b888-82c734c38935"\)/);
+    expect(result).toMatch(/title: Id\("a126ca530c8e48d5b88882c734c38935"\)/);
+    expect(result).toMatch(/author: Id\("c126ca530c8e48d5b88882c734c38935"\)/);
     // content should have a generated ID
     expect(result).toMatch(/content: Id\("[a-f0-9-]+"\)/);
   });
@@ -1763,13 +1763,13 @@ export const mapping: Mapping = {
       types: [
         {
           name: 'Event',
-          knowledgeGraphId: '7f9562d4-034d-4385-bf5c-f02cdebba47a',
+          knowledgeGraphId: '7f9562d4034d4385bf5cf02cdebba47a',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1777,7 +1777,7 @@ export const mapping: Mapping = {
               name: 'sponsors',
               dataType: 'Relation(Company)' as const,
               relationType: 'Company',
-              knowledgeGraphId: '6860bfac-f703-4289-b789-972d0aaf3abe',
+              knowledgeGraphId: '6860bfacf7034289b789972d0aaf3abe',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1785,13 +1785,13 @@ export const mapping: Mapping = {
         },
         {
           name: 'Company',
-          knowledgeGraphId: '6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5',
+          knowledgeGraphId: '6c504df51a8f43d1bf2d1ef9fa5b08b5',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1799,7 +1799,7 @@ export const mapping: Mapping = {
               name: 'job_offers',
               dataType: 'Relation(JobOffer)' as const,
               relationType: 'JobOffer',
-              knowledgeGraphId: '1203064e-9741-4235-89d4-97f4b22eddfb',
+              knowledgeGraphId: '1203064e9741423589d497f4b22eddfb',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1807,20 +1807,20 @@ export const mapping: Mapping = {
         },
         {
           name: 'JobOffer',
-          knowledgeGraphId: 'f60585af-71b6-4674-9a26-b74ca6c1cceb',
+          knowledgeGraphId: 'f60585af71b646749a26b74ca6c1cceb',
           status: 'published' as const,
           properties: [
             {
               name: 'name',
               dataType: 'String' as const,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               optional: undefined,
               status: 'published' as const,
             },
             {
               name: 'salary',
               dataType: 'Number' as const,
-              knowledgeGraphId: 'baa36ac9-78ac-4cf7-8394-6b2d3006bebe',
+              knowledgeGraphId: 'baa36ac978ac4cf783946b2d3006bebe',
               optional: undefined,
               status: 'published' as const,
             },
@@ -1835,28 +1835,28 @@ import { Id } from '@graphprotocol/hypergraph';
 
 export const mapping: Mapping = {
   Event: {
-    typeIds: [Id("7f9562d4-034d-4385-bf5c-f02cdebba47a")],
+    typeIds: [Id("7f9562d4034d4385bf5cf02cdebba47a")],
     properties: {
-      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("a126ca530c8e48d5b88882c734c38935")
     },
     relations: {
-      sponsors: Id("6860bfac-f703-4289-b789-972d0aaf3abe")
+      sponsors: Id("6860bfacf7034289b789972d0aaf3abe")
     },
   },
   Company: {
-    typeIds: [Id("6c504df5-1a8f-43d1-bf2d-1ef9fa5b08b5")],
+    typeIds: [Id("6c504df51a8f43d1bf2d1ef9fa5b08b5")],
     properties: {
-      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935")
+      name: Id("a126ca530c8e48d5b88882c734c38935")
     },
     relations: {
-      jobOffers: Id("1203064e-9741-4235-89d4-97f4b22eddfb")
+      jobOffers: Id("1203064e9741423589d497f4b22eddfb")
     },
   },
   JobOffer: {
-    typeIds: [Id("f60585af-71b6-4674-9a26-b74ca6c1cceb")],
+    typeIds: [Id("f60585af71b646749a26b74ca6c1cceb")],
     properties: {
-      name: Id("a126ca53-0c8e-48d5-b888-82c734c38935"),
-      salary: Id("baa36ac9-78ac-4cf7-8394-6b2d3006bebe")
+      name: Id("a126ca530c8e48d5b88882c734c38935"),
+      salary: Id("baa36ac978ac4cf783946b2d3006bebe")
     },
   },
 }`;

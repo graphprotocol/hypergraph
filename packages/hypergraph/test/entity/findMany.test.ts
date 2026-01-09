@@ -16,11 +16,11 @@ describe('findMany with filters', () => {
       isActive: Type.Boolean,
     },
     {
-      types: [Id('bce10418-2e20-4903-ad75-1bc496c24635')],
+      types: [Id('bce104182e204903ad751bc496c24635')],
       properties: {
-        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
-        isActive: Id('e4259554-42b1-46e4-84c3-f8681987770f'),
+        name: Id('a126ca530c8e48d5b88882c734c38935'),
+        age: Id('a427183d35194c96b80a5a0c64daed41'),
+        isActive: Id('e425955442b146e484c3f8681987770f'),
       },
     },
   );
@@ -32,16 +32,16 @@ describe('findMany with filters', () => {
       category: Type.String,
     },
     {
-      types: [Id('0961fc6e-d254-491d-a54b-ae44d53c4ac4')],
+      types: [Id('0961fc6ed254491da54bae44d53c4ac4')],
       properties: {
-        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-        price: Id('f9a43200-51b3-4278-9332-de6fcc7acb09'),
-        category: Id('84159eba-8699-4cd0-8042-c66dc03fe237'),
+        name: Id('a126ca530c8e48d5b88882c734c38935'),
+        price: Id('f9a4320051b342789332de6fcc7acb09'),
+        category: Id('84159eba86994cd08042c66dc03fe237'),
       },
     },
   );
 
-  const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
+  const spaceId = '1e5e39daa00d4fd8b53b98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);
 
   let repo: Repo;

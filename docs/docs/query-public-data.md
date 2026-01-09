@@ -68,18 +68,18 @@ Each branch within `include` can optionally carry a `_config` object that lets y
 
 ```ts
 const { data: project } = useEntity(Project, {
-  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  id: '9f1306618c3f4db79bdc3ce69631c5ef',
   mode: 'public',
-  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  space: '3f32353d3b274a13b71a746f06e1f7db',
   include: {
     contributors: {
       _config: {
-        relationSpaces: ['3f32353d-3b27-4a13-b71a-746f06e1f7db', '95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+        relationSpaces: ['3f32353d3b274a13b71a746f06e1f7db', '95a4a1ccbfcc4038b7a102c513d27700'],
         valueSpaces: 'all',
       },
       organizations: {
         _config: {
-          valueSpaces: ['95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+          valueSpaces: ['95a4a1ccbfcc4038b7a102c513d27700'],
         },
       },
     },
@@ -101,7 +101,7 @@ Public entities can live in multiple spaces. Set `includeSpaceIds: true` on `use
 ```tsx
 const { data: projects } = useEntities(Project, {
   mode: 'public',
-  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  space: '3f32353d3b274a13b71a746f06e1f7db',
   includeSpaceIds: true,
 });
 
@@ -114,9 +114,9 @@ projects.forEach((project) => {
 
 ```tsx
 const { data: project } = useEntity(Project, {
-  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
+  id: '9f1306618c3f4db79bdc3ce69631c5ef',
   mode: 'public',
-  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  space: '3f32353d3b274a13b71a746f06e1f7db',
   includeSpaceIds: true,
 });
 
@@ -127,8 +127,8 @@ console.log(project?.spaceIds); // => ["3f3235..."]
 
 ```ts
 const project = await Entity.findOnePublic(Project, {
-  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
-  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  id: '9f1306618c3f4db79bdc3ce69631c5ef',
+  space: '3f32353d3b274a13b71a746f06e1f7db',
   includeSpaceIds: true,
 });
 
@@ -139,7 +139,7 @@ console.log(project?.spaceIds); // => ["3f3235...", "95a4a1..."]
 
 ```ts
 const { data: rounds } = await Entity.findManyPublic(InvestmentRound, {
-  spaces: ['3f32353d-3b27-4a13-b71a-746f06e1f7db', '95a4a1cc-bfcc-4038-b7a1-02c513d27700'],
+  spaces: ['3f32353d3b274a13b71a746f06e1f7db', '95a4a1ccbfcc4038b7a102c513d27700'],
   includeSpaceIds: true,
 });
 
@@ -154,7 +154,7 @@ rounds.map((round) => ({
 ```ts
 const { data: searchMatches } = await Entity.searchManyPublic(Project, {
   query: 'hypergraph',
-  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  space: '3f32353d3b274a13b71a746f06e1f7db',
   includeSpaceIds: true,
 });
 
@@ -207,8 +207,8 @@ import { useEntity } from '@graphprotocol/hypergraph-react';
 import { Project } from '../schema';
 
 const { data: project, invalidEntity, invalidRelationEntities, isPending, isError } = useEntity(Project, {
-  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
-  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  id: '9f1306618c3f4db79bdc3ce69631c5ef',
+  space: '3f32353d3b274a13b71a746f06e1f7db',
   mode: 'public',
   include: {
     contributors: {},
@@ -223,8 +223,8 @@ import { Entity } from '@graphprotocol/hypergraph';
 import { Project } from '../schema';
 
 const project = await Entity.findOnePublic(Project, {
-  id: '9f130661-8c3f-4db7-9bdc-3ce69631c5ef',
-  space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+  id: '9f1306618c3f4db79bdc3ce69631c5ef',
+  space: '3f32353d3b274a13b71a746f06e1f7db',
   include: {
     contributors: {},
   },
@@ -238,7 +238,7 @@ The Geo testnet contains public data that you can query immediately without any 
 **Note**:
 
 - **No authentication required** for public data queries.
-- All examples below use the Geo testnet space ID: `3f32353d-3b27-4a13-b71a-746f06e1f7db`
+- All examples below use the Geo testnet space ID: `3f32353d3b274a13b71a746f06e1f7db`
 
 Each section below includes the relevant `schema.ts` and a query example.
 
@@ -253,11 +253,11 @@ import { Entity, Type, Id } from "@graphprotocol/hypergraph";
 export const Project = Entity.Schema(
   { name: Type.String, description: Type.optional(Type.String), xUrl: Type.optional(Type.String) },
   {
-    types: [Id('484a18c5-030a-499c-b0f2-ef588ff16d50')],
+    types: [Id('484a18c5030a499cb0f2ef588ff16d50')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      description: Id('9b1f76ff9711404c861e59dc3fa7d037'),
+      x: Id('0d6259784b3c4b57a86fde45c997c73c'),
     },
   },
 );
@@ -280,7 +280,7 @@ export default function ProjectsExample() {
     isError,
   } = useEntities(Project, {
     mode: "public",
-    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
+    space: "3f32353d3b274a13b71a746f06e1f7db",
     first: limit,
   });
 
@@ -332,12 +332,12 @@ import { Entity, Type } from "@graphprotocol/hypergraph";
 export const Dapp = Entity.Schema(
   { name: Type.String, description: Type.optional(Type.String), xUrl: Type.optional(Type.String), githubUrl: Type.optional(Type.String) },
   {
-    types: [Id('8ca136d0-698a-4bbf-a76b-8e2741b2dc8c')],
+    types: [Id('8ca136d0698a4bbfa76b8e2741b2dc8c')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
-      github: Id('9eedefa8-60ae-4ac1-9a04-805054a4b094'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      description: Id('9b1f76ff9711404c861e59dc3fa7d037'),
+      x: Id('0d6259784b3c4b57a86fde45c997c73c'),
+      github: Id('9eedefa860ae4ac19a04805054a4b094'),
     },
   },
 );
@@ -360,7 +360,7 @@ export default function DappsExample() {
     isError,
   } = useEntities(Dapp, {
     mode: "public",
-    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
+    space: "3f32353d3b274a13b71a746f06e1f7db",
     first: limit,
   });
 
@@ -418,16 +418,16 @@ import { Entity, Type, Id } from "@graphprotocol/hypergraph";
 export const Investor = Entity.Schema(
   { name: Type.String },
   {
-    types: [Id('331aea18-973c-4adc-8f53-614f598d262d')],
-    properties: { name: Id('a126ca53-0c8e-48d5-b888-82c734c38935') },
+    types: [Id('331aea18973c4adc8f53614f598d262d')],
+    properties: { name: Id('a126ca530c8e48d5b88882c734c38935') },
   },
 );
 
 export const FundingStage = Entity.Schema(
   { name: Type.String },
   {
-    types: [Id('8d35d217-3fa1-4686-b74f-fcb3e9438067')],
-    properties: { name: Id('a126ca53-0c8e-48d5-b888-82c734c38935') },
+    types: [Id('8d35d2173fa14686b74ffcb3e9438067')],
+    properties: { name: Id('a126ca530c8e48d5b88882c734c38935') },
   },
 );
 
@@ -440,13 +440,13 @@ export const InvestmentRound = Entity.Schema(
     raisedBy: Type.Relation(Project),
   },
   {
-    types: [Id('8f03f4c9-59e4-44a8-a625-c0a40b1ff330')],
+    types: [Id('8f03f4c959e444a8a625c0a40b1ff330')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      raisedAmount: Id('16781706-dd9c-48bf-913e-cdf18b56034f'),
-      investors: Id('9b8a610a-fa35-486e-a479-e253dbdabb4f'),
-      fundingStages: Id('e278c3d4-78b9-4222-b272-5a39a8556bd2'),
-      raisedBy: Id('b4878d1a-0609-488d-b8a6-e19862d6b62f'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      raisedAmount: Id('16781706dd9c48bf913ecdf18b56034f'),
+      investors: Id('9b8a610afa35486ea479e253dbdabb4f'),
+      fundingStages: Id('e278c3d478b94222b2725a39a8556bd2'),
+      raisedBy: Id('b4878d1a0609488db8a6e19862d6b62f'),
     },
   },
 );
@@ -469,7 +469,7 @@ export default function InvestmentRoundsExample() {
     isError,
   } = useEntities(InvestmentRound, {
     mode: "public",
-    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
+    space: "3f32353d3b274a13b71a746f06e1f7db",
     first: limit,
     include: {
       investors: {},
@@ -539,11 +539,11 @@ import { Entity, Type, Id } from "@graphprotocol/hypergraph";
 export const Asset = Entity.Schema(
   { name: Type.String, symbol: Type.optional(Type.String), blockchainAddress: Type.optional(Type.String) },
   {
-    types: [Id('f8780a80-c238-4a2a-96cb-567d88b1aa63')],
+    types: [Id('f8780a80c2384a2a96cb567d88b1aa63')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      symbol: Id('ace1e96c-9b83-47b4-bd33-1d302ec0a0f5'),
-      blockchainAddress: Id('56b5944f-f059-48d1-b0fa-34abe84219da'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      symbol: Id('ace1e96c9b8347b4bd331d302ec0a0f5'),
+      blockchainAddress: Id('56b5944ff05948d1b0fa34abe84219da'),
     },
   },
 );
@@ -566,7 +566,7 @@ export default function AssetMarketExample() {
     isError,
   } = useEntities(Asset, {
     mode: "public",
-    space: "3f32353d-3b27-4a13-b71a-746f06e1f7db",
+    space: "3f32353d3b274a13b71a746f06e1f7db",
     first: limit,
   });
 

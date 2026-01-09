@@ -30,14 +30,14 @@ describe('preparePublish', () => {
       location: Type.Point,
     },
     {
-      types: [Id('a06dd0c6-3d38-4be1-a865-8c95be0ca35a')],
+      types: [Id('a06dd0c63d384be1a8658c95be0ca35a')],
       properties: {
-        name: Id('ed49ed7b-17b3-4df6-b0b5-11f78d82e151'),
-        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
-        email: Id('43d6f432-c661-4c05-bc65-5ddacdfd50bf'),
-        isActive: Id('e4259554-42b1-46e4-84c3-f8681987770f'),
-        birthDate: Id('b5c0e2c7-9ac9-415e-8ffe-34f8b530f126'),
-        location: Id('45e707a5-4364-42fb-bb0b-927a5a8bc061'),
+        name: Id('ed49ed7b17b34df6b0b511f78d82e151'),
+        age: Id('a427183d35194c96b80a5a0c64daed41'),
+        email: Id('43d6f432c6614c05bc655ddacdfd50bf'),
+        isActive: Id('e425955442b146e484c3f8681987770f'),
+        birthDate: Id('b5c0e2c79ac9415e8ffe34f8b530f126'),
+        location: Id('45e707a5436442fbbb0b927a5a8bc061'),
       },
     },
   );
@@ -48,10 +48,10 @@ describe('preparePublish', () => {
       employees: Type.Relation(Person),
     },
     {
-      types: [Id('1d113495-a1d8-4520-be14-8bc5378dc4ad')],
+      types: [Id('1d113495a1d84520be148bc5378dc4ad')],
       properties: {
-        name: Id('907722dc-2cd1-4bae-a81b-263186b29dff'),
-        employees: Id('6530b1dc-24ce-46ca-95e7-e89e87dd3839'),
+        name: Id('907722dc2cd14baea81b263186b29dff'),
+        employees: Id('6530b1dc24ce46ca95e7e89e87dd3839'),
       },
     },
   );
@@ -66,19 +66,19 @@ describe('preparePublish', () => {
       optionalPoint: Type.optional(Type.Point),
     },
     {
-      types: [Id('3f9e28c1-5b7d-4e8f-9a2c-6d5e4f3a2b1c')],
+      types: [Id('3f9e28c15b7d4e8f9a2c6d5e4f3a2b1c')],
       properties: {
-        name: Id('2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d'),
-        optionalNumber: Id('eaf9f4f8-5647-4228-aff5-8725368fc87c'),
-        optionalBoolean: Id('2742d8b6-3059-4adb-b439-fdfcd588dccb'),
-        optionalDate: Id('9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f'),
-        optionalPoint: Id('0c1d2e3f-4a5b-4c7d-8e9f-0a1b2c3d4e5f'),
+        name: Id('2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d'),
+        optionalNumber: Id('eaf9f4f856474228aff58725368fc87c'),
+        optionalBoolean: Id('2742d8b630594adbb439fdfcd588dccb'),
+        optionalDate: Id('9b53690fea6d4bd8b4d39ea01e7f837f'),
+        optionalPoint: Id('0c1d2e3f4a5b4c7d8e9f0a1b2c3d4e5f'),
       },
     },
   );
 
-  const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
-  const publicSpaceId = '2e5e39da-a00d-4fd8-b53b-98095337112f';
+  const spaceId = '1e5e39daa00d4fd8b53b98095337112f';
+  const publicSpaceId = '2e5e39daa00d4fd8b53b98095337112f';
 
   let repo: Repo;
 
@@ -115,7 +115,7 @@ describe('preparePublish', () => {
 
     it('should create ops for a new entity with all required fields', async () => {
       const entity = {
-        id: 'b7a8be83-7313-441b-804c-4798f1e9aca7',
+        id: 'b7a8be837313441b804c4798f1e9aca7',
         type: 'Person',
         name: 'John Doe',
         age: 30,
@@ -133,7 +133,7 @@ describe('preparePublish', () => {
 
       const result = await preparePublish(params);
 
-      expect(mockRequest).toHaveBeenCalledWith(`${Graph.TESTNET_API_ORIGIN}/graphql`, expect.any(String), {
+      expect(mockRequest).toHaveBeenCalledWith(`${Graph.TESTNET_API_ORIGIN}/v2/graphql`, expect.any(String), {
         entityId: entity.id,
         spaceId: publicSpaceId,
       });
@@ -147,7 +147,7 @@ describe('preparePublish', () => {
 
     it('should handle optional fields correctly when undefined', async () => {
       const entity = {
-        id: '224e5e89-a4d0-49de-ae1b-a94533e7e464',
+        id: '224e5e89a4d049deae1ba94533e7e464',
         type: 'Person',
         name: 'Jane Doe',
         age: 25,
@@ -171,7 +171,7 @@ describe('preparePublish', () => {
 
     it('should throw error when required field is undefined', async () => {
       const entity = {
-        id: '7f8c9d2e-4b5a-6c7d-8e9f-0a1b2c3d4e5f',
+        id: '7f8c9d2e4b5a6c7d8e9f0a1b2c3d4e5f',
         type: 'Person',
         age: 25,
         isActive: false,
@@ -191,7 +191,7 @@ describe('preparePublish', () => {
 
     it.skip('should handle entities with relations', async () => {
       const employee1 = {
-        id: 'f219bb22-5c2e-4923-8f1d-4565f362673d',
+        id: 'f219bb225c2e49238f1d4565f362673d',
         type: 'Person',
         name: 'Employee 1',
         age: 30,
@@ -202,7 +202,7 @@ describe('preparePublish', () => {
       } as Entity.Entity<typeof Person>;
 
       const employee2 = {
-        id: '94f01f8f-eb19-4fed-9c03-8e875058dc2a',
+        id: '94f01f8feb194fed9c038e875058dc2a',
         type: 'Person',
         name: 'Employee 2',
         age: 25,
@@ -213,12 +213,12 @@ describe('preparePublish', () => {
       } as Entity.Entity<typeof Person>;
 
       const company = {
-        id: 'd2033169-590f-4b88-bf18-4719949ea953',
+        id: 'd2033169590f4b88bf184719949ea953',
         type: 'Company',
         name: 'Test Company',
         employees: [
-          { ...employee1, _relation: { id: 'ba8a247b-af9d-40eb-ad75-aa8a23fb9911' } },
-          { ...employee2, _relation: { id: '4f7504e8-f2cc-4284-b2f2-2cd7fe1a6d90' } },
+          { ...employee1, _relation: { id: 'ba8a247baf9d40ebad75aa8a23fb9911' } },
+          { ...employee2, _relation: { id: '4f7504e8f2cc4284b2f22cd7fe1a6d90' } },
         ],
         __schema: Company,
       } as unknown as Entity.Entity<typeof Company>;
@@ -241,9 +241,9 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', string: 'Old Name' },
-            { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', number: 25 },
-            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', boolean: false },
+            { propertyId: 'ed49ed7b17b34df6b0b511f78d82e151', string: 'Old Name' },
+            { propertyId: 'a427183d35194c96b80a5a0c64daed41', number: 25 },
+            { propertyId: 'e425955442b146e484c3f8681987770f', boolean: false },
           ],
           relationsList: [],
         },
@@ -252,7 +252,7 @@ describe('preparePublish', () => {
 
     it('should create update ops only for changed values', async () => {
       const entity = {
-        id: '19085414-a281-4472-a70d-aec835074be4',
+        id: '19085414a2814472a70daec835074be4',
         type: 'Person',
         name: 'New Name', // Changed from 'Old Name'
         age: 25, // Same as existing
@@ -279,18 +279,18 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: 'ed49ed7b-17b3-4df6-b0b5-11f78d82e151', string: 'Same Name' },
-            { propertyId: 'a427183d-3519-4c96-b80a-5a0c64daed41', number: 30 },
-            { propertyId: 'e4259554-42b1-46e4-84c3-f8681987770f', boolean: Graph.serializeBoolean(true) },
-            { propertyId: 'b5c0e2c7-9ac9-415e-8ffe-34f8b530f126', time: Graph.serializeDate(new Date('1993-01-01')) },
-            { propertyId: '45e707a5-4364-42fb-bb0b-927a5a8bc061', point: Graph.serializePoint([0, 0]) },
+            { propertyId: 'ed49ed7b17b34df6b0b511f78d82e151', string: 'Same Name' },
+            { propertyId: 'a427183d35194c96b80a5a0c64daed41', number: 30 },
+            { propertyId: 'e425955442b146e484c3f8681987770f', boolean: Graph.serializeBoolean(true) },
+            { propertyId: 'b5c0e2c79ac9415e8ffe34f8b530f126', time: Graph.serializeDate(new Date('1993-01-01')) },
+            { propertyId: '45e707a5436442fbbb0b927a5a8bc061', point: Graph.serializePoint([0, 0]) },
           ],
           relationsList: [],
         },
       });
 
       const entity = {
-        id: '778ee1c4-a4ac-424c-81b0-565147fca460',
+        id: '778ee1c4a4ac424c81b0565147fca460',
         type: 'Person',
         name: 'Same Name',
         age: 30,
@@ -320,7 +320,7 @@ describe('preparePublish', () => {
       mockRequest.mockRejectedValue(new Error('Network error'));
 
       const entity = {
-        id: '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b',
+        id: '5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
         type: 'Person',
         name: 'Test Person',
         age: 30,
@@ -346,7 +346,7 @@ describe('preparePublish', () => {
 
     it('should handle different field types without errors', async () => {
       const entity = {
-        id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+        id: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
         type: 'Person',
         name: 'Test Person',
         age: 42,
@@ -376,7 +376,7 @@ describe('preparePublish', () => {
 
     it('should create entity with all optional fields present', async () => {
       const entity = {
-        id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+        id: 'a1b2c3d4e5f67a8b9c0d1e2f3a4b5c6d',
         type: 'OptionalFieldsEntity',
         name: 'Test Entity',
         optionalNumber: 42.5,
@@ -399,7 +399,7 @@ describe('preparePublish', () => {
 
     it('should create entity with some optional fields undefined', async () => {
       const entity = {
-        id: '4d77f7bc-fb12-4a8e-9224-99b0b5cb09a9',
+        id: '4d77f7bcfb124a8e922499b0b5cb09a9',
         type: 'OptionalFieldsEntity',
         name: 'Test Entity',
         optionalNumber: 25,
@@ -422,7 +422,7 @@ describe('preparePublish', () => {
 
     it('should create entity with only required fields (all optional fields undefined)', async () => {
       const entity = {
-        id: 'c3d4e5f6-a7b8-4c9d-8e2f-3a4b5c6d7e8f',
+        id: 'c3d4e5f6a7b84c9d8e2f3a4b5c6d7e8f',
         type: 'OptionalFieldsEntity',
         name: 'Minimal Entity',
         // All optional fields are undefined
@@ -450,7 +450,7 @@ describe('preparePublish', () => {
 
       for (const testCase of testCases) {
         const entity = {
-          id: '6ced2b76-e465-47de-a7ff-ac9b27a41fd4',
+          id: '6ced2b76e46547dea7ffac9b27a41fd4',
           type: 'OptionalFieldsEntity',
           name: `Test ${testCase.description}`,
           optionalNumber: testCase.value,
@@ -476,7 +476,7 @@ describe('preparePublish', () => {
 
       for (const testCase of testCases) {
         const entity = {
-          id: 'e68aa940-8452-48de-8523-292ba3771f81',
+          id: 'e68aa940845248de8523292ba3771f81',
           type: 'OptionalFieldsEntity',
           name: `Test ${testCase.description}`,
           optionalBoolean: testCase.value,
@@ -503,7 +503,7 @@ describe('preparePublish', () => {
 
       for (const testCase of testCases) {
         const entity = {
-          id: 'fde9afb6-8c58-45bd-86a7-1e5222f92284',
+          id: 'fde9afb68c5845bd86a71e5222f92284',
           type: 'OptionalFieldsEntity',
           name: `Test ${testCase.description}`,
           optionalDate: testCase.value,
@@ -530,7 +530,7 @@ describe('preparePublish', () => {
 
       for (const testCase of testCases) {
         const entity = {
-          id: '539cb728-ca6e-4d3c-ae6f-0b5b6bcb570a',
+          id: '539cb728ca6e4d3cae6f0b5b6bcb570a',
           type: 'OptionalFieldsEntity',
           name: `Test ${testCase.description}`,
           optionalPoint: testCase.value,
@@ -549,7 +549,7 @@ describe('preparePublish', () => {
 
     it('should throw error when required field is missing from optional fields entity', async () => {
       const entity = {
-        id: 'd4e5f6a7-b8c9-4d1e-af3a-4b5c6d7e8f9a',
+        id: 'd4e5f6a7b8c94d1eaf3a4b5c6d7e8f9a',
         type: 'OptionalFieldsEntity',
         // name is missing (required field)
         optionalNumber: 42,
@@ -570,14 +570,14 @@ describe('preparePublish', () => {
       // Mock existing entity with only required field
       mockRequest.mockResolvedValue({
         entity: {
-          valuesList: [{ propertyId: '2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d', value: 'Existing Entity' }],
+          valuesList: [{ propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', value: 'Existing Entity' }],
           relationsList: [],
         },
       });
 
       const result = await preparePublish({
         entity: {
-          id: 'e5f6a7b8-c9d0-4e2f-ba4b-5c6d7e8f9a0b',
+          id: 'e5f6a7b8c9d04e2fba4b5c6d7e8f9a0b',
           name: 'Existing Entity',
           optionalNumber: 100, // New field
           optionalBoolean: true, // New field
@@ -597,16 +597,16 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: '2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d', value: 'Existing Entity' },
-            { propertyId: 'eaf9f4f8-5647-4228-aff5-8725368fc87c', value: Graph.serializeNumber(50) },
-            { propertyId: '2742d8b6-3059-4adb-b439-fdfcd588dccb', value: Graph.serializeBoolean(true) },
+            { propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', value: 'Existing Entity' },
+            { propertyId: 'eaf9f4f856474228aff58725368fc87c', value: Graph.serializeNumber(50) },
+            { propertyId: '2742d8b630594adbb439fdfcd588dccb', value: Graph.serializeBoolean(true) },
           ],
           relationsList: [],
         },
       });
 
       const entity = {
-        id: 'f6a7b8c9-d0e1-4f3a-bb5c-6d7e8f9a0b1c',
+        id: 'f6a7b8c9d0e14f3abb5c6d7e8f9a0b1c',
         type: 'OptionalFieldsEntity',
         name: 'Existing Entity',
         // All optional fields are now undefined (removed)
@@ -628,16 +628,16 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: '2a8b9c7d-4e5f-6a7b-8c9d-0e1f2a3b4c5d', value: 'Existing Entity' },
-            { propertyId: 'eaf9f4f8-5647-4228-aff5-8725368fc87c', value: Graph.serializeNumber(75) },
-            { propertyId: '9b53690f-ea6d-4bd8-b4d3-9ea01e7f837f', value: Graph.serializeDate(new Date('2023-01-01')) },
+            { propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', value: 'Existing Entity' },
+            { propertyId: 'eaf9f4f856474228aff58725368fc87c', value: Graph.serializeNumber(75) },
+            { propertyId: '9b53690fea6d4bd8b4d39ea01e7f837f', value: Graph.serializeDate(new Date('2023-01-01')) },
           ],
           relationsList: [],
         },
       });
 
       const entity = {
-        id: '809c9f0a-dbe5-4208-9092-17135f282613',
+        id: '809c9f0adbe54208909217135f282613',
         type: 'OptionalFieldsEntity',
         name: 'Existing Entity',
         optionalNumber: 125, // Changed from 75

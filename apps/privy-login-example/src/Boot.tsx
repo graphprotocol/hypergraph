@@ -28,7 +28,7 @@ export function Boot() {
         },
       }}
     >
-      <HypergraphAppProvider syncServerUri="http://localhost:3030" appId="93bb8907-085a-4a0e-83dd-62b0dc98e793">
+      <HypergraphAppProvider syncServerUri="http://localhost:3030" appId="93bb8907085a4a0e83dd62b0dc98e793">
         <RouterProvider router={router} />
       </HypergraphAppProvider>
     </PrivyProvider>

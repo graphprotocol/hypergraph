@@ -131,7 +131,7 @@ export const findManyPublic = async (params?: FindManyPublicParams) => {
     throw new Error('Provide only one of memberAccountAddress or editorAccountAddress when calling findManyPublic().');
   }
 
-  const endpoint = `${Graph.TESTNET_API_ORIGIN}/graphql`;
+  const endpoint = `${Graph.TESTNET_API_ORIGIN}/v2/graphql`;
 
   if (memberAccountAddress) {
     const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, memberSpacesQueryDocument, {

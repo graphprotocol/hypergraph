@@ -33,7 +33,7 @@ function Authorized() {
     isPending: publicSpacesPending,
     error: publicSpacesError,
     data: publicSpacesData,
-  } = usePublicSpaces(`${Graph.TESTNET_API_ORIGIN}/graphql`);
+  } = usePublicSpaces(`${Graph.TESTNET_API_ORIGIN}/v2/graphql`);
 
   return (
     <div className="flex grow flex-col items-center justify-center">

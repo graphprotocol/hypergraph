@@ -7,7 +7,7 @@ import { Dapp } from '../../schema';
 export default function ExploreDappsPage() {
   const { data: dapps, isPending } = useEntities(Dapp, {
     mode: 'public',
-    space: '3f32353d-3b27-4a13-b71a-746f06e1f7db',
+    space: '3f32353d3b274a13b71a746f06e1f7db',
     first: 100,
     include: { avatar: {} },
   });

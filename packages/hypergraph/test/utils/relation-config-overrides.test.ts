@@ -5,15 +5,15 @@ import * as Type from '../../src/type/type.js';
 import { getRelationTypeIds } from '../../src/utils/get-relation-type-ids.js';
 import { buildRelationsSelection, getRelationAlias } from '../../src/utils/relation-query-helpers.js';
 
-const FRIENDS_RELATION_PROPERTY_ID = Id('f44ae32a-2f13-4d3f-875f-19d2338a32b8');
-const CHILDREN_RELATION_PROPERTY_ID = Id('8a6dcb99-9c7b-4ca9-9f7b-98f2f404b405');
-const PARENT_TYPES = [Id('842e8ae0-9904-40a8-9bfe-19e1f4400c5e')];
-const CHILD_TYPES = [Id('cd9a2ae2-831c-4fa2-b714-ad3aa254db7d')];
-const FRIEND_TYPES = [Id('35ac5c3e-4f31-466e-b3da-51fdfbb4b38e')];
-const PODCAST_TYPES = [Id('f347d2a2-cc18-4d45-aa9a-0df3ba40f4ad')];
-const EPISODE_TYPES = [Id('b1fe2f9e-1f6a-4f07-a0fb-3f5d463f98f1')];
-const NAME_PROPERTY_ID = Id('9f5e7ea4-51bb-4c9f-8739-7fa0aa695d02');
-const PODCAST_EPISODES_RELATION_PROPERTY_ID = Id('88f24615-58b1-4d6c-a45e-81ab9582c282');
+const FRIENDS_RELATION_PROPERTY_ID = Id('f44ae32a2f134d3f875f19d2338a32b8');
+const CHILDREN_RELATION_PROPERTY_ID = Id('8a6dcb999c7b4ca99f7b98f2f404b405');
+const PARENT_TYPES = [Id('842e8ae0990440a89bfe19e1f4400c5e')];
+const CHILD_TYPES = [Id('cd9a2ae2831c4fa2b714ad3aa254db7d')];
+const FRIEND_TYPES = [Id('35ac5c3e4f31466eb3da51fdfbb4b38e')];
+const PODCAST_TYPES = [Id('f347d2a2cc184d45aa9a0df3ba40f4ad')];
+const EPISODE_TYPES = [Id('b1fe2f9e1f6a4f07a0fb3f5d463f98f1')];
+const NAME_PROPERTY_ID = Id('9f5e7ea451bb4c9f87397fa0aa695d02');
+const PODCAST_EPISODES_RELATION_PROPERTY_ID = Id('88f2461558b14d6ca45e81ab9582c282');
 
 const stringifyTypeIds = (typeIds: readonly string[]) => `[${typeIds.map((id) => JSON.stringify(id)).join(', ')}]`;
 

@@ -77,7 +77,7 @@ const buildEntitiesQuery = (
 query ${queryName}(${variableDefinitions}) {
   entities: ${queryName}(
     ${orderByArgs}filter: { and: [{
-      relations: {some: {typeId: {is: "8f151ba4-de20-4e3c-9cb4-99ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+      relations: {some: {typeId: {is: "8f151ba4de204e3c9cb499ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
       ${entitySpaceFilter}
     }, $filter]}
     first: $first
@@ -296,7 +296,11 @@ export const findManyPublic = async <
     queryVariables.sortDirection = sortDirection;
   }
 
-  const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, queryDocument, queryVariables);
+  const result = await request<EntityQueryResult>(
+    `${Graph.TESTNET_API_ORIGIN}/v2/graphql`,
+    queryDocument,
+    queryVariables,
+  );
 
   const { data, invalidEntities, invalidRelationEntities } = parseResult<S, IncludeSpaceIds>(
     result,

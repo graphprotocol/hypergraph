@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { normalizeGeoId } from './geo-id.js';
 
 /**
  * Generate a v4 UUID.
@@ -14,5 +15,6 @@ import { v4 as uuidv4 } from 'uuid';
  * @returns v4 UUID
  */
 export function generateId() {
-  return uuidv4();
+  // GRC-20 now uses UUIDs without dashes; normalize for internal consistency.
+  return normalizeGeoId(uuidv4());
 }

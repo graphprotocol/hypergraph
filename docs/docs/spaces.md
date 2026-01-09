@@ -14,7 +14,7 @@ Public spaces can be found at [Geo Browser](https://www.geobrowser.io/root), whe
 
 Indexer API that indexes all the public spaces and the content in it!
 
-[Railway Graphql API](https://api-testnet.geobrowser.io/graphql)
+[Railway Graphql API](https://api-testnet.geobrowser.io/v2/graphql)
 
 ## Private Spaces
 

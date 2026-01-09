@@ -5,7 +5,7 @@ import { HypergraphAppProvider } from '@graphprotocol/hypergraph-react';
 // recommended by https://docs.privy.io/basics/troubleshooting/react-frameworks#next-js
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <HypergraphAppProvider syncServerUri="http://localhost:3030" appId="83aa8907-085b-430f-1296-ab87dc98e793">
+    <HypergraphAppProvider syncServerUri="http://localhost:3030" appId="83aa8907085b430f1296ab87dc98e793">
       {children}
     </HypergraphAppProvider>
   );

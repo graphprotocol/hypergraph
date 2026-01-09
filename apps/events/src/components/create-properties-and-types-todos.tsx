@@ -122,7 +122,7 @@ export const CreatePropertiesAndTypesTodos = ({ space }: { space: string }) => {
           const newMapping = `Todo2: {
   typeIds: [Id('${todoTypeId}')],
   properties: {
-    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca530c8e48d5b88882c734c38935'),
     checked: Id('${checkedPropertyId}'),
     due: Id('${duePropertyId}'),
     point: Id('${pointPropertyId}'),
@@ -136,7 +136,7 @@ export const CreatePropertiesAndTypesTodos = ({ space }: { space: string }) => {
 User: {
   typeIds: [Id('${userId}')],
   properties: {
-    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca530c8e48d5b88882c734c38935'),
   },
 }
 `;

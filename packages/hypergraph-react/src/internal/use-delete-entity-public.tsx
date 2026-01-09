@@ -45,7 +45,7 @@ export const useDeleteEntityPublic = <S extends Schema.Schema.AnyNoContext>(
   return async ({ id, walletClient }: { id: string; walletClient: Connect.SmartSessionClient }) => {
     try {
       const result = await request<EntityToDeleteQueryResult>(
-        `${Graph.TESTNET_API_ORIGIN}/graphql`,
+        `${Graph.TESTNET_API_ORIGIN}/v2/graphql`,
         deleteEntityQueryDocument,
         {
           spaceId: space,

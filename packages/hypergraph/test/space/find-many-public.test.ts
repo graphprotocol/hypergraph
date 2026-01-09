@@ -25,7 +25,7 @@ const buildQuerySpace = ({
                       ? []
                       : [
                           {
-                            propertyId: '8a743832-c094-4a62-b665-0c3cc2f9c7bc',
+                            propertyId: '8a743832c0944a62b6650c3cc2f9c7bc',
                             string: avatar,
                           },
                         ],

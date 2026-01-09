@@ -9,9 +9,9 @@ const Example = Entity.Schema(
     title: Type.String,
   },
   {
-    types: [Id('2f608104-53e2-41bc-9efd-9e0fc984d02e')],
+    types: [Id('2f60810453e241bc9efd9e0fc984d02e')],
     properties: {
-      title: Id('7f52b98b-6d7d-4131-b5d8-fd2b2cf597a5'),
+      title: Id('7f52b98b6d7d4131b5d8fd2b2cf597a5'),
     },
   },
 );

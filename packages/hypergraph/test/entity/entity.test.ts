@@ -13,10 +13,10 @@ describe('Entity', () => {
       age: Type.Number,
     },
     {
-      types: [Id('bffa181e-a333-495b-949c-57f2831d7eca')],
+      types: [Id('bffa181ea333495b949c57f2831d7eca')],
       properties: {
-        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-        age: Id('a427183d-3519-4c96-b80a-5a0c64daed41'),
+        name: Id('a126ca530c8e48d5b88882c734c38935'),
+        age: Id('a427183d35194c96b80a5a0c64daed41'),
       },
     },
   );
@@ -27,10 +27,10 @@ describe('Entity', () => {
       email: Type.String,
     },
     {
-      types: [Id('2a7db9c2-df00-4a19-82d0-91522777f980')],
+      types: [Id('2a7db9c2df004a1982d091522777f980')],
       properties: {
-        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-        email: Id('b667f951-4ede-40ef-83f8-fb5efee8c2ae'),
+        name: Id('a126ca530c8e48d5b88882c734c38935'),
+        email: Id('b667f9514ede40ef83f8fb5efee8c2ae'),
       },
     },
   );
@@ -40,9 +40,9 @@ describe('Entity', () => {
       name: Type.String,
     },
     {
-      types: [Id('2ce4d8ff-a6ca-4977-8b4e-11c272a7eb1c')],
+      types: [Id('2ce4d8ffa6ca49778b4e11c272a7eb1c')],
       properties: {
-        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        name: Id('a126ca530c8e48d5b88882c734c38935'),
       },
     },
   );
@@ -52,14 +52,14 @@ describe('Entity', () => {
       name: Type.String,
     },
     {
-      types: [Id('2ce4d8ff-a6ca-4977-8b4e-11c272a7eb1c')],
+      types: [Id('2ce4d8ffa6ca49778b4e11c272a7eb1c')],
       properties: {
-        name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+        name: Id('a126ca530c8e48d5b88882c734c38935'),
       },
     },
   );
 
-  const spaceId = '1e5e39da-a00d-4fd8-b53b-98095337112f';
+  const spaceId = '1e5e39daa00d4fd8b53b98095337112f';
   const automergeDocId = idToAutomergeId(spaceId);
 
   let repo: Repo;

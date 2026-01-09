@@ -18,7 +18,7 @@ const config = {
   overwrite: true,
   generates: {
     './src/generated/': {
-      schema: `${Graph.TESTNET_API_ORIGIN}/graphql`,
+      schema: `${Graph.TESTNET_API_ORIGIN}/v2/graphql`,
       documents: ['./src/**/*.{ts,tsx}'],
       preset: 'client',
       config: pluginConfig,
