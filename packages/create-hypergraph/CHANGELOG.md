@@ -1,5 +1,10 @@
 # create-hypergraph
 
+## 0.7.0
+### Minor Changes
+
+- 86d08f2: upgrade nextjs in nextjs template
+
 ## 0.6.0
 ### Minor Changes
 
