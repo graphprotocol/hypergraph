@@ -1,7 +1,7 @@
 {
   "name": "connect",
   "private": true,
-  "version": "0.2.25",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite --force",
