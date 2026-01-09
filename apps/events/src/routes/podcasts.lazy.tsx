@@ -107,10 +107,7 @@ function RouteComponent() {
       cover: {
         exists: true,
       },
-      or: [
-        { id: { is: '01d162e26d644acbb0a6be94169b8746' } },
-        { id: { is: '0cd771065e1e478496dae4d191861081' } },
-      ],
+      or: [{ id: { is: '01d162e26d644acbb0a6be94169b8746' } }, { id: { is: '0cd771065e1e478496dae4d191861081' } }],
     },
     include: {
       cover: {},

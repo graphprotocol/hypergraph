@@ -24,7 +24,7 @@ export const usePublicSpace = ({ spaceId, enabled }: { spaceId: string; enabled:
   const result = useQuery({
     queryKey: ['hypergraph-public-space', spaceId],
     queryFn: async () => {
-      const result = await request<SpaceQueryResult>(`${Graph.TESTNET_API_ORIGIN}/graphql`, spaceQueryDocument, {
+      const result = await request<SpaceQueryResult>(`${Graph.TESTNET_API_ORIGIN}/v2/graphql`, spaceQueryDocument, {
         spaceId,
       });
       return result?.space?.page

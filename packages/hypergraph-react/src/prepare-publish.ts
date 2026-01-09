@@ -49,7 +49,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
   publicSpace,
 }: PreparePublishParams<S>) => {
   const data = await request<EntityToPublishQueryResult>(
-    `${Graph.TESTNET_API_ORIGIN}/graphql`,
+    `${Graph.TESTNET_API_ORIGIN}/v2/graphql`,
     entityToPublishQueryDocument,
     {
       entityId: entity.id,
