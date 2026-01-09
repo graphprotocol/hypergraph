@@ -14,7 +14,7 @@ export default function ExplorePublicKnowledgeLayout({ children }: { children: R
           </span>{' '}
           with the ID{' '}
           <span className="inline-flex items-center rounded-full border bg-accent/60 text-accent-foreground px-2 py-0.5 text-xs font-mono align-middle">
-            3f32353d-3b27-4a13-b71a-746f06e1f7db
+            3f32353d3b274a13b71a746f06e1f7db
           </span>
           . No authentication is required.
         </p>

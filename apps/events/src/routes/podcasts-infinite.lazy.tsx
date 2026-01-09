@@ -8,7 +8,7 @@ export const Route = createLazyFileRoute('/podcasts-infinite')({
 });
 
 function RouteComponent() {
-  const space = 'e252f9e1-d3ad-4460-8bf1-54f93b02f220';
+  const space = 'e252f9e1d3ad44608bf154f93b02f220';
 
   const { data, isLoading, isError, fetchNextPage } = useEntitiesPublicInfinite(Podcast, {
     first: 2,

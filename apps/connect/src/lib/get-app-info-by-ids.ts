@@ -1,5 +1,5 @@
 // const apps = {
-//   '93bb8907-085a-4a0e-83dd-62b0dc98e793': {
+//   '93bb8907085a4a0e83dd62b0dc98e793': {
 //     name: 'Todos',
 //   },
 // };

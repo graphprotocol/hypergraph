@@ -5,9 +5,9 @@ export const Image = Entity.Schema(
     url: Type.String,
   },
   {
-    types: [Id('ba4e4146-0010-499d-a0a3-caaa7f579d0e')],
+    types: [Id('ba4e41460010499da0a3caaa7f579d0e')],
     properties: {
-      url: Id('8a743832-c094-4a62-b665-0c3cc2f9c7bc'),
+      url: Id('8a743832c0944a62b6650c3cc2f9c7bc'),
     },
   },
 );
@@ -20,12 +20,12 @@ export const Project = Entity.Schema(
     avatar: Type.Relation(Image),
   },
   {
-    types: [Id('484a18c5-030a-499c-b0f2-ef588ff16d50')],
+    types: [Id('484a18c5030a499cb0f2ef588ff16d50')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
-      avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      description: Id('9b1f76ff9711404c861e59dc3fa7d037'),
+      x: Id('0d6259784b3c4b57a86fde45c997c73c'),
+      avatar: Id('1155befffad549b7a2e0da4777b8792c'),
     },
   },
 );
@@ -39,13 +39,13 @@ export const Dapp = Entity.Schema(
     avatar: Type.Relation(Image),
   },
   {
-    types: [Id('8ca136d0-698a-4bbf-a76b-8e2741b2dc8c')],
+    types: [Id('8ca136d0698a4bbfa76b8e2741b2dc8c')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      description: Id('9b1f76ff-9711-404c-861e-59dc3fa7d037'),
-      x: Id('0d625978-4b3c-4b57-a86f-de45c997c73c'),
-      github: Id('9eedefa8-60ae-4ac1-9a04-805054a4b094'),
-      avatar: Id('1155beff-fad5-49b7-a2e0-da4777b8792c'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      description: Id('9b1f76ff9711404c861e59dc3fa7d037'),
+      x: Id('0d6259784b3c4b57a86fde45c997c73c'),
+      github: Id('9eedefa860ae4ac19a04805054a4b094'),
+      avatar: Id('1155befffad549b7a2e0da4777b8792c'),
     },
   },
 );
@@ -55,9 +55,9 @@ export const Investor = Entity.Schema(
     name: Type.String,
   },
   {
-    types: [Id('331aea18-973c-4adc-8f53-614f598d262d')],
+    types: [Id('331aea18973c4adc8f53614f598d262d')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
     },
   },
 );
@@ -67,9 +67,9 @@ export const FundingStage = Entity.Schema(
     name: Type.String,
   },
   {
-    types: [Id('8d35d217-3fa1-4686-b74f-fcb3e9438067')],
+    types: [Id('8d35d2173fa14686b74ffcb3e9438067')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
     },
   },
 );
@@ -83,13 +83,13 @@ export const InvestmentRound = Entity.Schema(
     raisedBy: Type.Relation(Project),
   },
   {
-    types: [Id('8f03f4c9-59e4-44a8-a625-c0a40b1ff330')],
+    types: [Id('8f03f4c959e444a8a625c0a40b1ff330')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      raisedAmount: Id('16781706-dd9c-48bf-913e-cdf18b56034f'),
-      investors: Id('9b8a610a-fa35-486e-a479-e253dbdabb4f'),
-      fundingStages: Id('e278c3d4-78b9-4222-b272-5a39a8556bd2'),
-      raisedBy: Id('b4878d1a-0609-488d-b8a6-e19862d6b62f'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      raisedAmount: Id('16781706dd9c48bf913ecdf18b56034f'),
+      investors: Id('9b8a610afa35486ea479e253dbdabb4f'),
+      fundingStages: Id('e278c3d478b94222b2725a39a8556bd2'),
+      raisedBy: Id('b4878d1a0609488db8a6e19862d6b62f'),
     },
   },
 );
@@ -101,11 +101,11 @@ export const Asset = Entity.Schema(
     blockchainAddress: Type.optional(Type.String),
   },
   {
-    types: [Id('f8780a80-c238-4a2a-96cb-567d88b1aa63')],
+    types: [Id('f8780a80c2384a2a96cb567d88b1aa63')],
     properties: {
-      name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
-      symbol: Id('ace1e96c-9b83-47b4-bd33-1d302ec0a0f5'),
-      blockchainAddress: Id('56b5944f-f059-48d1-b0fa-34abe84219da'),
+      name: Id('a126ca530c8e48d5b88882c734c38935'),
+      symbol: Id('ace1e96c9b8347b4bd331d302ec0a0f5'),
+      blockchainAddress: Id('56b5944ff05948d1b0fa34abe84219da'),
     },
   },
 );

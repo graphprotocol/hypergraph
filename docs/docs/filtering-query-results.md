@@ -78,7 +78,7 @@ When you already know the entity you want to retrieve, you can target its `id` d
 ```tsx
 const { data } = useEntities(Person, {
   filter: {
-    id: { is: 'fe9f0c57-3682-4a77-8ef4-205da3cd0a33' },
+    id: { is: 'fe9f0c5736824a778ef4205da3cd0a33' },
   },
 });
 ```

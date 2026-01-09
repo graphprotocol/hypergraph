@@ -102,7 +102,7 @@ export const CreatePropertiesAndTypesEvent = ({ space }: { space: string }) => {
           const newMapping = `Event: {
   typeIds: [Id('${eventTypeId}')],
   properties: {
-    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca530c8e48d5b88882c734c38935'),
   },
   relations: {
     sponsors: Id('${sponsorsRelationTypeId}'),
@@ -111,7 +111,7 @@ export const CreatePropertiesAndTypesEvent = ({ space }: { space: string }) => {
 Company: {
   typeIds: [Id('${companyTypeId}')],
   properties: {
-    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca530c8e48d5b88882c734c38935'),
   },
   relations: {
     jobOffers: Id('${jobOffersRelationTypeId}'),
@@ -120,7 +120,7 @@ Company: {
 JobOffer: {
   typeIds: [Id('${jobOfferTypeId}')],
   properties: {
-    name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+    name: Id('a126ca530c8e48d5b88882c734c38935'),
     salary: Id('${salaryPropertyId}'),
   },
 },
