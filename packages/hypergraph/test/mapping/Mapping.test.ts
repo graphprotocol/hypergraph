@@ -126,17 +126,17 @@ describe('Mapping', () => {
         types: [
           {
             name: 'Account',
-            knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+            knowledgeGraphId: 'a5fd07b1120f46c6b46f387ef98396a6',
             properties: [
               {
                 name: 'username',
                 dataType: 'String',
-                knowledgeGraphId: '994edcff-6996-4a77-9797-a13e5e3efad8',
+                knowledgeGraphId: '994edcff69964a779797a13e5e3efad8',
               },
               {
                 name: 'createdAt',
                 dataType: 'Date',
-                knowledgeGraphId: '64bfba51-a69b-4746-be4b-213214a879fe',
+                knowledgeGraphId: '64bfba51a69b4746be4b213214a879fe',
               },
             ],
           },
@@ -147,7 +147,7 @@ describe('Mapping', () => {
               {
                 name: 'name',
                 dataType: 'String',
-                knowledgeGraphId: '3808e060-fb4a-4d08-8069-35b8c8a1902b',
+                knowledgeGraphId: '3808e060fb4a4d08806935b8c8a1902b',
               },
               {
                 name: 'description',
@@ -166,16 +166,16 @@ describe('Mapping', () => {
       });
       const expected: Mapping = {
         Account: {
-          typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
           properties: {
-            username: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
-            createdAt: Id('64bfba51-a69b-4746-be4b-213214a879fe'),
+            username: Id('994edcff69964a779797a13e5e3efad8'),
+            createdAt: Id('64bfba51a69b4746be4b213214a879fe'),
           },
         },
         Event: {
           typeIds: [expect.any(String)],
           properties: {
-            name: Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
+            name: Id('3808e060fb4a4d08806935b8c8a1902b'),
             description: expect.any(String),
           },
           relations: {
@@ -191,7 +191,7 @@ describe('Mapping', () => {
         types: [
           {
             name: 'Account',
-            knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+            knowledgeGraphId: 'a5fd07b1120f46c6b46f387ef98396a6',
             properties: [
               {
                 name: 'username',
@@ -221,7 +221,7 @@ describe('Mapping', () => {
       });
       const expected: Mapping = {
         Account: {
-          typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
           properties: {
             username: expect.any(String),
           },
@@ -297,12 +297,12 @@ describe('Mapping', () => {
         types: [
           {
             name: 'Account',
-            knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+            knowledgeGraphId: 'a5fd07b1120f46c6b46f387ef98396a6',
             properties: [
               {
                 name: 'username',
                 dataType: 'String',
-                knowledgeGraphId: '994edcff-6996-4a77-9797-a13e5e3efad8',
+                knowledgeGraphId: '994edcff69964a779797a13e5e3efad8',
               },
             ],
           },
@@ -349,9 +349,9 @@ describe('Mapping', () => {
       });
       const expected: Mapping = {
         Account: {
-          typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+          typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
           properties: {
-            username: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
+            username: Id('994edcff69964a779797a13e5e3efad8'),
           },
         },
         Venue: {

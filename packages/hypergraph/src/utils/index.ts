@@ -5,6 +5,7 @@ export * from './base58.js';
 export * from './convert-property-value.js';
 export * from './convert-relations.js';
 export * from './generateId.js';
+export * from './geo-id.js';
 export * from './get-relation-type-ids.js';
 export * from './hexBytesAddressUtils.js';
 export * from './isRelation.js';

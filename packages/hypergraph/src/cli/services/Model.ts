@@ -2,6 +2,7 @@ import { Schema } from 'effect';
 
 import * as Mapping from '../../mapping/Mapping.js';
 import * as Utils from '../../mapping/Utils.js';
+import { GeoIdSchema } from '../../utils/geo-id.js';
 
 export const TypesyncHypergraphSchemaStatus = Schema.NullOr(
   Schema.Literal(
@@ -65,12 +66,12 @@ export class TypesyncHypergraphSchema extends Schema.Class<TypesyncHypergraphSch
 export const TypesyncHypergraphMapping = Schema.Record({
   key: Schema.NonEmptyTrimmedString,
   value: Schema.Struct({
-    typeIds: Schema.Array(Schema.UUID).pipe(Schema.minItems(1)),
+    typeIds: Schema.Array(GeoIdSchema).pipe(Schema.minItems(1)),
     properties: Schema.optional(
       Schema.UndefinedOr(
         Schema.Record({
           key: Schema.NonEmptyTrimmedString,
-          value: Schema.UUID,
+          value: GeoIdSchema,
         }),
       ),
     ),
@@ -78,7 +79,7 @@ export const TypesyncHypergraphMapping = Schema.Record({
       Schema.UndefinedOr(
         Schema.Record({
           key: Schema.NonEmptyTrimmedString,
-          value: Schema.UUID,
+          value: GeoIdSchema,
         }),
       ),
     ),

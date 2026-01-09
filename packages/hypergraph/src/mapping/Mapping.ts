@@ -1,6 +1,6 @@
 import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@graphprotocol/grc-20';
 import { Data, Array as EffectArray, Schema as EffectSchema, Option, pipe } from 'effect';
-
+import { GeoIdSchema } from '../utils/geo-id.js';
 import { namesAreUnique, toCamelCase, toPascalCase } from './Utils.js';
 
 /**
@@ -46,20 +46,20 @@ export type MappingEntry = {
  *
  * const mapping: Mapping = {
  *   Account: {
- *     typeIds: [Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')],
+ *     typeIds: [Id('a5fd07b1120f46c6b46f387ef98396a6')],
  *     properties: {
- *       username: Id('994edcff-6996-4a77-9797-a13e5e3efad8'),
- *       createdAt: Id('64bfba51-a69b-4746-be4b-213214a879fe')
+ *       username: Id('994edcff69964a779797a13e5e3efad8'),
+ *       createdAt: Id('64bfba51a69b4746be4b213214a879fe')
  *     }
  *   },
  *   Event: {
- *     typeIds: [Id('0349187b-526f-435f-b2bb-9e9caf23127a')],
+ *     typeIds: [Id('0349187b526f435fb2bb9e9caf23127a')],
  *     properties: {
- *       name: Id('3808e060-fb4a-4d08-8069-35b8c8a1902b'),
- *       description: Id('1f0d9007-8da2-4b28-ab9f-3bc0709f4837'),
+ *       name: Id('3808e060fb4a4d08806935b8c8a1902b'),
+ *       description: Id('1f0d90078da24b28ab9f3bc0709f4837'),
  *     },
  *     relations: {
- *       speaker: Id('a5fd07b1-120f-46c6-b46f-387ef98396a6')
+ *       speaker: Id('a5fd07b1120f46c6b46f387ef98396a6')
  *     }
  *   }
  * }
@@ -132,7 +132,7 @@ export function getDataType(val: string): SchemaDataType {
 
 const BaseSchemaTypeProperty = EffectSchema.Struct({
   name: EffectSchema.NonEmptyTrimmedString,
-  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  knowledgeGraphId: EffectSchema.NullOr(GeoIdSchema),
   /**
    * @since 0.4.0
    */
@@ -181,7 +181,7 @@ export function propertyIsRelation(
  */
 export const SchemaType = EffectSchema.Struct({
   name: EffectSchema.NonEmptyTrimmedString,
-  knowledgeGraphId: EffectSchema.NullOr(EffectSchema.UUID),
+  knowledgeGraphId: EffectSchema.NullOr(GeoIdSchema),
   properties: EffectSchema.Array(EffectSchema.Union(SchemaTypePropertyPrimitive, SchemaTypePropertyRelation)).pipe(
     EffectSchema.minItems(1),
     EffectSchema.filter(namesAreUnique, {
@@ -233,12 +233,12 @@ export const Schema = EffectSchema.Struct({
       types: [
         {
           name: 'Account',
-          knowledgeGraphId: 'a5fd07b1-120f-46c6-b46f-387ef98396a6',
+          knowledgeGraphId: 'a5fd07b1120f46c6b46f387ef98396a6',
           properties: [
             {
               name: 'name',
               optional: true,
-              knowledgeGraphId: 'a126ca53-0c8e-48d5-b888-82c734c38935',
+              knowledgeGraphId: 'a126ca530c8e48d5b88882c734c38935',
               dataType: 'String',
             },
           ],
@@ -530,12 +530,12 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *   types: [
  *     {
  *       name: "Account",
- *       knowledgeGraphId: "a5fd07b1-120f-46c6-b46f-387ef98396a6",
+ *       knowledgeGraphId: "a5fd07b1120f46c6b46f387ef98396a6",
  *       properties: [
  *         {
  *           name: "username",
  *           dataType: "String",
- *           knowledgeGraphId: "994edcff-6996-4a77-9797-a13e5e3efad8"
+ *           knowledgeGraphId: "994edcff69964a779797a13e5e3efad8"
  *         },
  *         {
  *           name: "createdAt",
@@ -551,7 +551,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *         {
  *           name: "name",
  *           dataType: "String",
- *           knowledgeGraphId: "3808e060-fb4a-4d08-8069-35b8c8a1902b"
+ *           knowledgeGraphId: "3808e060fb4a4d08806935b8c8a1902b"
  *         },
  *         {
  *           name: "description",
@@ -572,20 +572,20 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *
  * expect(mapping).toEqual({
  *   Account: {
- *     typeIds: [Id("a5fd07b1-120f-46c6-b46f-387ef98396a6")], // comes from input schema
+ *     typeIds: [Id("a5fd07b1120f46c6b46f387ef98396a6")], // comes from input schema
  *     properties: {
- *       username: Id("994edcff-6996-4a77-9797-a13e5e3efad8"), // comes from input schema
- *       createdAt: Id("8cd7d9ac-a878-4287-8000-e71e6f853117"), // generated from Graph.createProperty Op
+ *       username: Id("994edcff69964a779797a13e5e3efad8"), // comes from input schema
+ *       createdAt: Id("8cd7d9aca87842878000e71e6f853117"), // generated from Graph.createProperty Op
  *     }
  *   },
  *   Event: {
- *     typeIds: [Id("20b3fe39-8e62-41a0-b9cb-92743fd760da")], // generated from Graph.createType Op
+ *     typeIds: [Id("20b3fe398e6241a0b9cb92743fd760da")], // generated from Graph.createType Op
  *     properties: {
- *       name: Id("3808e060-fb4a-4d08-8069-35b8c8a1902b"), // comes from input schema
- *       description: Id("8fc4e17c-7581-4d6c-a712-943385afc7b5"), // generated from Graph.createProperty Op
+ *       name: Id("3808e060fb4a4d08806935b8c8a1902b"), // comes from input schema
+ *       description: Id("8fc4e17c75814d6ca712943385afc7b5"), // generated from Graph.createProperty Op
  *     },
  *     relations: {
- *       speaker: Id("651ce59f-643b-4931-bf7a-5dc0ca0f5a47"), // generated from Graph.createProperty Op
+ *       speaker: Id("651ce59f643b4931bf7a5dc0ca0f5a47"), // generated from Graph.createProperty Op
  *     }
  *   }
  * })
@@ -594,7 +594,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *   {
  *     type: "CREATE_PROPERTY",
  *     property: {
- *       id: Id("8cd7d9ac-a878-4287-8000-e71e6f853117"),
+ *       id: Id("8cd7d9aca87842878000e71e6f853117"),
  *       dataType: "String"
  *     }
  *   },
@@ -602,7 +602,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *   {
  *     type: "CREATE_PROPERTY",
  *     property: {
- *       id: Id("8fc4e17c-7581-4d6c-a712-943385afc7b5"),
+ *       id: Id("8fc4e17c75814d6ca712943385afc7b5"),
  *       dataType: "String"
  *     }
  *   },
@@ -610,7 +610,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *   {
  *     type: "CREATE_PROPERTY",
  *     property: {
- *       id: Id("651ce59f-643b-4931-bf7a-5dc0ca0f5a47"),
+ *       id: Id("651ce59f643b4931bf7a5dc0ca0f5a47"),
  *       dataType: "RELATION"
  *     }
  *   },
@@ -618,7 +618,7 @@ function processType(type: SchemaType, typeIdMap: TypeIdMapping): ProcessedType 
  *   {
  *     type: "CREATE_PROPERTY",
  *     property: {
- *       id: Id("651ce59f-643b-4931-bf7a-5dc0ca0f5a47"),
+ *       id: Id("651ce59f643b4931bf7a5dc0ca0f5a47"),
  *       dataType: "RELATION"
  *     }
  *   },

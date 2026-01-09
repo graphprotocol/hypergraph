@@ -369,13 +369,13 @@ export function buildMappingFile(mapping: Mapping.Mapping | Model.TypesyncHyperg
  *   types: [
  *     {
  *       name: "User",
- *       knowledgeGraphId: "7f9562d4-034d-4385-bf5c-f02cdebba47a",
+ *       knowledgeGraphId: "7f9562d4034d4385bf5cf02cdebba47a",
  *       status: null,
  *       properties: [
  *         {
  *           name: "name",
  *           dataType: "String",
- *           knowledgeGraphId: "a126ca53-0c8e-48d5-b888-82c734c38935",
+ *           knowledgeGraphId: "a126ca530c8e48d5b88882c734c38935",
  *           optional: null,
  *           status: null
  *         }
@@ -391,9 +391,9 @@ export function buildMappingFile(mapping: Mapping.Mapping | Model.TypesyncHyperg
  *
  * export const mapping: Mapping = {
  *   User: {
- *     typeIds: [Id('7f9562d4-034d-4385-bf5c-f02cdebba47a')],
+ *     typeIds: [Id('7f9562d4034d4385bf5cf02cdebba47a')],
  *     properties: {
- *       name: Id('a126ca53-0c8e-48d5-b888-82c734c38935'),
+ *       name: Id('a126ca530c8e48d5b88882c734c38935'),
  *     }
  *   }
  * }

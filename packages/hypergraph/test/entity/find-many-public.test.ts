@@ -6,16 +6,16 @@ import * as Type from '../../src/type/type.js';
 import { getRelationTypeIds } from '../../src/utils/get-relation-type-ids.js';
 import { getRelationAlias } from '../../src/utils/relation-query-helpers.js';
 
-const TITLE_PROPERTY_ID = Id('79c1a951-0074-4010-87d0-7501ef9d7b3d');
-const CHILDREN_RELATION_PROPERTY_ID = Id('ca7c7167-2502-49c4-90b0-84c147f9b12b');
-const CHILD_NAME_PROPERTY_ID = Id('25584af0-3941-4ab9-86f7-a603305b19bb');
+const TITLE_PROPERTY_ID = Id('79c1a9510074401087d07501ef9d7b3d');
+const CHILDREN_RELATION_PROPERTY_ID = Id('ca7c7167250249c490b084c147f9b12b');
+const CHILD_NAME_PROPERTY_ID = Id('25584af039414ab986f7a603305b19bb');
 
 const Child = Entity.Schema(
   {
     name: Type.String,
   },
   {
-    types: [Id('3c2ae3aa-4ec1-41e3-bc4c-1fe7a5e07bc1')],
+    types: [Id('3c2ae3aa4ec141e3bc4c1fe7a5e07bc1')],
     properties: {
       name: CHILD_NAME_PROPERTY_ID,
     },
@@ -28,7 +28,7 @@ const Parent = Entity.Schema(
     children: Type.Relation(Child),
   },
   {
-    types: [Id('af571d8c-06d4-4add-8cfa-4c6b50412254')],
+    types: [Id('af571d8c06d44add8cfa4c6b50412254')],
     properties: {
       title: TITLE_PROPERTY_ID,
       children: CHILDREN_RELATION_PROPERTY_ID,
