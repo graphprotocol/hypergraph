@@ -1,4 +1,5 @@
-import { Graph, type Op } from '@graphprotocol/grc-20';
+import type { Op } from '@graphprotocol/grc-20';
+import { Config } from '@graphprotocol/hypergraph';
 import { gql, request } from 'graphql-request';
 
 const deleteEntityQueryDocument = gql`
@@ -44,13 +45,9 @@ type DeleteEntityResult = {
 };
 
 export const generateDeleteOps = async ({ id }: { id: string; space: string }) => {
-  const result = await request<DeleteEntityResult>(
-    `${Graph.TESTNET_API_ORIGIN}/v2/graphql`,
-    deleteEntityQueryDocument,
-    {
-      entityId: id,
-    },
-  );
+  const result = await request<DeleteEntityResult>(`${Config.getApiOrigin()}/v2/graphql`, deleteEntityQueryDocument, {
+    entityId: id,
+  });
   if (result.entity === null) {
     throw new Error('Entity not found');
   }

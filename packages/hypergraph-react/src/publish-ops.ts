@@ -1,6 +1,6 @@
 import type { Op } from '@graphprotocol/grc-20';
-import { Graph, Ipfs } from '@graphprotocol/grc-20';
-import { Connect } from '@graphprotocol/hypergraph';
+import { Ipfs } from '@graphprotocol/grc-20';
+import { Config, Connect } from '@graphprotocol/hypergraph';
 import type { Hash } from 'viem';
 
 type PublishParams = {
@@ -34,7 +34,7 @@ export const publishOps = async ({ name, ops, walletClient, space }: PublishPara
   const cid = publishResult.cid;
 
   // This returns the correct contract address and calldata depending on the space id
-  const result = await fetch(`${Graph.TESTNET_API_ORIGIN}/space/${space}/edit/calldata`, {
+  const result = await fetch(`${Config.getApiOrigin()}/space/${space}/edit/calldata`, {
     method: 'POST',
     body: JSON.stringify({ cid }),
   });

@@ -1,4 +1,5 @@
-import { ContentIds, Graph, SystemIds } from '@graphprotocol/grc-20';
+import { ContentIds, SystemIds } from '@graphprotocol/grc-20';
+import { Config } from '@graphprotocol/hypergraph';
 import * as Either from 'effect/Either';
 import * as EffectSchema from 'effect/Schema';
 import { request } from 'graphql-request';
@@ -131,7 +132,7 @@ export const findManyPublic = async (params?: FindManyPublicParams) => {
     throw new Error('Provide only one of memberAccountAddress or editorAccountAddress when calling findManyPublic().');
   }
 
-  const endpoint = `${Graph.TESTNET_API_ORIGIN}/v2/graphql`;
+  const endpoint = `${Config.getApiOrigin()}/v2/graphql`;
 
   if (memberAccountAddress) {
     const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, memberSpacesQueryDocument, {

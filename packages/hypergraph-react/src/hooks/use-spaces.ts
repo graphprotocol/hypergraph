@@ -1,5 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
-import { store } from '@graphprotocol/hypergraph';
+import { Config, store } from '@graphprotocol/hypergraph';
 import { useQuery } from '@tanstack/react-query';
 import { useSelector } from '@xstate/store/react';
 import { gql, request } from 'graphql-request';
@@ -38,7 +37,7 @@ export const useSpaces = (params: { mode: 'public' | 'private' }) => {
     queryKey: ['hypergraph-public-spaces', params.mode],
     queryFn: async () => {
       const result = await request<PublicSpacesQueryResult>(
-        `${Graph.TESTNET_API_ORIGIN}/v2/graphql`,
+        `${Config.getApiOrigin()}/v2/graphql`,
         publicSpacesQueryDocument,
         {
           accountAddress,
