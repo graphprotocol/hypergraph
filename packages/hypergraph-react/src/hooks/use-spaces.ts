@@ -9,7 +9,6 @@ const publicSpacesQueryDocument = gql`
 query Spaces($accountAddress: String!) {
   spaces(filter: {members: {some: {address: {is: $accountAddress}}}}) {
     id
-    spaceAddress
     page {
       name
     }
@@ -20,7 +19,6 @@ query Spaces($accountAddress: String!) {
 type PublicSpacesQueryResult = {
   spaces: {
     id: string;
-    spaceAddress: string;
     page: {
       name: string;
     } | null;
@@ -47,7 +45,6 @@ export const useSpaces = (params: { mode: 'public' | 'private' }) => {
         ? result.spaces.map((space) => ({
             id: space.id,
             name: space.page?.name,
-            spaceAddress: space.spaceAddress,
           }))
         : [];
     },

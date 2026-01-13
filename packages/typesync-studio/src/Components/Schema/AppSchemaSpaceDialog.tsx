@@ -1,5 +1,8 @@
 'use client';
 
+import { fieldContext, formContext, useFieldContext } from '@/Components/Form/form.ts';
+import { SubmitButton } from '@/Components/Form/SubmitButton.tsx';
+import { useAppSchemaSpace } from '@/Context/AppSchemaSpaceContext';
 import { Id, type SpaceStorageEntry } from '@graphprotocol/hypergraph';
 import { useHypergraphApp, useHypergraphAuth, useSpaces } from '@graphprotocol/hypergraph-react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
@@ -7,9 +10,6 @@ import { WarningIcon, XIcon } from '@phosphor-icons/react';
 import { createFormHook, useStore } from '@tanstack/react-form';
 import { Schema } from 'effect';
 import { useId } from 'react';
-import { fieldContext, formContext, useFieldContext } from '@/Components/Form/form.ts';
-import { SubmitButton } from '@/Components/Form/SubmitButton.tsx';
-import { useAppSchemaSpace } from '@/Context/AppSchemaSpaceContext';
 import { ErrorMessages } from '../Form/ErrorMessages';
 import { InlineCode } from '../InlineCode';
 
@@ -154,7 +154,6 @@ type SchemaSpaceSelectProps = {
       | {
           id: string;
           name: string | undefined;
-          spaceAddress: string;
         },
   ): void;
 };
