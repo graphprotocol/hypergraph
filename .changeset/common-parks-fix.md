@@ -1,6 +1,6 @@
 ---
-"@graphprotocol/hypergraph": minor
-"@graphprotocol/hypergraph-react": minor
+"@graphprotocol/hypergraph": patch
+"@graphprotocol/hypergraph-react": patch
 ---
 
 Add configurable API origin support
