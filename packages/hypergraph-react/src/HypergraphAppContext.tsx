@@ -7,6 +7,7 @@ import { Repo } from '@automerge/automerge-repo/slim';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
 import { Graph } from '@graphprotocol/grc-20';
 import {
+  Config,
   Connect,
   type ConnectCallbackResult,
   Identity,
@@ -232,6 +233,7 @@ export type HypergraphAppProviderProps = Readonly<{
   children: ReactNode;
   appId: string;
   logInvalidResults?: boolean;
+  apiOrigin?: string;
 }>;
 
 const mockStorage = {
@@ -249,6 +251,7 @@ export function HypergraphAppProvider({
   appId,
   children,
   logInvalidResults = true,
+  apiOrigin,
 }: HypergraphAppProviderProps) {
   const [websocketConnection, setWebsocketConnection] = useState<WebSocket>();
   const [isConnecting, setIsConnecting] = useState(true);
@@ -258,6 +261,12 @@ export function HypergraphAppProvider({
   const repo = useSelectorStore(store, (state) => state.context.repo);
   const identity = useSelectorStore(store, (state) => state.context.identity);
   const privyIdentity = useSelectorStore(store, (state) => state.context.privyIdentity);
+
+  useEffect(() => {
+    if (apiOrigin) {
+      Config.setApiOrigin(apiOrigin);
+    }
+  }, [apiOrigin]);
 
   const logout = useCallback(() => {
     websocketConnection?.close();

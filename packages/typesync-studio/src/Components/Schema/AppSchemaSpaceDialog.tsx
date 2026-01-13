@@ -154,7 +154,6 @@ type SchemaSpaceSelectProps = {
       | {
           id: string;
           name: string | undefined;
-          spaceAddress: string;
         },
   ): void;
 };

@@ -1,5 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
-import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
+import { Config, Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Either from 'effect/Either';
 import * as Option from 'effect/Option';
 import type * as ParseResult from 'effect/ParseResult';
@@ -165,7 +164,7 @@ export const findOnePublic = async <
 
   const queryDocument = buildEntityQuery(relationTypeIds, includeSpaceIds);
 
-  const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/v2/graphql`, queryDocument, {
+  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/v2/graphql`, queryDocument, {
     id,
     spaceId: space,
   });

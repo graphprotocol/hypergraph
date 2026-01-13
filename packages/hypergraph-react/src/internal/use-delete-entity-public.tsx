@@ -1,6 +1,6 @@
 import { Graph, type Op } from '@graphprotocol/grc-20';
 import type { Connect } from '@graphprotocol/hypergraph';
-import { Constants } from '@graphprotocol/hypergraph';
+import { Config, Constants } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
@@ -45,7 +45,7 @@ export const useDeleteEntityPublic = <S extends Schema.Schema.AnyNoContext>(
   return async ({ id, walletClient }: { id: string; walletClient: Connect.SmartSessionClient }) => {
     try {
       const result = await request<EntityToDeleteQueryResult>(
-        `${Graph.TESTNET_API_ORIGIN}/v2/graphql`,
+        `${Config.getApiOrigin()}/v2/graphql`,
         deleteEntityQueryDocument,
         {
           spaceId: space,

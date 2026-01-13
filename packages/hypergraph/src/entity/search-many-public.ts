@@ -1,5 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
-import { Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
+import { Config, Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
@@ -82,7 +81,7 @@ export const searchManyPublic = async <
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
-  const result = await request<EntityQueryResult>(`${Graph.TESTNET_API_ORIGIN}/v2/graphql`, queryDocument, {
+  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/v2/graphql`, queryDocument, {
     spaceId: space,
     typeIds,
     query,

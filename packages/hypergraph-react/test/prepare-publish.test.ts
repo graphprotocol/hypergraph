@@ -1,6 +1,6 @@
 import { Repo } from '@automerge/automerge-repo';
 import { Graph, Id } from '@graphprotocol/grc-20';
-import { Entity, store, Type } from '@graphprotocol/hypergraph';
+import { Config, Entity, store, Type } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import request from 'graphql-request';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -133,7 +133,7 @@ describe('preparePublish', () => {
 
       const result = await preparePublish(params);
 
-      expect(mockRequest).toHaveBeenCalledWith(`${Graph.TESTNET_API_ORIGIN}/v2/graphql`, expect.any(String), {
+      expect(mockRequest).toHaveBeenCalledWith(`${Config.getApiOrigin()}/v2/graphql`, expect.any(String), {
         entityId: entity.id,
         spaceId: publicSpaceId,
       });
