@@ -1,5 +1,17 @@
 # @graphprotocol/hypergraph-react
 
+## 0.10.1
+### Patch Changes
+
+- 509cfbe: Add configurable API origin support
+  
+  - Add `Config.setApiOrigin()` and `Config.getApiOrigin()` functions to allow setting a custom API origin globally
+  - Add `apiOrigin` prop to `HypergraphAppProvider` for React apps
+  - Replace all hardcoded `Graph.TESTNET_API_ORIGIN` references with configurable `Config.getApiOrigin()`
+  - Default behavior remains unchanged (uses testnet) if not configured
+- Updated dependencies [509cfbe]
+  - @graphprotocol/hypergraph@0.10.1
+
 ## 0.10.0
 ### Minor Changes
 

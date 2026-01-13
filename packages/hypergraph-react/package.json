@@ -1,6 +1,6 @@
 {
   "name": "@graphprotocol/hypergraph-react",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "React implementation and additional functionality, components, and hooks for the hypergraph SDK framework",
   "keywords": [
     "Web3",
