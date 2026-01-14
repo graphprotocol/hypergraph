@@ -1,11 +1,11 @@
-import { store } from '@graphprotocol/hypergraph';
-import { useHypergraphApp, useSpaces } from '@graphprotocol/hypergraph-react';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useSelector } from '@xstate/store/react';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { store } from '@graphprotocol/hypergraph';
+import { useHypergraphApp, usePublicSpaces, useSpaces } from '@graphprotocol/hypergraph-react';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useSelector } from '@xstate/store/react';
+import { useEffect, useState } from 'react';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -17,6 +17,13 @@ window.HYPERGRAPH_STORE = store;
 function Index() {
   const { data: publicSpaces } = useSpaces({ mode: 'public' });
   const { data: privateSpaces } = useSpaces({ mode: 'private' });
+
+  const { data: publicSpaces2, invalidSpaces } = usePublicSpaces({
+    filter: { editorId: 'b0043a26-cb81-379c-1217-dfd2283b67b8' },
+  });
+
+  console.log({ invalidSpaces });
+
   const [spaceName, setSpaceName] = useState('');
 
   const accountInboxes = useSelector(store, (state) => state.context.accountInboxes);
@@ -119,6 +126,18 @@ function Index() {
                 <CardHeader>
                   <CardTitle>{space.name}</CardTitle>
                   <CardDescription className="text-xs">{space.id}</CardDescription>
+                </CardHeader>
+              </Card>
+            </li>
+          );
+        })}
+        v2
+        {publicSpaces2?.map((space) => {
+          return (
+            <li key={space.id}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{space.name}</CardTitle>
                 </CardHeader>
               </Card>
             </li>
