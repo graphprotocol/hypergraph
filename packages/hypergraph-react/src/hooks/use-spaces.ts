@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useHypergraphApp } from '../HypergraphAppContext.js';
 
 const publicSpacesQueryDocument = gql`
-query Spaces($memberId: String!) {
+query Spaces($memberId: UUID!) {
   spaces(filter: {members: {some: {memberSpaceId: {is: $memberId}}}}) {
     id
     page {
