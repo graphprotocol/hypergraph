@@ -12,7 +12,7 @@ When you only need the list of public spaces (with optional avatar metadata) you
 import { usePublicSpaces } from '@graphprotocol/hypergraph-react';
 
 const { data: spaces, invalidSpaces, isPending } = usePublicSpaces({
-  filter: { editorAccountAddress: '0x1234...' },
+  filter: { editorId: '0x1234...' },
 });
 ```
 
@@ -30,11 +30,11 @@ You can restrict the result set to spaces where a given account is a member or a
 
 ```ts
 await Space.findManyPublic({
-  filter: { memberAccountAddress: '0x1234...' },
+  filter: { memberId: '23kd4...' },
 });
 
 await Space.findManyPublic({
-  filter: { editorAccountAddress: '0x1234...' },
+  filter: { editorId: '23kd4...' },
 });
 ```
 

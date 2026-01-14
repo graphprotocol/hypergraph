@@ -32,16 +32,16 @@ query spaces {
 `;
 
 const memberSpacesQueryDocument = `
-query memberSpaces($accountAddress: String!) {
-  spaces(filter: {members: {some: {address: {is: $accountAddress}}}}) {
+query memberSpaces($accountId: UUID!) {
+  spaces(filter: {members: {some: {memberSpaceId: {is: $accountId}}}}) {
     ${spaceFields}
   }
 }
 `;
 
 const editorSpacesQueryDocument = `
-query editorSpaces($accountAddress: String!) {
-  spaces(filter: {editors: {some: {address: {is: $accountAddress}}}}) {
+query editorSpaces($accountId: UUID!) {
+  spaces(filter: {editors: {some: {memberSpaceId: {is: $accountId}}}}) {
     ${spaceFields}
   }
 }
@@ -73,7 +73,7 @@ type SpacesQueryResult = {
 };
 
 type SpacesQueryVariables = {
-  accountAddress: string;
+  accountId: string;
 };
 
 type SpaceQueryEntry = NonNullable<SpacesQueryResult['spaces']>[number];
@@ -115,9 +115,9 @@ export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
 };
 
 export type FindManyPublicFilter =
-  | Readonly<{ memberAccountAddress: string; editorAccountAddress?: never }>
-  | Readonly<{ editorAccountAddress: string; memberAccountAddress?: never }>
-  | Readonly<{ memberAccountAddress?: undefined; editorAccountAddress?: undefined }>;
+  | Readonly<{ memberId: string; editorId?: never }>
+  | Readonly<{ editorId: string; memberId?: never }>
+  | Readonly<{ memberId?: undefined; editorId?: undefined }>;
 
 export type FindManyPublicParams = Readonly<{
   filter?: FindManyPublicFilter;
@@ -125,25 +125,25 @@ export type FindManyPublicParams = Readonly<{
 
 export const findManyPublic = async (params?: FindManyPublicParams) => {
   const filter = params?.filter;
-  const memberAccountAddress = filter?.memberAccountAddress;
-  const editorAccountAddress = filter?.editorAccountAddress;
+  const memberId = filter?.memberId;
+  const editorId = filter?.editorId;
 
-  if (memberAccountAddress && editorAccountAddress) {
-    throw new Error('Provide only one of memberAccountAddress or editorAccountAddress when calling findManyPublic().');
+  if (memberId && editorId) {
+    throw new Error('Provide only one of memberId or editorId when calling findManyPublic().');
   }
 
   const endpoint = `${Config.getApiOrigin()}/v2/graphql`;
 
-  if (memberAccountAddress) {
+  if (memberId) {
     const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, memberSpacesQueryDocument, {
-      accountAddress: memberAccountAddress,
+      accountId: memberId,
     });
     return parseSpacesQueryResult(queryResult);
   }
 
-  if (editorAccountAddress) {
+  if (editorId) {
     const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, editorSpacesQueryDocument, {
-      accountAddress: editorAccountAddress,
+      accountId: editorId,
     });
     return parseSpacesQueryResult(queryResult);
   }

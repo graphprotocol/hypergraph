@@ -14,7 +14,11 @@ declare module '@tanstack/react-router' {
 
 export function Boot() {
   return (
-    <HypergraphAppProvider syncServerUri="http://localhost:3030" appId="93bb8907085a4a0e83dd62b0dc98e793">
+    <HypergraphAppProvider
+      syncServerUri="http://localhost:3030"
+      appId="93bb8907085a4a0e83dd62b0dc98e793"
+      apiOrigin="https://testnet-api.geobrowser.io"
+    >
       <RouterProvider router={router} />
     </HypergraphAppProvider>
   );
