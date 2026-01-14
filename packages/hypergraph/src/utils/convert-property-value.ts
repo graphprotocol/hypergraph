@@ -18,7 +18,14 @@ export const convertPropertyValue = (
       return property.point;
     }
     if (propertyType.value === 'number') {
-      return Number(property.number);
+      // Handle case where number is stored as string in the API
+      if (property.number != null) {
+        return Number(property.number);
+      }
+      if (property.string != null) {
+        return Number(property.string);
+      }
+      return undefined;
     }
     if (propertyType.value === 'date') {
       return property.time;

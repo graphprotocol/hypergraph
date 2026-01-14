@@ -165,7 +165,7 @@ export const parseResult = <S extends Schema.Schema.AnyNoContext, IncludeSpaceId
         const value = queryEntity.valuesList.find((a) => a.propertyId === result.value);
         if (value) {
           const rawValue = Utils.convertPropertyValue(value, propType);
-          if (rawValue) {
+          if (rawValue !== undefined) {
             rawEntity[String(prop.name)] = rawValue;
           }
         }
