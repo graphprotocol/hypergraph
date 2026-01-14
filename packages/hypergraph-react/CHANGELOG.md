@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.10.2
+### Patch Changes
+
+- 8a09ffd: fix useSpaces and Space.findManyPublic for new API
+- Updated dependencies [8a09ffd]
+  - @graphprotocol/hypergraph@0.10.2
+
 ## 0.10.1
 ### Patch Changes
 
