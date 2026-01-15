@@ -12,7 +12,7 @@ export const convertPropertyValue = (
       return property.string;
     }
     if (propertyType.value === 'boolean') {
-      // Handle case where number is stored as string in the API
+      // Handle case where boolean is stored as string in the API
       if (property.boolean != null) {
         return Boolean(property.boolean);
       }
