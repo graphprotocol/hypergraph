@@ -16,8 +16,8 @@ export const convertPropertyValue = (
       if (property.boolean != null) {
         return Boolean(property.boolean);
       }
-      if ((property.string != null && property.string === '1') || property.string === '0') {
-        return Boolean(property.string);
+      if (property.string != null && (property.string === '1' || property.string === '0')) {
+        return property.string === '1';
       }
       return undefined;
     }
