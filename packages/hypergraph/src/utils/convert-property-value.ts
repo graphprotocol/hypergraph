@@ -44,16 +44,10 @@ export const convertPropertyValue = (
     if (propertyType.value === 'date') {
       // Handle case where date is stored as string in the API
       if (property.time != null) {
-        const timeDate = new Date(property.time);
-        if (!Number.isNaN(timeDate.getTime())) {
-          return timeDate;
-        }
+        return property.time;
       }
-      if (property.string != null && property.string !== '') {
-        const stringDate = new Date(property.string);
-        if (!Number.isNaN(stringDate.getTime())) {
-          return stringDate;
-        }
+      if (property.string != null) {
+        return property.time;
       }
       return undefined;
     }
