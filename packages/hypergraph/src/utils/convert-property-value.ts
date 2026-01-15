@@ -27,7 +27,7 @@ export const convertPropertyValue = (
         return property.point;
       }
       if (property.string != null) {
-        return property.point;
+        return property.string;
       }
       return undefined;
     }
