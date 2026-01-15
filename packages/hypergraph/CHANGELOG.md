@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.10.3
+### Patch Changes
+
+- d7f578c: fix number, date, point and boolean property parsing when API returns value only on the string field
+
 ## 0.10.2
 ### Patch Changes
 

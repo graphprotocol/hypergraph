@@ -47,7 +47,7 @@ export const convertPropertyValue = (
         return property.time;
       }
       if (property.string != null) {
-        return property.time;
+        return property.string;
       }
       return undefined;
     }
