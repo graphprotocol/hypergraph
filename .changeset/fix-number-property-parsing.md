@@ -2,4 +2,4 @@
 "@graphprotocol/hypergraph": patch
 ---
 
-fix number property parsing when API returns value as string
+fix number, date, point and boolean property parsing when API returns value only on the string field
