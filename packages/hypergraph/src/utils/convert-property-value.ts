@@ -12,16 +12,44 @@ export const convertPropertyValue = (
       return property.string;
     }
     if (propertyType.value === 'boolean') {
-      return Boolean(property.boolean);
+      // Handle case where boolean is stored as string in the API
+      if (property.boolean != null) {
+        return Boolean(property.boolean);
+      }
+      if (property.string != null && (property.string === '1' || property.string === '0')) {
+        return property.string === '1';
+      }
+      return undefined;
     }
     if (propertyType.value === 'point') {
-      return property.point;
+      // Handle case where point is stored as string in the API
+      if (property.point != null) {
+        return property.point;
+      }
+      if (property.string != null) {
+        return property.string;
+      }
+      return undefined;
     }
     if (propertyType.value === 'number') {
-      return Number(property.number);
+      // Handle case where number is stored as string in the API
+      if (property.number != null) {
+        return Number(property.number);
+      }
+      if (property.string != null && property.string !== '' && !Number.isNaN(Number(property.string))) {
+        return Number(property.string);
+      }
+      return undefined;
     }
     if (propertyType.value === 'date') {
-      return property.time;
+      // Handle case where date is stored as string in the API
+      if (property.time != null) {
+        return property.time;
+      }
+      if (property.string != null) {
+        return property.time;
+      }
+      return undefined;
     }
   }
 };

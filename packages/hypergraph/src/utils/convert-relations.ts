@@ -150,7 +150,7 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
                 continue;
               }
               const rawValue = convertPropertyValue(value, propType);
-              if (rawValue) {
+              if (rawValue !== undefined) {
                 nestedRawEntity[String(nestedProp.name)] = rawValue;
               }
             }

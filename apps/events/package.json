@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --force",
     "preview": "vite preview",
-    "typesync": "hypergraph typesync"
+    "typesync": "hypergraph typesync",
+    "test:script": "tsx test-script.ts"
   },
   "dependencies": {
     "@graphprotocol/grc-20": "^0.27.0",
