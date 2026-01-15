@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.10.4
+### Patch Changes
+
+- 5b8f1f6: fix date parsing
+
 ## 0.10.3
 ### Patch Changes
 
