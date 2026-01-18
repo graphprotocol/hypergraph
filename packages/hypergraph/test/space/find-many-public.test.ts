@@ -5,10 +5,14 @@ const buildQuerySpace = ({
   id = 'space-id',
   name = 'Space name',
   avatar,
+  editorsList = [],
+  membersList = [],
 }: {
   id?: string;
   name?: string | null;
   avatar?: string | null;
+  editorsList?: { memberSpaceId: string }[];
+  membersList?: { memberSpaceId: string }[];
 } = {}) => {
   return {
     id,
@@ -33,6 +37,8 @@ const buildQuerySpace = ({
               },
             ],
     },
+    editorsList,
+    membersList,
   };
 };
 
@@ -47,6 +53,8 @@ describe('parseSpacesQueryResult', () => {
         id: 'space-1',
         name: 'Space 1',
         avatar: 'https://example.com/avatar.png',
+        editorIds: [],
+        memberIds: [],
       },
     ]);
     expect(invalidSpaces).toHaveLength(0);
@@ -61,6 +69,8 @@ describe('parseSpacesQueryResult', () => {
       {
         id: 'space-2',
         name: 'Space 2',
+        editorIds: [],
+        memberIds: [],
       },
     ]);
   });
@@ -78,9 +88,33 @@ describe('parseSpacesQueryResult', () => {
         id: 'space-valid',
         name: 'Space valid',
         avatar: 'https://example.com/a.png',
+        editorIds: [],
+        memberIds: [],
       },
     ]);
     expect(invalidSpaces).toHaveLength(1);
     expect(invalidSpaces[0]).toMatchObject({ id: 'space-invalid' });
+  });
+
+  it('parses editorIds and memberIds', () => {
+    const { data } = parseSpacesQueryResult({
+      spaces: [
+        buildQuerySpace({
+          id: 'space-with-members',
+          name: 'Space with members',
+          editorsList: [{ memberSpaceId: 'editor-1' }, { memberSpaceId: 'editor-2' }],
+          membersList: [{ memberSpaceId: 'member-1' }],
+        }),
+      ],
+    });
+
+    expect(data).toEqual([
+      {
+        id: 'space-with-members',
+        name: 'Space with members',
+        editorIds: ['editor-1', 'editor-2'],
+        memberIds: ['member-1'],
+      },
+    ]);
   });
 });
