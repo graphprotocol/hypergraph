@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.10.5
+### Patch Changes
+
+- 5504bd4: Add `editorIds` and `memberIds` arrays to the `PublicSpace` type returned by `Space.findManyPublic()` and `usePublicSpaces()`.
+
 ## 0.10.4
 ### Patch Changes
 
