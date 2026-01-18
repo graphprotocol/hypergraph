@@ -21,6 +21,12 @@ const spaceFields = `
       }
     }
   }
+  editorsList {
+    memberSpaceId
+  }
+  membersList {
+    memberSpaceId
+  }
 `;
 
 const spacesQueryDocument = `
@@ -51,6 +57,8 @@ export const PublicSpaceSchema = EffectSchema.Struct({
   id: EffectSchema.String,
   name: EffectSchema.String,
   avatar: EffectSchema.optional(EffectSchema.String),
+  editorIds: EffectSchema.Array(EffectSchema.String),
+  memberIds: EffectSchema.Array(EffectSchema.String),
 });
 
 export type PublicSpace = typeof PublicSpaceSchema.Type;
@@ -69,6 +77,12 @@ type SpacesQueryResult = {
         } | null;
       }[];
     } | null;
+    editorsList?: {
+      memberSpaceId: string;
+    }[];
+    membersList?: {
+      memberSpaceId: string;
+    }[];
   }[];
 };
 
@@ -90,6 +104,14 @@ const getAvatarFromSpace = (space: SpaceQueryEntry) => {
   return undefined;
 };
 
+const getEditorIdsFromSpace = (space: SpaceQueryEntry): string[] => {
+  return (space.editorsList ?? []).map((e) => e.memberSpaceId).filter((id): id is string => typeof id === 'string');
+};
+
+const getMemberIdsFromSpace = (space: SpaceQueryEntry): string[] => {
+  return (space.membersList ?? []).map((m) => m.memberSpaceId).filter((id): id is string => typeof id === 'string');
+};
+
 export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
   const data: PublicSpace[] = [];
   const invalidSpaces: Record<string, unknown>[] = [];
@@ -100,6 +122,8 @@ export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
       id: space.id,
       name: space.page?.name ?? undefined,
       avatar: getAvatarFromSpace(space),
+      editorIds: getEditorIdsFromSpace(space),
+      memberIds: getMemberIdsFromSpace(space),
     };
 
     const decodedSpace = decodeSpace(rawSpace);
