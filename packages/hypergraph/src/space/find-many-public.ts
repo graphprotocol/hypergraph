@@ -6,6 +6,7 @@ import { request } from 'graphql-request';
 
 const spaceFields = `
   id
+  type
   page {
     name
     relationsList(filter: {
@@ -53,8 +54,16 @@ query editorSpaces($accountId: UUID!) {
 }
 `;
 
+export const SpaceTypeSchema = EffectSchema.Union(
+  EffectSchema.Literal('PERSONAL'),
+  EffectSchema.Literal('DAO'),
+);
+
+export type SpaceType = typeof SpaceTypeSchema.Type;
+
 export const PublicSpaceSchema = EffectSchema.Struct({
   id: EffectSchema.String,
+  type: SpaceTypeSchema,
   name: EffectSchema.String,
   avatar: EffectSchema.optional(EffectSchema.String),
   editorIds: EffectSchema.Array(EffectSchema.String),
@@ -66,6 +75,7 @@ export type PublicSpace = typeof PublicSpaceSchema.Type;
 type SpacesQueryResult = {
   spaces?: {
     id: string;
+    type: 'PERSONAL' | 'DAO';
     page: {
       name?: string | null;
       relationsList?: {
@@ -120,6 +130,7 @@ export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
   for (const space of spaces) {
     const rawSpace: Record<string, unknown> = {
       id: space.id,
+      type: space.type,
       name: space.page?.name ?? undefined,
       avatar: getAvatarFromSpace(space),
       editorIds: getEditorIdsFromSpace(space),

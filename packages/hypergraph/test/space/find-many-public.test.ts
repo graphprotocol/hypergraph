@@ -3,12 +3,14 @@ import { parseSpacesQueryResult } from '../../src/space/find-many-public.js';
 
 const buildQuerySpace = ({
   id = 'space-id',
+  type = 'PERSONAL',
   name = 'Space name',
   avatar,
   editorsList = [],
   membersList = [],
 }: {
   id?: string;
+  type?: 'PERSONAL' | 'DAO';
   name?: string | null;
   avatar?: string | null;
   editorsList?: { memberSpaceId: string }[];
@@ -16,6 +18,7 @@ const buildQuerySpace = ({
 } = {}) => {
   return {
     id,
+    type,
     page: {
       name,
       relationsList:
@@ -51,6 +54,7 @@ describe('parseSpacesQueryResult', () => {
     expect(data).toEqual([
       {
         id: 'space-1',
+        type: 'PERSONAL',
         name: 'Space 1',
         avatar: 'https://example.com/avatar.png',
         editorIds: [],
@@ -68,7 +72,24 @@ describe('parseSpacesQueryResult', () => {
     expect(data).toEqual([
       {
         id: 'space-2',
+        type: 'PERSONAL',
         name: 'Space 2',
+        editorIds: [],
+        memberIds: [],
+      },
+    ]);
+  });
+
+  it('parses DAO type', () => {
+    const { data } = parseSpacesQueryResult({
+      spaces: [buildQuerySpace({ id: 'space-dao', type: 'DAO', name: 'DAO Space' })],
+    });
+
+    expect(data).toEqual([
+      {
+        id: 'space-dao',
+        type: 'DAO',
+        name: 'DAO Space',
         editorIds: [],
         memberIds: [],
       },
@@ -86,6 +107,7 @@ describe('parseSpacesQueryResult', () => {
     expect(data).toEqual([
       {
         id: 'space-valid',
+        type: 'PERSONAL',
         name: 'Space valid',
         avatar: 'https://example.com/a.png',
         editorIds: [],
@@ -111,6 +133,7 @@ describe('parseSpacesQueryResult', () => {
     expect(data).toEqual([
       {
         id: 'space-with-members',
+        type: 'PERSONAL',
         name: 'Space with members',
         editorIds: ['editor-1', 'editor-2'],
         memberIds: ['member-1'],
