@@ -30,34 +30,7 @@ const spaceFields = `
   }
 `;
 
-const spacesQueryDocument = `
-query spaces {
-  spaces {
-    ${spaceFields}
-  }
-}
-`;
-
-const memberSpacesQueryDocument = `
-query memberSpaces($accountId: UUID!) {
-  spaces(filter: {members: {some: {memberSpaceId: {is: $accountId}}}}) {
-    ${spaceFields}
-  }
-}
-`;
-
-const editorSpacesQueryDocument = `
-query editorSpaces($accountId: UUID!) {
-  spaces(filter: {editors: {some: {memberSpaceId: {is: $accountId}}}}) {
-    ${spaceFields}
-  }
-}
-`;
-
-export const SpaceTypeSchema = EffectSchema.Union(
-  EffectSchema.Literal('PERSONAL'),
-  EffectSchema.Literal('DAO'),
-);
+export const SpaceTypeSchema = EffectSchema.Union(EffectSchema.Literal('PERSONAL'), EffectSchema.Literal('DAO'));
 
 export type SpaceType = typeof SpaceTypeSchema.Type;
 
@@ -94,10 +67,6 @@ type SpacesQueryResult = {
       memberSpaceId: string;
     }[];
   }[];
-};
-
-type SpacesQueryVariables = {
-  accountId: string;
 };
 
 type SpaceQueryEntry = NonNullable<SpacesQueryResult['spaces']>[number];
@@ -150,13 +119,48 @@ export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
 };
 
 export type FindManyPublicFilter =
-  | Readonly<{ memberId: string; editorId?: never }>
-  | Readonly<{ editorId: string; memberId?: never }>
-  | Readonly<{ memberId?: undefined; editorId?: undefined }>;
+  | Readonly<{ memberId: string; editorId?: never; spaceType?: SpaceType }>
+  | Readonly<{ editorId: string; memberId?: never; spaceType?: SpaceType }>
+  | Readonly<{ memberId?: undefined; editorId?: undefined; spaceType?: SpaceType }>;
 
 export type FindManyPublicParams = Readonly<{
   filter?: FindManyPublicFilter;
 }>;
+
+const buildFilterString = (filter?: FindManyPublicFilter): string | undefined => {
+  const conditions: string[] = [];
+
+  if (filter?.memberId) {
+    conditions.push(`members: {some: {memberSpaceId: {is: "${filter.memberId}"}}}`);
+  }
+
+  if (filter?.editorId) {
+    conditions.push(`editors: {some: {memberSpaceId: {is: "${filter.editorId}"}}}`);
+  }
+
+  if (filter?.spaceType) {
+    conditions.push(`type: {is: ${filter.spaceType}}`);
+  }
+
+  if (conditions.length === 0) {
+    return undefined;
+  }
+
+  return `filter: {${conditions.join(', ')}}`;
+};
+
+const buildSpacesQuery = (filter?: FindManyPublicFilter): string => {
+  const filterString = buildFilterString(filter);
+  const filterClause = filterString ? `(${filterString})` : '';
+
+  return `
+query spaces {
+  spaces${filterClause} {
+    ${spaceFields}
+  }
+}
+`;
+};
 
 export const findManyPublic = async (params?: FindManyPublicParams) => {
   const filter = params?.filter;
@@ -168,21 +172,7 @@ export const findManyPublic = async (params?: FindManyPublicParams) => {
   }
 
   const endpoint = `${Config.getApiOrigin()}/v2/graphql`;
-
-  if (memberId) {
-    const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, memberSpacesQueryDocument, {
-      accountId: memberId,
-    });
-    return parseSpacesQueryResult(queryResult);
-  }
-
-  if (editorId) {
-    const queryResult = await request<SpacesQueryResult, SpacesQueryVariables>(endpoint, editorSpacesQueryDocument, {
-      accountId: editorId,
-    });
-    return parseSpacesQueryResult(queryResult);
-  }
-
-  const queryResult = await request<SpacesQueryResult>(endpoint, spacesQueryDocument);
+  const queryDocument = buildSpacesQuery(filter);
+  const queryResult = await request<SpacesQueryResult>(endpoint, queryDocument);
   return parseSpacesQueryResult(queryResult);
 };
