@@ -1,6 +1,6 @@
+import { Person, PersonHostTest, Podcast, Topic } from '@/schema';
 import { useEntities, useEntity, usePublicSpaces } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Person, PersonHostTest, Podcast, Topic } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,
@@ -117,7 +117,7 @@ function RouteComponent() {
   console.log({ topics });
 
   const { data: spaces } = usePublicSpaces({
-    filter: { memberId: 'cbbb9a68568e4e88938080ad0706f365' },
+    filter: { editorId: 'b8237d1da8dc62461c2288c6bc3d8483' },
   });
   console.log('spaces', spaces);
 

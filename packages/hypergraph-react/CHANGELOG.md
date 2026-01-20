@@ -1,5 +1,22 @@
 # @graphprotocol/hypergraph-react
 
+## 0.10.6
+### Patch Changes
+
+- 5b22a3f: Add `type` field to `PublicSpace` type returned by `Space.findManyPublic()` and `usePublicSpaces()`. The type is either `"PERSONAL"` or `"DAO"`.
+  
+  Add `spaceType` filter option to `Space.findManyPublic()` and `usePublicSpaces()` to filter spaces by type. Example usage:
+  
+  ```typescript
+  // Filter for DAO spaces only
+  const { data } = usePublicSpaces({ filter: { spaceType: 'DAO' } });
+  
+  // Combine with existing filters
+  const { data } = usePublicSpaces({ filter: { editorId: 'xxx', spaceType: 'PERSONAL' } });
+  ```
+- Updated dependencies [5b22a3f]
+  - @graphprotocol/hypergraph@0.10.6
+
 ## 0.10.5
 ### Patch Changes
 
