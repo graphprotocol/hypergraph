@@ -5,7 +5,10 @@
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm check:*)",
       "Bash(pnpm --filter events test:script:*)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(pnpm vitest:*)",
+      "Bash(pnpm changeset:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
