@@ -3,6 +3,7 @@ import { Config } from '@graphprotocol/hypergraph';
 import * as Either from 'effect/Either';
 import * as EffectSchema from 'effect/Schema';
 import { request } from 'graphql-request';
+import { parseGeoId } from '../utils/geo-id.js';
 
 const spaceFields = `
   id
@@ -127,19 +128,33 @@ export type FindManyPublicParams = Readonly<{
   filter?: FindManyPublicFilter;
 }>;
 
-const buildFilterString = (filter?: FindManyPublicFilter): string | undefined => {
+const validateSpaceType = (spaceType: SpaceType): SpaceType => {
+  const result = EffectSchema.decodeUnknownEither(SpaceTypeSchema)(spaceType);
+  if (Either.isLeft(result)) {
+    throw new Error(`Invalid spaceType: ${spaceType}. Must be 'PERSONAL' or 'DAO'.`);
+  }
+  return result.right;
+};
+
+export const buildFilterString = (filter?: FindManyPublicFilter): string | undefined => {
   const conditions: string[] = [];
 
   if (filter?.memberId) {
-    conditions.push(`members: {some: {memberSpaceId: {is: "${filter.memberId}"}}}`);
+    // Validate memberId is a valid GeoId to prevent injection attacks
+    const validatedMemberId = parseGeoId(filter.memberId);
+    conditions.push(`members: {some: {memberSpaceId: {is: "${validatedMemberId}"}}}`);
   }
 
   if (filter?.editorId) {
-    conditions.push(`editors: {some: {memberSpaceId: {is: "${filter.editorId}"}}}`);
+    // Validate editorId is a valid GeoId to prevent injection attacks
+    const validatedEditorId = parseGeoId(filter.editorId);
+    conditions.push(`editors: {some: {memberSpaceId: {is: "${validatedEditorId}"}}}`);
   }
 
   if (filter?.spaceType) {
-    conditions.push(`type: {is: ${filter.spaceType}}`);
+    // Validate spaceType at runtime to ensure it's a valid value
+    const validatedSpaceType = validateSpaceType(filter.spaceType);
+    conditions.push(`type: {is: ${validatedSpaceType}}`);
   }
 
   if (conditions.length === 0) {
@@ -149,7 +164,7 @@ const buildFilterString = (filter?: FindManyPublicFilter): string | undefined =>
   return `filter: {${conditions.join(', ')}}`;
 };
 
-const buildSpacesQuery = (filter?: FindManyPublicFilter): string => {
+export const buildSpacesQuery = (filter?: FindManyPublicFilter): string => {
   const filterString = buildFilterString(filter);
   const filterClause = filterString ? `(${filterString})` : '';
 
