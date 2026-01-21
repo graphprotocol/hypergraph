@@ -9,7 +9,7 @@
     "typesync": "hypergraph typesync"
   },
   "dependencies": {
-    "@graphprotocol/grc-20": "^0.32.3",
+    "@graphprotocol/grc-20": "^0.33.0",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "@noble/hashes": "^1.8.0",

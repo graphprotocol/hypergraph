@@ -1,4 +1,4 @@
-import { type CreatePropertyParams, Graph, Id as Grc20Id, type GrcOp } from '@graphprotocol/grc-20';
+import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@graphprotocol/grc-20';
 import { Data, Array as EffectArray, Schema as EffectSchema, Option, pipe } from 'effect';
 import { GeoIdSchema } from '../utils/geo-id.js';
 import { namesAreUnique, toCamelCase, toPascalCase } from './Utils.js';
@@ -331,17 +331,17 @@ export function allRelationPropertyTypesExist(types: ReadonlyArray<SchemaType>):
   );
 }
 
-export type GenerateMappingResult = [mapping: Mapping, ops: ReadonlyArray<GrcOp>];
+export type GenerateMappingResult = [mapping: Mapping, ops: ReadonlyArray<Op>];
 
 // Helper types for internal processing
 type PropertyIdMapping = { propName: string; id: Grc20Id };
 type TypeIdMapping = Map<string, Grc20Id | null>;
 type ProcessedProperty =
-  | { type: 'resolved'; mapping: PropertyIdMapping; ops: Array<GrcOp> }
+  | { type: 'resolved'; mapping: PropertyIdMapping; ops: Array<Op> }
   | { type: 'deferred'; property: SchemaTypePropertyRelation };
 
 type ProcessedType =
-  | { type: 'complete'; entry: MappingEntry & { typeName: string }; ops: Array<GrcOp> }
+  | { type: 'complete'; entry: MappingEntry & { typeName: string }; ops: Array<Op> }
   | {
       type: 'deferred';
       schemaType: SchemaType;
@@ -666,7 +666,7 @@ export function generateMapping(input: Schema): GenerateMappingResult {
   const { entries: deferredEntries, ops: secondPassOps } = pipe(
     deferredTypes,
     EffectArray.reduce(
-      { entries: [] as Array<MappingEntry & { typeName: string }>, ops: [] as Array<GrcOp> },
+      { entries: [] as Array<MappingEntry & { typeName: string }>, ops: [] as Array<Op> },
       (acc, deferred) => {
         // Resolve all deferred relation properties for this type
         const resolvedRelations = pipe(

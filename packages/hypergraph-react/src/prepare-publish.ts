@@ -1,7 +1,7 @@
 import {
   Graph,
-  type GrcOp,
   type Id,
+  type Op,
   type PropertiesParam,
   type PropertyValueParam,
   type RelationsParam,
@@ -66,7 +66,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
     },
   );
 
-  const ops: GrcOp[] = [];
+  const ops: Op[] = [];
   const values: PropertiesParam = [];
   const relations: RelationsParam = {};
   const type = entity.__schema;

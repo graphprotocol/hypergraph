@@ -1,4 +1,4 @@
-import { Graph, type GrcOp } from '@graphprotocol/grc-20';
+import { Graph, type Op } from '@graphprotocol/grc-20';
 import type { Connect } from '@graphprotocol/hypergraph';
 import { publishOps, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ const createPropertiesAndTypesEvent = async ({
   smartSessionClient: Connect.SmartSessionClient;
   space: string;
 }) => {
-  const ops: Array<GrcOp> = [];
+  const ops: Array<Op> = [];
   const { id: salaryPropertyId, ops: createSalaryPropertyOps } = Graph.createProperty({
     dataType: 'FLOAT64',
     name: 'Salary',

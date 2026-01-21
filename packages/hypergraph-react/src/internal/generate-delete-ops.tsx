@@ -1,4 +1,4 @@
-import type { GrcOp } from '@graphprotocol/grc-20';
+import type { Op } from '@graphprotocol/grc-20';
 import { Config } from '@graphprotocol/hypergraph';
 import { gql, request } from 'graphql-request';
 
@@ -51,7 +51,7 @@ export const generateDeleteOps = async ({ id }: { id: string; space: string }) =
   if (result.entity === null) {
     throw new Error('Entity not found');
   }
-  const ops: GrcOp[] = [];
+  const ops: Op[] = [];
   // for (const attribute of result.entity.currentVersion.version.triples.nodes) {
   //   ops.push(Triple.remove({ attributeId: attribute.attributeId, entityId: id }));
   // }
