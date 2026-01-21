@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.11.0
+### Minor Changes
+
+- update graphql queries to new API and upgrade the grc-20 library to use the new data types
+- Updated dependencies
+  - @graphprotocol/hypergraph@0.11.0
+
 ## 0.10.6
 ### Patch Changes
 
