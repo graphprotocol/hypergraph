@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.11.2
+### Patch Changes
+
+- f17af71: replace deprecated GrcOp with Op from grc-20
+- Updated dependencies [f17af71]
+  - @graphprotocol/hypergraph@0.11.2
+
 ## 0.11.1
 ### Patch Changes
 
