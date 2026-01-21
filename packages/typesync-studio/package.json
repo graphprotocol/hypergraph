@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.2",
-    "@graphprotocol/grc-20": "^0.32.2",
+    "@graphprotocol/grc-20": "^0.32.3",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "@graphql-typed-document-node/core": "^3.2.0",
