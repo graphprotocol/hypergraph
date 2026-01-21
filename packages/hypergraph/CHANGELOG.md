@@ -1,5 +1,11 @@
 # @graphprotocol/hypergraph
 
+## 0.11.1
+### Patch Changes
+
+- f89023b: - Rename `time` field to `datetime` in GraphQL valuesList queries
+  - Add `ScheduleString` type for querying schedule fields
+
 ## 0.11.0
 ### Minor Changes
 
