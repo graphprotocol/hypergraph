@@ -1,4 +1,4 @@
-import { Graph, type Op } from '@graphprotocol/grc-20';
+import { Graph, type GrcOp } from '@graphprotocol/grc-20';
 import type { Connect } from '@graphprotocol/hypergraph';
 import { publishOps, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ const createPropertiesAndTypesTodos = async ({
   smartSessionClient: Connect.SmartSessionClient;
   space: string;
 }) => {
-  const ops: Array<Op> = [];
+  const ops: Array<GrcOp> = [];
   const { id: checkedPropertyId, ops: createCheckedPropertyOps } = Graph.createProperty({
     dataType: 'BOOLEAN',
     name: 'Checked',
@@ -44,13 +44,13 @@ const createPropertiesAndTypesTodos = async ({
   ops.push(...createPointPropertyOps);
 
   const { id: amountPropertyId, ops: createAmountPropertyOps } = Graph.createProperty({
-    dataType: 'NUMBER',
+    dataType: 'FLOAT64',
     name: 'Amount',
   });
   ops.push(...createAmountPropertyOps);
 
   const { id: websitePropertyId, ops: createWebsitePropertyOps } = Graph.createProperty({
-    dataType: 'STRING',
+    dataType: 'TEXT',
     name: 'Website',
   });
   ops.push(...createWebsitePropertyOps);

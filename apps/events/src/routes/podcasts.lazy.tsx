@@ -1,6 +1,6 @@
-import { Person, PersonHostTest, Podcast, Topic } from '@/schema';
 import { useEntities, useEntity, usePublicSpaces } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
+import { Person, PersonHostTest, Podcast, Topic } from '@/schema';
 
 export const Route = createLazyFileRoute('/podcasts')({
   component: RouteComponent,

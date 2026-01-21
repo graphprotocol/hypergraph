@@ -38,12 +38,12 @@ const Parent = Entity.Schema(
 
 const buildValueEntry = (
   propertyId: string,
-  value: Partial<{ string: string; boolean: boolean; number: number; time: string; point: string }> = {},
+  value: Partial<{ text: string; boolean: boolean; float: number; time: string; point: string }> = {},
 ) => ({
   propertyId,
-  string: value.string ?? '',
+  text: value.text ?? '',
   boolean: value.boolean ?? false,
-  number: value.number ?? 0,
+  float: value.float ?? 0,
   time: value.time ?? new Date(0).toISOString(),
   point: value.point ?? '0,0',
 });
@@ -55,7 +55,7 @@ describe('findManyPublic parseResult', () => {
         {
           id: 'parent-valid',
           name: 'Parent valid',
-          valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { string: 'Parent valid' })],
+          valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { text: 'Parent valid' })],
           spaceIds: [],
         },
         {
@@ -85,7 +85,7 @@ describe('findManyPublic parseResult', () => {
         {
           id: 'parent-with-invalid-child',
           name: 'Parent with invalid child',
-          valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { string: 'Parent with invalid child' })],
+          valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { text: 'Parent with invalid child' })],
           spaceIds: [],
           [relationAlias]: {
             nodes: [
@@ -123,7 +123,7 @@ describe('findManyPublic parseResult', () => {
         {
           id: 'parent-with-spaces',
           name: 'Parent with spaces',
-          valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { string: 'Parent with spaces' })],
+          valuesList: [buildValueEntry(TITLE_PROPERTY_ID, { text: 'Parent with spaces' })],
           spaceIds: ['space-1', null, 'space-2'],
         },
       ],

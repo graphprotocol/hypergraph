@@ -1,11 +1,11 @@
-import type { Op } from '@graphprotocol/grc-20';
+import type { GrcOp } from '@graphprotocol/grc-20';
 import { Ipfs } from '@graphprotocol/grc-20';
 import { Config, Connect } from '@graphprotocol/hypergraph';
 import type { Hash } from 'viem';
 
 type PublishParams = {
   name: string;
-  ops: Op[];
+  ops: GrcOp[];
   walletClient: Connect.SmartSessionClient;
   space: string;
 };

@@ -18,7 +18,7 @@ const spaceFields = `
           propertyId: { is: "${SystemIds.IMAGE_URL_PROPERTY}"}
         }) {
           propertyId
-          string
+          text
         }
       }
     }
@@ -56,7 +56,7 @@ type SpacesQueryResult = {
         toEntity?: {
           valuesList?: {
             propertyId: string;
-            string: string | null;
+            text: string | null;
           }[];
         } | null;
       }[];
@@ -77,7 +77,7 @@ const decodeSpace = EffectSchema.decodeUnknownEither(PublicSpaceSchema);
 const getAvatarFromSpace = (space: SpaceQueryEntry) => {
   const firstRelation = space.page?.relationsList?.[0];
   const firstValue = firstRelation?.toEntity?.valuesList?.[0];
-  const avatar = firstValue?.string;
+  const avatar = firstValue?.text;
   if (typeof avatar === 'string') {
     return avatar;
   }

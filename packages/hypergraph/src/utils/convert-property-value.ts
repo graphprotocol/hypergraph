@@ -3,21 +3,21 @@ import * as Option from 'effect/Option';
 import * as SchemaAST from 'effect/SchemaAST';
 
 export const convertPropertyValue = (
-  property: { propertyId: string; string: string; boolean: boolean; number: number; time: string; point: string },
+  property: { propertyId: string; text: string; boolean: boolean; float: number; time: string; point: string },
   type: SchemaAST.AST,
 ) => {
   const propertyType = SchemaAST.getAnnotation<string>(Constants.PropertyTypeSymbol)(type);
   if (Option.isSome(propertyType)) {
     if (propertyType.value === 'string') {
-      return property.string;
+      return property.text;
     }
     if (propertyType.value === 'boolean') {
       // Handle case where boolean is stored as string in the API
       if (property.boolean != null) {
         return Boolean(property.boolean);
       }
-      if (property.string != null && (property.string === '1' || property.string === '0')) {
-        return property.string === '1';
+      if (property.text != null && (property.text === '1' || property.text === '0')) {
+        return property.text === '1';
       }
       return undefined;
     }
@@ -26,18 +26,18 @@ export const convertPropertyValue = (
       if (property.point != null) {
         return property.point;
       }
-      if (property.string != null) {
-        return property.string;
+      if (property.text != null) {
+        return property.text;
       }
       return undefined;
     }
     if (propertyType.value === 'number') {
       // Handle case where number is stored as string in the API
-      if (property.number != null) {
-        return Number(property.number);
+      if (property.float != null) {
+        return Number(property.float);
       }
-      if (property.string != null && property.string !== '' && !Number.isNaN(Number(property.string))) {
-        return Number(property.string);
+      if (property.text != null && property.text !== '' && !Number.isNaN(Number(property.text))) {
+        return Number(property.text);
       }
       return undefined;
     }
@@ -46,8 +46,8 @@ export const convertPropertyValue = (
       if (property.time != null) {
         return property.time;
       }
-      if (property.string != null) {
-        return property.string;
+      if (property.text != null) {
+        return property.text;
       }
       return undefined;
     }

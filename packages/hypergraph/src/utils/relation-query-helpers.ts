@@ -109,9 +109,9 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spac
         entity {
           valuesList${valuesListFilter} {
             propertyId
-            string
+            text
             boolean
-            number
+            float
             time
             point
           }
@@ -121,9 +121,9 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spac
           name
           valuesList${valuesListFilter} {
             propertyId
-            string
+            text
             boolean
-            number
+            float
             time
             point
           }

@@ -10,7 +10,7 @@
     "test:script": "tsx test-script.ts"
   },
   "dependencies": {
-    "@graphprotocol/grc-20": "^0.27.0",
+    "@graphprotocol/grc-20": "^0.32.3",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "@noble/hashes": "^1.8.0",

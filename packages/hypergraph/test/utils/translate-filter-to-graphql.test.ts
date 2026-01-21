@@ -1,4 +1,4 @@
-import { Graph, Id } from '@graphprotocol/grc-20';
+import { Id } from '@graphprotocol/grc-20';
 import { Entity, Type } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';
@@ -48,7 +48,7 @@ describe('translateFilterToGraphql string filters', () => {
       values: {
         some: {
           propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' },
-          string: { is: 'test' },
+          text: { is: 'test' },
         },
       },
     });
@@ -65,7 +65,7 @@ describe('translateFilterToGraphql string filters', () => {
       values: {
         some: {
           propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' },
-          string: { includes: 'test' },
+          text: { includes: 'test' },
         },
       },
     });
@@ -82,7 +82,7 @@ describe('translateFilterToGraphql string filters', () => {
       values: {
         some: {
           propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' },
-          string: { startsWith: 'test' },
+          text: { startsWith: 'test' },
         },
       },
     });
@@ -99,7 +99,7 @@ describe('translateFilterToGraphql string filters', () => {
       values: {
         some: {
           propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' },
-          string: { endsWith: 'test' },
+          text: { endsWith: 'test' },
         },
       },
     });
@@ -137,7 +137,7 @@ describe('translateFilterToGraphql number filters', () => {
       values: {
         some: {
           propertyId: { is: 'ee92053442ce4113a63b8f3c889dd772' },
-          number: { is: Graph.serializeNumber(1) },
+          float: { is: 1 },
         },
       },
     });
@@ -154,7 +154,7 @@ describe('translateFilterToGraphql number filters', () => {
       values: {
         some: {
           propertyId: { is: 'ee92053442ce4113a63b8f3c889dd772' },
-          number: { greaterThan: Graph.serializeNumber(1) },
+          float: { greaterThan: 1 },
         },
       },
     });
@@ -189,7 +189,7 @@ describe('translateFilterToGraphql id filters', () => {
           values: {
             some: {
               propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' },
-              string: { is: 'test' },
+              text: { is: 'test' },
             },
           },
         },
@@ -252,7 +252,7 @@ describe('translateFilterToGraphql multiple filters', () => {
           values: {
             some: {
               propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' },
-              string: { is: 'test' },
+              text: { is: 'test' },
             },
           },
         },
@@ -268,7 +268,7 @@ describe('translateFilterToGraphql multiple filters', () => {
           values: {
             some: {
               propertyId: { is: 'ee92053442ce4113a63b8f3c889dd772' },
-              number: { greaterThan: Graph.serializeNumber(1) },
+              float: { greaterThan: 1 },
             },
           },
         },
@@ -288,10 +288,10 @@ describe('translateFilterToGraphql with OR operator', () => {
     expect(result).toEqual({
       or: [
         {
-          values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'test' } } },
+          values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'test' } } },
         },
         {
-          values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'test2' } } },
+          values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'test2' } } },
         },
       ],
     });
@@ -307,7 +307,7 @@ describe('translateFilterToGraphql with OR operator', () => {
     expect(result).toEqual({
       or: [
         {
-          values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'test' } } },
+          values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'test' } } },
         },
         {
           values: { some: { propertyId: { is: 'd2d64cd3a33747849e3025bea0349471' }, boolean: { is: true } } },
@@ -326,7 +326,7 @@ describe('translateFilterToGraphql with NOT operator', () => {
     const result = translateFilterToGraphql(filter, Todo);
 
     expect(result).toEqual({
-      not: { values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'test' } } } },
+      not: { values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'test' } } } },
     });
   });
 
@@ -340,7 +340,7 @@ describe('translateFilterToGraphql with NOT operator', () => {
     expect(result).toEqual({
       not: {
         and: [
-          { values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'test' } } } },
+          { values: { some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'test' } } } },
           { values: { some: { propertyId: { is: 'd2d64cd3a33747849e3025bea0349471' }, boolean: { is: true } } } },
         ],
       },
@@ -361,14 +361,14 @@ describe('translateFilterToGraphql with complex nested filters', () => {
         {
           not: {
             values: {
-              some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'Jane Doe' } },
+              some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'Jane Doe' } },
             },
           },
         },
         {
           not: {
             values: {
-              some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'John Doe' } },
+              some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'John Doe' } },
             },
           },
         },
@@ -395,7 +395,7 @@ describe('translateFilterToGraphql with complex nested filters', () => {
           values: {
             some: {
               propertyId: { is: 'ee92053442ce4113a63b8f3c889dd772' },
-              number: { is: Graph.serializeNumber(42) },
+              float: { is: 42 },
             },
           },
         },
@@ -404,14 +404,14 @@ describe('translateFilterToGraphql with complex nested filters', () => {
             {
               not: {
                 values: {
-                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'Jane Doe' } },
+                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'Jane Doe' } },
                 },
               },
             },
             {
               not: {
                 values: {
-                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'John Doe' } },
+                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'John Doe' } },
                 },
               },
             },
@@ -422,12 +422,12 @@ describe('translateFilterToGraphql with complex nested filters', () => {
             or: [
               {
                 values: {
-                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'Jane Doe' } },
+                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'Jane Doe' } },
                 },
               },
               {
                 values: {
-                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, string: { is: 'John Doe' } },
+                  some: { propertyId: { is: 'a126ca530c8e48d5b88882c734c38935' }, text: { is: 'John Doe' } },
                 },
               },
             ],

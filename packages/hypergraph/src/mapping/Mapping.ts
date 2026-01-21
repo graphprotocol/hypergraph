@@ -1,4 +1,4 @@
-import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@graphprotocol/grc-20';
+import { type CreatePropertyParams, Graph, Id as Grc20Id, type GrcOp } from '@graphprotocol/grc-20';
 import { Data, Array as EffectArray, Schema as EffectSchema, Option, pipe } from 'effect';
 import { GeoIdSchema } from '../utils/geo-id.js';
 import { namesAreUnique, toCamelCase, toPascalCase } from './Utils.js';
@@ -331,17 +331,17 @@ export function allRelationPropertyTypesExist(types: ReadonlyArray<SchemaType>):
   );
 }
 
-export type GenerateMappingResult = [mapping: Mapping, ops: ReadonlyArray<Op>];
+export type GenerateMappingResult = [mapping: Mapping, ops: ReadonlyArray<GrcOp>];
 
 // Helper types for internal processing
 type PropertyIdMapping = { propName: string; id: Grc20Id };
 type TypeIdMapping = Map<string, Grc20Id | null>;
 type ProcessedProperty =
-  | { type: 'resolved'; mapping: PropertyIdMapping; ops: Array<Op> }
+  | { type: 'resolved'; mapping: PropertyIdMapping; ops: Array<GrcOp> }
   | { type: 'deferred'; property: SchemaTypePropertyRelation };
 
 type ProcessedType =
-  | { type: 'complete'; entry: MappingEntry & { typeName: string }; ops: Array<Op> }
+  | { type: 'complete'; entry: MappingEntry & { typeName: string }; ops: Array<GrcOp> }
   | {
       type: 'deferred';
       schemaType: SchemaType;
@@ -666,7 +666,7 @@ export function generateMapping(input: Schema): GenerateMappingResult {
   const { entries: deferredEntries, ops: secondPassOps } = pipe(
     deferredTypes,
     EffectArray.reduce(
-      { entries: [] as Array<MappingEntry & { typeName: string }>, ops: [] as Array<Op> },
+      { entries: [] as Array<MappingEntry & { typeName: string }>, ops: [] as Array<GrcOp> },
       (acc, deferred) => {
         // Resolve all deferred relation properties for this type
         const resolvedRelations = pipe(
@@ -793,7 +793,7 @@ export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): 
       return 'TIME';
     }
     case dataType === 'Number': {
-      return 'NUMBER';
+      return 'FLOAT64';
     }
     case dataType === 'Point': {
       return 'POINT';
@@ -802,7 +802,7 @@ export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): 
       return 'RELATION';
     }
     default: {
-      return 'STRING';
+      return 'TEXT';
     }
   }
 }

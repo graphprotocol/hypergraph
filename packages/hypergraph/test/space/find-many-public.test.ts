@@ -33,7 +33,7 @@ const buildQuerySpace = ({
                       : [
                           {
                             propertyId: '8a743832c0944a62b6650c3cc2f9c7bc',
-                            string: avatar,
+                            text: avatar,
                           },
                         ],
                 },

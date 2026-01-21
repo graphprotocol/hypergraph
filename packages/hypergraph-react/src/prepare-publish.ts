@@ -1,4 +1,11 @@
-import { Graph, type Id, type Op, type PropertiesParam, type RelationsParam } from '@graphprotocol/grc-20';
+import {
+  Graph,
+  type GrcOp,
+  type Id,
+  type PropertiesParam,
+  type PropertyValueParam,
+  type RelationsParam,
+} from '@graphprotocol/grc-20';
 import { Config, Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
@@ -15,9 +22,9 @@ query entityToPublish($entityId: UUID!, $spaceId: UUID!) {
   entity(id: $entityId) {
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
-      string
+      text
       boolean
-      number
+      float
       time
       point
     }
@@ -32,9 +39,9 @@ type EntityToPublishQueryResult = {
   entity: {
     valuesList: {
       propertyId: string;
-      string: string;
+      text: string;
       boolean: boolean;
-      number: number;
+      float: number;
       time: string;
       point: string;
     }[];
@@ -57,7 +64,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
     },
   );
 
-  const ops: Op[] = [];
+  const ops: GrcOp[] = [];
   const values: PropertiesParam = [];
   const relations: RelationsParam = {};
   const type = entity.__schema;
@@ -89,17 +96,22 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
           }
           throw new Error(`Value for ${String(prop.name)} is undefined`);
         }
-        let serializedValue: string = entity[prop.name];
+        let typedValue: PropertyValueParam;
         if (propertyType.value === 'boolean') {
-          serializedValue = Graph.serializeBoolean(entity[prop.name]);
+          typedValue = { property: propertyId.value, type: 'bool', value: entity[prop.name] as boolean };
         } else if (propertyType.value === 'date') {
-          serializedValue = Graph.serializeDate(entity[prop.name]);
+          const dateValue = entity[prop.name] as Date;
+          typedValue = { property: propertyId.value, type: 'date', value: dateValue.toISOString().split('T')[0] };
         } else if (propertyType.value === 'point') {
-          serializedValue = Graph.serializePoint(entity[prop.name]);
+          const [lon, lat] = entity[prop.name] as [number, number];
+          typedValue = { property: propertyId.value, type: 'point', lon, lat };
         } else if (propertyType.value === 'number') {
-          serializedValue = Graph.serializeNumber(entity[prop.name]);
+          typedValue = { property: propertyId.value, type: 'float64', value: entity[prop.name] as number };
+        } else {
+          // string (text)
+          typedValue = { property: propertyId.value, type: 'text', value: entity[prop.name] as string };
         }
-        values.push({ property: propertyId.value, value: serializedValue });
+        values.push(typedValue);
       }
     }
 
@@ -133,25 +145,36 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
         throw new Error(`Value for ${String(prop.name)} is undefined`);
       }
       const existingValueEntry = data.entity.valuesList.find((value) => value.propertyId === propertyId.value);
-      let existingValue: string | boolean | number | undefined = existingValueEntry?.string;
-      let serializedValue: string = entity[prop.name];
+      let hasChanged = false;
+      let typedValue: PropertyValueParam;
+
       if (propertyType.value === 'boolean') {
-        existingValue =
-          existingValueEntry?.boolean !== undefined ? Graph.serializeBoolean(existingValueEntry?.boolean) : undefined;
-        serializedValue = Graph.serializeBoolean(entity[prop.name]);
+        const newValue = entity[prop.name] as boolean;
+        hasChanged = existingValueEntry?.boolean !== newValue;
+        typedValue = { property: propertyId.value, type: 'bool', value: newValue };
       } else if (propertyType.value === 'date') {
-        existingValue = existingValueEntry?.time;
-        serializedValue = Graph.serializeDate(entity[prop.name]);
+        const dateValue = entity[prop.name] as Date;
+        const newValue = dateValue.toISOString().split('T')[0];
+        hasChanged = existingValueEntry?.time !== newValue;
+        typedValue = { property: propertyId.value, type: 'date', value: newValue };
       } else if (propertyType.value === 'point') {
-        existingValue = existingValueEntry?.point;
-        serializedValue = Graph.serializePoint(entity[prop.name]);
+        const [lon, lat] = entity[prop.name] as [number, number];
+        const newValue = `${lon},${lat}`;
+        hasChanged = existingValueEntry?.point !== newValue;
+        typedValue = { property: propertyId.value, type: 'point', lon, lat };
       } else if (propertyType.value === 'number') {
-        existingValue =
-          existingValueEntry?.number !== undefined ? Graph.serializeNumber(existingValueEntry?.number) : undefined;
-        serializedValue = Graph.serializeNumber(entity[prop.name]);
+        const newValue = entity[prop.name] as number;
+        hasChanged = existingValueEntry?.float !== newValue;
+        typedValue = { property: propertyId.value, type: 'float64', value: newValue };
+      } else {
+        // string (text)
+        const newValue = entity[prop.name] as string;
+        hasChanged = existingValueEntry?.text !== newValue;
+        typedValue = { property: propertyId.value, type: 'text', value: newValue };
       }
-      if (existingValue !== serializedValue) {
-        values.push({ property: propertyId.value, value: serializedValue });
+
+      if (hasChanged) {
+        values.push(typedValue);
       }
     }
   }

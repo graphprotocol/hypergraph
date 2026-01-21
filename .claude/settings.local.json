@@ -8,7 +8,14 @@
       "Bash(pnpm test:*)",
       "Bash(pnpm vitest:*)",
       "Bash(pnpm changeset:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(node -e:*)",
+      "Bash(pnpm build:*)",
+      "mcp__chrome-devtools__list_pages",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []

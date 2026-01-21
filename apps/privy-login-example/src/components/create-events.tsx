@@ -1,4 +1,4 @@
-import { Graph, type Op } from '@graphprotocol/grc-20';
+import { Graph, type GrcOp } from '@graphprotocol/grc-20';
 import type { Connect } from '@graphprotocol/hypergraph';
 import { publishOps, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { mapping } from '../mapping';
@@ -12,7 +12,7 @@ const createEvents = async ({
   space: string;
 }) => {
   try {
-    const ops: Array<Op> = [];
+    const ops: Array<GrcOp> = [];
 
     const { id: jobOfferTypeId, ops: createJobOfferTypeOps } = Graph.createEntity({
       name: 'My Test Job Offer',
@@ -20,7 +20,8 @@ const createEvents = async ({
       values: [
         {
           property: mapping.JobOffer.properties?.salary as string,
-          value: '80000',
+          type: 'float64',
+          value: 80000,
         },
       ],
     });
@@ -32,7 +33,8 @@ const createEvents = async ({
       values: [
         {
           property: mapping.JobOffer.properties?.salary as string,
-          value: '90000',
+          type: 'float64',
+          value: 90000,
         },
       ],
     });
