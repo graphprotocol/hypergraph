@@ -1,5 +1,5 @@
 import { Repo } from '@automerge/automerge-repo';
-import { Graph, Id } from '@graphprotocol/grc-20';
+import { Id } from '@graphprotocol/grc-20';
 import { Config, Entity, store, Type } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import request from 'graphql-request';
@@ -241,8 +241,8 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: 'ed49ed7b17b34df6b0b511f78d82e151', string: 'Old Name' },
-            { propertyId: 'a427183d35194c96b80a5a0c64daed41', number: 25 },
+            { propertyId: 'ed49ed7b17b34df6b0b511f78d82e151', text: 'Old Name' },
+            { propertyId: 'a427183d35194c96b80a5a0c64daed41', float: 25 },
             { propertyId: 'e425955442b146e484c3f8681987770f', boolean: false },
           ],
           relationsList: [],
@@ -279,11 +279,11 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: 'ed49ed7b17b34df6b0b511f78d82e151', string: 'Same Name' },
-            { propertyId: 'a427183d35194c96b80a5a0c64daed41', number: 30 },
-            { propertyId: 'e425955442b146e484c3f8681987770f', boolean: Graph.serializeBoolean(true) },
-            { propertyId: 'b5c0e2c79ac9415e8ffe34f8b530f126', time: Graph.serializeDate(new Date('1993-01-01')) },
-            { propertyId: '45e707a5436442fbbb0b927a5a8bc061', point: Graph.serializePoint([0, 0]) },
+            { propertyId: 'ed49ed7b17b34df6b0b511f78d82e151', text: 'Same Name' },
+            { propertyId: 'a427183d35194c96b80a5a0c64daed41', float: 30 },
+            { propertyId: 'e425955442b146e484c3f8681987770f', boolean: true },
+            { propertyId: 'b5c0e2c79ac9415e8ffe34f8b530f126', time: '1993-01-01' },
+            { propertyId: '45e707a5436442fbbb0b927a5a8bc061', point: '0,0' },
           ],
           relationsList: [],
         },
@@ -597,9 +597,9 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', value: 'Existing Entity' },
-            { propertyId: 'eaf9f4f856474228aff58725368fc87c', value: Graph.serializeNumber(50) },
-            { propertyId: '2742d8b630594adbb439fdfcd588dccb', value: Graph.serializeBoolean(true) },
+            { propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', text: 'Existing Entity' },
+            { propertyId: 'eaf9f4f856474228aff58725368fc87c', float: 50 },
+            { propertyId: '2742d8b630594adbb439fdfcd588dccb', boolean: true },
           ],
           relationsList: [],
         },
@@ -628,9 +628,9 @@ describe('preparePublish', () => {
       mockRequest.mockResolvedValue({
         entity: {
           valuesList: [
-            { propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', value: 'Existing Entity' },
-            { propertyId: 'eaf9f4f856474228aff58725368fc87c', value: Graph.serializeNumber(75) },
-            { propertyId: '9b53690fea6d4bd8b4d39ea01e7f837f', value: Graph.serializeDate(new Date('2023-01-01')) },
+            { propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', text: 'Existing Entity' },
+            { propertyId: 'eaf9f4f856474228aff58725368fc87c', float: 75 },
+            { propertyId: '9b53690fea6d4bd8b4d39ea01e7f837f', time: '2023-01-01' },
           ],
           relationsList: [],
         },

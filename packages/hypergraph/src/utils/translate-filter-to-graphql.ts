@@ -1,4 +1,3 @@
-import { Graph } from '@graphprotocol/grc-20';
 import { Constants, type Entity } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
@@ -10,7 +9,7 @@ type GraphqlFilterEntry =
         some:
           | {
               propertyId: { is: string };
-              string: { is: string } | { startsWith: string } | { endsWith: string } | { includes: string };
+              text: { is: string } | { startsWith: string } | { endsWith: string } | { includes: string };
             }
           | {
               propertyId: { is: string };
@@ -18,7 +17,7 @@ type GraphqlFilterEntry =
             }
           | {
               propertyId: { is: string };
-              number: { is: string } | { greaterThan: string } | { lessThan: string };
+              float: { is: number } | { greaterThan: number } | { lessThan: number };
             };
       };
     }
@@ -132,7 +131,7 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
         values: {
           some: {
             propertyId: { is: propertyId.value },
-            string: fieldFilter.is
+            text: fieldFilter.is
               ? { is: fieldFilter.is }
               : fieldFilter.startsWith
                 ? { startsWith: fieldFilter.startsWith }
@@ -160,11 +159,11 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
         values: {
           some: {
             propertyId: { is: propertyId.value },
-            number: fieldFilter.is
-              ? { is: Graph.serializeNumber(fieldFilter.is) }
+            float: fieldFilter.is
+              ? { is: fieldFilter.is }
               : fieldFilter.greaterThan
-                ? { greaterThan: Graph.serializeNumber(fieldFilter.greaterThan) }
-                : { lessThan: Graph.serializeNumber(fieldFilter.lessThan) },
+                ? { greaterThan: fieldFilter.greaterThan }
+                : { lessThan: fieldFilter.lessThan },
           },
         },
       });

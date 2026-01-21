@@ -39,9 +39,9 @@ query entity($id: UUID!, $spaceId: UUID!) {
     name${spaceIdsSelection}
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
-      string
+      text
       boolean
-      number
+      float
       time
       point
     }${relationsSelectionBlock}

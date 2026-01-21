@@ -86,9 +86,9 @@ query ${queryName}(${variableDefinitions}) {
     name${spaceIdsSelection}
     valuesList${valuesListFilter} {
       propertyId
-      string
+      text
       boolean
-      number
+      float
       time
       point
     }
@@ -99,9 +99,9 @@ query ${queryName}(${variableDefinitions}) {
 
 type ValuesList = {
   propertyId: string;
-  string: string;
+  text: string;
   boolean: boolean;
-  number: number;
+  float: number;
   time: string;
   point: string;
 }[];

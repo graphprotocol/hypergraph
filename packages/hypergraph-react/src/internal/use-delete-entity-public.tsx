@@ -1,4 +1,4 @@
-import { Graph, type Op } from '@graphprotocol/grc-20';
+import { Graph, type GrcOp, Id } from '@graphprotocol/grc-20';
 import type { Connect } from '@graphprotocol/hypergraph';
 import { Config, Constants } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
@@ -10,6 +10,20 @@ import { publishOps } from '../publish-ops.js';
 
 type DeleteEntityPublicParams = {
   space: string;
+};
+
+// Local implementation since unsetEntityValues is not exported from Graph namespace
+// Note: The UNSET_ENTITY_VALUES op type exists in the v2 binary format but isn't
+// included in the GrcOp type definition. Using type assertion as a workaround.
+const unsetEntityValues = ({ id, properties }: { id: string; properties: string[] }) => {
+  const op = {
+    type: 'UNSET_ENTITY_VALUES',
+    unsetEntityValues: {
+      id: Id(id),
+      properties: properties.map((propertyId) => Id(propertyId)),
+    },
+  } as unknown as GrcOp;
+  return { id: Id(id), ops: [op] };
 };
 
 const deleteEntityQueryDocument = gql`
@@ -56,8 +70,8 @@ export const useDeleteEntityPublic = <S extends Schema.Schema.AnyNoContext>(
         return { success: false, error: 'Entity not found' };
       }
       const { valuesList, relationsList } = result.entity;
-      const ops: Op[] = [];
-      const { ops: unsetEntityValuesOps } = Graph.unsetEntityValues({
+      const ops: GrcOp[] = [];
+      const { ops: unsetEntityValuesOps } = unsetEntityValues({
         id,
         properties: valuesList.map(({ propertyId }) => propertyId),
       });

@@ -41,9 +41,9 @@ query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $firs
     name${spaceIdsSelection}
     valuesList(filter: {spaceId: {is: $spaceId}}) {
       propertyId
-      string
+      text
       boolean
-      number
+      float
       time
       point
     }

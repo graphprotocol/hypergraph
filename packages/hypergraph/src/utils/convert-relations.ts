@@ -10,9 +10,9 @@ import { getRelationAlias } from './relation-query-helpers.js';
 
 type ValueList = {
   propertyId: string;
-  string: string;
+  text: string;
   boolean: boolean;
-  number: number;
+  float: number;
   time: string;
   point: string;
 }[];
