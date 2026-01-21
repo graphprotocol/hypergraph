@@ -135,6 +135,13 @@ export const Date = (propertyId: string) => {
   return Schema.Date.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'date' }));
 };
 
+/**
+ * Creates a ScheduleString schema with the specified GRC-20 property ID
+ */
+export const ScheduleString = (propertyId: string) => {
+  return Schema.String.pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'schedule' }));
+};
+
 export const Point = (propertyId: string) =>
   Schema.transform(Schema.String, Schema.Array(Schema.Number), {
     strict: true,

@@ -3,7 +3,15 @@ import * as Option from 'effect/Option';
 import * as SchemaAST from 'effect/SchemaAST';
 
 export const convertPropertyValue = (
-  property: { propertyId: string; text: string; boolean: boolean; float: number; time: string; point: string },
+  property: {
+    propertyId: string;
+    text: string;
+    boolean: boolean;
+    float: number;
+    datetime: string;
+    point: string;
+    schedule: string;
+  },
   type: SchemaAST.AST,
 ) => {
   const propertyType = SchemaAST.getAnnotation<string>(Constants.PropertyTypeSymbol)(type);
@@ -43,8 +51,17 @@ export const convertPropertyValue = (
     }
     if (propertyType.value === 'date') {
       // Handle case where date is stored as string in the API
-      if (property.time != null) {
-        return property.time;
+      if (property.datetime != null) {
+        return property.datetime;
+      }
+      if (property.text != null) {
+        return property.text;
+      }
+      return undefined;
+    }
+    if (propertyType.value === 'schedule') {
+      if (property.schedule != null) {
+        return property.schedule;
       }
       if (property.text != null) {
         return property.text;

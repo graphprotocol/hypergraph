@@ -44,14 +44,22 @@ const Parent = Entity.Schema(
 
 const buildValueEntry = (
   propertyId: string,
-  value: Partial<{ text: string; boolean: boolean; float: number; time: string; point: string }> = {},
+  value: Partial<{
+    text: string;
+    boolean: boolean;
+    float: number;
+    datetime: string;
+    point: string;
+    schedule: string;
+  }> = {},
 ) => ({
   propertyId,
   text: value.text ?? '',
   boolean: value.boolean ?? false,
   float: value.float ?? 0,
-  time: value.time ?? new Date(0).toISOString(),
+  datetime: value.datetime ?? new Date(0).toISOString(),
   point: value.point ?? '0,0',
+  schedule: value.schedule ?? '',
 });
 
 describe('findOnePublic', () => {

@@ -89,8 +89,9 @@ query ${queryName}(${variableDefinitions}) {
       text
       boolean
       float
-      time
+      datetime
       point
+      schedule
     }
     ${level1Relations}
   }
@@ -102,8 +103,9 @@ type ValuesList = {
   text: string;
   boolean: boolean;
   float: number;
-  time: string;
+  datetime: string;
   point: string;
+  schedule: string;
 }[];
 
 type RawEntity = Record<string, string | boolean | number | unknown[] | Date | string[]>;

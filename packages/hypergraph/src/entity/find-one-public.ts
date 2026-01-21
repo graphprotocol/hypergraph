@@ -42,8 +42,9 @@ query entity($id: UUID!, $spaceId: UUID!) {
       text
       boolean
       float
-      time
+      datetime
       point
+      schedule
     }${relationsSelectionBlock}
   }
 }

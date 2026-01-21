@@ -13,8 +13,9 @@ type ValueList = {
   text: string;
   boolean: boolean;
   float: number;
-  time: string;
+  datetime: string;
   point: string;
+  schedule: string;
 }[];
 
 type RelationsListItem = {
