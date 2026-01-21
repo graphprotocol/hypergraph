@@ -14,7 +14,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(node -e:*)",
       "Bash(pnpm build:*)",
-      "mcp__chrome-devtools__list_pages"
+      "mcp__chrome-devtools__list_pages",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []
