@@ -25,8 +25,9 @@ query entityToPublish($entityId: UUID!, $spaceId: UUID!) {
       text
       boolean
       float
-      time
+      datetime
       point
+      schedule
     }
     relationsList(filter: {spaceId: {is: $spaceId}}) {
       id
@@ -42,8 +43,9 @@ type EntityToPublishQueryResult = {
       text: string;
       boolean: boolean;
       float: number;
-      time: string;
+      datetime: string;
       point: string;
+      schedule: string;
     }[];
     relationsList: {
       id: string;
@@ -155,7 +157,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
       } else if (propertyType.value === 'date') {
         const dateValue = entity[prop.name] as Date;
         const newValue = dateValue.toISOString().split('T')[0];
-        hasChanged = existingValueEntry?.time !== newValue;
+        hasChanged = existingValueEntry?.datetime !== newValue;
         typedValue = { property: propertyId.value, type: 'date', value: newValue };
       } else if (propertyType.value === 'point') {
         const [lon, lat] = entity[prop.name] as [number, number];

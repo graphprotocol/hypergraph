@@ -112,8 +112,9 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spac
             text
             boolean
             float
-            time
+            datetime
             point
+            schedule
           }
         }
         ${toEntitySelectionHeader} {
@@ -124,8 +125,9 @@ const buildRelationsListFragment = (info: RelationTypeIdInfo, level: 1 | 2, spac
             text
             boolean
             float
-            time
+            datetime
             point
+            schedule
           }
           ${nestedPlaceholder}
         }

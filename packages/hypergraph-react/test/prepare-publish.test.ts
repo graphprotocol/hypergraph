@@ -282,7 +282,7 @@ describe('preparePublish', () => {
             { propertyId: 'ed49ed7b17b34df6b0b511f78d82e151', text: 'Same Name' },
             { propertyId: 'a427183d35194c96b80a5a0c64daed41', float: 30 },
             { propertyId: 'e425955442b146e484c3f8681987770f', boolean: true },
-            { propertyId: 'b5c0e2c79ac9415e8ffe34f8b530f126', time: '1993-01-01' },
+            { propertyId: 'b5c0e2c79ac9415e8ffe34f8b530f126', datetime: '1993-01-01' },
             { propertyId: '45e707a5436442fbbb0b927a5a8bc061', point: '0,0' },
           ],
           relationsList: [],
@@ -630,7 +630,7 @@ describe('preparePublish', () => {
           valuesList: [
             { propertyId: '2a8b9c7d4e5f6a7b8c9d0e1f2a3b4c5d', text: 'Existing Entity' },
             { propertyId: 'eaf9f4f856474228aff58725368fc87c', float: 75 },
-            { propertyId: '9b53690fea6d4bd8b4d39ea01e7f837f', time: '2023-01-01' },
+            { propertyId: '9b53690fea6d4bd8b4d39ea01e7f837f', datetime: '2023-01-01' },
           ],
           relationsList: [],
         },

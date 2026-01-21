@@ -44,8 +44,9 @@ query searchEntities($query: String!, $spaceId: UUID!, $typeIds: [UUID!]!, $firs
       text
       boolean
       float
-      time
+      datetime
       point
+      schedule
     }
     ${relationsSelection}
   }
