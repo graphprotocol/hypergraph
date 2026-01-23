@@ -1,5 +1,5 @@
 import { Repo } from '@automerge/automerge-repo';
-import { Id } from '@graphprotocol/grc-20';
+import { Id } from '@geoprotocol/geo-sdk';
 import { Config, Entity, store, Type } from '@graphprotocol/hypergraph';
 import '@testing-library/jest-dom/vitest';
 import request from 'graphql-request';

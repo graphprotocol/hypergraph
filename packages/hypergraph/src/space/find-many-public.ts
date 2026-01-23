@@ -1,4 +1,4 @@
-import { ContentIds, SystemIds } from '@graphprotocol/grc-20';
+import { ContentIds, SystemIds } from '@geoprotocol/geo-sdk';
 import { Config } from '@graphprotocol/hypergraph';
 import * as Either from 'effect/Either';
 import * as EffectSchema from 'effect/Schema';

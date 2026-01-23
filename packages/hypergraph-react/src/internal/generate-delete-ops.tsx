@@ -1,4 +1,4 @@
-import type { Op } from '@graphprotocol/grc-20';
+import type { Op } from '@geoprotocol/geo-sdk';
 import { Config } from '@graphprotocol/hypergraph';
 import { gql, request } from 'graphql-request';
 

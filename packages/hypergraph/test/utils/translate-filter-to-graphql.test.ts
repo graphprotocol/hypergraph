@@ -1,4 +1,4 @@
-import { Id } from '@graphprotocol/grc-20';
+import { Id } from '@geoprotocol/geo-sdk';
 import { Entity, Type } from '@graphprotocol/hypergraph';
 import type * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';

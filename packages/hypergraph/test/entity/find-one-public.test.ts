@@ -1,4 +1,4 @@
-import { Id } from '@graphprotocol/grc-20';
+import { Id } from '@geoprotocol/geo-sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { findOnePublic } from '../../src/entity/find-one-public.js';
 import * as Entity from '../../src/entity/index.js';

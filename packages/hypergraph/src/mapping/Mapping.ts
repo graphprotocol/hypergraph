@@ -1,4 +1,4 @@
-import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@graphprotocol/grc-20';
+import { type CreatePropertyParams, Graph, Id as Grc20Id, type Op } from '@geoprotocol/geo-sdk';
 import { Data, Array as EffectArray, Schema as EffectSchema, Option, pipe } from 'effect';
 import { GeoIdSchema } from '../utils/geo-id.js';
 import { namesAreUnique, toCamelCase, toPascalCase } from './Utils.js';

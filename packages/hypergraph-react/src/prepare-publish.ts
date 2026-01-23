@@ -5,7 +5,7 @@ import {
   type PropertiesParam,
   type PropertyValueParam,
   type RelationsParam,
-} from '@graphprotocol/grc-20';
+} from '@geoprotocol/geo-sdk';
 import { Config, Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';

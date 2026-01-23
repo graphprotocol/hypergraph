@@ -1,5 +1,5 @@
 import { describe, it } from '@effect/vitest';
-import { Id } from '@graphprotocol/grc-20';
+import { Id } from '@geoprotocol/geo-sdk';
 import { Effect } from 'effect';
 import {
   buildMappingFileFromSchema,

@@ -1,5 +1,5 @@
-import type { Op } from '@graphprotocol/grc-20';
-import { Ipfs } from '@graphprotocol/grc-20';
+import type { Op } from '@geoprotocol/geo-sdk';
+import { Ipfs } from '@geoprotocol/geo-sdk';
 import { Config, Connect } from '@graphprotocol/hypergraph';
 import type { Hash } from 'viem';
 

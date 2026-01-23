@@ -1,4 +1,4 @@
-export { Id } from '@graphprotocol/grc-20';
+export { Id } from '@geoprotocol/geo-sdk';
 export * as Typesync from './cli/services/Model.js';
 export * as Config from './config.js';
 export * as Connect from './connect/index.js';

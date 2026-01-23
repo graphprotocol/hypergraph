@@ -1,4 +1,4 @@
-import { SystemIds } from '@graphprotocol/grc-20';
+import { SystemIds } from '@geoprotocol/geo-sdk';
 import { Config, Entity, Id, Type } from '@graphprotocol/hypergraph';
 
 Config.setApiOrigin('https://testnet-api-staging.geobrowser.io');

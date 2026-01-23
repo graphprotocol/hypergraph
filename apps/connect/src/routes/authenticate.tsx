@@ -1,4 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@geoprotocol/geo-sdk';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';

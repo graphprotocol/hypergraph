@@ -1,4 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@geoprotocol/geo-sdk';
 import type { Connect } from '@graphprotocol/hypergraph';
 import { Constants } from '@graphprotocol/hypergraph';
 import { useQueryClient } from '@tanstack/react-query';
