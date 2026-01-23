@@ -1,7 +1,7 @@
 import { SystemIds } from '@geoprotocol/geo-sdk';
 import { Config, Entity, Id, Type } from '@graphprotocol/hypergraph';
 
-Config.setApiOrigin('https://testnet-api-staging.geobrowser.io');
+Config.setApiOrigin('https://testnet-api.geobrowser.io');
 
 const BOUNTY_TYPE_ID = Id('327976dea5ad45769b83b7e7ec6337cf');
 const REWARD_PROPERTY_ID = Id('e8e7301136354e84b46b767e7cd530a8');
