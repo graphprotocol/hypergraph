@@ -186,7 +186,7 @@ export const findManyPublic = async (params?: FindManyPublicParams) => {
     throw new Error('Provide only one of memberId or editorId when calling findManyPublic().');
   }
 
-  const endpoint = `${Config.getApiOrigin()}/v2/graphql`;
+  const endpoint = `${Config.getApiOrigin()}/graphql`;
   const queryDocument = buildSpacesQuery(filter);
   const queryResult = await request<SpacesQueryResult>(endpoint, queryDocument);
   return parseSpacesQueryResult(queryResult);

@@ -82,7 +82,7 @@ export const searchManyPublic = async <
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
-  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/v2/graphql`, queryDocument, {
+  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/graphql`, queryDocument, {
     spaceId: space,
     typeIds,
     query,

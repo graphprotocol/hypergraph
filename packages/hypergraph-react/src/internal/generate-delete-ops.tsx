@@ -45,7 +45,7 @@ type DeleteEntityResult = {
 };
 
 export const generateDeleteOps = async ({ id }: { id: string; space: string }) => {
-  const result = await request<DeleteEntityResult>(`${Config.getApiOrigin()}/v2/graphql`, deleteEntityQueryDocument, {
+  const result = await request<DeleteEntityResult>(`${Config.getApiOrigin()}/graphql`, deleteEntityQueryDocument, {
     entityId: id,
   });
   if (result.entity === null) {

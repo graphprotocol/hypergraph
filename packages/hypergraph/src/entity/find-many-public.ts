@@ -297,7 +297,7 @@ export const findManyPublic = async <
     queryVariables.sortDirection = sortDirection;
   }
 
-  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/v2/graphql`, queryDocument, queryVariables);
+  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/graphql`, queryDocument, queryVariables);
 
   const { data, invalidEntities, invalidRelationEntities } = parseResult<S, IncludeSpaceIds>(
     result,

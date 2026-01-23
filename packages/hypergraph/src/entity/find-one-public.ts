@@ -165,7 +165,7 @@ export const findOnePublic = async <
 
   const queryDocument = buildEntityQuery(relationTypeIds, includeSpaceIds);
 
-  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/v2/graphql`, queryDocument, {
+  const result = await request<EntityQueryResult>(`${Config.getApiOrigin()}/graphql`, queryDocument, {
     id,
     spaceId: space,
   });
