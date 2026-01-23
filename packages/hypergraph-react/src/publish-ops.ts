@@ -23,7 +23,7 @@ export const publishOps = async ({ name, ops, walletClient, space }: PublishPara
     throw new Error('No address found');
   }
 
-  const network = walletClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'MAINNET';
+  const network = walletClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'TESTNET'; // TODO: switch to mainnet
   const publishResult = await Ipfs.publishEdit({
     name,
     ops: ops,

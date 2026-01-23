@@ -968,7 +968,7 @@ export function HypergraphAppProvider({
           const result = await Graph.createSpace({
             editorAddress: smartSessionClient.account.address,
             name,
-            network: smartSessionClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'MAINNET',
+            network: smartSessionClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'TESTNET', // TODO: switch to mainnet
           });
           spaceId = result.id;
           console.log('Created public space', spaceId);
