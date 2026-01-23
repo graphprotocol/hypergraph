@@ -1,4 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@geoprotocol/geo-sdk';
 import { useIdentityToken } from '@privy-io/react-auth';
 import { createFileRoute } from '@tanstack/react-router';
 import { CreateSpaceCard } from '@/components/CreateSpaceCard';
@@ -33,7 +33,7 @@ function Authorized() {
     isPending: publicSpacesPending,
     error: publicSpacesError,
     data: publicSpacesData,
-  } = usePublicSpaces(`${Graph.TESTNET_API_ORIGIN}/v2/graphql`);
+  } = usePublicSpaces(`${Graph.TESTNET_API_ORIGIN}/graphql`);
 
   return (
     <div className="flex grow flex-col items-center justify-center">

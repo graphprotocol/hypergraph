@@ -1,4 +1,4 @@
-import type { Op } from '@graphprotocol/grc-20';
+import type { Op } from '@geoprotocol/geo-sdk';
 import { Config } from '@graphprotocol/hypergraph';
 import { gql, request } from 'graphql-request';
 
@@ -45,7 +45,7 @@ type DeleteEntityResult = {
 };
 
 export const generateDeleteOps = async ({ id }: { id: string; space: string }) => {
-  const result = await request<DeleteEntityResult>(`${Config.getApiOrigin()}/v2/graphql`, deleteEntityQueryDocument, {
+  const result = await request<DeleteEntityResult>(`${Config.getApiOrigin()}/graphql`, deleteEntityQueryDocument, {
     entityId: id,
   });
   if (result.entity === null) {

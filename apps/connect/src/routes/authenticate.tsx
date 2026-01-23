@@ -1,4 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@geoprotocol/geo-sdk';
 import { Connect, Identity, Key, type Messages, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import { useIdentityToken, usePrivy, useWallets } from '@privy-io/react-auth';
@@ -18,8 +18,8 @@ import { usePublicSpaces } from '@/hooks/use-public-spaces';
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const API_URL =
   import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis'
-    ? `${Graph.MAINNET_API_ORIGIN}/v2/graphql`
-    : `${Graph.TESTNET_API_ORIGIN}/v2/graphql`;
+    ? `${Graph.TESTNET_API_ORIGIN}/graphql` // TODO: switch to mainnet
+    : `${Graph.TESTNET_API_ORIGIN}/graphql`;
 
 type AuthenticateSearch = {
   data: unknown;

@@ -1,4 +1,4 @@
-import { Id } from '@graphprotocol/grc-20';
+import { Id } from '@geoprotocol/geo-sdk';
 import { describe, expect, it } from 'vitest';
 
 import {

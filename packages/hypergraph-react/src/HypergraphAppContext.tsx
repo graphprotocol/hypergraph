@@ -5,7 +5,7 @@ import * as automerge from '@automerge/automerge/slim';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo/slim';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@geoprotocol/geo-sdk';
 import {
   Config,
   Connect,
@@ -968,7 +968,7 @@ export function HypergraphAppProvider({
           const result = await Graph.createSpace({
             editorAddress: smartSessionClient.account.address,
             name,
-            network: smartSessionClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'MAINNET',
+            network: smartSessionClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'TESTNET', // TODO: switch to mainnet
           });
           spaceId = result.id;
           console.log('Created public space', spaceId);

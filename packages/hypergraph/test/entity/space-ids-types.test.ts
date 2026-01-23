@@ -1,4 +1,4 @@
-import { Id } from '@graphprotocol/grc-20';
+import { Id } from '@geoprotocol/geo-sdk';
 import { describe, expectTypeOf, it } from 'vitest';
 import type { FindManyPublicParams, findManyPublic } from '../../src/entity/find-many-public.js';
 import type { FindOnePublicParams, findOnePublic } from '../../src/entity/find-one-public.js';

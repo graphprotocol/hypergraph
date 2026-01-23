@@ -1,4 +1,4 @@
-import { ContentIds, SystemIds } from '@graphprotocol/grc-20';
+import { ContentIds, SystemIds } from '@geoprotocol/geo-sdk';
 import { Entity, Id, Type } from '@graphprotocol/hypergraph';
 
 export const User = Entity.Schema(

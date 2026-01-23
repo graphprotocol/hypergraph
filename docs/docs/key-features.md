@@ -41,7 +41,7 @@ Every update is encrypted **on the client** using XChaCha20-Poly1305. Only membe
 
 ## Knowledge Graph SDK
 
-Build, link, and publish knowledge as entities and relations using the [`@graphprotocol/grc-20`](https://www.npmjs.com/package/@graphprotocol/grc-20) Knowledge Graph SDK. It makes it easy to organize data into spaces, anchor edits onchain, and work with The Graph's knowledge graph standard.
+Build, link, and publish knowledge as entities and relations using the [`@geoprotocol/geo-sdk`](https://www.npmjs.com/package/@geoprotocol/geo-sdk) Knowledge Graph SDK. It makes it easy to organize data into spaces, anchor edits onchain, and work with The Graph's knowledge graph standard.
 
 ## Graph-based data model
 

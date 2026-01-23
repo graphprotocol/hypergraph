@@ -1,4 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@geoprotocol/geo-sdk';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useHypergraphAuth } from '../HypergraphAppContext.js';

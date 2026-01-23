@@ -1,4 +1,4 @@
-import { Id } from '@graphprotocol/grc-20';
+import { Id } from '@geoprotocol/geo-sdk';
 import { Entity, Type } from '@graphprotocol/hypergraph';
 import { describe, expectTypeOf, it } from 'vitest';
 import type { useEntities } from '../src/hooks/use-entities.js';

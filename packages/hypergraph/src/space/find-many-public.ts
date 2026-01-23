@@ -1,4 +1,4 @@
-import { ContentIds, SystemIds } from '@graphprotocol/grc-20';
+import { ContentIds, SystemIds } from '@geoprotocol/geo-sdk';
 import { Config } from '@graphprotocol/hypergraph';
 import * as Either from 'effect/Either';
 import * as EffectSchema from 'effect/Schema';
@@ -186,7 +186,7 @@ export const findManyPublic = async (params?: FindManyPublicParams) => {
     throw new Error('Provide only one of memberId or editorId when calling findManyPublic().');
   }
 
-  const endpoint = `${Config.getApiOrigin()}/v2/graphql`;
+  const endpoint = `${Config.getApiOrigin()}/graphql`;
   const queryDocument = buildSpacesQuery(filter);
   const queryResult = await request<SpacesQueryResult>(endpoint, queryDocument);
   return parseSpacesQueryResult(queryResult);

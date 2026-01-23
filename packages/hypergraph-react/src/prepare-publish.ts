@@ -5,7 +5,7 @@ import {
   type PropertiesParam,
   type PropertyValueParam,
   type RelationsParam,
-} from '@graphprotocol/grc-20';
+} from '@geoprotocol/geo-sdk';
 import { Config, Constants, type Entity, Utils } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
@@ -58,7 +58,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
   publicSpace,
 }: PreparePublishParams<S>) => {
   const data = await request<EntityToPublishQueryResult>(
-    `${Config.getApiOrigin()}/v2/graphql`,
+    `${Config.getApiOrigin()}/graphql`,
     entityToPublishQueryDocument,
     {
       entityId: entity.id,

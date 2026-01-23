@@ -1,4 +1,4 @@
-import { Graph, type Op } from '@graphprotocol/grc-20';
+import { Graph, type Op } from '@geoprotocol/geo-sdk';
 import type { Connect } from '@graphprotocol/hypergraph';
 import { publishOps, useHypergraphApp } from '@graphprotocol/hypergraph-react';
 import { mapping } from '../mapping';

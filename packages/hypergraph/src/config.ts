@@ -1,4 +1,4 @@
-import { Graph } from '@graphprotocol/grc-20';
+import { Graph } from '@geoprotocol/geo-sdk';
 
 let apiOrigin: string | null = null;
 

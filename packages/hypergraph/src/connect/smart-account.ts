@@ -1,4 +1,4 @@
-import { MAINNET, TESTNET } from '@graphprotocol/grc-20/contracts';
+import { TESTNET } from '@geoprotocol/geo-sdk/contracts';
 import { randomBytes } from '@noble/hashes/utils';
 import {
   encodeSmartSessionSignature,
@@ -78,7 +78,7 @@ const SAFE_4337_MODULE_ADDRESS = '0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226';
 const ERC7579_LAUNCHPAD_ADDRESS = '0x7579011aB74c46090561ea277Ba79D510c6C00ff';
 
 const SPACE_FACTORY_ADDRESS: Record<string, Hex> = {
-  '80451': MAINNET.DAO_FACTORY_ADDRESS,
+  '80451': TESTNET.DAO_FACTORY_ADDRESS, // TODO: switch to mainnet
   '19411': TESTNET.DAO_FACTORY_ADDRESS,
 };
 
