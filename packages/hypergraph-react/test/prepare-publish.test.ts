@@ -133,7 +133,7 @@ describe('preparePublish', () => {
 
       const result = await preparePublish(params);
 
-      expect(mockRequest).toHaveBeenCalledWith(`${Config.getApiOrigin()}/v2/graphql`, expect.any(String), {
+      expect(mockRequest).toHaveBeenCalledWith(`${Config.getApiOrigin()}/graphql`, expect.any(String), {
         entityId: entity.id,
         spaceId: publicSpaceId,
       });

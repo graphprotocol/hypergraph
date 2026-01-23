@@ -18,8 +18,8 @@ import { usePublicSpaces } from '@/hooks/use-public-spaces';
 const CHAIN = import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis' ? Connect.GEOGENESIS : Connect.GEO_TESTNET;
 const API_URL =
   import.meta.env.VITE_HYPERGRAPH_CHAIN === 'geogenesis'
-    ? `${Graph.TESTNET_API_ORIGIN}/v2/graphql` // TODO: switch to mainnet
-    : `${Graph.TESTNET_API_ORIGIN}/v2/graphql`;
+    ? `${Graph.TESTNET_API_ORIGIN}/graphql` // TODO: switch to mainnet
+    : `${Graph.TESTNET_API_ORIGIN}/graphql`;
 
 type AuthenticateSearch = {
   data: unknown;
