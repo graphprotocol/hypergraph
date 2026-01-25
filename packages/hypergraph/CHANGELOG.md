@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.11.3
+### Patch Changes
+
+- switch to geo-sdk and update API url
+
 ## 0.11.2
 ### Patch Changes
 

@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.11.3
+### Patch Changes
+
+- switch to geo-sdk and update API url
+- Updated dependencies
+  - @graphprotocol/hypergraph@0.11.3
+
 ## 0.11.2
 ### Patch Changes
 
