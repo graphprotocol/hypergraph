@@ -58,13 +58,6 @@ const buildEntitiesQuery = (
     .filter(Boolean)
     .join(', ');
 
-  const orderByArgs = useOrderBy ? 'propertyId: $propertyId\n    sortDirection: $sortDirection\n    ' : '';
-  const entitySpaceFilter =
-    spaceSelection.mode === 'single'
-      ? 'spaceIds: {in: [$spaceId]},'
-      : spaceSelection.mode === 'many'
-        ? 'spaceIds: {in: $spaceIds},'
-        : '';
   const valuesListFilter =
     spaceSelection.mode === 'single'
       ? '(filter: { spaceId: { is: $spaceId } })'
@@ -72,13 +65,57 @@ const buildEntitiesQuery = (
         ? '(filter: { spaceId: { in: $spaceIds } })'
         : '';
 
-  return `
+  // entitiesOrderedByProperty doesn't support the native typeIds filter yet,
+  // so we fall back to the relation-based filter for orderBy queries
+  if (useOrderBy) {
+    const orderByArgs = 'propertyId: $propertyId\n    sortDirection: $sortDirection\n    ';
+    const entitySpaceFilter =
+      spaceSelection.mode === 'single'
+        ? 'spaceIds: {in: [$spaceId]},'
+        : spaceSelection.mode === 'many'
+          ? 'spaceIds: {in: $spaceIds},'
+          : '';
+
+    return `
 query ${queryName}(${variableDefinitions}) {
   entities: ${queryName}(
     ${orderByArgs}filter: { and: [{
-      relations: {some: {typeId: {is: "8f151ba4de204e3c9cb499ddf96f48f1"}, toEntityId: {in: $typeIds}}}, 
+      relations: {some: {typeId: {is: "8f151ba4de204e3c9cb499ddf96f48f1"}, toEntityId: {in: $typeIds}}},
       ${entitySpaceFilter}
     }, $filter]}
+    first: $first
+    offset: $offset
+  ) {
+    id
+    name${spaceIdsSelection}
+    valuesList${valuesListFilter} {
+      propertyId
+      text
+      boolean
+      float
+      datetime
+      point
+      schedule
+    }
+    ${level1Relations}
+  }
+}`;
+  }
+
+  // For the regular entities query, use the native spaceId/spaceIds and typeIds filters
+  const spaceArg =
+    spaceSelection.mode === 'single'
+      ? 'spaceId: $spaceId'
+      : spaceSelection.mode === 'many'
+        ? 'spaceIds: {in: $spaceIds}'
+        : '';
+
+  return `
+query ${queryName}(${variableDefinitions}) {
+  entities: ${queryName}(
+    ${spaceArg}
+    typeIds: {in: $typeIds}
+    filter: $filter
     first: $first
     offset: $offset
   ) {
