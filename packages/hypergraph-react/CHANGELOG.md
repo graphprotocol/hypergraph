@@ -1,5 +1,15 @@
 # @graphprotocol/hypergraph-react
 
+## 0.12.0
+### Minor Changes
+
+- 1ca4e09: upgrade geo-sdk to switch to the new date, datetime & time encoding
+
+### Patch Changes
+
+- Updated dependencies [1ca4e09]
+  - @graphprotocol/hypergraph@0.12.0
+
 ## 0.11.3
 ### Patch Changes
 
