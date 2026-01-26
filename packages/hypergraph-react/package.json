@@ -47,7 +47,7 @@
     "@automerge/automerge": "^3.1.1",
     "@automerge/automerge-repo": "^2.2.0",
     "@automerge/automerge-repo-react-hooks": "^2.2.0",
-    "@geoprotocol/geo-sdk": "^0.1.1",
+    "@geoprotocol/geo-sdk": "^0.2.0",
     "@noble/hashes": "^1.8.0",
     "@tanstack/react-query": "^5.85.5",
     "effect": "^3.17.13",
