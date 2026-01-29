@@ -21,7 +21,7 @@
     "@changesets/cli": "^2.29.8",
     "@effect/language-service": "^0.40.0",
     "@effect/vitest": "^0.25.1",
-    "@geoprotocol/geo-sdk": "^0.2.0",
+    "@geoprotocol/geo-sdk": "^0.3.0",
     "babel-plugin-annotate-pure-calls": "^0.5.0",
     "glob": "^11.0.3",
     "pkg-pr-new": "^0.0.56",
