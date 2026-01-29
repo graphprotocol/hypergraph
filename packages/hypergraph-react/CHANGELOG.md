@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.12.1
+### Patch Changes
+
+- 3b1fa92: upgrade geo-sdk and improve internally used graphql queries
+- Updated dependencies [3b1fa92]
+  - @graphprotocol/hypergraph@0.12.1
+
 ## 0.12.0
 ### Minor Changes
 

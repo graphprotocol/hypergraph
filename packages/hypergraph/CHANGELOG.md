@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.12.1
+### Patch Changes
+
+- 3b1fa92: upgrade geo-sdk and improve internally used graphql queries
+
 ## 0.12.0
 ### Minor Changes
 
