@@ -10,7 +10,7 @@
     "test:script": "tsx test-script.ts"
   },
   "dependencies": {
-    "@geoprotocol/geo-sdk": "^0.2.0",
+    "@geoprotocol/geo-sdk": "^0.3.0",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "@noble/hashes": "^1.8.0",
