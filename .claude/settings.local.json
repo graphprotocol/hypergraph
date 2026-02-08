@@ -15,7 +15,12 @@
       "Bash(node -e:*)",
       "Bash(pnpm build:*)",
       "mcp__chrome-devtools__list_pages",
-      "Bash(pnpm lint:*)"
+      "Bash(pnpm lint:*)",
+      "Bash(npx @tanstack/router-cli generate:*)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__get_network_request",
+      "mcp__chrome-devtools__evaluate_script"
     ],
     "deny": [],
     "ask": []

@@ -3,6 +3,18 @@ import * as Option from 'effect/Option';
 import type * as Schema from 'effect/Schema';
 import * as SchemaAST from 'effect/SchemaAST';
 
+type EntityIdGraphqlFilter = { is: string } | { in: readonly string[] };
+
+type RelationSomeFilter = {
+  typeId: { is: string };
+  toEntityId?: EntityIdGraphqlFilter;
+};
+
+type BacklinkSomeFilter = {
+  typeId: { is: string };
+  fromEntityId?: EntityIdGraphqlFilter;
+};
+
 type GraphqlFilterEntry =
   | {
       values: {
@@ -32,9 +44,12 @@ type GraphqlFilterEntry =
     }
   | {
       relations: {
-        some: {
-          typeId: { is: string };
-        };
+        some: RelationSomeFilter;
+      };
+    }
+  | {
+      backlinks: {
+        some: BacklinkSomeFilter;
       };
     }
   | {
@@ -57,14 +72,6 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
   }
 
   const graphqlFilter: GraphqlFilterEntry[] = [];
-
-  const buildRelationExistsFilter = (propertyId: string): GraphqlFilterEntry => ({
-    relations: {
-      some: {
-        typeId: { is: propertyId },
-      },
-    },
-  });
 
   for (const [fieldName, fieldFilter] of Object.entries(filter)) {
     if (fieldName === 'or') {
@@ -107,20 +114,84 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
     if (!Option.isSome(propertyId) || !Option.isSome(propertyType)) continue;
 
     if (propertyType.value === 'relation') {
-      const relationFilter = fieldFilter as { exists?: boolean };
+      const relationFilter = fieldFilter as {
+        exists?: boolean;
+        entityId?: string | { is?: string; in?: readonly string[] };
+      };
+
+      const isBacklink = SchemaAST.getAnnotation<boolean>(Constants.RelationBacklinkSymbol)(
+        propertySignature.type,
+      ).pipe(Option.getOrElse(() => false));
+
+      // Normalize entityId shorthand: string → { is: string }
+      const entityIdFilter =
+        typeof relationFilter.entityId === 'string' ? { is: relationFilter.entityId } : relationFilter.entityId;
+
+      if (entityIdFilter) {
+        const entityIdValue: EntityIdGraphqlFilter | undefined =
+          typeof entityIdFilter.is === 'string' && entityIdFilter.is
+            ? { is: entityIdFilter.is }
+            : Array.isArray(entityIdFilter.in) && entityIdFilter.in.length > 0
+              ? { in: entityIdFilter.in }
+              : undefined;
+
+        if (entityIdValue === undefined) {
+          continue;
+        }
+
+        if (isBacklink) {
+          graphqlFilter.push({
+            backlinks: {
+              some: {
+                typeId: { is: propertyId.value },
+                fromEntityId: entityIdValue,
+              },
+            },
+          });
+        } else {
+          graphqlFilter.push({
+            relations: {
+              some: {
+                typeId: { is: propertyId.value },
+                toEntityId: entityIdValue,
+              },
+            },
+          });
+        }
+      }
 
       if (relationFilter.exists === true) {
-        graphqlFilter.push(buildRelationExistsFilter(propertyId.value));
+        if (isBacklink) {
+          graphqlFilter.push({
+            backlinks: {
+              some: {
+                typeId: { is: propertyId.value },
+              },
+            },
+          });
+        } else {
+          graphqlFilter.push({
+            relations: {
+              some: {
+                typeId: { is: propertyId.value },
+              },
+            },
+          });
+        }
         continue;
       }
 
       if (relationFilter.exists === false) {
-        const existsFilter = buildRelationExistsFilter(propertyId.value);
+        const existsFilter: GraphqlFilterEntry = isBacklink
+          ? { backlinks: { some: { typeId: { is: propertyId.value } } } }
+          : { relations: { some: { typeId: { is: propertyId.value } } } };
         graphqlFilter.push({
           not: existsFilter,
         });
         continue;
       }
+
+      continue;
     }
 
     if (
