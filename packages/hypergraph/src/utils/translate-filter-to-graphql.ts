@@ -130,7 +130,7 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
       if (entityIdFilter) {
         const entityIdValue: EntityIdGraphqlFilter = entityIdFilter.is
           ? { is: entityIdFilter.is }
-          : { in: entityIdFilter.in! };
+          : { in: entityIdFilter.in ?? [] };
 
         if (isBacklink) {
           graphqlFilter.push({
