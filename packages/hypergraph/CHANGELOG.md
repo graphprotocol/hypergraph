@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.13.0
+### Minor Changes
+
+- 8478897: add entityId filter for relation and backlink fields
+
 ## 0.12.1
 ### Patch Changes
 
