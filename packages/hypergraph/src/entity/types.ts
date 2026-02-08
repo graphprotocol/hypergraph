@@ -74,10 +74,15 @@ export type EntityIdFilter = {
   is?: string;
 };
 
-export type RelationEntityIdFilter = {
-  is?: string;
-  in?: readonly string[];
-};
+export type RelationEntityIdFilter =
+  | {
+      is: string;
+      in?: never;
+    }
+  | {
+      in: readonly string[];
+      is?: never;
+    };
 
 export type CrossFieldFilter<T, Extra extends object = Record<never, never>> = {
   [K in keyof T]?: EntityFieldFilter<T[K]>;
