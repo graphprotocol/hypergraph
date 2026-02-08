@@ -128,9 +128,16 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
         typeof relationFilter.entityId === 'string' ? { is: relationFilter.entityId } : relationFilter.entityId;
 
       if (entityIdFilter) {
-        const entityIdValue: EntityIdGraphqlFilter = entityIdFilter.is
-          ? { is: entityIdFilter.is }
-          : { in: entityIdFilter.in ?? [] };
+        const entityIdValue: EntityIdGraphqlFilter | undefined =
+          typeof entityIdFilter.is === 'string' && entityIdFilter.is
+            ? { is: entityIdFilter.is }
+            : Array.isArray(entityIdFilter.in) && entityIdFilter.in.length > 0
+              ? { in: entityIdFilter.in }
+              : undefined;
+
+        if (entityIdValue === undefined) {
+          continue;
+        }
 
         if (isBacklink) {
           graphqlFilter.push({
