@@ -34,7 +34,22 @@ export const Todo = Entity.Schema(
   },
 );
 
+export const Project = Entity.Schema(
+  {
+    title: Type.String,
+    todos: Type.Backlink(Todo),
+  },
+  {
+    types: [Id('b388444f06a340379ace66fe325864d1')],
+    properties: {
+      title: Id('b126ca530c8e48d5b88882c734c38936'),
+      todos: Id('b399677c2bf940c39622815be7b83345'),
+    },
+  },
+);
+
 type TodoFilter = Entity.EntityFilter<Schema.Schema.Type<typeof Todo>>;
+type ProjectFilter = Entity.EntityFilter<Schema.Schema.Type<typeof Project>>;
 
 describe('translateFilterToGraphql string filters', () => {
   it('should translate string `is` filter correctly', () => {
@@ -201,7 +216,6 @@ describe('translateFilterToGraphql id filters', () => {
 describe('translateFilterToGraphql relation filters', () => {
   it('should translate relation `exists` filter correctly', () => {
     const filter: TodoFilter = {
-      // @ts-expect-error - this is a test
       assignees: { exists: true },
     };
 
@@ -218,7 +232,6 @@ describe('translateFilterToGraphql relation filters', () => {
 
   it('should translate relation `exists: false` filter correctly', () => {
     const filter: TodoFilter = {
-      // @ts-expect-error - this is a test
       assignees: { exists: false },
     };
 
@@ -230,6 +243,172 @@ describe('translateFilterToGraphql relation filters', () => {
           some: {
             typeId: { is: 'f399677c2bf940c39622815be7b83344' },
           },
+        },
+      },
+    });
+  });
+
+  it('should translate relation `entityId` string shorthand filter correctly', () => {
+    const filter: TodoFilter = {
+      assignees: { entityId: 'user-123' },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      relations: {
+        some: {
+          typeId: { is: 'f399677c2bf940c39622815be7b83344' },
+          toEntityId: { is: 'user-123' },
+        },
+      },
+    });
+  });
+
+  it('should translate relation `entityId: { is }` filter correctly', () => {
+    const filter: TodoFilter = {
+      assignees: { entityId: { is: 'user-123' } },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      relations: {
+        some: {
+          typeId: { is: 'f399677c2bf940c39622815be7b83344' },
+          toEntityId: { is: 'user-123' },
+        },
+      },
+    });
+  });
+
+  it('should translate relation `entityId: { in }` filter correctly', () => {
+    const filter: TodoFilter = {
+      assignees: { entityId: { in: ['user-1', 'user-2'] } },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      relations: {
+        some: {
+          typeId: { is: 'f399677c2bf940c39622815be7b83344' },
+          toEntityId: { in: ['user-1', 'user-2'] },
+        },
+      },
+    });
+  });
+
+  it('should combine entityId with exists filter on a relation', () => {
+    const filter: TodoFilter = {
+      assignees: { exists: true, entityId: 'user-123' },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      and: [
+        {
+          relations: {
+            some: {
+              typeId: { is: 'f399677c2bf940c39622815be7b83344' },
+              toEntityId: { is: 'user-123' },
+            },
+          },
+        },
+        {
+          relations: {
+            some: {
+              typeId: { is: 'f399677c2bf940c39622815be7b83344' },
+            },
+          },
+        },
+      ],
+    });
+  });
+});
+
+describe('translateFilterToGraphql backlink filters', () => {
+  it('should translate backlink `exists` filter using `backlinks` key', () => {
+    const filter: ProjectFilter = {
+      todos: { exists: true },
+    };
+
+    const result = translateFilterToGraphql(filter, Project);
+
+    expect(result).toEqual({
+      backlinks: {
+        some: {
+          typeId: { is: 'b399677c2bf940c39622815be7b83345' },
+        },
+      },
+    });
+  });
+
+  it('should translate backlink `exists: false` filter using `backlinks` key', () => {
+    const filter: ProjectFilter = {
+      todos: { exists: false },
+    };
+
+    const result = translateFilterToGraphql(filter, Project);
+
+    expect(result).toEqual({
+      not: {
+        backlinks: {
+          some: {
+            typeId: { is: 'b399677c2bf940c39622815be7b83345' },
+          },
+        },
+      },
+    });
+  });
+
+  it('should translate backlink `entityId` string shorthand using `fromEntityId`', () => {
+    const filter: ProjectFilter = {
+      todos: { entityId: 'todo-123' },
+    };
+
+    const result = translateFilterToGraphql(filter, Project);
+
+    expect(result).toEqual({
+      backlinks: {
+        some: {
+          typeId: { is: 'b399677c2bf940c39622815be7b83345' },
+          fromEntityId: { is: 'todo-123' },
+        },
+      },
+    });
+  });
+
+  it('should translate backlink `entityId: { is }` using `fromEntityId`', () => {
+    const filter: ProjectFilter = {
+      todos: { entityId: { is: 'todo-123' } },
+    };
+
+    const result = translateFilterToGraphql(filter, Project);
+
+    expect(result).toEqual({
+      backlinks: {
+        some: {
+          typeId: { is: 'b399677c2bf940c39622815be7b83345' },
+          fromEntityId: { is: 'todo-123' },
+        },
+      },
+    });
+  });
+
+  it('should translate backlink `entityId: { in }` using `fromEntityId`', () => {
+    const filter: ProjectFilter = {
+      todos: { entityId: { in: ['todo-1', 'todo-2'] } },
+    };
+
+    const result = translateFilterToGraphql(filter, Project);
+
+    expect(result).toEqual({
+      backlinks: {
+        some: {
+          typeId: { is: 'b399677c2bf940c39622815be7b83345' },
+          fromEntityId: { in: ['todo-1', 'todo-2'] },
         },
       },
     });

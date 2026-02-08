@@ -1,6 +1,6 @@
 # Filtering Query Results
 
-The filter API allows you to filter the results of a query by property values and in the future also by relations.
+The filter API allows you to filter the results of a query by property values and relations.
 
 ## Filtering by property values
 
@@ -144,6 +144,72 @@ const { data } = useEntities(Person, {
 ```
 
 ## Relation filtering
+
+### Filter by existence
+
+You can filter entities based on whether a relation or backlink exists:
+
+```tsx
+const { data } = useEntities(Todo, {
+  filter: {
+    assignees: { exists: true },
+  },
+});
+```
+
+### Filter by entity ID
+
+You can filter entities by which specific entity is on the other end of a relation or backlink. This is useful when you want to find all entities connected to a specific entity.
+
+```tsx
+// string shorthand
+const { data } = useEntities(Todo, {
+  filter: {
+    assignees: { entityId: 'user-id' },
+  },
+});
+
+// object form with `is`
+const { data } = useEntities(Todo, {
+  filter: {
+    assignees: { entityId: { is: 'user-id' } },
+  },
+});
+
+// object form with `in` to match multiple entities
+const { data } = useEntities(Todo, {
+  filter: {
+    assignees: { entityId: { in: ['user-1', 'user-2'] } },
+  },
+});
+```
+
+This works the same way for backlink fields:
+
+```tsx
+export const Bounty = Entity.Schema(
+  { name: Type.String, interestedIn: Type.Backlink(Person) },
+  {
+    types: [Id('bounty-type-id')],
+    properties: {
+      name: Id('name-property-id'),
+      interestedIn: Id('interested-in-property-id'),
+    },
+  },
+);
+
+// find all bounties where a specific person expressed interest
+const { data } = useEntities(Bounty, {
+  filter: {
+    interestedIn: { entityId: myPersonId },
+  },
+});
+```
+
+The framework automatically maps `entityId` to the correct GraphQL field:
+
+- **Forward relations** (e.g. `Type.Relation(...)`) use `toEntityId`
+- **Backlinks** (e.g. `Type.Backlink(...)`) use `fromEntityId`
 
 ### Filter on values of the to entity
 
