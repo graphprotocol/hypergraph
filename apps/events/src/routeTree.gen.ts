@@ -27,6 +27,7 @@ const PodcastsInfiniteLazyRouteImport = createFileRoute('/podcasts-infinite')()
 const PodcastsLazyRouteImport = createFileRoute('/podcasts')()
 const PlaygroundLazyRouteImport = createFileRoute('/playground')()
 const LoginLazyRouteImport = createFileRoute('/login')()
+const BountiesLazyRouteImport = createFileRoute('/bounties')()
 
 const PodcastsInfiniteLazyRoute = PodcastsInfiniteLazyRouteImport.update({
   id: '/podcasts-infinite',
@@ -50,6 +51,11 @@ const LoginLazyRoute = LoginLazyRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
+const BountiesLazyRoute = BountiesLazyRouteImport.update({
+  id: '/bounties',
+  path: '/bounties',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/bounties.lazy').then((d) => d.Route))
 const AuthenticateSuccessRoute = AuthenticateSuccessRouteImport.update({
   id: '/authenticate-success',
   path: '/authenticate-success',
@@ -110,6 +116,7 @@ const SpaceSpaceIdChatRoute = SpaceSpaceIdChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
+  '/bounties': typeof BountiesLazyRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/podcasts': typeof PodcastsLazyRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
+  '/bounties': typeof BountiesLazyRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/podcasts': typeof PodcastsLazyRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/authenticate-success': typeof AuthenticateSuccessRoute
+  '/bounties': typeof BountiesLazyRoute
   '/login': typeof LoginLazyRoute
   '/playground': typeof PlaygroundLazyRoute
   '/podcasts': typeof PodcastsLazyRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/authenticate-success'
+    | '/bounties'
     | '/login'
     | '/playground'
     | '/podcasts'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/authenticate-success'
+    | '/bounties'
     | '/login'
     | '/playground'
     | '/podcasts'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/authenticate-success'
+    | '/bounties'
     | '/login'
     | '/playground'
     | '/podcasts'
@@ -214,6 +226,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticateSuccessRoute: typeof AuthenticateSuccessRoute
+  BountiesLazyRoute: typeof BountiesLazyRoute
   LoginLazyRoute: typeof LoginLazyRoute
   PlaygroundLazyRoute: typeof PlaygroundLazyRoute
   PodcastsLazyRoute: typeof PodcastsLazyRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bounties': {
+      id: '/bounties'
+      path: '/bounties'
+      fullPath: '/bounties'
+      preLoaderRoute: typeof BountiesLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/authenticate-success': {
@@ -358,6 +378,7 @@ const SpaceSpaceIdRouteWithChildren = SpaceSpaceIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticateSuccessRoute: AuthenticateSuccessRoute,
+  BountiesLazyRoute: BountiesLazyRoute,
   LoginLazyRoute: LoginLazyRoute,
   PlaygroundLazyRoute: PlaygroundLazyRoute,
   PodcastsLazyRoute: PodcastsLazyRoute,

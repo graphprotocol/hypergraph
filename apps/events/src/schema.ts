@@ -360,6 +360,34 @@ export const PodcastHostTest = Entity.Schema(
   },
 );
 
+export const PersonBacklink = Entity.Schema(
+  {
+    name: Type.String,
+  },
+  {
+    types: [Id('7ed45f2bc48b419e8e4664d5ff680b0d')],
+    properties: {
+      name: Id(SystemIds.NAME_PROPERTY),
+    },
+  },
+);
+
+export const Bounty = Entity.Schema(
+  {
+    name: Type.String,
+    description: Type.optional(Type.String),
+    interestedIn: Type.Backlink(PersonBacklink),
+  },
+  {
+    types: [Id('808af0bad5884e3391f09dd4b25e18be')],
+    properties: {
+      name: Id(SystemIds.NAME_PROPERTY),
+      description: Id(SystemIds.DESCRIPTION_PROPERTY),
+      interestedIn: Id('ff7e1b4444a2419187324e6c222afe07'),
+    },
+  },
+);
+
 export const PersonHostTest = Entity.Schema(
   {
     name: Type.String,
