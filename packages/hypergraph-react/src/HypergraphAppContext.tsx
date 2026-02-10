@@ -960,7 +960,7 @@ export function HypergraphAppProvider({
         throw new Error('Missing keys');
       }
 
-      let spaceId = Utils.generateId();
+      const spaceId = Utils.generateId();
 
       if (smartSessionClient?.account) {
         // TODO: Graph.createSpace has been removed. Public space creation needs to be re-implemented.
