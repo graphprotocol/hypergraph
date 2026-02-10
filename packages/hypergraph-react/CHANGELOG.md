@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.13.1
+### Patch Changes
+
+- bd40ec3: Update geo-sdk type names: float64 to float, bool to boolean. Replace removed Graph.createSpace calls with no-op alerts.
+- Updated dependencies [bd40ec3]
+  - @graphprotocol/hypergraph@0.13.1
+
 ## 0.13.0
 ### Patch Changes
 
