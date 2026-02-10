@@ -100,7 +100,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
         }
         let typedValue: PropertyValueParam;
         if (propertyType.value === 'boolean') {
-          typedValue = { property: propertyId.value, type: 'bool', value: entity[prop.name] as boolean };
+          typedValue = { property: propertyId.value, type: 'boolean', value: entity[prop.name] as boolean };
         } else if (propertyType.value === 'date') {
           const dateValue = entity[prop.name] as Date;
           typedValue = { property: propertyId.value, type: 'date', value: dateValue.toISOString().split('T')[0] };
@@ -108,7 +108,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
           const [lon, lat] = entity[prop.name] as [number, number];
           typedValue = { property: propertyId.value, type: 'point', lon, lat };
         } else if (propertyType.value === 'number') {
-          typedValue = { property: propertyId.value, type: 'float64', value: entity[prop.name] as number };
+          typedValue = { property: propertyId.value, type: 'float', value: entity[prop.name] as number };
         } else {
           // string (text)
           typedValue = { property: propertyId.value, type: 'text', value: entity[prop.name] as string };
@@ -153,7 +153,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
       if (propertyType.value === 'boolean') {
         const newValue = entity[prop.name] as boolean;
         hasChanged = existingValueEntry?.boolean !== newValue;
-        typedValue = { property: propertyId.value, type: 'bool', value: newValue };
+        typedValue = { property: propertyId.value, type: 'boolean', value: newValue };
       } else if (propertyType.value === 'date') {
         const dateValue = entity[prop.name] as Date;
         const newValue = dateValue.toISOString().split('T')[0];
@@ -167,7 +167,7 @@ export const preparePublish = async <S extends Schema.Schema.AnyNoContext>({
       } else if (propertyType.value === 'number') {
         const newValue = entity[prop.name] as number;
         hasChanged = existingValueEntry?.float !== newValue;
-        typedValue = { property: propertyId.value, type: 'float64', value: newValue };
+        typedValue = { property: propertyId.value, type: 'float', value: newValue };
       } else {
         // string (text)
         const newValue = entity[prop.name] as string;

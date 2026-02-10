@@ -13,7 +13,7 @@ describe('Mapping', () => {
   describe('mapSchemaDataTypeToGRC20PropDataType', () => {
     it('should be able to map the schema dataType to the correct GRC-20 dataType', () => {
       expect(mapSchemaDataTypeToGRC20PropDataType('Boolean')).toEqual('BOOLEAN');
-      expect(mapSchemaDataTypeToGRC20PropDataType('Number')).toEqual('FLOAT64');
+      expect(mapSchemaDataTypeToGRC20PropDataType('Number')).toEqual('FLOAT');
       expect(mapSchemaDataTypeToGRC20PropDataType('Date')).toEqual('TIME');
       expect(mapSchemaDataTypeToGRC20PropDataType('Point')).toEqual('POINT');
       expect(mapSchemaDataTypeToGRC20PropDataType('String')).toEqual('TEXT');

@@ -44,7 +44,7 @@ const createPropertiesAndTypesTodos = async ({
   ops.push(...createPointPropertyOps);
 
   const { id: amountPropertyId, ops: createAmountPropertyOps } = Graph.createProperty({
-    dataType: 'FLOAT64',
+    dataType: 'FLOAT',
     name: 'Amount',
   });
   ops.push(...createAmountPropertyOps);

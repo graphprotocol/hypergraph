@@ -5,7 +5,6 @@ import * as automerge from '@automerge/automerge/slim';
 import type { DocHandle } from '@automerge/automerge-repo';
 import { Repo } from '@automerge/automerge-repo/slim';
 import { RepoContext } from '@automerge/automerge-repo-react-hooks';
-import { Graph } from '@geoprotocol/geo-sdk';
 import {
   Config,
   Connect,
@@ -961,20 +960,11 @@ export function HypergraphAppProvider({
         throw new Error('Missing keys');
       }
 
-      let spaceId = Utils.generateId();
+      const spaceId = Utils.generateId();
 
-      try {
-        if (smartSessionClient?.account) {
-          const result = await Graph.createSpace({
-            editorAddress: smartSessionClient.account.address,
-            name,
-            network: smartSessionClient.chain.id === Connect.GEO_TESTNET.id ? 'TESTNET' : 'TESTNET', // TODO: switch to mainnet
-          });
-          spaceId = result.id;
-          console.log('Created public space', spaceId);
-        }
-      } catch (error) {
-        console.error('Error creating public space', error);
+      if (smartSessionClient?.account) {
+        // TODO: Graph.createSpace has been removed. Public space creation needs to be re-implemented.
+        console.warn('Graph.createSpace has been removed. Public space creation needs to be re-implemented.');
       }
 
       const spaceEvent = await Effect.runPromise(

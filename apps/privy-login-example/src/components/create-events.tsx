@@ -20,7 +20,7 @@ const createEvents = async ({
       values: [
         {
           property: mapping.JobOffer.properties?.salary as string,
-          type: 'float64',
+          type: 'float',
           value: 80000,
         },
       ],
@@ -33,7 +33,7 @@ const createEvents = async ({
       values: [
         {
           property: mapping.JobOffer.properties?.salary as string,
-          type: 'float64',
+          type: 'float',
           value: 90000,
         },
       ],

@@ -1,36 +1,15 @@
-import { Graph } from '@geoprotocol/geo-sdk';
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useHypergraphAuth } from '../HypergraphAppContext.js';
 
 type CreatePublicSpaceParams = {
   name: string;
 };
 
 export const usePrivyAuthCreatePublicSpace = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
-  const { privyIdentity } = useHypergraphAuth();
+  const [isLoading] = useState(false);
 
-  const createPublicSpace = async ({ name }: CreatePublicSpaceParams) => {
-    const accountAddress = privyIdentity?.accountAddress;
-    if (!accountAddress) {
-      throw new Error('No account address found');
-    }
-    try {
-      setIsLoading(true);
-      const { id } = await Graph.createSpace({
-        editorAddress: accountAddress,
-        name,
-        network: 'TESTNET',
-      });
-      queryClient.invalidateQueries({ queryKey: ['hypergraph-public-spaces'] });
-      setIsLoading(false);
-      return id;
-    } catch (error) {
-      setIsLoading(false);
-      throw error;
-    }
+  const createPublicSpace = async ({ name: _name }: CreatePublicSpaceParams) => {
+    alert('Graph.createSpace has been removed. Public space creation needs to be re-implemented.');
+    return undefined;
   };
   return { createPublicSpace, isLoading };
 };
