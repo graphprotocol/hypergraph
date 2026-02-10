@@ -1,4 +1,3 @@
-import { Graph } from '@geoprotocol/geo-sdk';
 import { Key, type Messages, SpaceEvents, SpaceInfo, StoreConnect, Utils } from '@graphprotocol/hypergraph';
 import { useIdentityToken } from '@privy-io/react-auth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -20,26 +19,8 @@ export function CreateSpaceCard({ className, ...props }: CreateSpaceCardProps) {
   const queryClient = useQueryClient();
 
   const createPublicSpace = async () => {
-    if (!accountAddress) {
-      alert('Missing account address');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      await Graph.createSpace({
-        editorAddress: accountAddress,
-        name: spaceName,
-        network: 'TESTNET',
-      });
-    } catch (error) {
-      alert('Failed to create space');
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-      queryClient.invalidateQueries({ queryKey: ['public-spaces'] });
-    }
+    alert('Graph.createSpace has been removed. Public space creation needs to be re-implemented.');
+    return;
   };
 
   const createPrivateSpace = async () => {

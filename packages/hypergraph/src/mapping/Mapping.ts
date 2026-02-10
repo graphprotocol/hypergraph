@@ -793,7 +793,7 @@ export function mapSchemaDataTypeToGRC20PropDataType(dataType: SchemaDataType): 
       return 'TIME';
     }
     case dataType === 'Number': {
-      return 'FLOAT64';
+      return 'FLOAT';
     }
     case dataType === 'Point': {
       return 'POINT';

@@ -14,7 +14,7 @@ const createPropertiesAndTypesEvent = async ({
 }) => {
   const ops: Array<Op> = [];
   const { id: salaryPropertyId, ops: createSalaryPropertyOps } = Graph.createProperty({
-    dataType: 'FLOAT64',
+    dataType: 'FLOAT',
     name: 'Salary',
   });
   ops.push(...createSalaryPropertyOps);
