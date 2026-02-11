@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.13.2
+### Patch Changes
+
+- a1781a1: upgrade geo-sdk to 0.9.0
+- Updated dependencies [a1781a1]
+  - @graphprotocol/hypergraph@0.13.2
+
 ## 0.13.1
 ### Patch Changes
 

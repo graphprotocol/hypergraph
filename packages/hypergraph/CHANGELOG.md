@@ -1,5 +1,10 @@
 # @graphprotocol/hypergraph
 
+## 0.13.2
+### Patch Changes
+
+- a1781a1: upgrade geo-sdk to 0.9.0
+
 ## 0.13.1
 ### Patch Changes
 
