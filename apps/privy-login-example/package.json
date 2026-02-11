@@ -9,7 +9,7 @@
     "typesync": "hypergraph typesync"
   },
   "dependencies": {
-    "@geoprotocol/geo-sdk": "^0.8.0",
+    "@geoprotocol/geo-sdk": "^0.9.0",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "@noble/hashes": "^1.8.0",
