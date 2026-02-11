@@ -11,7 +11,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@geoprotocol/geo-sdk": "^0.8.0",
+    "@geoprotocol/geo-sdk": "^0.9.0",
     "@graphprotocol/hypergraph": "workspace:*",
     "@graphprotocol/hypergraph-react": "workspace:*",
     "next": "15.5.9",
