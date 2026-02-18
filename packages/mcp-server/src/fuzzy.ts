@@ -19,12 +19,15 @@ export const resolveSpace = (input: string, spaces: SpaceInfo[]): SpaceInfo | un
   );
 };
 
-export const resolveType = <T extends TypeInfo>(name: string, types: T[]): T | undefined => {
+export const resolveTypes = <T extends TypeInfo>(name: string, types: T[]): T[] => {
   const lower = name.toLowerCase();
 
-  return (
-    types.find((t) => t.name.toLowerCase() === lower) ??
-    types.find((t) => t.name.toLowerCase().startsWith(lower)) ??
-    types.find((t) => t.name.toLowerCase().includes(lower))
-  );
+  const exact = types.filter((t) => t.name.toLowerCase() === lower);
+  if (exact.length > 0) return exact;
+
+  const starts = types.filter((t) => t.name.toLowerCase().startsWith(lower));
+  if (starts.length > 0) return starts;
+
+  const includes = types.filter((t) => t.name.toLowerCase().includes(lower));
+  return includes;
 };

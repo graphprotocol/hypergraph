@@ -13,7 +13,7 @@ export const registerGetEntityTypesTool = (server: McpServer, store: PrefetchedS
       description:
         'List all entity types available in a knowledge graph space. Returns type names and their GRC-20 type IDs. Use this to discover what kinds of entities (e.g., Event, Person, Organization) exist in a space before searching or listing entities.',
       inputSchema: {
-        space: z.string().describe('Name of the knowledge graph space to browse types in (e.g., "AI Space")'),
+        space: z.string().describe('Name of the knowledge graph space to browse types in (e.g., "AI")'),
       },
       annotations: {
         readOnlyHint: true,

@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { SpacesConfig } from '../config.js';
 import { formatEntityList } from '../formatters/entities.js';
-import { resolveSpace, resolveType } from '../fuzzy.js';
+import { resolveSpace, resolveTypes } from '../fuzzy.js';
 import type { PrefetchedStore } from '../store.js';
 
 export const registerListEntitiesTool = (server: McpServer, store: PrefetchedStore, _config: SpacesConfig): void => {
@@ -13,7 +13,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
       description:
         'List all entities of a specific type in a knowledge graph space. Returns entities with their properties and relationships. Use this when an editor wants to browse all entities of a given type (e.g., all Events, all Persons).',
       inputSchema: {
-        space: z.string().describe('Name of the space to list entities from (e.g., "AI Space")'),
+        space: z.string().describe('Name of the space to list entities from (e.g., "AI")'),
         type: z.string().describe('Entity type name to filter by (e.g., "Event", "Person", "Organization")'),
         limit: z.number().optional().describe('Optional: maximum number of results to return'),
         offset: z.number().optional().describe('Optional: number of results to skip (for pagination)'),
@@ -40,21 +40,24 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
       }
 
       const types = store.getTypes(resolved.id);
-      const matchedType = resolveType(type, types);
+      const matchedTypes = resolveTypes(type, types);
 
-      if (!matchedType) {
+      if (matchedTypes.length === 0) {
+        const uniqueNames = [...new Set(types.map((t) => t.name))];
         return {
           content: [
             {
               type: 'text' as const,
-              text: `Type "${type}" not found in ${resolved.name}. Available types: ${types.map((t) => t.name).join(', ')}.`,
+              text: `Type "${type}" not found in ${resolved.name}. Available types: ${uniqueNames.join(', ')}.`,
             },
           ],
           isError: true,
         };
       }
 
-      const fullResults = store.getEntitiesByType(resolved.id, matchedType.id);
+      const typeIds = matchedTypes.map((t) => t.id);
+      const typeName = matchedTypes[0].name;
+      const fullResults = store.getEntitiesByType(resolved.id, typeIds);
 
       const start = offset ?? 0;
       const sliced = limit !== undefined ? fullResults.slice(start, start + limit) : fullResults.slice(start);
@@ -64,7 +67,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
           content: [
             {
               type: 'text' as const,
-              text: `No ${matchedType.name} entities found in ${resolved.name}.`,
+              text: `No ${typeName} entities found in ${resolved.name}.`,
             },
           ],
         };
@@ -72,7 +75,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
 
       const text = formatEntityList(sliced, store, {
         spaceName: resolved.name,
-        typeName: matchedType.name,
+        typeName: typeName,
         total: fullResults.length,
         ...(limit !== undefined && { limit }),
         ...(offset !== undefined && { offset }),

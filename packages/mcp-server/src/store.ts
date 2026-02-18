@@ -38,9 +38,9 @@ export type PrefetchedStore = {
 
   // Phase 2 (new)
   getEntities: (spaceId: string) => StoredEntity[];
-  getEntitiesByType: (spaceId: string, typeId: string) => StoredEntity[];
+  getEntitiesByType: (spaceId: string, typeIds: string[]) => StoredEntity[];
   getEntity: (entityId: string) => StoredEntity | undefined;
-  searchEntities: (spaceId: string, query: string, typeId?: string) => StoredEntity[];
+  searchEntities: (spaceId: string, query: string, typeIds?: string[]) => StoredEntity[];
   resolvePropertyName: (propertyId: string) => string;
   resolveEntityName: (entityId: string) => string;
   resolveTypeName: (typeId: string) => string;
@@ -53,38 +53,37 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
 
   const spaces: SpaceInfo[] = prefetchedData.map((s) => ({ name: s.spaceName, id: s.spaceId }));
 
-  // Property registry: propertyId -> PropertyInfo (from all type properties across all spaces)
+  // Property registry: propertyId -> PropertyInfo (from root properties query)
   const propertyRegistry = new Map<string, PropertyInfo>();
 
   // Type name index: typeId -> typeName
   const typeNameIndex = new Map<string, string>();
 
-  // Type properties index: typeId -> properties array
+  // Type properties index: typeId -> properties array (inferred from entity values)
   const typePropertiesIndex = new Map<string, Array<{ id: string; name: string; dataType: string }>>();
 
-  // Types by space (with properties)
+  // Track which property IDs belong to each type (used during inference)
+  const typePropertyIds = new Map<string, Set<string>>();
+
+  // Types by space (properties filled after entity scan)
   const typesBySpace = new Map<string, TypeInfoWithProperties[]>();
 
+  // Build property registry from separate properties data
   for (const space of prefetchedData) {
-    const types: TypeInfoWithProperties[] = [];
-
-    for (const t of space.types) {
-      if (t.name === null) continue;
-
-      const properties: Array<{ id: string; name: string; dataType: string }> = [];
-      for (const p of t.properties) {
-        if (p.name !== null) {
-          properties.push({ id: p.id, name: p.name, dataType: p.dataType });
-          propertyRegistry.set(p.id, { name: p.name, dataType: p.dataType });
-        }
+    for (const p of space.properties) {
+      if (p.name !== null) {
+        propertyRegistry.set(p.id, { name: p.name, dataType: p.dataTypeName ?? 'unknown' });
       }
-
-      types.push({ id: t.id, name: t.name, properties });
-      typeNameIndex.set(t.id, t.name);
-      typePropertiesIndex.set(t.id, properties);
     }
+  }
 
-    typesBySpace.set(space.spaceId, types);
+  // Index type names
+  for (const space of prefetchedData) {
+    for (const t of space.types) {
+      if (t.name !== null) {
+        typeNameIndex.set(t.id, t.name);
+      }
+    }
   }
 
   // Entity name index: entityId -> entityName
@@ -119,9 +118,54 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
       if (e.name) {
         entityNameIndex.set(e.id, e.name);
       }
+
+      // Infer type-to-property mapping from entity values
+      for (const typeId of e.typeIds) {
+        let propIds = typePropertyIds.get(typeId);
+        if (!propIds) {
+          propIds = new Set();
+          typePropertyIds.set(typeId, propIds);
+        }
+        for (const v of e.valuesList) {
+          propIds.add(v.propertyId);
+        }
+      }
     }
 
     entitiesBySpace.set(space.spaceId, storedEntities);
+  }
+
+  // Build type properties index from inferred mapping
+  for (const [typeId, propIds] of typePropertyIds) {
+    const properties: Array<{ id: string; name: string; dataType: string }> = [];
+    for (const propId of propIds) {
+      const info = propertyRegistry.get(propId);
+      if (info) {
+        properties.push({ id: propId, name: info.name, dataType: info.dataType });
+      }
+    }
+    typePropertiesIndex.set(typeId, properties);
+  }
+
+  // Build typesBySpace — only include types that have entities in this space
+  for (const space of prefetchedData) {
+    const types: TypeInfoWithProperties[] = [];
+    const spaceEntityTypeIds = new Set<string>();
+    for (const e of space.entities) {
+      for (const tid of e.typeIds) {
+        spaceEntityTypeIds.add(tid);
+      }
+    }
+
+    for (const t of space.types) {
+      if (t.name === null) continue;
+      if (!spaceEntityTypeIds.has(t.id)) continue;
+      const properties = typePropertiesIndex.get(t.id) ?? [];
+      types.push({ id: t.id, name: t.name, properties });
+      typeNameIndex.set(t.id, t.name);
+    }
+
+    typesBySpace.set(space.spaceId, types);
   }
 
   return {
@@ -130,17 +174,19 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
     getSpaceNames: () => spaces.map((s) => s.name),
 
     getEntities: (spaceId: string) => entitiesBySpace.get(spaceId) ?? [],
-    getEntitiesByType: (spaceId: string, typeId: string) => {
+    getEntitiesByType: (spaceId: string, typeIds: string[]) => {
+      const idSet = new Set(typeIds);
       const entities = entitiesBySpace.get(spaceId) ?? [];
-      return entities.filter((e) => e.typeIds.includes(typeId));
+      return entities.filter((e) => e.typeIds.some((tid) => idSet.has(tid)));
     },
     getEntity: (entityId: string) => entityById.get(entityId),
-    searchEntities: (spaceId: string, query: string, typeId?: string) => {
+    searchEntities: (spaceId: string, query: string, typeIds?: string[]) => {
       const lower = query.toLowerCase();
       let entities = entitiesBySpace.get(spaceId) ?? [];
 
-      if (typeId) {
-        entities = entities.filter((e) => e.typeIds.includes(typeId));
+      if (typeIds && typeIds.length > 0) {
+        const idSet = new Set(typeIds);
+        entities = entities.filter((e) => e.typeIds.some((tid) => idSet.has(tid)));
       }
 
       return entities.filter((e) => e.name?.toLowerCase().includes(lower));

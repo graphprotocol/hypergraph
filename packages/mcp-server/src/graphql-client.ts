@@ -1,19 +1,20 @@
 import { request } from 'graphql-request';
 
-export const TYPES_WITH_PROPERTIES_QUERY = /* GraphQL */ `
-  query TypesWithProperties($spaceId: UUID!, $first: Int) {
+export const TYPES_LIST_QUERY = /* GraphQL */ `
+  query TypesList($spaceId: UUID!, $first: Int) {
     typesList(spaceId: $spaceId, first: $first) {
       id
       name
-      properties {
-        id
-        name
-        dataType
-        relationValueTypes {
-          id
-          name
-        }
-      }
+    }
+  }
+`;
+
+export const PROPERTIES_QUERY = /* GraphQL */ `
+  query Properties($spaceId: UUID!, $first: Int, $offset: Int) {
+    properties(spaceId: $spaceId, first: $first, offset: $offset) {
+      id
+      name
+      dataTypeName
     }
   }
 `;
@@ -44,19 +45,19 @@ export const ENTITIES_QUERY = /* GraphQL */ `
   }
 `;
 
-export type TypeProperty = {
-  id: string;
-  name: string | null;
-  dataType: string;
-  relationValueTypes: Array<{ id: string; name: string | null }>;
-};
-
 export type TypesListResult = {
   typesList: Array<{
     id: string;
     name: string | null;
-    properties: TypeProperty[] | null;
   }> | null;
+};
+
+export type PropertiesResult = {
+  properties: Array<{
+    id: string;
+    name: string | null;
+    dataTypeName: string | null;
+  }>;
 };
 
 export type EntitiesResult = {
@@ -84,11 +85,25 @@ export type EntitiesResult = {
 };
 
 export const fetchTypes = async (endpoint: string, spaceId: string): Promise<TypesListResult['typesList']> => {
-  const result = await request<TypesListResult>(`${endpoint}/graphql`, TYPES_WITH_PROPERTIES_QUERY, {
+  const result = await request<TypesListResult>(`${endpoint}/graphql`, TYPES_LIST_QUERY, {
     spaceId,
     first: 1000,
   });
   return result.typesList ?? [];
+};
+
+export const fetchProperties = async (
+  endpoint: string,
+  spaceId: string,
+  first: number,
+  offset: number,
+): Promise<PropertiesResult['properties']> => {
+  const result = await request<PropertiesResult>(`${endpoint}/graphql`, PROPERTIES_QUERY, {
+    spaceId,
+    first,
+    offset,
+  });
+  return result.properties;
 };
 
 export const fetchEntities = async (

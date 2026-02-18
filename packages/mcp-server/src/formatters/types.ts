@@ -5,10 +5,30 @@ export const formatTypesList = (types: TypeInfoWithProperties[], spaceName: stri
     return `## Entity Types in ${spaceName}\n\nNo entity types found.`;
   }
 
-  const header = '| Type | ID | Properties |\n|------|-----|------------|';
-  const rows = types.map((t) => {
-    const props = t.properties.length > 0 ? t.properties.map((p) => p.name).join(', ') : '(none)';
-    return `| ${t.name} | ${t.id} | ${props} |`;
+  // Deduplicate by name, merge properties and collect all IDs
+  const byName = new Map<
+    string,
+    { ids: string[]; properties: Map<string, { id: string; name: string; dataType: string }> }
+  >();
+
+  for (const t of types) {
+    let entry = byName.get(t.name);
+    if (!entry) {
+      entry = { ids: [], properties: new Map() };
+      byName.set(t.name, entry);
+    }
+    entry.ids.push(t.id);
+    for (const p of t.properties) {
+      entry.properties.set(p.id, p);
+    }
+  }
+
+  const header = '| Type | IDs | Properties |\n|------|-----|------------|';
+  const rows = [...byName.entries()].map(([name, entry]) => {
+    const ids = entry.ids.join(', ');
+    const propNames =
+      entry.properties.size > 0 ? [...entry.properties.values()].map((p) => p.name).join(', ') : '(none)';
+    return `| ${name} | ${ids} | ${propNames} |`;
   });
   return `## Entity Types in ${spaceName}\n\n${header}\n${rows.join('\n')}`;
 };

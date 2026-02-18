@@ -4,13 +4,13 @@
 
 ### Problem Statement
 
-A team of editors oversees Geo knowledge graph content using the GRC-20 standard. Currently, querying the GraphQL API requires technical knowledge of GraphQL syntax, UUID-based property/type identifiers, and the Geo Protocol schema structure. This creates a barrier for non-technical editors who need to explore, search, and analyze knowledge graph data as part of their daily workflow.
+A team of editors oversees Geo knowledge graph content using the GRC-20 standard. A public program is currently active with high data submission volume. Editors need a fast way to query and review knowledge graph data across 3 specific spaces without knowing GraphQL syntax or UUID-based identifiers.
 
 ### Target Users
 
-- **Non-technical content editors** who manage knowledge graph entities (events, people, companies, projects, etc.)
+- **Non-technical content editors** managing knowledge graph entities
+- Editors can install software with documentation provided
 - Editors should NOT need:
-  - A terminal or CLI
   - Knowledge of GraphQL syntax
   - Understanding of UUID-based property IDs
   - A personal Claude subscription
@@ -21,107 +21,127 @@ A team of editors oversees Geo knowledge graph content using the GRC-20 standard
 2. **As an editor**, I want to list all entities of a specific type (e.g., "all events") in a space so I can audit content completeness
 3. **As an editor**, I want to filter entities by properties (e.g., "events after January 2025") so I can find relevant subsets
 4. **As an editor**, I want to explore entity relationships (e.g., "which companies sponsor this event?") so I can verify data connections
-5. **As an editor**, I want to discover what spaces and entity types exist so I can navigate the knowledge graph
-6. **As an editor**, I want to ask follow-up questions about results (e.g., "tell me more about the second one") so I can drill into details
+5. **As an editor**, I want to discover what entity types exist in the 3 program spaces
+6. **As an editor**, I want to ask follow-up questions about results (e.g., "tell me more about the second one")
 7. **As an editor**, I want human-readable responses, not raw JSON with UUIDs
 
 ### Constraints
 
 - Read-only access (no mutations through this interface)
-- No per-editor Claude subscription costs
-- Web-based access (browser only, no local software installation)
+- Must deliver MVP as fast as possible (active program with high data volume)
+- No custom frontend - must use existing software
+- Work is concentrated in **3 specific spaces** (space filtering is critical)
 - Must work with the existing Geo Protocol GraphQL API at `Graph.TESTNET_API_ORIGIN/graphql`
 
 ---
 
 ## Approaches Evaluated
 
-Four approaches were evaluated by specialist agents. Detailed findings are in the companion files:
+Four approaches were evaluated by specialist agents. Detailed findings:
 
 - [MCP Server Approach](./mcp-server-evaluation.md) - evaluated by `mcp-advocate`
 - [Claude API Tool Use Approach](./tool-use-evaluation.md) - evaluated by `tool-use-advocate`
 
 ### Summary Comparison
 
-| Approach | Editor-Friendliness | Subscription Required? | Monthly Cost (10 editors) | Build Effort | Verdict |
-|----------|---------------------|----------------------|--------------------------|-------------|---------|
-| **MCP Server** | Medium (needs MCP client) | Depends on client | $65-400 | 2-3 days | Secondary |
-| **Claude Code Skill** | Low (CLI only) | Yes ($20-200/user) | $200-2000 | Hours | Developer-only |
-| **Standalone NL-to-GraphQL** | High (web browser) | No (API tokens) | $65-195 | 1-2 weeks | Fragile |
-| **Claude API + Tool Use** | High (web browser) | No (API tokens) | $65-195 | 1-2 weeks | **Primary** |
+| Approach | Time to MVP | Editor Setup | Cost Model | Verdict |
+|----------|-------------|-------------|------------|---------|
+| **MCP Server + Claude Code** | **1-2 days** | Install CLI + API key | **~$0.006/query** | **CHOSEN** |
+| MCP Server + Claude Desktop | 1-2 days | Install app + subscription | $20/mo/editor | Backup option |
+| Custom frontend + Tool Use | 2-3 weeks | Just a URL | ~$0.006/query | Too slow for MVP |
+| LibreChat + MCP | 3-5 days | Just a URL | ~$0.006/query | Too complex to deploy |
 
 ---
 
-## Recommended Plan: Hybrid (Tool Use + MCP)
+## Chosen Plan: MCP Server + Claude Code
+
+### Why This Wins for MVP
+
+1. **Fastest to deliver** - Build only the MCP server (1-2 days). Claude Code IS the frontend
+2. **No subscription needed** - Claude Code works with `ANTHROPIC_API_KEY` (pay-per-query)
+3. **Claude Code is a chat interface** - Editors type natural language, get answers. It happens to be in a terminal, but the interaction is just chatting
+4. **3-space focus** - Pre-configure space IDs in tool descriptions so editors never deal with UUIDs
+5. **Zero frontend work** - No React app, no deployment, no hosting
 
 ### Architecture
 
+```text
++------------------+                    +------------------+       GraphQL        +-------------------+
+|                  |   MCP Protocol     |                  |    over HTTPS        |                   |
+|  Claude Code     | <----------------> |  Hypergraph MCP  | <------------------> |  Geo Protocol     |
+|  (terminal)      |   stdio transport  |  Server          |   read-only queries  |  GraphQL API      |
+|                  |                    |                  |                      |                   |
+|  Editor types:   |                    | Tools:           |                      | Queries:          |
+|  "show me all    |                    |  search_entities |                      |  entities(...)    |
+|   events in the  |                    |  get_entity      |                      |  entity(id)       |
+|   science space" |                    |  list_entities   |                      |  search(...)      |
+|                  |                    |  list_spaces     |                      |  spaces(...)      |
++------------------+                    |  get_types       |                      |  typesList(...)   |
+       |                                +------------------+                      +-------------------+
+       |
+       | Uses ANTHROPIC_API_KEY
+       | (shared team key, ~$0.006/query)
+       | Model: claude-haiku-4-5
 ```
-+------------------+       HTTPS        +------------------+       Claude API      +------------------+
-|                  | ----------------->  |                  | ------------------->  |                  |
-|  Editor Browser  |                    |  Chat Backend    |   tool_use loop       |  Claude (Haiku)  |
-|  (React Chat UI) | <-----------------  |  (Express/Hono)  | <-------------------  |                  |
-|                  |   streamed text     |                  |                      +------------------+
-+------------------+                    |  Tools:          |
-                                        |   search_entities|----+
-                                        |   get_entity     |    |    GraphQL
-                                        |   list_entities  |----+--> queries     +-------------------+
-                                        |   list_spaces    |    |  ------------> | Geo Protocol      |
-                                        |   get_entity_types|---+                | GraphQL API       |
-                                        +------------------+                     +-------------------+
-                                               |
-                                        +------+------+
-                                        | Also exposed |
-                                        | as MCP Server|  (for developers)
-                                        +-------------+
+
+### How Editors Use It
+
+1. Install Claude Code (one-time, with documentation we provide)
+2. Set `ANTHROPIC_API_KEY` environment variable (one shared team API key)
+3. Open terminal in the hypergraph project directory
+4. Run `claude` - starts a chat session
+5. Ask questions in plain English:
+   - "Show me all the people entities in the science space"
+   - "Search for anything related to climate change"
+   - "How many events have sponsors?"
+   - "Get me the details on entity [name]"
+   - "List all entity types available in space X"
+
+Claude Code automatically discovers the MCP tools and uses them to answer.
+
+### What We Build
+
+```text
+packages/
+  mcp-server/                   # NEW - only thing we build
+    src/
+      tools/
+        search-entities.ts      # Full-text search
+        get-entity.ts           # Entity by ID
+        list-entities.ts        # Filter/paginate by type
+        list-spaces.ts          # List the 3 program spaces
+        get-entity-types.ts     # Discover types in a space
+      config.ts                 # 3 space IDs + API origin
+      server.ts                 # MCP stdio server entry point
+    package.json
+    tsconfig.json
 ```
 
-### Why This Approach Wins
+Configuration in `.claude/settings.json` (already in repo):
 
-1. **No subscriptions needed** - Uses API tokens (~$65/mo for 10 editors on Haiku 4.5) instead of $200+/mo in Claude Pro seats
-2. **Web-based** - Editors open a URL and type questions. Zero technical setup
-3. **Reliable queries** - Structured tool schemas mean Claude picks from predefined operations, not generating raw GraphQL
-4. **Existing SDK reuse** - The 5 tools map directly to existing functions (`findManyPublic`, `findOnePublic`, `searchManyPublic`, etc.)
-5. **Inherently safe** - The Geo Protocol GraphQL API has no mutations; data writes go through a separate REST endpoint
-
-### Tool Definitions
-
-| Tool | Maps To (Existing SDK) | Purpose |
-|------|------------------------|---------|
-| `search_entities` | `searchManyPublic()` | Full-text search by keyword |
-| `get_entity` | `findOnePublic()` | Get entity details by ID |
-| `list_entities` | `findManyPublic()` | Filter/paginate entities by type + properties |
-| `list_spaces` | `space/findManyPublic()` | Discover available spaces |
-| `get_entity_types` | `typesList` query | Discover entity types in a space |
-
-### Conversation Loop
-
+```json
+{
+  "mcpServers": {
+    "hypergraph": {
+      "command": "npx",
+      "args": ["tsx", "packages/mcp-server/src/server.ts"],
+      "env": {}
+    }
+  }
+}
 ```
-Editor: "Find all events with sponsors"
-    |
-    v
-Backend -> Claude API (messages + tool definitions)
-    |
-    v
-Claude returns: stop_reason = "tool_use"
-  content: [
-    {type: "text", text: "I'll search for events..."},
-    {type: "tool_use", name: "list_entities", input: {typeIds: [...], ...}}
-  ]
-    |
-    v
-Backend executes GraphQL query via SDK, returns tool_result
-    |
-    v
-Claude API (messages + tool_result)
-    |
-    v
-Claude returns: stop_reason = "end_turn"
-  content: [{type: "text", text: "I found 12 events with sponsors: ..."}]
-    |
-    v
-Backend -> Editor (formatted response with entity cards)
-```
+
+### Tool Definitions (Pre-configured for 3 Spaces)
+
+The tools will have the 3 program space IDs baked into their descriptions so Claude knows about them without the editor needing to provide UUIDs.
+
+| Tool | Purpose | Space-Aware |
+|------|---------|-------------|
+| `search_entities` | Full-text search by keyword | Defaults to program spaces |
+| `get_entity` | Get entity details by ID | Resolves space automatically |
+| `list_entities` | Filter/paginate entities by type | Defaults to program spaces |
+| `list_spaces` | Show the 3 program spaces with names | Pre-filtered |
+| `get_entity_types` | List types available in a space | Per-space |
 
 ### Cost Estimate
 
@@ -129,109 +149,122 @@ For **10 editors making ~50 queries/day** (15,000 queries/month):
 
 | Model | Per Query | Monthly | Notes |
 |-------|-----------|---------|-------|
-| **Haiku 4.5** | ~$0.006 | **~$65** | Recommended for MVP |
-| Sonnet 4.5 | ~$0.018 | ~$195 | Better summarization |
-| Opus 4.6 | ~$0.090 | ~$975 | Overkill for structured queries |
+| **Haiku 4.5** | ~$0.006 | **~$65** | Recommended - fast and cheap |
+| Sonnet 4.5 | ~$0.018 | ~$195 | Upgrade if Haiku isn't smart enough |
 
-With prompt caching (system prompt + tool definitions are constant across requests), Haiku drops to ~$0.004/query (~$45/mo).
+With prompt caching, Haiku drops to ~$0.004/query (~$45/mo).
 
-### Where It Lives in the Monorepo
-
-```
-hypergraph/
-  apps/
-    chat/                    # NEW - React chat frontend for editors
-      src/
-        components/
-          ChatContainer.tsx
-          MessageList.tsx
-          MessageInput.tsx
-          EntityCard.tsx
-        api/
-          chat.ts            # Client-side API calls
-        App.tsx
-  packages/
-    mcp-server/              # NEW - MCP server (reuses tool handlers)
-      src/
-        tools/
-          search-entities.ts
-          get-entity.ts
-          list-entities.ts
-          list-spaces.ts
-          get-entity-types.ts
-        server.ts            # MCP protocol handler
-    hypergraph/              # EXISTING - SDK with query functions
-      src/
-        entity/
-          find-many-public.ts   # -> list_entities tool
-          find-one-public.ts    # -> get_entity tool
-          search-many-public.ts # -> search_entities tool
-        space/
-          find-many-public.ts   # -> list_spaces tool
-  apps/
-    server/                  # EXISTING - extend with chat endpoint
-      src/
-        http/
-          chat-handler.ts    # NEW - Claude API conversation loop
-```
+Editors can configure their model in Claude Code with `/model` command.
 
 ---
 
-## Implementation Phases
+## Implementation Plan
 
-### Phase 1 - MVP (Week 1-2)
+### Day 1: MCP Server Core
 
-**Backend:**
-- Express endpoint `POST /api/chat` accepting `{ message, conversationId }`
-- 5 tool implementations wrapping existing Hypergraph SDK query functions
-- In-memory conversation store
-- Basic rate limiting (100 queries/hour/editor)
-- Haiku 4.5 with prompt caching
+- [ ] Initialize `packages/mcp-server` with package.json and tsconfig
+- [ ] Implement MCP server entry point using `@modelcontextprotocol/sdk`
+- [ ] Implement `list_spaces` tool (returns the 3 program spaces with names)
+- [ ] Implement `get_entity_types` tool (list types in a space)
+- [ ] Implement `search_entities` tool (full-text search)
+- [ ] Configure `.claude/settings.json` with MCP server
 
-**Frontend:**
-- Simple React chat component (MessageList + Input)
-- Entity cards for structured result display
-- Space selector dropdown (pre-populated from `list_spaces`)
+### Day 2: Remaining Tools + Testing
 
-### Phase 2 - Polish (Week 3-4)
+- [ ] Implement `get_entity` tool (single entity with properties/relations)
+- [ ] Implement `list_entities` tool (filter/paginate, most complex)
+- [ ] Test all tools end-to-end with Claude Code
+- [ ] Tune tool descriptions for best Claude understanding
+- [ ] Write editor setup documentation
 
-- Space-aware system prompts (inject known type IDs and property names per space)
-- Conversation history persistence (SQLite or Redis)
-- Streaming responses for real-time feel
-- Error handling with friendly messages
-- Cost monitoring
+### Day 3: Editor Onboarding
 
-### Phase 3 - MCP + Scale (Month 2)
+- [ ] Create setup guide (install Claude Code, set API key, basic usage)
+- [ ] Create example queries document for editors
+- [ ] Distribute API key to team
+- [ ] Support editors through first queries
 
-- Wrap tools as MCP server (Streamable HTTP transport)
-- Developer access via Claude Code / VS Code
-- Space allowlisting and editor permissions
-- Usage analytics dashboard
-- Model routing: Haiku for simple queries, Sonnet for complex multi-step reasoning
+---
+
+## Editor Setup Documentation (Draft)
+
+### Quick Start
+
+1. **Install Claude Code**
+
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   ```
+
+2. **Set your API key** (provided by team lead)
+
+   ```bash
+   export ANTHROPIC_API_KEY="sk-ant-..."
+   ```
+
+   Add this to your `~/.bashrc` or `~/.zshrc` to persist across sessions.
+
+3. **Navigate to the project**
+
+   ```bash
+   cd /path/to/hypergraph
+   ```
+
+4. **Start Claude Code**
+
+   ```bash
+   claude
+   ```
+
+5. **Ask questions in plain English**
+
+   ```text
+   > Show me all entity types in the [space name] space
+   > Search for entities related to "climate"
+   > List all people entities
+   > Get details on the entity named "John Doe"
+   > How many events are in [space name]?
+   ```
+
+### Tips
+
+- Claude automatically knows about the 3 program spaces - just refer to them by name
+- Ask follow-up questions: "tell me more about the third one"
+- Use `/model` to switch between faster (Haiku) and smarter (Sonnet) models
+- Type `/clear` to start a fresh conversation
+- Press Ctrl+C to cancel a running query
+
+---
+
+## Future Upgrades (Post-MVP)
+
+Once the MVP is working and editors are productive, consider:
+
+1. **Claude Desktop option** - Same MCP server works with Claude Desktop ($20/mo/editor) for a more polished GUI experience
+2. **Web UI** - If terminal adoption is low, build a simple chat web frontend
+3. **Space-aware system prompts** - Inject known type IDs and property names per space
+4. **Saved queries** - Common queries as Claude Code skills (`/search-events`, `/audit-people`)
+5. **Write operations** - If editors need to fix data, add mutation tools (with confirmation)
 
 ---
 
 ## Key Decisions
 
-### Why not a Claude Code Skill?
+### Why Claude Code over Claude Desktop?
 
-Skills are CLI-only. Non-technical editors won't use a terminal. A skill is useful for *developers* querying during development, but not for editors doing daily content work.
+Claude Desktop requires a $20/mo subscription per editor. Claude Code works with API tokens (~$0.006/query). For 10 editors, that's $65/mo vs $200/mo. Plus, the API key is shared - one key, one bill, easy to manage.
 
-### Why not pure MCP?
+### Why MCP over direct Tool Use API?
 
-MCP is a protocol, not a product. It requires editors to install and configure an MCP-compatible client (Claude Desktop, VS Code, etc.). A web chat UI is far more accessible. However, MCP is recommended as a *secondary* interface for developer access.
+MCP means we build ONE thing (the server) and it works with Claude Code today, Claude Desktop tomorrow, VS Code next week. The Tool Use API approach requires building a custom backend + frontend. MCP gives us the tool execution layer for free.
 
-### Why not raw NL-to-GraphQL generation?
+### Why not LibreChat?
 
-Having Claude generate raw GraphQL strings is fragile. The Geo Protocol schema uses UUID-based property IDs, nested filter structures, and relation traversals that are error-prone when generated free-form. Structured tool schemas constrain Claude to valid operations.
+LibreChat needs deployment, configuration, user management, and its MCP support is still maturing. Claude Code is already a production-quality chat interface that supports MCP natively. Zero deployment needed.
 
-### Why Haiku over Sonnet/Opus?
+### Why Haiku?
 
-Haiku 4.5 is highly capable at structured tool selection (choosing the right tool, passing correct parameters). At 1/3 the cost of Sonnet, it handles the core use case well. Sonnet can be added as an upgrade path for complex multi-step reasoning.
-
-### Subscription vs API tokens?
-
-API tokens win at this scale. One Anthropic API key powers all editors at ~$65/mo, vs 10 Claude Pro subscriptions at $200/mo. Editors never need a Claude account.
+Haiku 4.5 is excellent at structured tool selection (picking the right tool, filling in correct parameters). It's the cheapest option at $1/$5 per million tokens. Editors can upgrade to Sonnet via `/model` if they need better reasoning for complex queries.
 
 ---
 
@@ -239,9 +272,17 @@ API tokens win at this scale. One Anthropic API key powers all editors at ~$65/m
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Claude generates wrong tool params | Editor gets empty/wrong results | Strong tool descriptions + system prompt with examples |
-| API cost spike | Unexpected bill | Rate limits + cost monitoring + max conversation length (50 turns) |
-| Geo Protocol API changes | Tools break | GraphQL codegen already in place; run as CI check |
-| Context window bloat (long chats) | Expensive + slow | Limit conversation length, implement summarization |
-| Editor confusion with UUIDs | Bad UX | System prompt maps human-readable names to type/space IDs |
-| Haiku insufficient for complex queries | Poor answers | Route complex queries to Sonnet; start with Haiku and monitor |
+| Editors uncomfortable with terminal | Low adoption | Provide thorough docs + example queries; upgrade to Claude Desktop if needed |
+| Claude generates wrong tool params | Empty/wrong results | Strong tool descriptions with space names baked in |
+| API cost spike | Unexpected bill | Set billing alerts on Anthropic dashboard |
+| Geo Protocol API changes | Tools break | Tools wrap simple GraphQL queries; easy to update |
+| Editors don't know what to ask | Underutilization | Provide example queries document; `list_spaces` and `get_entity_types` help discovery |
+
+---
+
+## Appendix: Research
+
+Detailed evaluations from specialist agents:
+
+- [MCP Server Approach - Full Evaluation](./mcp-server-evaluation.md)
+- [Claude API Tool Use Approach - Full Evaluation](./tool-use-evaluation.md)
