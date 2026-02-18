@@ -4,6 +4,9 @@ import { Effect } from 'effect';
 import { loadConfig } from './config.js';
 import { ConfigError, PrefetchError } from './errors.js';
 import { prefetchAll } from './prefetch.js';
+import { buildStore } from './store.js';
+import { registerGetEntityTypesTool } from './tools/get-entity-types.js';
+import { registerListSpacesTool } from './tools/list-spaces.js';
 
 const startup = Effect.gen(function* () {
   const config = yield* loadConfig();
@@ -14,9 +17,14 @@ const startup = Effect.gen(function* () {
 
   yield* Effect.logInfo(`Prefetched ${prefetchedData.length} spaces, ready`);
 
+  const store = buildStore(prefetchedData);
+
   const server = new McpServer({ name: 'hypergraph-mcp', version: '0.1.0' });
 
-  // Tools will be registered in Plan 02
+  registerListSpacesTool(server, store);
+  registerGetEntityTypesTool(server, store, config);
+
+  yield* Effect.logInfo('Registered 2 tools: list_spaces, get_entity_types');
 
   yield* Effect.tryPromise({
     try: () => server.connect(new StdioServerTransport()),
