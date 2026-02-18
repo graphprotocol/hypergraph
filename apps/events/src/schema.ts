@@ -372,11 +372,14 @@ export const PersonBacklink = Entity.Schema(
   },
 );
 
+export const ALLOCATED_PROPERTY_ID = Id('cfeb642223c54df4b3f9375a489d9e22');
+
 export const Bounty = Entity.Schema(
   {
     name: Type.String,
     description: Type.optional(Type.String),
     interestedIn: Type.Backlink(PersonBacklink),
+    allocated: Type.Relation(PersonBacklink),
   },
   {
     types: [Id('808af0bad5884e3391f09dd4b25e18be')],
@@ -384,6 +387,7 @@ export const Bounty = Entity.Schema(
       name: Id(SystemIds.NAME_PROPERTY),
       description: Id(SystemIds.DESCRIPTION_PROPERTY),
       interestedIn: Id('ff7e1b4444a2419187324e6c222afe07'),
+      allocated: ALLOCATED_PROPERTY_ID,
     },
   },
 );
