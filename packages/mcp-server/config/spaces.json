@@ -1,20 +1,10 @@
 {
-  "endpoint": "https://api.testnet.geobrowser.io",
+  "endpoint": "https://testnet-api.geobrowser.io",
   "spaces": [
     {
-      "name": "AI Space",
+      "name": "AI",
       "id": "41e851610e13a19441c4d980f2f2ce6b",
       "description": "AI and machine learning program space"
-    },
-    {
-      "name": "Construction Space",
-      "id": "TBD-construction-space-uuid",
-      "description": "Construction industry program space"
-    },
-    {
-      "name": "Geo Genesis",
-      "id": "TBD-geo-genesis-uuid",
-      "description": "Geo Genesis program space"
     }
   ]
 }
