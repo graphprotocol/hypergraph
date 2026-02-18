@@ -1,7 +1,7 @@
-import { Bounty } from '@/schema';
 import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
+import { Bounty } from '@/schema';
 
 export const Route = createLazyFileRoute('/bounties')({
   component: RouteComponent,
