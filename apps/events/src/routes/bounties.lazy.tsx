@@ -1,6 +1,6 @@
+import { Bounty } from '@/schema';
 import { useEntities } from '@graphprotocol/hypergraph-react';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Bounty } from '@/schema';
 
 export const Route = createLazyFileRoute('/bounties')({
   component: RouteComponent,
@@ -18,6 +18,9 @@ function RouteComponent() {
     spaces: 'all',
     filter: {
       interestedIn: { entityId: PERSON_ENTITY_ID },
+    },
+    include: {
+      allocated: {},
     },
   });
 
@@ -37,6 +40,9 @@ function RouteComponent() {
             <h2 className="font-semibold">{bounty.name}</h2>
             {bounty.description && <p className="text-sm text-gray-600">{bounty.description}</p>}
             <p className="text-xs text-gray-400 mt-1">{bounty.id}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Allocated to: {bounty.allocated.map((allocated) => allocated.name).join(', ')}
+            </p>
           </li>
         ))}
       </ul>
