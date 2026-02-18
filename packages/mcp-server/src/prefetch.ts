@@ -1,13 +1,58 @@
 import { Duration, Effect } from 'effect';
 import type { SpacesConfig } from './config.js';
 import { PrefetchError } from './errors.js';
+import type { EntitiesResult, TypesListResult } from './graphql-client.js';
 import { fetchEntities, fetchTypes } from './graphql-client.js';
+
+export type PrefetchedType = {
+  id: string;
+  name: string | null;
+  properties: Array<{ id: string; name: string | null; dataType: string }>;
+};
+
+export type PrefetchedEntity = EntitiesResult['entities'][number];
 
 export type PrefetchedSpace = {
   spaceName: string;
   spaceId: string;
-  types: Array<{ id: string; name: string | null }>;
-  entities: Array<{ id: string; name: string | null; typeIds: string[] }>;
+  types: PrefetchedType[];
+  entities: PrefetchedEntity[];
+};
+
+const PAGE_SIZE = 10000;
+
+const fetchAllEntities = async (endpoint: string, spaceId: string): Promise<PrefetchedEntity[]> => {
+  const all: PrefetchedEntity[] = [];
+  let offset = 0;
+
+  // biome-ignore lint/correctness/noConstantCondition: pagination loop
+  while (true) {
+    const page = await fetchEntities(endpoint, spaceId, PAGE_SIZE, offset);
+    all.push(...page);
+
+    if (page.length < PAGE_SIZE) {
+      break;
+    }
+
+    offset += PAGE_SIZE;
+  }
+
+  return all;
+};
+
+const mapTypes = (
+  rawTypes: TypesListResult['typesList'],
+): PrefetchedType[] => {
+  const types = rawTypes ?? [];
+  return types.map((t) => ({
+    id: t.id,
+    name: t.name,
+    properties: (t.properties ?? []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      dataType: p.dataType,
+    })),
+  }));
 };
 
 const prefetchSpace = (
@@ -17,19 +62,15 @@ const prefetchSpace = (
 ): Effect.Effect<PrefetchedSpace, PrefetchError> =>
   Effect.tryPromise({
     try: async () => {
-      const [types, entities] = await Promise.all([
+      const [rawTypes, entities] = await Promise.all([
         fetchTypes(endpoint, spaceId),
-        fetchEntities(endpoint, spaceId, 1000, 0),
+        fetchAllEntities(endpoint, spaceId),
       ]);
       return {
         spaceName,
         spaceId,
-        types,
-        entities: entities.map((e) => ({
-          id: e.id,
-          name: e.name,
-          typeIds: e.typeIds,
-        })),
+        types: mapTypes(rawTypes),
+        entities,
       };
     },
     catch: (cause) => new PrefetchError({ space: spaceName, cause }),

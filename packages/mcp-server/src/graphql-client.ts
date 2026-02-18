@@ -1,10 +1,19 @@
 import { request } from 'graphql-request';
 
-export const TYPES_LIST_QUERY = /* GraphQL */ `
-  query TypesForSpace($spaceId: UUID!, $first: Int) {
+export const TYPES_WITH_PROPERTIES_QUERY = /* GraphQL */ `
+  query TypesWithProperties($spaceId: UUID!, $first: Int) {
     typesList(spaceId: $spaceId, first: $first) {
       id
       name
+      properties {
+        id
+        name
+        dataType
+        relationValueTypes {
+          id
+          name
+        }
+      }
     }
   }
 `;
@@ -24,12 +33,30 @@ export const ENTITIES_QUERY = /* GraphQL */ `
         point
         schedule
       }
+      relationsList(filter: { spaceId: { is: $spaceId } }) {
+        typeId
+        toEntity {
+          id
+          name
+        }
+      }
     }
   }
 `;
 
+export type TypeProperty = {
+  id: string;
+  name: string | null;
+  dataType: string;
+  relationValueTypes: Array<{ id: string; name: string | null }>;
+};
+
 export type TypesListResult = {
-  typesList: Array<{ id: string; name: string | null }> | null;
+  typesList: Array<{
+    id: string;
+    name: string | null;
+    properties: TypeProperty[] | null;
+  }> | null;
 };
 
 export type EntitiesResult = {
@@ -46,14 +73,21 @@ export type EntitiesResult = {
       point: unknown | null;
       schedule: unknown | null;
     }>;
+    relationsList: Array<{
+      typeId: string;
+      toEntity: {
+        id: string;
+        name: string | null;
+      };
+    }>;
   }>;
 };
 
 export const fetchTypes = async (
   endpoint: string,
   spaceId: string,
-): Promise<Array<{ id: string; name: string | null }>> => {
-  const result = await request<TypesListResult>(`${endpoint}/graphql`, TYPES_LIST_QUERY, {
+): Promise<TypesListResult['typesList']> => {
+  const result = await request<TypesListResult>(`${endpoint}/graphql`, TYPES_WITH_PROPERTIES_QUERY, {
     spaceId,
     first: 1000,
   });
