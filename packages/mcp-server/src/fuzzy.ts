@@ -1,4 +1,4 @@
-import type { SpaceInfo } from './store.js';
+import type { SpaceInfo, TypeInfo } from './store.js';
 
 export const normalize = (input: string): string =>
   input
@@ -16,5 +16,15 @@ export const resolveSpace = (input: string, spaces: SpaceInfo[]): SpaceInfo | un
     spaces.find((s) => normalize(s.name).startsWith(normalized)) ??
     spaces.find((s) => normalize(s.name).includes(normalized)) ??
     spaces.find((s) => normalized.includes(normalize(s.name)))
+  );
+};
+
+export const resolveType = <T extends TypeInfo>(name: string, types: T[]): T | undefined => {
+  const lower = name.toLowerCase();
+
+  return (
+    types.find((t) => t.name.toLowerCase() === lower) ??
+    types.find((t) => t.name.toLowerCase().startsWith(lower)) ??
+    types.find((t) => t.name.toLowerCase().includes(lower))
   );
 };
