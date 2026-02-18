@@ -5,8 +5,11 @@ import { loadConfig } from './config.js';
 import { ConfigError, PrefetchError } from './errors.js';
 import { prefetchAll } from './prefetch.js';
 import { buildStore } from './store.js';
+import { registerGetEntityTool } from './tools/get-entity.js';
 import { registerGetEntityTypesTool } from './tools/get-entity-types.js';
+import { registerListEntitiesTool } from './tools/list-entities.js';
 import { registerListSpacesTool } from './tools/list-spaces.js';
+import { registerSearchEntitiesTool } from './tools/search-entities.js';
 
 const startup = Effect.gen(function* () {
   const config = yield* loadConfig();
@@ -23,8 +26,13 @@ const startup = Effect.gen(function* () {
 
   registerListSpacesTool(server, store);
   registerGetEntityTypesTool(server, store, config);
+  registerSearchEntitiesTool(server, store, config);
+  registerGetEntityTool(server, store);
+  registerListEntitiesTool(server, store, config);
 
-  yield* Effect.logInfo('Registered 2 tools: list_spaces, get_entity_types');
+  yield* Effect.logInfo(
+    'Registered 5 tools: list_spaces, get_entity_types, search_entities, get_entity, list_entities',
+  );
 
   yield* Effect.tryPromise({
     try: () => server.connect(new StdioServerTransport()),
