@@ -1,0 +1,29 @@
+{
+  "name": "@graphprotocol/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -b tsconfig.build.json",
+    "test": "vitest",
+    "lint": "biome check",
+    "lint:fix": "biome check --write --unsafe",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^3.25.0",
+    "graphql-request": "^7.2.0",
+    "graphql": "^16.10.0",
+    "effect": "^3.17.13",
+    "@geoprotocol/geo-sdk": "^0.9.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "tsx": "^4.20.5",
+    "@types/node": "^24.1.0",
+    "vitest": "^3.2.4",
+    "@effect/vitest": "^0.25.1"
+  }
+}

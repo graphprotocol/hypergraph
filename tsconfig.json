@@ -12,6 +12,7 @@
     { "path": "apps/privy-login-example" },
     { "path": "apps/template-nextjs" },
     { "path": "apps/template-vite-react" },
-    { "path": "apps/next-example" }
+    { "path": "apps/next-example" },
+    { "path": "packages/mcp-server" }
   ]
 }
