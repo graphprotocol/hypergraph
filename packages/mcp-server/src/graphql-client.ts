@@ -83,10 +83,7 @@ export type EntitiesResult = {
   }>;
 };
 
-export const fetchTypes = async (
-  endpoint: string,
-  spaceId: string,
-): Promise<TypesListResult['typesList']> => {
+export const fetchTypes = async (endpoint: string, spaceId: string): Promise<TypesListResult['typesList']> => {
   const result = await request<TypesListResult>(`${endpoint}/graphql`, TYPES_WITH_PROPERTIES_QUERY, {
     spaceId,
     first: 1000,

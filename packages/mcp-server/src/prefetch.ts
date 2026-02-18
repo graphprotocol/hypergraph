@@ -25,7 +25,6 @@ const fetchAllEntities = async (endpoint: string, spaceId: string): Promise<Pref
   const all: PrefetchedEntity[] = [];
   let offset = 0;
 
-  // biome-ignore lint/correctness/noConstantCondition: pagination loop
   while (true) {
     const page = await fetchEntities(endpoint, spaceId, PAGE_SIZE, offset);
     all.push(...page);
@@ -40,9 +39,7 @@ const fetchAllEntities = async (endpoint: string, spaceId: string): Promise<Pref
   return all;
 };
 
-const mapTypes = (
-  rawTypes: TypesListResult['typesList'],
-): PrefetchedType[] => {
+const mapTypes = (rawTypes: TypesListResult['typesList']): PrefetchedType[] => {
   const types = rawTypes ?? [];
   return types.map((t) => ({
     id: t.id,
