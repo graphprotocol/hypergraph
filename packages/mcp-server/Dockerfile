@@ -10,10 +10,10 @@ RUN corepack enable && corepack prepare --activate
 ENV CI=true
 # Fetch all node modules purely based on the pnpm lock file.
 COPY pnpm-lock.yaml .
-RUN --mount=type=cache,id=mcp,target=/root/.local/share/pnpm/store pnpm fetch
+RUN pnpm fetch
 # Copy the entire workspace into the scope and perform the actual installation.
 COPY . .
-RUN --mount=type=cache,id=mcp,target=/root/.local/share/pnpm/store pnpm install
+RUN pnpm install
 
 # Build stage.
 FROM base AS build
