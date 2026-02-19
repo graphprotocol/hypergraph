@@ -8,6 +8,7 @@ import { request } from 'graphql-request';
 import type { InvalidRelationEntity, RelationsListWithNodes } from '../utils/convert-relations.js';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
+import { hydrateProposalBacklinks } from './internal/hydrate-proposal-backlinks.js';
 import { normalizeSpaceIds } from './internal/normalize-space-ids.js';
 import type { SpaceSelection } from './internal/space-selection.js';
 import { normalizeSpaceSelection } from './internal/space-selection.js';
@@ -342,6 +343,9 @@ export const findManyPublic = async <
     relationTypeIds,
     includeSpaceIdsParam === undefined ? undefined : { includeSpaceIds: includeSpaceIdsParam },
   );
+
+  await hydrateProposalBacklinks(result.entities, data, relationTypeIds);
+
   if (logInvalidResults) {
     if (invalidEntities.length > 0) {
       console.warn('Entities where decoding failed were dropped', invalidEntities);

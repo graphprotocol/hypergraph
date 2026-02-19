@@ -12,6 +12,7 @@ export type RelationTypeIdInfo = {
   listField: RelationListField;
   includeNodes: boolean;
   includeTotalCount: boolean;
+  resolutionStrategy?: 'proposalBacklink';
   targetTypeIds?: readonly string[];
   relationSpaces?: RelationSpacesOverride;
   valueSpaces?: RelationSpacesOverride;
@@ -79,6 +80,9 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
       const isBacklink = SchemaAST.getAnnotation<boolean>(Constants.RelationBacklinkSymbol)(prop.type).pipe(
         Option.getOrElse(() => false),
       );
+      const isProposalBacklink = SchemaAST.getAnnotation<boolean>(Constants.ProposalBacklinkSymbol)(prop.type).pipe(
+        Option.getOrElse(() => false),
+      );
       const listField: RelationListField = isBacklink ? 'backlinks' : 'relations';
       const relationSpaces = includeBranch?._config?.relationSpaces;
       const valueSpaces = includeBranch?._config?.valueSpaces;
@@ -91,6 +95,7 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
         listField,
         includeNodes,
         includeTotalCount,
+        ...(isProposalBacklink ? { resolutionStrategy: 'proposalBacklink' as const } : {}),
         ...(targetTypeIds ? { targetTypeIds } : {}),
       };
       const level1Info: RelationTypeIdInfo =
@@ -137,6 +142,9 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
             const nestedIsBacklink = SchemaAST.getAnnotation<boolean>(Constants.RelationBacklinkSymbol)(
               nestedProp.type,
             ).pipe(Option.getOrElse(() => false));
+            const nestedIsProposalBacklink = SchemaAST.getAnnotation<boolean>(Constants.ProposalBacklinkSymbol)(
+              nestedProp.type,
+            ).pipe(Option.getOrElse(() => false));
             const nestedListField: RelationListField = nestedIsBacklink ? 'backlinks' : 'relations';
             const nestedRelationSpaces = nestedIncludeBranch?._config?.relationSpaces;
             const nestedValueSpaces = nestedIncludeBranch?._config?.valueSpaces;
@@ -148,6 +156,7 @@ export const getRelationTypeIds = <S extends Schema.Schema.AnyNoContext>(
               listField: nestedListField,
               includeNodes: nestedIncludeNodes,
               includeTotalCount: nestedIncludeTotalCount,
+              ...(nestedIsProposalBacklink ? { resolutionStrategy: 'proposalBacklink' as const } : {}),
               ...(nestedTargetTypeIds ? { targetTypeIds: nestedTargetTypeIds } : {}),
             };
             const nestedInfo: RelationTypeIdInfo =
