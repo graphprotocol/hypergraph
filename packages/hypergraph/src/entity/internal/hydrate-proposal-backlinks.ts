@@ -54,7 +54,7 @@ const collectProposalBacklinkRefs = (queryEntities: QueryEntityWithRelations[], 
     const refsByPropertyName = new Map<string, ProposalRelationRef[]>();
 
     for (const info of backlinkInfo) {
-      const alias = getRelationAlias(info.typeId, info.targetTypeIds);
+      const alias = getRelationAlias(info.typeId, info.targetTypeIds) as `relations_${string}`;
       const relationNodes = queryEntity[alias]?.nodes ?? [];
       const relationRefs: ProposalRelationRef[] = [];
 
