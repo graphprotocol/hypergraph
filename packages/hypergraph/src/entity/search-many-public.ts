@@ -6,6 +6,7 @@ import { request } from 'graphql-request';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 import { type EntityQueryResult, parseResult } from './find-many-public.js';
+import { hydrateProposalBacklinks } from './internal/hydrate-proposal-backlinks.js';
 
 export type SearchManyPublicParams<
   S extends Schema.Schema.AnyNoContext,
@@ -97,5 +98,8 @@ export const searchManyPublic = async <
     relationTypeIds,
     includeSpaceIdsParam === undefined ? undefined : { includeSpaceIds: includeSpaceIdsParam },
   );
+
+  await hydrateProposalBacklinks(result.entities, data, relationTypeIds);
+
   return { data, invalidEntities, invalidRelationEntities };
 };
