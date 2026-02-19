@@ -18,7 +18,7 @@ const startup = Effect.gen(function* () {
 
   yield* Effect.logInfo(`Prefetched ${prefetchedData.length} spaces, ready`);
 
-  const store = buildStore(prefetchedData);
+  let currentStore = buildStore(prefetchedData);
 
   const app = express();
   app.use(express.json());
@@ -48,7 +48,7 @@ const startup = Effect.gen(function* () {
         ].join('\n'),
       },
     );
-    registerTools(server, store, config);
+    registerTools(server, currentStore, config);
 
     // Stateless mode: omit sessionIdGenerator entirely (exactOptionalPropertyTypes)
     const transport = new StreamableHTTPServerTransport({});
@@ -71,8 +71,14 @@ const startup = Effect.gen(function* () {
     res.status(405).json({ error: 'Method Not Allowed. Sessions are not supported in stateless mode.' });
   });
 
+  const refreshMinutes = Number(process.env.REFRESH_INTERVAL_MINUTES) || 10;
+
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
+    res.json({
+      status: 'ok',
+      cacheTimestamp: currentStore.getPrefetchTimestamp(),
+      refreshIntervalMinutes: refreshMinutes > 0 ? refreshMinutes : 'disabled',
+    });
   });
 
   const port = Number(process.env.PORT) || 3000;
@@ -86,6 +92,24 @@ const startup = Effect.gen(function* () {
   });
 
   yield* Effect.logInfo(`HTTP server listening on 0.0.0.0:${port}`);
+
+  if (refreshMinutes > 0) {
+    yield* Effect.logInfo(`Cache refresh scheduled every ${refreshMinutes} minutes`);
+
+    setInterval(
+      () => {
+        Effect.runPromise(
+          Effect.gen(function* () {
+            yield* Effect.logInfo('Refreshing cache...');
+            const data = yield* prefetchAll(config);
+            currentStore = buildStore(data);
+            yield* Effect.logInfo(`Cache refreshed (${data.length} spaces)`);
+          }).pipe(Effect.catchAll((error) => Effect.logWarning(`Cache refresh failed, keeping stale data: ${error}`))),
+        );
+      },
+      refreshMinutes * 60 * 1000,
+    );
+  }
 });
 
 const main = startup.pipe(
