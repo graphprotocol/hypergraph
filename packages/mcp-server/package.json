@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",
+    "dev:http": "tsx src/http.ts",
+    "start": "node dist/http.js",
     "build": "tsc -b tsconfig.build.json",
     "test": "vitest",
     "lint": "biome check",
@@ -13,6 +15,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "express": "^5.1.0",
     "zod": "^3.25.0",
     "graphql-request": "^7.2.0",
     "graphql": "^16.10.0",
@@ -20,6 +23,7 @@
     "@geoprotocol/geo-sdk": "^0.9.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "typescript": "^5.9.2",
     "tsx": "^4.20.5",
     "@types/node": "^24.1.0",

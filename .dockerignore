@@ -32,3 +32,6 @@
 !packages/hypergraph
 !packages/hypergraph-react
 !packages/typesync-studio
+
+# MCP server.
+!packages/mcp-server

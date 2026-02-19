@@ -4,7 +4,17 @@
     {
       "name": "AI",
       "id": "41e851610e13a19441c4d980f2f2ce6b",
-      "description": "AI and machine learning program space"
+      "description": "AI space"
+    },
+    {
+      "name": "Crypto",
+      "id": "c9f267dcb0d270718c2a3c45a64afd32",
+      "description": "Crypto space"
+    },
+    {
+      "name": "Health",
+      "id": "52c7ae149838b6d47ce0f3b2a5974546",
+      "description": "Health space"
     }
   ]
 }
