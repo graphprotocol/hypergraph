@@ -11,7 +11,7 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
     {
       title: 'Search Entities',
       description:
-        'Search for entities by name within a knowledge graph space. Returns matching entities with their properties and relationships. Use this when an editor wants to find specific entities by name or keyword.',
+        'Search for entities by name (case-insensitive substring match on entity names only, not property values). Returns matching entities with their properties and relations. Space and type names are fuzzy-matched. Use get_entity for full details or get_related_entities to traverse connections.',
       inputSchema: {
         space: z.string().describe('Name of the space to search in (e.g., "AI")'),
         query: z.string().describe('Search term to match against entity names (case-insensitive substring match)'),

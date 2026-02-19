@@ -8,7 +8,7 @@ export const registerListSpacesTool = (server: McpServer, store: PrefetchedStore
     {
       title: 'List Spaces',
       description:
-        'List all available knowledge graph spaces. Returns the names of program spaces configured in this Geo Protocol instance. Use this to discover which spaces are available before querying for entity types or entities.',
+        'List all available knowledge graph spaces. Returns space names and IDs. Start here to discover which spaces are available, then use get_entity_types to explore a space.',
       inputSchema: {},
       annotations: {
         readOnlyHint: true,

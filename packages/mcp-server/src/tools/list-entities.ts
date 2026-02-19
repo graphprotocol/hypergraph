@@ -11,7 +11,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
     {
       title: 'List Entities',
       description:
-        'List all entities of a specific type in a knowledge graph space. Returns entities with their properties and relationships. Use this when an editor wants to browse all entities of a given type (e.g., all Events, all Persons).',
+        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). Space and type names are fuzzy-matched. Returns all results by default — use limit/offset for large sets.',
       inputSchema: {
         space: z.string().describe('Name of the space to list entities from (e.g., "AI")'),
         type: z.string().describe('Entity type name to filter by (e.g., "Event", "Person", "Organization")'),

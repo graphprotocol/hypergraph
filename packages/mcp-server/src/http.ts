@@ -24,7 +24,30 @@ const startup = Effect.gen(function* () {
   app.use(express.json());
 
   app.post('/mcp', async (req, res) => {
-    const server = new McpServer({ name: 'hypergraph-mcp', version: '0.1.0' });
+    const server = new McpServer(
+      {
+        name: 'hypergraph-mcp',
+        version: '0.1.0',
+        description:
+          'Read-only access to Geo Protocol knowledge graphs — browse spaces, search entities, inspect properties and relations, and traverse the graph.',
+      },
+      {
+        instructions: [
+          'Hypergraph MCP provides read-only access to Geo Protocol knowledge graphs.',
+          'Each knowledge graph is organized into spaces (e.g., "AI", "Crypto"), which contain typed entities (e.g., Event, Person, Organization) with properties and relations between them.',
+          '',
+          'Recommended workflow:',
+          '1. list_spaces — discover available spaces',
+          '2. get_entity_types — see what entity types exist in a space',
+          '3. search_entities or list_entities — find entities by name or browse by type',
+          '4. get_entity — get full details for a specific entity',
+          '5. get_related_entities — traverse the graph to find connected entities',
+          '',
+          'All name inputs (spaces, types, relation types) support fuzzy matching — exact, prefix, and substring matches are tried in order.',
+          'When no limit is specified, all matching results are returned. Use limit and offset for pagination.',
+        ].join('\n'),
+      },
+    );
     registerTools(server, store, config);
 
     // Stateless mode: omit sessionIdGenerator entirely (exactOptionalPropertyTypes)

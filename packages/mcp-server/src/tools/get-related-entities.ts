@@ -9,7 +9,7 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
     {
       title: 'Get Related Entities',
       description:
-        'Traverse the knowledge graph from a known entity. Returns entities connected via outgoing relations (entity → targets), incoming relations (other entities → entity), or both. Optionally filter by relation type name.',
+        'Traverse the knowledge graph from a known entity. Returns entities connected via outgoing relations (entity → targets), incoming relations (other entities → entity), or both. Optionally filter by relation type name (fuzzy-matched). Use this to explore how entities are connected — e.g., find all members of an organization, events at a venue, or topics related to a person.',
       inputSchema: {
         entity_id: z.string().describe('The entity ID to traverse from'),
         relation_type: z

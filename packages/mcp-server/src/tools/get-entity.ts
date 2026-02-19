@@ -9,7 +9,7 @@ export const registerGetEntityTool = (server: McpServer, store: PrefetchedStore)
     {
       title: 'Get Entity',
       description:
-        'Get full details for a single entity by its ID. Returns all properties with human-readable labels, relationships, and metadata. Use this after finding an entity via search or list to inspect its complete data.',
+        'Get full details for a single entity by its ID. Returns all properties (with human-readable labels), outgoing relations, and type information. Use this after finding an entity via search_entities, list_entities, or get_related_entities to inspect its complete data.',
       inputSchema: {
         id: z.string().describe('The entity ID to look up (from search or list results)'),
       },
