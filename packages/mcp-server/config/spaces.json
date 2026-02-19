@@ -2,6 +2,11 @@
   "endpoint": "https://testnet-api.geobrowser.io",
   "spaces": [
     {
+      "name": "Root",
+      "id": "a19c345ab9866679b001d7d2138d88a1",
+      "description": "Root space"
+    },
+    {
       "name": "AI",
       "id": "41e851610e13a19441c4d980f2f2ce6b",
       "description": "AI space"

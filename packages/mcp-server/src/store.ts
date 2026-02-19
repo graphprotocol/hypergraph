@@ -30,6 +30,12 @@ export type StoredEntity = {
   spaceId: string;
 };
 
+export type RelatedEntity = {
+  entity: StoredEntity;
+  relationTypeId: string;
+  direction: 'outgoing' | 'incoming';
+};
+
 export type PrefetchedStore = {
   // Phase 1 (unchanged signatures, widened return types)
   getSpaces: () => SpaceInfo[];
@@ -46,6 +52,14 @@ export type PrefetchedStore = {
   resolveTypeName: (typeId: string) => string;
   getTypeProperties: (typeId: string) => Array<{ id: string; name: string; dataType: string }>;
   getPrefetchTimestamp: () => string;
+
+  // Phase 3 (graph traversal)
+  getRelatedEntities: (
+    entityId: string,
+    direction: 'outgoing' | 'incoming' | 'both',
+    relationTypeIds?: string[],
+  ) => RelatedEntity[];
+  resolveRelationTypeIds: (name: string) => string[];
 };
 
 export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore => {
@@ -95,6 +109,9 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
   // Entity by ID (for O(1) lookup)
   const entityById = new Map<string, StoredEntity>();
 
+  // Reverse relations index: targetEntityId -> Array<{fromEntityId, typeId}>
+  const reverseRelations = new Map<string, Array<{ fromEntityId: string; typeId: string }>>();
+
   for (const space of prefetchedData) {
     const storedEntities: StoredEntity[] = [];
 
@@ -117,6 +134,16 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
 
       if (e.name) {
         entityNameIndex.set(e.id, e.name);
+      }
+
+      // Populate reverse relations index
+      for (const rel of stored.relations) {
+        let backlinks = reverseRelations.get(rel.toEntityId);
+        if (!backlinks) {
+          backlinks = [];
+          reverseRelations.set(rel.toEntityId, backlinks);
+        }
+        backlinks.push({ fromEntityId: stored.id, typeId: rel.typeId });
       }
 
       // Infer type-to-property mapping from entity values
@@ -196,5 +223,71 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
     resolveTypeName: (typeId: string) => typeNameIndex.get(typeId) ?? typeId,
     getTypeProperties: (typeId: string) => typePropertiesIndex.get(typeId) ?? [],
     getPrefetchTimestamp: () => prefetchTimestamp,
+
+    getRelatedEntities: (
+      entityId: string,
+      direction: 'outgoing' | 'incoming' | 'both',
+      relationTypeIds?: string[],
+    ): RelatedEntity[] => {
+      const typeIdSet = relationTypeIds && relationTypeIds.length > 0 ? new Set(relationTypeIds) : null;
+      const results: RelatedEntity[] = [];
+
+      // Outgoing: entity -> targets
+      if (direction === 'outgoing' || direction === 'both') {
+        const entity = entityById.get(entityId);
+        if (entity) {
+          for (const rel of entity.relations) {
+            if (typeIdSet && !typeIdSet.has(rel.typeId)) continue;
+            const target = entityById.get(rel.toEntityId);
+            if (target) {
+              results.push({ entity: target, relationTypeId: rel.typeId, direction: 'outgoing' });
+            }
+          }
+        }
+      }
+
+      // Incoming: sources -> entity
+      if (direction === 'incoming' || direction === 'both') {
+        const backlinks = reverseRelations.get(entityId) ?? [];
+        for (const link of backlinks) {
+          if (typeIdSet && !typeIdSet.has(link.typeId)) continue;
+          const source = entityById.get(link.fromEntityId);
+          if (source) {
+            results.push({ entity: source, relationTypeId: link.typeId, direction: 'incoming' });
+          }
+        }
+      }
+
+      return results;
+    },
+
+    resolveRelationTypeIds: (name: string): string[] => {
+      const lower = name.toLowerCase();
+      const matches: string[] = [];
+
+      for (const [id, info] of propertyRegistry) {
+        const propLower = info.name.toLowerCase();
+        if (propLower === lower) {
+          matches.push(id);
+        }
+      }
+      if (matches.length > 0) return matches;
+
+      // Prefix match
+      for (const [id, info] of propertyRegistry) {
+        if (info.name.toLowerCase().startsWith(lower)) {
+          matches.push(id);
+        }
+      }
+      if (matches.length > 0) return matches;
+
+      // Substring match
+      for (const [id, info] of propertyRegistry) {
+        if (info.name.toLowerCase().includes(lower)) {
+          matches.push(id);
+        }
+      }
+      return matches;
+    },
   };
 };

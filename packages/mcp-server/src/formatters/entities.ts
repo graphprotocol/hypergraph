@@ -1,4 +1,4 @@
-import type { PrefetchedStore, StoredEntity } from '../store.js';
+import type { PrefetchedStore, RelatedEntity, StoredEntity } from '../store.js';
 
 type StoredValue = StoredEntity['values'][number];
 
@@ -127,6 +127,57 @@ export const formatEntityList = (
   // Each entity without individual timestamp
   for (const entity of entities) {
     lines.push(formatEntity(entity, store, { includeTimestamp: false }));
+    lines.push('');
+  }
+
+  // Single footer timestamp
+  lines.push(`*Data loaded at ${store.getPrefetchTimestamp()}*`);
+
+  return lines.join('\n');
+};
+
+export const formatRelatedEntityList = (
+  relatedEntities: RelatedEntity[],
+  store: PrefetchedStore,
+  options: {
+    sourceEntityName: string;
+    direction: 'outgoing' | 'incoming' | 'both';
+    relationTypeName?: string;
+    total: number;
+    limit?: number;
+    offset?: number;
+  },
+): string => {
+  const lines: string[] = [];
+
+  // Header
+  const dirLabel =
+    options.direction === 'outgoing'
+      ? 'outgoing from'
+      : options.direction === 'incoming'
+        ? 'incoming to'
+        : 'related to';
+  lines.push(`## Entities ${dirLabel} ${options.sourceEntityName}`);
+
+  if (options.relationTypeName) {
+    lines.push(`**Relation type filter:** ${options.relationTypeName}`);
+  }
+
+  // Count line
+  if (options.limit !== undefined) {
+    lines.push(`Showing ${relatedEntities.length} of ${options.total} related entities`);
+  } else {
+    lines.push(`Found ${options.total} related entities`);
+  }
+
+  lines.push('');
+
+  // Each entity with relation context
+  for (const related of relatedEntities) {
+    const relName = store.resolvePropertyName(related.relationTypeId);
+    const arrow = related.direction === 'outgoing' ? '→' : '←';
+    lines.push(`**${arrow} ${relName}**`);
+    lines.push(formatEntity(related.entity, store, { includeTimestamp: false }));
     lines.push('');
   }
 
