@@ -76,10 +76,10 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
       const typeName = matchedTypes[0].name;
       const fullResults = store.getEntitiesByType(resolved.id, typeIds);
 
-      const filtered =
+      const { entities: filtered, warnings } =
         filters?.length || sort_by
           ? store.filterAndSortEntities(fullResults, filters ?? [], sort_by, sort_order)
-          : fullResults;
+          : { entities: fullResults, warnings: [] };
 
       const start = offset ?? 0;
       const effectiveLimit = limit ?? DEFAULT_LIMIT;
@@ -96,7 +96,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
         };
       }
 
-      const text = formatEntityList(sliced, store, {
+      let text = formatEntityList(sliced, store, {
         spaceName: resolved.name,
         typeName: typeName,
         total: filtered.length,
@@ -105,6 +105,10 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
         ...(filters?.length && { filters }),
         ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }),
       });
+
+      if (warnings.length > 0) {
+        text = `> ⚠ ${warnings.join('\n> ⚠ ')}\n\n` + text;
+      }
 
       return { content: [{ type: 'text' as const, text }] };
     },

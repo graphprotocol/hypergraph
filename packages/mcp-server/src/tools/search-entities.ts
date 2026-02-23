@@ -107,10 +107,10 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
 
       const fullResults = store.searchEntities(resolvedSpaceId, query, typeIds);
 
-      const filtered =
+      const { entities: filtered, warnings } =
         filters?.length || sort_by
           ? store.filterAndSortEntities(fullResults, filters ?? [], sort_by, sort_order)
-          : fullResults;
+          : { entities: fullResults, warnings: [] };
 
       const start = offset ?? 0;
       const effectiveLimit = limit ?? DEFAULT_LIMIT;
@@ -129,14 +129,14 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
             }
           }
           const fallbackFull = store.searchEntities(undefined, query, fallbackTypeIds);
-          const fallbackFiltered =
+          const { entities: fallbackFiltered, warnings: fallbackWarnings } =
             filters?.length || sort_by
               ? store.filterAndSortEntities(fallbackFull, filters ?? [], sort_by, sort_order)
-              : fallbackFull;
+              : { entities: fallbackFull, warnings: [] };
           const fallbackSliced = fallbackFiltered.slice(start, start + effectiveLimit);
 
           if (fallbackSliced.length > 0) {
-            const text = formatEntityList(fallbackSliced, store, {
+            let text = formatEntityList(fallbackSliced, store, {
               spaceName: 'all spaces',
               ...(typeName !== undefined && { typeName }),
               total: fallbackFiltered.length,
@@ -147,6 +147,9 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
               crossSpace: true,
               fallbackNote: `No results found in "${spaceName}". Showing results from all spaces:`,
             });
+            if (fallbackWarnings.length > 0) {
+              text = `> ⚠ ${fallbackWarnings.join('\n> ⚠ ')}\n\n` + text;
+            }
             return { content: [{ type: 'text' as const, text }] };
           }
         }
@@ -161,7 +164,7 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
         };
       }
 
-      const text = formatEntityList(sliced, store, {
+      let text = formatEntityList(sliced, store, {
         spaceName,
         ...(typeName !== undefined && { typeName }),
         total: filtered.length,
@@ -171,6 +174,10 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
         ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }),
         ...(resolvedSpaceId === undefined && { crossSpace: true }),
       });
+
+      if (warnings.length > 0) {
+        text = `> ⚠ ${warnings.join('\n> ⚠ ')}\n\n` + text;
+      }
 
       return { content: [{ type: 'text' as const, text }] };
     },

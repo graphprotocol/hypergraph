@@ -72,7 +72,7 @@ export type PrefetchedStore = {
     filters: PropertyFilter[],
     sortBy?: string,
     sortOrder?: 'asc' | 'desc',
-  ) => StoredEntity[];
+  ) => { entities: StoredEntity[]; warnings: string[] };
 };
 
 export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore => {
@@ -210,21 +210,22 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
   }
 
   const resolvePropertyIds = (name: string): Set<string> => {
-    const lower = name.toLowerCase();
+    // Normalize: lowercase + replace underscores with spaces for friendly matching
+    const lower = name.toLowerCase().replace(/_/g, ' ');
     const matches: string[] = [];
 
     for (const [id, info] of propertyRegistry) {
-      if (info.name.toLowerCase() === lower) matches.push(id);
+      if (info.name.toLowerCase().replace(/_/g, ' ') === lower) matches.push(id);
     }
     if (matches.length > 0) return new Set(matches);
 
     for (const [id, info] of propertyRegistry) {
-      if (info.name.toLowerCase().startsWith(lower)) matches.push(id);
+      if (info.name.toLowerCase().replace(/_/g, ' ').startsWith(lower)) matches.push(id);
     }
     if (matches.length > 0) return new Set(matches);
 
     for (const [id, info] of propertyRegistry) {
-      if (info.name.toLowerCase().includes(lower)) matches.push(id);
+      if (info.name.toLowerCase().replace(/_/g, ' ').includes(lower)) matches.push(id);
     }
     return new Set(matches);
   };
@@ -312,7 +313,9 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
       filters: PropertyFilter[],
       sortBy?: string,
       sortOrder?: 'asc' | 'desc',
-    ): StoredEntity[] => {
+    ): { entities: StoredEntity[]; warnings: string[] } => {
+      const warnings: string[] = [];
+
       const isNonNull = (v: StoredEntity['values'][number]): boolean =>
         v.text !== null ||
         v.float !== null ||
@@ -331,9 +334,18 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
         return null;
       };
 
+      // Track which filter properties already had a warning emitted (avoid duplicates)
+      const warnedFilters = new Set<string>();
+
       const passes = (entity: StoredEntity, filter: PropertyFilter): boolean => {
         const ids = resolvePropertyIds(filter.property);
-        if (ids.size === 0) return true; // unknown property → no-op
+        if (ids.size === 0) {
+          if (!warnedFilters.has(filter.property)) {
+            warnings.push(`Filter property '${filter.property}' not found — filter skipped`);
+            warnedFilters.add(filter.property);
+          }
+          return true; // unknown property → no-op
+        }
 
         const vals = entity.values.filter((v) => ids.has(v.propertyId));
 
@@ -381,6 +393,9 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
 
       if (sortBy) {
         const ids = resolvePropertyIds(sortBy);
+        if (ids.size === 0) {
+          warnings.push(`Sort property '${sortBy}' not found — sorting skipped`);
+        }
         const dir = sortOrder === 'desc' ? -1 : 1;
 
         const sortVal = (entity: StoredEntity): number | string | null => {
@@ -408,7 +423,7 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
         });
       }
 
-      return result;
+      return { entities: result, warnings };
     },
   };
 };
