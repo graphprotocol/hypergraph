@@ -13,7 +13,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
       description:
         'List all entities of a specific type. Omit space (recommended) to list across ALL spaces at once — the same type name (e.g., "Bounty") often exists in multiple spaces and you\'d miss results by specifying one. Provide space only to narrow when you\'re sure all entities are in one space. Use filters to narrow by property values (e.g., {"property":"Bounty Budget","operator":"eq","value":"1000"}). Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets. Use compact=true for token-efficient output on large result sets.',
       inputSchema: {
-        space: z.string().optional().describe('Name of the space to list entities from (e.g., "AI"). Omit to list across all spaces at once — recommended, since the same type often exists in multiple spaces.'),
+        space: z.string().optional().describe('Only provide this when the user explicitly names a space to restrict to. Do NOT guess a space from the type name or topic. Omitting this (the default) lists across all spaces.'),
         type: z.string().describe('Entity type name to filter by (e.g., "Event", "Person", "Organization")'),
         limit: z.number().optional().describe('Optional: max results (default: 50). Use offset for pagination.'),
         offset: z.number().optional().describe('Optional: number of results to skip (for pagination)'),
