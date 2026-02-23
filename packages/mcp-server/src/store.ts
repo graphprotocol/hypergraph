@@ -5,6 +5,7 @@ export type TypeInfo = { id: string; name: string };
 
 export type TypeInfoWithProperties = TypeInfo & {
   properties: Array<{ id: string; name: string; dataType: string }>;
+  relations: Array<{ id: string; name: string; targetTypeNames: string[] }>;
 };
 
 export type PropertyInfo = { name: string; dataType: string };
@@ -103,6 +104,10 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
   // Track which property IDs belong to each type (used during inference)
   const typePropertyIds = new Map<string, Set<string>>();
 
+  // Track which relation types each entity type uses and what target entity IDs they point to
+  // Maps: typeId -> relTypeId -> Set<targetEntityId>
+  const typeRelationIndex = new Map<string, Map<string, Set<string>>>();
+
   // Types by space (properties filled after entity scan)
   const typesBySpace = new Map<string, TypeInfoWithProperties[]>();
 
@@ -181,6 +186,17 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
           propIds.add(v.propertyId);
         }
       }
+
+      // Track which relation types each entity type uses and what target entities they point to
+      for (const typeId of e.typeIds) {
+        let relMap = typeRelationIndex.get(typeId);
+        if (!relMap) { relMap = new Map(); typeRelationIndex.set(typeId, relMap); }
+        for (const rel of stored.relations) {
+          let targetSet = relMap.get(rel.typeId);
+          if (!targetSet) { targetSet = new Set(); relMap.set(rel.typeId, targetSet); }
+          targetSet.add(rel.toEntityId);
+        }
+      }
     }
 
     entitiesBySpace.set(space.spaceId, storedEntities);
@@ -198,6 +214,27 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
     typePropertiesIndex.set(typeId, properties);
   }
 
+  // Build resolved relation schema per type: typeId -> Array<{id, name, targetTypeNames}>
+  const typeRelationsResolved = new Map<string, Array<{ id: string; name: string; targetTypeNames: string[] }>>();
+  for (const [typeId, relMap] of typeRelationIndex) {
+    const relations: Array<{ id: string; name: string; targetTypeNames: string[] }> = [];
+    for (const [relTypeId, targetEntityIds] of relMap) {
+      const relName = propertyRegistry.get(relTypeId)?.name ?? relTypeId;
+      const targetTypeNames = new Set<string>();
+      for (const targetId of targetEntityIds) {
+        const targetEntity = entityById.get(targetId);
+        if (targetEntity) {
+          for (const tid of targetEntity.typeIds) {
+            const tname = typeNameIndex.get(tid);
+            if (tname) targetTypeNames.add(tname);
+          }
+        }
+      }
+      relations.push({ id: relTypeId, name: relName, targetTypeNames: [...targetTypeNames].sort() });
+    }
+    typeRelationsResolved.set(typeId, relations.sort((a, b) => a.name.localeCompare(b.name)));
+  }
+
   // Build typesBySpace — only include types that have entities in this space
   for (const space of prefetchedData) {
     const types: TypeInfoWithProperties[] = [];
@@ -212,7 +249,8 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
       if (t.name === null) continue;
       if (!spaceEntityTypeIds.has(t.id)) continue;
       const properties = typePropertiesIndex.get(t.id) ?? [];
-      types.push({ id: t.id, name: t.name, properties });
+      const relations = typeRelationsResolved.get(t.id) ?? [];
+      types.push({ id: t.id, name: t.name, properties, relations });
       typeNameIndex.set(t.id, t.name);
     }
 

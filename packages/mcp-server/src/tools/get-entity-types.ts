@@ -11,12 +11,12 @@ export const registerGetEntityTypesTool = (server: McpServer, store: PrefetchedS
     {
       title: 'Get Entity Types',
       description:
-        'List all entity types in a space (e.g., Event, Person, Organization) with their property schemas. Use this when you need to know what data a specific space contains, or to refine a list_entities call with the correct type name. Space name is fuzzy-matched. Omit space to get types from all spaces at once.',
+        'List all entity types with their property schemas and relation types. Omit space (recommended for first call) to see all types across all spaces at once — entity data often lives in a different space than you\'d expect (e.g., "Bounty" entities may be in the "Geo" space, not a dedicated space). The Relations column shows what graph links each type has (e.g., "location → City") — call this before using `related_to` in `search_entities` or `list_entities` to discover the right relation type and direction. Space name is fuzzy-matched.',
       inputSchema: {
         space: z
           .string()
           .optional()
-          .describe('Name of the knowledge graph space to browse types in (e.g., "AI"). Omit to get types from all spaces.'),
+          .describe('Name of the knowledge graph space to browse types in (e.g., "AI"). Omit to get types from all spaces at once — recommended unless you already know which space to look in.'),
       },
       annotations: {
         readOnlyHint: true,

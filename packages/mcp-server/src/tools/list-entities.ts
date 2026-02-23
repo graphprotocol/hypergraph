@@ -11,7 +11,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
     {
       title: 'List Entities',
       description:
-        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets.',
+        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). For location/relation queries ("Events in Paris"): call `get_entity_types` first to see what relations an entity type has (e.g., Event has `location → City`), then use `related_to` — e.g., `related_to: {entity: "Paris", relation_type: "location", direction: "outgoing"}` with `type: "Event"`. Do NOT put "Paris" in a query field. Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets.',
       inputSchema: {
         space: z.string().describe('Name of the space to list entities from (e.g., "AI")'),
         type: z.string().describe('Entity type name to filter by (e.g., "Event", "Person", "Organization")'),
