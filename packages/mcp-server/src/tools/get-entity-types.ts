@@ -11,7 +11,7 @@ export const registerGetEntityTypesTool = (server: McpServer, store: PrefetchedS
     {
       title: 'Get Entity Types',
       description:
-        'List all entity types with their property schemas and relation types. Omit space (recommended for first call) to see all types across all spaces at once — entity data often lives in a different space than you\'d expect (e.g., "Bounty" entities may be in the "Geo" space, not a dedicated space). The Relations column shows what graph links each type has (e.g., "location → City") — call this before using `related_to` in `search_entities` or `list_entities` to discover the right relation type and direction. Space name is fuzzy-matched.',
+        'List all entity types with their property schemas and relation types. Omit space (recommended — do this first) to see ALL types across ALL spaces at once. The same type name (e.g., "Bounty") can exist in multiple spaces — you must query without a space to discover all of them. The Relations column shows what graph links each type has (e.g., "location → City") — call this before using `related_to` in `search_entities` or `list_entities` to discover the right relation type and direction. Space name is fuzzy-matched.',
       inputSchema: {
         space: z
           .string()

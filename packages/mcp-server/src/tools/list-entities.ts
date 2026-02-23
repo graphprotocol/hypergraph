@@ -11,9 +11,9 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
     {
       title: 'List Entities',
       description:
-        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). For location/relation queries ("Events in Paris"): call `get_entity_types` first to see what relations an entity type has (e.g., Event has `location → City`), then use `related_to` — e.g., `related_to: {entity: "Paris", relation_type: "location", direction: "outgoing"}` with `type: "Event"`. Do NOT put "Paris" in a query field. Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets. Use compact=true for large result sets to get a token-efficient table — then call get_entity for details on specific results.',
+        'List all entities of a specific type. Omit space (recommended) to list across ALL spaces at once — the same type name (e.g., "Bounty") often exists in multiple spaces and you\'d miss results by specifying one. Provide space only to narrow when you\'re sure all entities are in one space. Use filters to narrow by property values (e.g., {"property":"Bounty Budget","operator":"eq","value":"1000"}). Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets. Use compact=true for token-efficient output on large result sets.',
       inputSchema: {
-        space: z.string().describe('Name of the space to list entities from (e.g., "AI")'),
+        space: z.string().optional().describe('Name of the space to list entities from (e.g., "AI"). Omit to list across all spaces at once — recommended, since the same type often exists in multiple spaces.'),
         type: z.string().describe('Entity type name to filter by (e.g., "Event", "Person", "Organization")'),
         limit: z.number().optional().describe('Optional: max results (default: 50). Use offset for pagination.'),
         offset: z.number().optional().describe('Optional: number of results to skip (for pagination)'),
@@ -63,39 +63,53 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
     },
     async ({ space, type, limit, offset, filters, sort_by, sort_order, related_to, compact }) => {
       const DEFAULT_LIMIT = 50;
-      const resolved = resolveSpace(space, store.getSpaces());
 
-      if (!resolved) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `Space "${space}" not found. Available spaces: ${store.getSpaceNames().join(', ')}`,
-            },
-          ],
-          isError: true,
-        };
+      let resolvedSpaceId: string | undefined;
+      let spaceName: string;
+
+      if (space !== undefined) {
+        const resolved = resolveSpace(space, store.getSpaces());
+        if (!resolved) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Space "${space}" not found. Available spaces: ${store.getSpaceNames().join(', ')}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+        resolvedSpaceId = resolved.id;
+        spaceName = resolved.name;
+      } else {
+        resolvedSpaceId = undefined;
+        spaceName = 'all spaces';
       }
 
-      const types = store.getTypes(resolved.id);
-      const matchedTypes = resolveTypes(type, types);
+      const allTypes = resolvedSpaceId !== undefined
+        ? store.getTypes(resolvedSpaceId)
+        : store.getSpaces().flatMap((s) => store.getTypes(s.id));
+      const matchedTypes = resolveTypes(type, allTypes);
 
       if (matchedTypes.length === 0) {
-        const uniqueNames = [...new Set(types.map((t) => t.name))];
+        const uniqueNames = [...new Set(allTypes.map((t) => t.name))];
         return {
           content: [
             {
               type: 'text' as const,
-              text: `Type "${type}" not found in ${resolved.name}. Available types: ${uniqueNames.join(', ')}.`,
+              text: `Type "${type}" not found in ${spaceName}. Available types: ${uniqueNames.join(', ')}.`,
             },
           ],
           isError: true,
         };
       }
 
-      const typeIds = matchedTypes.map((t) => t.id);
+      const typeIds = [...new Set(matchedTypes.map((t) => t.id))];
       const typeName = matchedTypes[0].name;
-      const fullResults = store.getEntitiesByType(resolved.id, typeIds);
+      const fullResults = resolvedSpaceId !== undefined
+        ? store.getEntitiesByType(resolvedSpaceId, typeIds)
+        : store.searchEntities(undefined, '', typeIds);
 
       const { entities: filtered, warnings } =
         filters?.length || sort_by
@@ -119,18 +133,19 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
           content: [
             {
               type: 'text' as const,
-              text: `No ${typeName} entities found in ${resolved.name}.`,
+              text: `No ${typeName} entities found in ${spaceName}.`,
             },
           ],
         };
       }
 
       const mainOptions = {
-        spaceName: resolved.name,
-        typeName: typeName,
+        spaceName,
+        typeName,
         total: relationFiltered.length,
         limit: effectiveLimit,
         ...(offset !== undefined && { offset }),
+        ...(resolvedSpaceId === undefined && { crossSpace: true }),
       };
       let text = compact
         ? formatEntityListCompact(sliced, store, mainOptions)
