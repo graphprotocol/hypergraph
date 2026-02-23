@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { SpacesConfig } from '../config.js';
-import { formatEntityList } from '../formatters/entities.js';
+import { formatEntityList, formatEntityListCompact } from '../formatters/entities.js';
 import { resolveSpace, resolveTypes } from '../fuzzy.js';
 import type { PrefetchedStore, RelationFilter } from '../store.js';
 
@@ -11,7 +11,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
     {
       title: 'List Entities',
       description:
-        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). For location/relation queries ("Events in Paris"): call `get_entity_types` first to see what relations an entity type has (e.g., Event has `location → City`), then use `related_to` — e.g., `related_to: {entity: "Paris", relation_type: "location", direction: "outgoing"}` with `type: "Event"`. Do NOT put "Paris" in a query field. Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets.',
+        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). For location/relation queries ("Events in Paris"): call `get_entity_types` first to see what relations an entity type has (e.g., Event has `location → City`), then use `related_to` — e.g., `related_to: {entity: "Paris", relation_type: "location", direction: "outgoing"}` with `type: "Event"`. Do NOT put "Paris" in a query field. Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets. Use compact=true for large result sets to get a token-efficient table — then call get_entity for details on specific results.',
       inputSchema: {
         space: z.string().describe('Name of the space to list entities from (e.g., "AI")'),
         type: z.string().describe('Entity type name to filter by (e.g., "Event", "Person", "Organization")'),
@@ -48,6 +48,12 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
           .describe(
             'Filter results by their graph relation to a named entity. Example: to find articles published by Cointelegraph, use related_to: { entity: "Cointelegraph", direction: "outgoing" }',
           ),
+        compact: z
+          .boolean()
+          .optional()
+          .describe(
+            'Optional: return results as a compact table (Name, Type, ID) instead of full entity cards. Recommended for large result sets when you only need to identify entities before fetching details with get_entity.',
+          ),
       },
       annotations: {
         readOnlyHint: true,
@@ -55,7 +61,7 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
         openWorldHint: false,
       },
     },
-    async ({ space, type, limit, offset, filters, sort_by, sort_order, related_to }) => {
+    async ({ space, type, limit, offset, filters, sort_by, sort_order, related_to, compact }) => {
       const DEFAULT_LIMIT = 50;
       const resolved = resolveSpace(space, store.getSpaces());
 
@@ -119,15 +125,16 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
         };
       }
 
-      let text = formatEntityList(sliced, store, {
+      const mainOptions = {
         spaceName: resolved.name,
         typeName: typeName,
         total: relationFiltered.length,
         limit: effectiveLimit,
         ...(offset !== undefined && { offset }),
-        ...(filters?.length && { filters }),
-        ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }),
-      });
+      };
+      let text = compact
+        ? formatEntityListCompact(sliced, store, mainOptions)
+        : formatEntityList(sliced, store, { ...mainOptions, ...(filters?.length && { filters }), ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }) });
 
       if (allWarnings.length > 0) {
         text = `> ⚠ ${allWarnings.join('\n> ⚠ ')}\n\n` + text;

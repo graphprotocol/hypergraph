@@ -167,6 +167,116 @@ export const formatEntityList = (
   return lines.join('\n');
 };
 
+// Compact table format for entity lists (token-efficient)
+const formatEntityTableRows = (
+  entities: StoredEntity[],
+  store: PrefetchedStore,
+  showSpace: boolean,
+): string => {
+  const rows = entities.map((e) => {
+    const name = e.name ?? '(unnamed)';
+    const type = e.typeIds.map((id) => store.resolveTypeName(id)).join(', ') || '(untyped)';
+    const space = showSpace ? store.resolveSpaceName(e.spaceId) : null;
+    return space
+      ? `| ${name} | ${type} | ${space} | ${e.id} |`
+      : `| ${name} | ${type} | ${e.id} |`;
+  });
+  const header = showSpace
+    ? '| Name | Type | Space | ID |\n|------|------|-------|-----|'
+    : '| Name | Type | ID |\n|------|------|-----|';
+  return [header, ...rows].join('\n');
+};
+
+export const formatEntityListCompact = (
+  entities: StoredEntity[],
+  store: PrefetchedStore,
+  options: {
+    spaceName: string;
+    typeName?: string;
+    total: number;
+    limit?: number;
+    offset?: number;
+    crossSpace?: boolean;
+    fallbackNote?: string;
+  },
+): string => {
+  const lines: string[] = [];
+
+  if (options.fallbackNote) {
+    lines.push(`> ${options.fallbackNote}`);
+    lines.push('');
+  }
+
+  if (options.typeName) {
+    lines.push(
+      options.crossSpace
+        ? `## ${options.typeName} entities across all spaces`
+        : `## ${options.typeName} entities in ${options.spaceName}`,
+    );
+  } else {
+    lines.push(options.crossSpace ? '## Search results across all spaces' : `## Search results in ${options.spaceName}`);
+  }
+
+  lines.push(
+    options.limit !== undefined
+      ? `Showing ${entities.length} of ${options.total} entities`
+      : `Found ${options.total} entities`,
+  );
+  lines.push('');
+  lines.push(formatEntityTableRows(entities, store, !!options.crossSpace));
+  lines.push('');
+  lines.push(`*Data loaded at ${store.getPrefetchTimestamp()}*`);
+  return lines.join('\n');
+};
+
+export const formatRelatedEntityListCompact = (
+  relatedEntities: RelatedEntity[],
+  store: PrefetchedStore,
+  options: {
+    sourceEntityName: string;
+    direction: 'outgoing' | 'incoming' | 'both';
+    relationTypeName?: string;
+    total: number;
+    limit?: number;
+    offset?: number;
+  },
+): string => {
+  const lines: string[] = [];
+
+  const dirLabel =
+    options.direction === 'outgoing'
+      ? 'outgoing from'
+      : options.direction === 'incoming'
+        ? 'incoming to'
+        : 'related to';
+  lines.push(`## Entities ${dirLabel} ${options.sourceEntityName}`);
+
+  if (options.relationTypeName) {
+    lines.push(`**Relation type filter:** ${options.relationTypeName}`);
+  }
+
+  lines.push(
+    options.limit !== undefined
+      ? `Showing ${relatedEntities.length} of ${options.total} related entities`
+      : `Found ${options.total} related entities`,
+  );
+  lines.push('');
+
+  lines.push('| Name | Type | Space | ID |');
+  lines.push('|------|------|-------|-----|');
+  for (const related of relatedEntities) {
+    const e = related.entity;
+    const name = e.name ?? '(unnamed)';
+    const type = e.typeIds.map((id) => store.resolveTypeName(id)).join(', ') || '(untyped)';
+    const space = store.resolveSpaceName(e.spaceId);
+    lines.push(`| ${name} | ${type} | ${space} | ${e.id} |`);
+  }
+
+  lines.push('');
+  lines.push(`*Data loaded at ${store.getPrefetchTimestamp()}*`);
+  return lines.join('\n');
+};
+
 export const formatRelatedEntityList = (
   relatedEntities: RelatedEntity[],
   store: PrefetchedStore,

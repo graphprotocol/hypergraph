@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { SpacesConfig } from '../config.js';
-import { formatEntityList } from '../formatters/entities.js';
+import { formatEntityList, formatEntityListCompact } from '../formatters/entities.js';
 import { resolveSpace, resolveTypes } from '../fuzzy.js';
 import type { PrefetchedStore, RelationFilter } from '../store.js';
 
@@ -11,7 +11,7 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
     {
       title: 'Search Entities',
       description:
-        'Search for entities by name across all knowledge graph spaces. Note: this tool matches entity names, not their content or relations. To find entities related to another entity (e.g., "articles published by Cointelegraph"), use the related_to parameter instead of putting the publisher name in query. For location/relation queries ("Events in Paris", "articles by Cointelegraph"): call `get_entity_types` first to see what relations an entity type has (e.g., Event has `location → City`), then use `related_to` — e.g., `related_to: {entity: "Paris", relation_type: "location", direction: "outgoing"}` with `type: "Event"`. Do NOT put "Paris" in the `query` field. Omit "space" (recommended for first searches) to search all spaces at once — entity topics often don\'t match space names (e.g., a company named "Geo" is in the "Crypto" space). Provide "space" only to narrow results when you already know where the entity lives. Space and type names are fuzzy-matched. Results are limited to 50 by default — use limit/offset to paginate.',
+        'Search for entities by name across all knowledge graph spaces. Note: this tool matches entity names, not their content or relations. To find entities related to another entity (e.g., "articles published by Cointelegraph"), use the related_to parameter instead of putting the publisher name in query. For location/relation queries ("Events in Paris", "articles by Cointelegraph"): call `get_entity_types` first to see what relations an entity type has (e.g., Event has `location → City`), then use `related_to` — e.g., `related_to: {entity: "Paris", relation_type: "location", direction: "outgoing"}` with `type: "Event"`. Do NOT put "Paris" in the `query` field. Omit "space" (recommended for first searches) to search all spaces at once — entity topics often don\'t match space names (e.g., a company named "Geo" is in the "Crypto" space). Provide "space" only to narrow results when you already know where the entity lives. Space and type names are fuzzy-matched. Results are limited to 50 by default — use limit/offset to paginate. Use compact=true for large result sets to get a token-efficient table — then call get_entity for details on specific results.',
       inputSchema: {
         space: z
           .string()
@@ -54,6 +54,12 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
           .describe(
             'Filter results by their graph relation to a named entity. Example: to find articles published by Cointelegraph, use related_to: { entity: "Cointelegraph", direction: "outgoing" }',
           ),
+        compact: z
+          .boolean()
+          .optional()
+          .describe(
+            'Optional: return results as a compact table (Name, Type, ID) instead of full entity cards. Recommended for large result sets when you only need to identify entities before fetching details with get_entity.',
+          ),
       },
       annotations: {
         readOnlyHint: true,
@@ -61,7 +67,7 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
         openWorldHint: false,
       },
     },
-    async ({ space, query, type, limit, offset, filters, sort_by, sort_order, related_to }) => {
+    async ({ space, query, type, limit, offset, filters, sort_by, sort_order, related_to, compact }) => {
       const DEFAULT_LIMIT = 50;
       let resolvedSpaceId: string | undefined;
       let spaceName: string;
@@ -161,17 +167,18 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
           const fallbackSliced = fallbackFiltered.slice(start, start + effectiveLimit);
 
           if (fallbackSliced.length > 0) {
-            let text = formatEntityList(fallbackSliced, store, {
+            const fallbackOptions = {
               spaceName: 'all spaces',
               ...(typeName !== undefined && { typeName }),
               total: fallbackFiltered.length,
               limit: effectiveLimit,
               ...(offset !== undefined && { offset }),
-              ...(filters?.length && { filters }),
-              ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }),
               crossSpace: true,
               fallbackNote: `No results found in "${spaceName}". Showing results from all spaces:`,
-            });
+            };
+            let text = compact
+              ? formatEntityListCompact(fallbackSliced, store, fallbackOptions)
+              : formatEntityList(fallbackSliced, store, { ...fallbackOptions, ...(filters?.length && { filters }), ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }) });
             if (fallbackWarnings.length > 0) {
               text = `> ⚠ ${fallbackWarnings.join('\n> ⚠ ')}\n\n` + text;
             }
@@ -189,16 +196,17 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
         };
       }
 
-      let text = formatEntityList(sliced, store, {
+      const mainOptions = {
         spaceName,
         ...(typeName !== undefined && { typeName }),
         total: relationFiltered.length,
         limit: effectiveLimit,
         ...(offset !== undefined && { offset }),
-        ...(filters?.length && { filters }),
-        ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }),
         ...(resolvedSpaceId === undefined && { crossSpace: true }),
-      });
+      };
+      let text = compact
+        ? formatEntityListCompact(sliced, store, mainOptions)
+        : formatEntityList(sliced, store, { ...mainOptions, ...(filters?.length && { filters }), ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }) });
 
       if (allWarnings.length > 0) {
         text = `> ⚠ ${allWarnings.join('\n> ⚠ ')}\n\n` + text;

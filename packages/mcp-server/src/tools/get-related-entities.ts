@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { formatRelatedEntityList } from '../formatters/entities.js';
+import { formatRelatedEntityList, formatRelatedEntityListCompact } from '../formatters/entities.js';
 import type { PrefetchedStore } from '../store.js';
 
 export const registerGetRelatedEntitiesTool = (server: McpServer, store: PrefetchedStore): void => {
@@ -9,7 +9,7 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
     {
       title: 'Get Related Entities',
       description:
-        'Traverse the knowledge graph from a known entity. Use direction: "incoming" to find entities that point TO the given entity (e.g., people who "Works at" a company — search for the company, then get incoming "Works at" relations). Use direction: "outgoing" to follow links FROM the entity. Omit relation_type to see all connections at once and discover available relation type names before filtering.',
+        'Traverse the knowledge graph from a known entity. Use direction: "incoming" to find entities that point TO the given entity (e.g., people who "Works at" a company — search for the company, then get incoming "Works at" relations). Use direction: "outgoing" to follow links FROM the entity. Omit relation_type to see all connections at once and discover available relation type names before filtering. Use compact=true for large result sets to get a token-efficient table — then call get_entity for details on specific results.',
       inputSchema: {
         entity_id: z.string().describe('The entity ID to traverse from'),
         relation_type: z
@@ -25,6 +25,12 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
           ),
         limit: z.number().optional().describe('Optional: max results (default: 50). Use offset for pagination.'),
         offset: z.number().optional().describe('Optional: number of results to skip (for pagination)'),
+        compact: z
+          .boolean()
+          .optional()
+          .describe(
+            'Optional: return results as a compact table (Name, Type, Space, ID) instead of full entity cards. Recommended for large result sets when you only need to identify entities before fetching details with get_entity.',
+          ),
       },
       annotations: {
         readOnlyHint: true,
@@ -32,7 +38,7 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
         openWorldHint: false,
       },
     },
-    async ({ entity_id, relation_type, direction, limit, offset }) => {
+    async ({ entity_id, relation_type, direction, limit, offset, compact }) => {
       const DEFAULT_LIMIT = 50;
       const entity = store.getEntity(entity_id);
 
@@ -108,14 +114,17 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
         };
       }
 
-      const text = formatRelatedEntityList(sliced, store, {
+      const formatOptions = {
         sourceEntityName: entity.name ?? entity_id,
         direction: dir,
         ...(relationTypeName !== undefined && { relationTypeName }),
         total: fullResults.length,
         limit: effectiveLimit,
         ...(offset !== undefined && { offset }),
-      });
+      };
+      const text = compact
+        ? formatRelatedEntityListCompact(sliced, store, formatOptions)
+        : formatRelatedEntityList(sliced, store, formatOptions);
 
       return { content: [{ type: 'text' as const, text }] };
     },
