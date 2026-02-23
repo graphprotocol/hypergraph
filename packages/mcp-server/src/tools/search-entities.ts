@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { SpacesConfig } from '../config.js';
 import { formatEntityList } from '../formatters/entities.js';
 import { resolveSpace, resolveTypes } from '../fuzzy.js';
-import type { PrefetchedStore } from '../store.js';
+import type { PrefetchedStore, RelationFilter } from '../store.js';
 
 export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedStore, _config: SpacesConfig): void => {
   server.registerTool(
@@ -11,7 +11,7 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
     {
       title: 'Search Entities',
       description:
-        'Search for entities by name across all knowledge graph spaces. Omit "space" (recommended for first searches) to search all spaces at once — entity topics often don\'t match space names (e.g., a company named "Geo" is in the "Crypto" space). Provide "space" only to narrow results when you already know where the entity lives. Space and type names are fuzzy-matched. Results are limited to 50 by default — use limit/offset to paginate.',
+        'Search for entities by name across all knowledge graph spaces. Note: this tool matches entity names, not their content or relations. To find entities related to another entity (e.g., "articles published by Cointelegraph"), use the related_to parameter instead of putting the publisher name in query. Omit "space" (recommended for first searches) to search all spaces at once — entity topics often don\'t match space names (e.g., a company named "Geo" is in the "Crypto" space). Provide "space" only to narrow results when you already know where the entity lives. Space and type names are fuzzy-matched. Results are limited to 50 by default — use limit/offset to paginate.',
       inputSchema: {
         space: z
           .string()
@@ -39,6 +39,21 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
           .describe('Filter entities by property values. All filters are ANDed.'),
         sort_by: z.string().optional().describe('Property name to sort results by (fuzzy-matched)'),
         sort_order: z.enum(['asc', 'desc']).optional().describe('Sort direction (default: asc)'),
+        related_to: z
+          .object({
+            entity: z.string().describe('Name of the entity to filter by relation (case-insensitive substring match on entity names)'),
+            relation_type: z.string().optional().describe('Optional: relation type to filter on (fuzzy-matched property name)'),
+            direction: z
+              .enum(['outgoing', 'incoming'])
+              .optional()
+              .describe(
+                'Direction of relation. "outgoing" (default): result entity points TO the named entity — use this for "articles BY publisher X" where articles have a source/publisher relation. "incoming": named entity points TO the result entity.',
+              ),
+          })
+          .optional()
+          .describe(
+            'Filter results by their graph relation to a named entity. Example: to find articles published by Cointelegraph, use related_to: { entity: "Cointelegraph", direction: "outgoing" }',
+          ),
       },
       annotations: {
         readOnlyHint: true,
@@ -46,7 +61,7 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
         openWorldHint: false,
       },
     },
-    async ({ space, query, type, limit, offset, filters, sort_by, sort_order }) => {
+    async ({ space, query, type, limit, offset, filters, sort_by, sort_order, related_to }) => {
       const DEFAULT_LIMIT = 50;
       let resolvedSpaceId: string | undefined;
       let spaceName: string;
@@ -112,14 +127,24 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
           ? store.filterAndSortEntities(fullResults, filters ?? [], sort_by, sort_order)
           : { entities: fullResults, warnings: [] };
 
+      let relationFiltered = filtered;
+      const allWarnings = [...warnings];
+      if (related_to) {
+        const { entities: rf, warnings: rw } = store.filterByRelation(filtered, related_to as RelationFilter);
+        relationFiltered = rf;
+        allWarnings.push(...rw);
+      }
+
       const start = offset ?? 0;
       const effectiveLimit = limit ?? DEFAULT_LIMIT;
-      const sliced = filtered.slice(start, start + effectiveLimit);
+      const sliced = relationFiltered.slice(start, start + effectiveLimit);
 
       if (sliced.length === 0) {
         // Auto-fallback: if a specific space was requested but returned no results,
         // try searching all spaces and return those results with a notice.
-        if (resolvedSpaceId !== undefined) {
+        // Skip fallback when relation filter is active (cross-space fallback with relation filter
+        // would require re-applying the filter and complicates the UX).
+        if (resolvedSpaceId !== undefined && !related_to) {
           const allTypes = store.getSpaces().flatMap((s) => store.getTypes(s.id));
           let fallbackTypeIds: string[] | undefined;
           if (type) {
@@ -167,7 +192,7 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
       let text = formatEntityList(sliced, store, {
         spaceName,
         ...(typeName !== undefined && { typeName }),
-        total: filtered.length,
+        total: relationFiltered.length,
         limit: effectiveLimit,
         ...(offset !== undefined && { offset }),
         ...(filters?.length && { filters }),
@@ -175,8 +200,8 @@ export const registerSearchEntitiesTool = (server: McpServer, store: PrefetchedS
         ...(resolvedSpaceId === undefined && { crossSpace: true }),
       });
 
-      if (warnings.length > 0) {
-        text = `> ⚠ ${warnings.join('\n> ⚠ ')}\n\n` + text;
+      if (allWarnings.length > 0) {
+        text = `> ⚠ ${allWarnings.join('\n> ⚠ ')}\n\n` + text;
       }
 
       return { content: [{ type: 'text' as const, text }] };

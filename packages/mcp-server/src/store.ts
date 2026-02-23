@@ -42,6 +42,12 @@ export type RelatedEntity = {
   direction: 'outgoing' | 'incoming';
 };
 
+export type RelationFilter = {
+  entity: string;           // Entity name (fuzzy substring match)
+  relation_type?: string;   // Optional: relation type name (fuzzy-matched)
+  direction?: 'outgoing' | 'incoming';  // Default: 'outgoing'
+};
+
 export type PrefetchedStore = {
   // Phase 1 (unchanged signatures, widened return types)
   getSpaces: () => SpaceInfo[];
@@ -72,6 +78,10 @@ export type PrefetchedStore = {
     filters: PropertyFilter[],
     sortBy?: string,
     sortOrder?: 'asc' | 'desc',
+  ) => { entities: StoredEntity[]; warnings: string[] };
+  filterByRelation: (
+    entities: StoredEntity[],
+    filter: RelationFilter,
   ) => { entities: StoredEntity[]; warnings: string[] };
 };
 
@@ -422,6 +432,54 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
           return 0;
         });
       }
+
+      return { entities: result, warnings };
+    },
+
+    filterByRelation: (entities, filter) => {
+      const warnings: string[] = [];
+      const lower = filter.entity.toLowerCase();
+
+      // Find entity IDs matching the name
+      const matchingIds = new Set<string>();
+      for (const [id, name] of entityNameIndex) {
+        if (name.toLowerCase().includes(lower)) matchingIds.add(id);
+      }
+
+      if (matchingIds.size === 0) {
+        warnings.push(`No entities found matching name "${filter.entity}" for relation filter`);
+        return { entities: [], warnings };
+      }
+
+      // Optionally resolve relation type IDs
+      let relationTypeIds: Set<string> | null = null;
+      if (filter.relation_type) {
+        const resolved = resolvePropertyIds(filter.relation_type);
+        if (resolved.size === 0) {
+          warnings.push(`Relation type "${filter.relation_type}" not found — filtering by entity name only`);
+        } else {
+          relationTypeIds = resolved;
+        }
+      }
+
+      const direction = filter.direction ?? 'outgoing';
+
+      const result = entities.filter((entity) => {
+        if (direction === 'outgoing') {
+          // Keep entities that have an outgoing relation TO one of the matching entities
+          return entity.relations.some((rel) => {
+            if (relationTypeIds && !relationTypeIds.has(rel.typeId)) return false;
+            return matchingIds.has(rel.toEntityId);
+          });
+        } else {
+          // Keep entities that have an incoming relation FROM one of the matching entities
+          const backlinks = reverseRelations.get(entity.id) ?? [];
+          return backlinks.some((link) => {
+            if (relationTypeIds && !relationTypeIds.has(link.typeId)) return false;
+            return matchingIds.has(link.fromEntityId);
+          });
+        }
+      });
 
       return { entities: result, warnings };
     },
