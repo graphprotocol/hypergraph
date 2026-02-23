@@ -32,3 +32,17 @@ export const formatTypesList = (types: TypeInfoWithProperties[], spaceName: stri
   });
   return `## Entity Types in ${spaceName}\n\n${header}\n${rows.join('\n')}`;
 };
+
+export const formatAllSpacesTypesList = (
+  spaces: Array<{ name: string; types: TypeInfoWithProperties[] }>,
+): string => {
+  const sections = spaces
+    .filter((s) => s.types.length > 0)
+    .map((s) => formatTypesList(s.types, s.name));
+
+  if (sections.length === 0) {
+    return '## Entity Types across all spaces\n\nNo entity types found.';
+  }
+
+  return `## Entity Types across all spaces\n\n${sections.join('\n\n')}`;
+};

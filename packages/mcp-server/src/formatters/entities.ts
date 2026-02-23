@@ -23,7 +23,7 @@ const truncateValue = (value: string): string => {
 export const formatEntity = (
   entity: StoredEntity,
   store: PrefetchedStore,
-  options?: { includeTimestamp?: boolean },
+  options?: { includeTimestamp?: boolean | undefined; showSpace?: boolean | undefined; skipEmpty?: boolean | undefined },
 ): string => {
   const lines: string[] = [];
 
@@ -34,6 +34,9 @@ export const formatEntity = (
   const typeNames = entity.typeIds.map((tid) => store.resolveTypeName(tid));
   lines.push(`**Type:** ${typeNames.length > 0 ? typeNames.join(', ') : '(untyped)'}`);
   lines.push(`**ID:** ${entity.id}`);
+  if (options?.showSpace) {
+    lines.push(`**Space:** ${store.resolveSpaceName(entity.spaceId)}`);
+  }
   lines.push('');
 
   // Properties section -- iterate over type schema to show all properties including empty
@@ -49,13 +52,13 @@ export const formatEntity = (
     const value = valueMap.get(typeProp.id);
 
     if (!value) {
-      lines.push(`- ${typeProp.name}: (empty)`);
+      if (!options?.skipEmpty) lines.push(`- ${typeProp.name}: (empty)`);
       continue;
     }
 
     const extracted = extractPropertyValue(value);
     if (extracted === null) {
-      lines.push(`- ${typeProp.name}: (empty)`);
+      if (!options?.skipEmpty) lines.push(`- ${typeProp.name}: (empty)`);
       continue;
     }
 
@@ -69,7 +72,7 @@ export const formatEntity = (
     const propName = store.resolvePropertyName(value.propertyId);
     const extracted = extractPropertyValue(value);
     if (extracted === null) {
-      lines.push(`- ${propName}: (empty)`);
+      if (!options?.skipEmpty) lines.push(`- ${propName}: (empty)`);
     } else {
       lines.push(`- ${propName}: ${truncateValue(extracted)}`);
     }
@@ -104,15 +107,43 @@ export const formatEntityList = (
     total: number;
     limit?: number;
     offset?: number;
+    filters?: Array<{ property: string; operator: string; value?: string | undefined }>;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc' | undefined;
+    crossSpace?: boolean;
+    fallbackNote?: string;
   },
 ): string => {
   const lines: string[] = [];
 
+  // Fallback note (rendered as blockquote above the header)
+  if (options.fallbackNote) {
+    lines.push(`> ${options.fallbackNote}`);
+    lines.push('');
+  }
+
   // Header
   if (options.typeName) {
-    lines.push(`## ${options.typeName} entities in ${options.spaceName}`);
+    lines.push(
+      options.crossSpace
+        ? `## ${options.typeName} entities across all spaces`
+        : `## ${options.typeName} entities in ${options.spaceName}`,
+    );
   } else {
-    lines.push(`## Search results in ${options.spaceName}`);
+    lines.push(
+      options.crossSpace ? '## Search results across all spaces' : `## Search results in ${options.spaceName}`,
+    );
+  }
+
+  // Active filter/sort summary
+  if (options.filters?.length) {
+    const filterStr = options.filters
+      .map((f) => (f.value !== undefined ? `${f.property} ${f.operator} ${f.value}` : `${f.property} ${f.operator}`))
+      .join(' | ');
+    lines.push(`**Filters:** ${filterStr}`);
+  }
+  if (options.sortBy) {
+    lines.push(`**Sorted by:** ${options.sortBy} ${options.sortOrder ?? 'asc'}`);
   }
 
   // Count line
@@ -126,7 +157,7 @@ export const formatEntityList = (
 
   // Each entity without individual timestamp
   for (const entity of entities) {
-    lines.push(formatEntity(entity, store, { includeTimestamp: false }));
+    lines.push(formatEntity(entity, store, { includeTimestamp: false, showSpace: options.crossSpace, skipEmpty: true }));
     lines.push('');
   }
 

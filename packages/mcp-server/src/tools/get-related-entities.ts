@@ -9,7 +9,7 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
     {
       title: 'Get Related Entities',
       description:
-        'Traverse the knowledge graph from a known entity. Returns entities connected via outgoing relations (entity → targets), incoming relations (other entities → entity), or both. Optionally filter by relation type name (fuzzy-matched). Use this to explore how entities are connected — e.g., find all members of an organization, events at a venue, or topics related to a person.',
+        'Traverse the knowledge graph from a known entity. Use direction: "incoming" to find entities that point TO the given entity (e.g., people who "Works at" a company — search for the company, then get incoming "Works at" relations). Use direction: "outgoing" to follow links FROM the entity. Omit relation_type to see all connections at once and discover available relation type names before filtering.',
       inputSchema: {
         entity_id: z.string().describe('The entity ID to traverse from'),
         relation_type: z
@@ -23,7 +23,7 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
           .describe(
             'Traversal direction: "outgoing" (entity → targets), "incoming" (sources → entity), or "both" (default)',
           ),
-        limit: z.number().optional().describe('Optional: maximum number of results to return'),
+        limit: z.number().optional().describe('Optional: max results (default: 50). Use offset for pagination.'),
         offset: z.number().optional().describe('Optional: number of results to skip (for pagination)'),
       },
       annotations: {
@@ -33,6 +33,7 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
       },
     },
     async ({ entity_id, relation_type, direction, limit, offset }) => {
+      const DEFAULT_LIMIT = 50;
       const entity = store.getEntity(entity_id);
 
       if (!entity) {
@@ -72,10 +73,31 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
       const fullResults = store.getRelatedEntities(entity_id, dir, relationTypeIds);
 
       const start = offset ?? 0;
-      const sliced = limit !== undefined ? fullResults.slice(start, start + limit) : fullResults.slice(start);
+      const effectiveLimit = limit ?? DEFAULT_LIMIT;
+      const sliced = fullResults.slice(start, start + effectiveLimit);
 
       if (sliced.length === 0) {
         const entityName = entity.name ?? entity_id;
+
+        if (relation_type) {
+          const allRelated = store.getRelatedEntities(entity_id, dir, undefined);
+          const availableTypes = [
+            ...new Set(allRelated.map((r) => store.resolvePropertyName(r.relationTypeId))),
+          ].sort();
+          const hint =
+            availableTypes.length > 0
+              ? `\nAvailable relation types on "${entityName}": ${availableTypes.join(', ')}`
+              : '';
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `No ${dir === 'both' ? '' : `${dir} `}related entities found for "${entityName}" with relation type "${relation_type}".${hint}`,
+              },
+            ],
+          };
+        }
+
         return {
           content: [
             {
@@ -91,7 +113,7 @@ export const registerGetRelatedEntitiesTool = (server: McpServer, store: Prefetc
         direction: dir,
         ...(relationTypeName !== undefined && { relationTypeName }),
         total: fullResults.length,
-        ...(limit !== undefined && { limit }),
+        limit: effectiveLimit,
         ...(offset !== undefined && { offset }),
       });
 

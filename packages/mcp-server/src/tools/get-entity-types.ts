@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { SpacesConfig } from '../config.js';
-import { formatTypesList } from '../formatters/types.js';
+import { formatAllSpacesTypesList, formatTypesList } from '../formatters/types.js';
 import { resolveSpace } from '../fuzzy.js';
 import type { PrefetchedStore } from '../store.js';
 
@@ -11,9 +11,12 @@ export const registerGetEntityTypesTool = (server: McpServer, store: PrefetchedS
     {
       title: 'Get Entity Types',
       description:
-        'List all entity types in a space. Returns type names, IDs, and their property schemas. Use this to discover what kinds of entities (e.g., Event, Person, Organization) exist before calling search_entities or list_entities. Space name is fuzzy-matched.',
+        'List all entity types in a space (e.g., Event, Person, Organization) with their property schemas. Use this when you need to know what data a specific space contains, or to refine a list_entities call with the correct type name. Space name is fuzzy-matched. Omit space to get types from all spaces at once.',
       inputSchema: {
-        space: z.string().describe('Name of the knowledge graph space to browse types in (e.g., "AI")'),
+        space: z
+          .string()
+          .optional()
+          .describe('Name of the knowledge graph space to browse types in (e.g., "AI"). Omit to get types from all spaces.'),
       },
       annotations: {
         readOnlyHint: true,
@@ -22,6 +25,15 @@ export const registerGetEntityTypesTool = (server: McpServer, store: PrefetchedS
       },
     },
     async ({ space }) => {
+      if (!space) {
+        const allSpaces = store.getSpaces().map((s) => ({
+          name: s.name,
+          types: store.getTypes(s.id),
+        }));
+        const text = formatAllSpacesTypesList(allSpaces);
+        return { content: [{ type: 'text' as const, text }] };
+      }
+
       const resolved = resolveSpace(space, store.getSpaces());
 
       if (!resolved) {

@@ -30,6 +30,12 @@ export type StoredEntity = {
   spaceId: string;
 };
 
+export type PropertyFilter = {
+  property: string;
+  operator: 'eq' | 'contains' | 'gt' | 'gte' | 'lt' | 'lte' | 'exists' | 'not_exists';
+  value?: string | undefined;
+};
+
 export type RelatedEntity = {
   entity: StoredEntity;
   relationTypeId: string;
@@ -46,10 +52,11 @@ export type PrefetchedStore = {
   getEntities: (spaceId: string) => StoredEntity[];
   getEntitiesByType: (spaceId: string, typeIds: string[]) => StoredEntity[];
   getEntity: (entityId: string) => StoredEntity | undefined;
-  searchEntities: (spaceId: string, query: string, typeIds?: string[]) => StoredEntity[];
+  searchEntities: (spaceId: string | undefined, query: string, typeIds?: string[]) => StoredEntity[];
   resolvePropertyName: (propertyId: string) => string;
   resolveEntityName: (entityId: string) => string;
   resolveTypeName: (typeId: string) => string;
+  resolveSpaceName: (spaceId: string) => string;
   getTypeProperties: (typeId: string) => Array<{ id: string; name: string; dataType: string }>;
   getPrefetchTimestamp: () => string;
 
@@ -60,12 +67,19 @@ export type PrefetchedStore = {
     relationTypeIds?: string[],
   ) => RelatedEntity[];
   resolveRelationTypeIds: (name: string) => string[];
+  filterAndSortEntities: (
+    entities: StoredEntity[],
+    filters: PropertyFilter[],
+    sortBy?: string,
+    sortOrder?: 'asc' | 'desc',
+  ) => StoredEntity[];
 };
 
 export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore => {
   const prefetchTimestamp = new Date().toISOString();
 
   const spaces: SpaceInfo[] = prefetchedData.map((s) => ({ name: s.spaceName, id: s.spaceId }));
+  const spaceNameIndex = new Map<string, string>(prefetchedData.map((s) => [s.spaceId, s.spaceName]));
 
   // Property registry: propertyId -> PropertyInfo (from root properties query)
   const propertyRegistry = new Map<string, PropertyInfo>();
@@ -195,6 +209,26 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
     typesBySpace.set(space.spaceId, types);
   }
 
+  const resolvePropertyIds = (name: string): Set<string> => {
+    const lower = name.toLowerCase();
+    const matches: string[] = [];
+
+    for (const [id, info] of propertyRegistry) {
+      if (info.name.toLowerCase() === lower) matches.push(id);
+    }
+    if (matches.length > 0) return new Set(matches);
+
+    for (const [id, info] of propertyRegistry) {
+      if (info.name.toLowerCase().startsWith(lower)) matches.push(id);
+    }
+    if (matches.length > 0) return new Set(matches);
+
+    for (const [id, info] of propertyRegistry) {
+      if (info.name.toLowerCase().includes(lower)) matches.push(id);
+    }
+    return new Set(matches);
+  };
+
   return {
     getSpaces: () => spaces,
     getTypes: (spaceId: string) => typesBySpace.get(spaceId) ?? [],
@@ -207,9 +241,18 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
       return entities.filter((e) => e.typeIds.some((tid) => idSet.has(tid)));
     },
     getEntity: (entityId: string) => entityById.get(entityId),
-    searchEntities: (spaceId: string, query: string, typeIds?: string[]) => {
+    searchEntities: (spaceId: string | undefined, query: string, typeIds?: string[]) => {
       const lower = query.toLowerCase();
-      let entities = entitiesBySpace.get(spaceId) ?? [];
+      let entities: StoredEntity[];
+
+      if (spaceId !== undefined) {
+        entities = entitiesBySpace.get(spaceId) ?? [];
+      } else {
+        entities = [];
+        for (const spaceEntities of entitiesBySpace.values()) {
+          entities.push(...spaceEntities);
+        }
+      }
 
       if (typeIds && typeIds.length > 0) {
         const idSet = new Set(typeIds);
@@ -219,6 +262,7 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
       return entities.filter((e) => e.name?.toLowerCase().includes(lower));
     },
     resolvePropertyName: (propertyId: string) => propertyRegistry.get(propertyId)?.name ?? propertyId,
+    resolveSpaceName: (spaceId: string) => spaceNameIndex.get(spaceId) ?? spaceId,
     resolveEntityName: (entityId: string) => entityNameIndex.get(entityId) ?? entityId,
     resolveTypeName: (typeId: string) => typeNameIndex.get(typeId) ?? typeId,
     getTypeProperties: (typeId: string) => typePropertiesIndex.get(typeId) ?? [],
@@ -261,33 +305,110 @@ export const buildStore = (prefetchedData: PrefetchedSpace[]): PrefetchedStore =
       return results;
     },
 
-    resolveRelationTypeIds: (name: string): string[] => {
-      const lower = name.toLowerCase();
-      const matches: string[] = [];
+    resolveRelationTypeIds: (name: string): string[] => [...resolvePropertyIds(name)],
 
-      for (const [id, info] of propertyRegistry) {
-        const propLower = info.name.toLowerCase();
-        if (propLower === lower) {
-          matches.push(id);
-        }
-      }
-      if (matches.length > 0) return matches;
+    filterAndSortEntities: (
+      entities: StoredEntity[],
+      filters: PropertyFilter[],
+      sortBy?: string,
+      sortOrder?: 'asc' | 'desc',
+    ): StoredEntity[] => {
+      const isNonNull = (v: StoredEntity['values'][number]): boolean =>
+        v.text !== null ||
+        v.float !== null ||
+        v.boolean !== null ||
+        v.datetime !== null ||
+        v.point !== null ||
+        v.schedule !== null;
 
-      // Prefix match
-      for (const [id, info] of propertyRegistry) {
-        if (info.name.toLowerCase().startsWith(lower)) {
-          matches.push(id);
-        }
-      }
-      if (matches.length > 0) return matches;
+      const extractStr = (v: StoredEntity['values'][number]): string | null => {
+        if (v.text !== null && v.text !== undefined) return v.text;
+        if (v.float !== null && v.float !== undefined) return String(v.float);
+        if (v.boolean !== null && v.boolean !== undefined) return String(v.boolean);
+        if (v.datetime !== null && v.datetime !== undefined) return v.datetime;
+        if (v.point !== null && v.point !== undefined) return JSON.stringify(v.point);
+        if (v.schedule !== null && v.schedule !== undefined) return JSON.stringify(v.schedule);
+        return null;
+      };
 
-      // Substring match
-      for (const [id, info] of propertyRegistry) {
-        if (info.name.toLowerCase().includes(lower)) {
-          matches.push(id);
+      const passes = (entity: StoredEntity, filter: PropertyFilter): boolean => {
+        const ids = resolvePropertyIds(filter.property);
+        if (ids.size === 0) return true; // unknown property → no-op
+
+        const vals = entity.values.filter((v) => ids.has(v.propertyId));
+
+        if (filter.operator === 'exists') return vals.some(isNonNull);
+        if (filter.operator === 'not_exists') return !vals.some(isNonNull);
+
+        const filterValue = filter.value;
+        if (filterValue === undefined) return true; // missing value → no-op
+
+        if (filter.operator === 'eq') {
+          return vals.some((v) => extractStr(v) === filterValue);
         }
+        if (filter.operator === 'contains') {
+          const lower = filterValue.toLowerCase();
+          return vals.some((v) => v.text?.toLowerCase().includes(lower));
+        }
+
+        // gt / gte / lt / lte
+        return vals.some((v) => {
+          if (v.float !== null && v.float !== undefined) {
+            const n = Number(filterValue);
+            if (Number.isNaN(n)) return false;
+            if (filter.operator === 'gt') return v.float > n;
+            if (filter.operator === 'gte') return v.float >= n;
+            if (filter.operator === 'lt') return v.float < n;
+            return v.float <= n;
+          }
+          if (v.datetime !== null && v.datetime !== undefined) {
+            if (filter.operator === 'gt') return v.datetime > filterValue;
+            if (filter.operator === 'gte') return v.datetime >= filterValue;
+            if (filter.operator === 'lt') return v.datetime < filterValue;
+            return v.datetime <= filterValue;
+          }
+          if (v.text !== null && v.text !== undefined) {
+            if (filter.operator === 'gt') return v.text > filterValue;
+            if (filter.operator === 'gte') return v.text >= filterValue;
+            if (filter.operator === 'lt') return v.text < filterValue;
+            return v.text <= filterValue;
+          }
+          return false;
+        });
+      };
+
+      let result = filters.length > 0 ? entities.filter((e) => filters.every((f) => passes(e, f))) : entities;
+
+      if (sortBy) {
+        const ids = resolvePropertyIds(sortBy);
+        const dir = sortOrder === 'desc' ? -1 : 1;
+
+        const sortVal = (entity: StoredEntity): number | string | null => {
+          for (const v of entity.values) {
+            if (!ids.has(v.propertyId)) continue;
+            if (v.float !== null && v.float !== undefined) return v.float;
+            if (v.datetime !== null && v.datetime !== undefined) return v.datetime;
+            if (v.text !== null && v.text !== undefined) return v.text;
+          }
+          return null;
+        };
+
+        result = [...result].sort((a, b) => {
+          const va = sortVal(a);
+          const vb = sortVal(b);
+          if (va === null && vb === null) return 0;
+          if (va === null) return 1;
+          if (vb === null) return -1;
+          if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+          const sa = String(va);
+          const sb = String(vb);
+          if (sa < sb) return -dir;
+          if (sa > sb) return dir;
+          return 0;
+        });
       }
-      return matches;
+
+      return result;
     },
   };
 };

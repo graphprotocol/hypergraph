@@ -8,7 +8,7 @@ export const registerListSpacesTool = (server: McpServer, store: PrefetchedStore
     {
       title: 'List Spaces',
       description:
-        'List all available knowledge graph spaces. Returns space names and IDs. Start here to discover which spaces are available, then use get_entity_types to explore a space.',
+        'List all available knowledge graph spaces. Use this only when the user explicitly asks about spaces, or when you need to enumerate available data sources. To find entities, use search_entities directly — omitting the space parameter searches all spaces at once.',
       inputSchema: {},
       annotations: {
         readOnlyHint: true,
@@ -17,7 +17,9 @@ export const registerListSpacesTool = (server: McpServer, store: PrefetchedStore
       },
     },
     async () => {
-      const text = formatSpacesList(store.getSpaces());
+      const note =
+        '> **Note:** Spaces organize the data source, not the topic. An entity named "Geo" may live in the "Crypto" space. Use search_entities without a space parameter to find entities across all spaces.\n\n';
+      const text = note + formatSpacesList(store.getSpaces());
       return { content: [{ type: 'text' as const, text }] };
     },
   );

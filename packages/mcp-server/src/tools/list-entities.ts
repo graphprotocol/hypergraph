@@ -11,12 +11,28 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
     {
       title: 'List Entities',
       description:
-        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). Space and type names are fuzzy-matched. Returns all results by default — use limit/offset for large sets.',
+        'List all entities of a specific type in a space. Returns entities with their properties and relations. Use this to browse all entities of a given type (e.g., all Events, all Persons). Space and type names are fuzzy-matched. Returns up to 50 results by default — use limit/offset for large sets.',
       inputSchema: {
         space: z.string().describe('Name of the space to list entities from (e.g., "AI")'),
         type: z.string().describe('Entity type name to filter by (e.g., "Event", "Person", "Organization")'),
-        limit: z.number().optional().describe('Optional: maximum number of results to return'),
+        limit: z.number().optional().describe('Optional: max results (default: 50). Use offset for pagination.'),
         offset: z.number().optional().describe('Optional: number of results to skip (for pagination)'),
+        filters: z
+          .array(
+            z.object({
+              property: z
+                .string()
+                .describe('Property name to filter on (fuzzy-matched, e.g. "publish_date", "efficacy")'),
+              operator: z
+                .enum(['eq', 'contains', 'gt', 'gte', 'lt', 'lte', 'exists', 'not_exists'])
+                .describe('eq=equals, contains=substring, gt/gte/lt/lte=comparison, exists/not_exists=presence check'),
+              value: z.string().optional().describe('Value to compare against (omit for exists/not_exists)'),
+            }),
+          )
+          .optional()
+          .describe('Filter entities by property values. All filters are ANDed.'),
+        sort_by: z.string().optional().describe('Property name to sort results by (fuzzy-matched)'),
+        sort_order: z.enum(['asc', 'desc']).optional().describe('Sort direction (default: asc)'),
       },
       annotations: {
         readOnlyHint: true,
@@ -24,7 +40,8 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
         openWorldHint: false,
       },
     },
-    async ({ space, type, limit, offset }) => {
+    async ({ space, type, limit, offset, filters, sort_by, sort_order }) => {
+      const DEFAULT_LIMIT = 50;
       const resolved = resolveSpace(space, store.getSpaces());
 
       if (!resolved) {
@@ -59,8 +76,14 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
       const typeName = matchedTypes[0].name;
       const fullResults = store.getEntitiesByType(resolved.id, typeIds);
 
+      const filtered =
+        filters?.length || sort_by
+          ? store.filterAndSortEntities(fullResults, filters ?? [], sort_by, sort_order)
+          : fullResults;
+
       const start = offset ?? 0;
-      const sliced = limit !== undefined ? fullResults.slice(start, start + limit) : fullResults.slice(start);
+      const effectiveLimit = limit ?? DEFAULT_LIMIT;
+      const sliced = filtered.slice(start, start + effectiveLimit);
 
       if (sliced.length === 0) {
         return {
@@ -76,9 +99,11 @@ export const registerListEntitiesTool = (server: McpServer, store: PrefetchedSto
       const text = formatEntityList(sliced, store, {
         spaceName: resolved.name,
         typeName: typeName,
-        total: fullResults.length,
-        ...(limit !== undefined && { limit }),
+        total: filtered.length,
+        limit: effectiveLimit,
         ...(offset !== undefined && { offset }),
+        ...(filters?.length && { filters }),
+        ...(sort_by !== undefined && { sortBy: sort_by, sortOrder: sort_order }),
       });
 
       return { content: [{ type: 'text' as const, text }] };
