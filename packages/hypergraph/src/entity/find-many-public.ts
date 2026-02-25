@@ -50,7 +50,7 @@ const buildEntitiesQuery = (
         : undefined,
     '$typeIds: [UUID!]!',
     useOrderBy ? '$propertyId: UUID!' : undefined,
-    useOrderBy ? '$dataType: String!' : undefined,
+    useOrderBy ? '$dataType: String' : undefined,
     useOrderBy ? '$sortDirection: SortOrder!' : undefined,
     '$first: Int',
     '$filter: EntityFilter!',
@@ -307,9 +307,6 @@ export const findManyPublic = async <
     }
 
     orderByDataType = Utils.getOrderByDataType(propertyType);
-    if (!orderByDataType) {
-      throw new Error(`Property "${String(orderBy.property)}" cannot be used in orderBy`);
-    }
 
     orderByPropertyId = propertyIdAnnotation.value;
     sortDirection = orderBy.direction === 'asc' ? 'ASC' : 'DESC';
@@ -336,9 +333,11 @@ export const findManyPublic = async <
     queryVariables.spaceIds = spaceSelection.spaceIds;
   }
 
-  if (orderByPropertyId && orderByDataType && sortDirection) {
+  if (orderByPropertyId && sortDirection) {
     queryVariables.propertyId = orderByPropertyId;
-    queryVariables.dataType = orderByDataType;
+    if (orderByDataType) {
+      queryVariables.dataType = orderByDataType;
+    }
     queryVariables.sortDirection = sortDirection;
   }
 
