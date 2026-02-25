@@ -11,13 +11,15 @@ const ORDER_BY_DATA_TYPE_BY_PROPERTY_TYPE: Record<string, OrderByDataType | unde
   date: 'datetime',
   point: 'point',
   schedule: 'schedule',
-  relation: undefined,
 };
 
 export const getOrderByDataType = (type: SchemaAST.AST): OrderByDataType | undefined => {
   const propertyType = SchemaAST.getAnnotation<string>(Constants.PropertyTypeSymbol)(type);
   if (Option.isSome(propertyType)) {
-    return ORDER_BY_DATA_TYPE_BY_PROPERTY_TYPE[propertyType.value];
+    const mappedType = ORDER_BY_DATA_TYPE_BY_PROPERTY_TYPE[propertyType.value];
+    if (mappedType) {
+      return mappedType;
+    }
   }
 
   if (SchemaAST.isStringKeyword(type)) {
