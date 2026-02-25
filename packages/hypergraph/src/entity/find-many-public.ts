@@ -50,6 +50,7 @@ const buildEntitiesQuery = (
         : undefined,
     '$typeIds: [UUID!]!',
     useOrderBy ? '$propertyId: UUID!' : undefined,
+    useOrderBy ? '$dataType: String!' : undefined,
     useOrderBy ? '$sortDirection: SortOrder!' : undefined,
     '$first: Int',
     '$filter: EntityFilter!',
@@ -68,7 +69,7 @@ const buildEntitiesQuery = (
   // entitiesOrderedByProperty doesn't support the native typeIds filter yet,
   // so we fall back to the relation-based filter for orderBy queries
   if (useOrderBy) {
-    const orderByArgs = 'propertyId: $propertyId\n    sortDirection: $sortDirection\n    ';
+    const orderByArgs = 'propertyId: $propertyId\n    dataType: $dataType\n    sortDirection: $sortDirection\n    ';
     const entitySpaceFilter =
       spaceSelection.mode === 'single'
         ? 'spaceIds: {in: [$spaceId]},'
@@ -282,6 +283,7 @@ export const findManyPublic = async <
   );
 
   let orderByPropertyId: string | undefined;
+  let orderByDataType: Utils.OrderByDataType | undefined;
   let sortDirection: GraphSortDirection | undefined;
 
   if (orderBy) {
@@ -302,6 +304,11 @@ export const findManyPublic = async <
 
     if (Option.isNone(propertyIdAnnotation)) {
       throw new Error(`Property "${String(orderBy.property)}" is missing a propertyId annotation`);
+    }
+
+    orderByDataType = Utils.getOrderByDataType(propertyType);
+    if (!orderByDataType) {
+      throw new Error(`Property "${String(orderBy.property)}" cannot be used in orderBy`);
     }
 
     orderByPropertyId = propertyIdAnnotation.value;
@@ -329,8 +336,9 @@ export const findManyPublic = async <
     queryVariables.spaceIds = spaceSelection.spaceIds;
   }
 
-  if (orderByPropertyId && sortDirection) {
+  if (orderByPropertyId && orderByDataType && sortDirection) {
     queryVariables.propertyId = orderByPropertyId;
+    queryVariables.dataType = orderByDataType;
     queryVariables.sortDirection = sortDirection;
   }
 

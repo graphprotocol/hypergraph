@@ -2,6 +2,37 @@ import { Constants } from '@graphprotocol/hypergraph';
 import * as Option from 'effect/Option';
 import * as SchemaAST from 'effect/SchemaAST';
 
+export type OrderByDataType = 'text' | 'boolean' | 'float' | 'datetime' | 'point' | 'schedule';
+
+const ORDER_BY_DATA_TYPE_BY_PROPERTY_TYPE: Record<string, OrderByDataType | undefined> = {
+  string: 'text',
+  boolean: 'boolean',
+  number: 'float',
+  date: 'datetime',
+  point: 'point',
+  schedule: 'schedule',
+  relation: undefined,
+};
+
+export const getOrderByDataType = (type: SchemaAST.AST): OrderByDataType | undefined => {
+  const propertyType = SchemaAST.getAnnotation<string>(Constants.PropertyTypeSymbol)(type);
+  if (Option.isSome(propertyType)) {
+    return ORDER_BY_DATA_TYPE_BY_PROPERTY_TYPE[propertyType.value];
+  }
+
+  if (SchemaAST.isStringKeyword(type)) {
+    return 'text';
+  }
+  if (SchemaAST.isBooleanKeyword(type)) {
+    return 'boolean';
+  }
+  if (SchemaAST.isNumberKeyword(type)) {
+    return 'float';
+  }
+
+  return undefined;
+};
+
 export const convertPropertyValue = (
   property: {
     propertyId: string;
