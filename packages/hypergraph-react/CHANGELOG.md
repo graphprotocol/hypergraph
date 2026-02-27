@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.13.3
+### Patch Changes
+
+- 26cbcfc: fix orderBy entity queries
+- Updated dependencies [26cbcfc]
+  - @graphprotocol/hypergraph@0.13.3
+
 ## 0.13.2
 ### Patch Changes
 
