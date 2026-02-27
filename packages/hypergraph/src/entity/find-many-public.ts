@@ -35,6 +35,7 @@ export type FindManyPublicParams<
 const buildEntitiesQuery = (
   relationInfoLevel1: RelationTypeIdInfo[],
   useOrderBy: boolean,
+  includeOrderByDataType: boolean,
   spaceSelection: SpaceSelection,
   includeSpaceIds: boolean,
 ) => {
@@ -50,6 +51,7 @@ const buildEntitiesQuery = (
         : undefined,
     '$typeIds: [UUID!]!',
     useOrderBy ? '$propertyId: UUID!' : undefined,
+    useOrderBy && includeOrderByDataType ? '$dataType: String' : undefined,
     useOrderBy ? '$sortDirection: SortOrder!' : undefined,
     '$first: Int',
     '$filter: EntityFilter!',
@@ -68,7 +70,8 @@ const buildEntitiesQuery = (
   // entitiesOrderedByProperty doesn't support the native typeIds filter yet,
   // so we fall back to the relation-based filter for orderBy queries
   if (useOrderBy) {
-    const orderByArgs = 'propertyId: $propertyId\n    sortDirection: $sortDirection\n    ';
+    const orderByDataTypeArg = includeOrderByDataType ? 'dataType: $dataType\n    ' : '';
+    const orderByArgs = `propertyId: $propertyId\n    ${orderByDataTypeArg}sortDirection: $sortDirection\n    `;
     const entitySpaceFilter =
       spaceSelection.mode === 'single'
         ? 'spaceIds: {in: [$spaceId]},'
@@ -282,6 +285,7 @@ export const findManyPublic = async <
   );
 
   let orderByPropertyId: string | undefined;
+  let orderByDataType: Utils.OrderByDataType | undefined;
   let sortDirection: GraphSortDirection | undefined;
 
   if (orderBy) {
@@ -304,6 +308,8 @@ export const findManyPublic = async <
       throw new Error(`Property "${String(orderBy.property)}" is missing a propertyId annotation`);
     }
 
+    orderByDataType = Utils.getOrderByDataType(propertyType);
+
     orderByPropertyId = propertyIdAnnotation.value;
     sortDirection = orderBy.direction === 'asc' ? 'ASC' : 'DESC';
   }
@@ -312,7 +318,13 @@ export const findManyPublic = async <
   const spaceSelection = normalizeSpaceSelection(space, spaces);
 
   // Build the query dynamically with aliases for each relation type ID
-  const queryDocument = buildEntitiesQuery(relationTypeIds, Boolean(orderBy), spaceSelection, includeSpaceIds);
+  const queryDocument = buildEntitiesQuery(
+    relationTypeIds,
+    Boolean(orderBy),
+    Boolean(orderByDataType),
+    spaceSelection,
+    includeSpaceIds,
+  );
 
   const filterParams = filter ? Utils.translateFilterToGraphql(filter, type) : {};
 
@@ -331,6 +343,9 @@ export const findManyPublic = async <
 
   if (orderByPropertyId && sortDirection) {
     queryVariables.propertyId = orderByPropertyId;
+    if (orderByDataType) {
+      queryVariables.dataType = orderByDataType;
+    }
     queryVariables.sortDirection = sortDirection;
   }
 
