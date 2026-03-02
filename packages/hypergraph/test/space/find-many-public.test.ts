@@ -278,6 +278,8 @@ describe('buildSpacesQuery', () => {
     expect(query).toContain('id');
     expect(query).toContain('type');
     expect(query).toContain('page {');
+    expect(query).toContain('avatarRelations:');
+    expect(query).toContain('coverRelations:');
     expect(query).toContain('editorsList {');
     expect(query).toContain('membersList {');
   });
