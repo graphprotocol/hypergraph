@@ -1,5 +1,12 @@
 # @graphprotocol/hypergraph-react
 
+## 0.13.4
+### Patch Changes
+
+- Add cover image support to Space.findManyPublic() so consumer apps can display cover images for spaces
+- Updated dependencies
+  - @graphprotocol/hypergraph@0.13.4
+
 ## 0.13.3
 ### Patch Changes
 
