@@ -1,11 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import { buildFilterString, buildSpacesQuery, parseSpacesQueryResult } from '../../src/space/find-many-public.js';
 
+const buildImageRelation = (url: string | null) => [
+  {
+    toEntity: {
+      valuesList:
+        url === null
+          ? []
+          : [
+              {
+                propertyId: '8a743832c0944a62b6650c3cc2f9c7bc',
+                text: url,
+              },
+            ],
+    },
+  },
+];
+
 const buildQuerySpace = ({
   id = 'space-id',
   type = 'PERSONAL',
   name = 'Space name',
   avatar,
+  cover,
   editorsList = [],
   membersList = [],
 }: {
@@ -13,6 +30,7 @@ const buildQuerySpace = ({
   type?: 'PERSONAL' | 'DAO';
   name?: string | null;
   avatar?: string | null;
+  cover?: string | null;
   editorsList?: { memberSpaceId: string }[];
   membersList?: { memberSpaceId: string }[];
 } = {}) => {
@@ -21,24 +39,8 @@ const buildQuerySpace = ({
     type,
     page: {
       name,
-      relationsList:
-        avatar === undefined
-          ? []
-          : [
-              {
-                toEntity: {
-                  valuesList:
-                    avatar === null
-                      ? []
-                      : [
-                          {
-                            propertyId: '8a743832c0944a62b6650c3cc2f9c7bc',
-                            text: avatar,
-                          },
-                        ],
-                },
-              },
-            ],
+      avatarRelations: avatar === undefined ? [] : buildImageRelation(avatar),
+      coverRelations: cover === undefined ? [] : buildImageRelation(cover),
     },
     editorsList,
     membersList,
@@ -62,6 +64,39 @@ describe('parseSpacesQueryResult', () => {
       },
     ]);
     expect(invalidSpaces).toHaveLength(0);
+  });
+
+  it('parses cover image', () => {
+    const { data } = parseSpacesQueryResult({
+      spaces: [
+        buildQuerySpace({
+          id: 'space-cover',
+          name: 'Space with cover',
+          avatar: 'https://example.com/avatar.png',
+          cover: 'https://example.com/cover.png',
+        }),
+      ],
+    });
+
+    expect(data).toEqual([
+      {
+        id: 'space-cover',
+        type: 'PERSONAL',
+        name: 'Space with cover',
+        avatar: 'https://example.com/avatar.png',
+        cover: 'https://example.com/cover.png',
+        editorIds: [],
+        memberIds: [],
+      },
+    ]);
+  });
+
+  it('omits cover when not provided', () => {
+    const { data } = parseSpacesQueryResult({
+      spaces: [buildQuerySpace({ id: 'space-no-cover', name: 'No cover' })],
+    });
+
+    expect(data[0]?.cover).toBeUndefined();
   });
 
   it('omits avatar when not provided', () => {
@@ -243,6 +278,8 @@ describe('buildSpacesQuery', () => {
     expect(query).toContain('id');
     expect(query).toContain('type');
     expect(query).toContain('page {');
+    expect(query).toContain('avatarRelations:');
+    expect(query).toContain('coverRelations:');
     expect(query).toContain('editorsList {');
     expect(query).toContain('membersList {');
   });

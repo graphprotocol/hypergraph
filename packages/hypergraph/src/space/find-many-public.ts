@@ -10,8 +10,20 @@ const spaceFields = `
   type
   page {
     name
-    relationsList(filter: {
+    avatarRelations: relationsList(filter: {
       typeId: { is: "${ContentIds.AVATAR_PROPERTY}"}
+    }) {
+      toEntity {
+        valuesList(filter: {
+          propertyId: { is: "${SystemIds.IMAGE_URL_PROPERTY}"}
+        }) {
+          propertyId
+          text
+        }
+      }
+    }
+    coverRelations: relationsList(filter: {
+      typeId: { is: "${SystemIds.COVER_PROPERTY}"}
     }) {
       toEntity {
         valuesList(filter: {
@@ -40,11 +52,21 @@ export const PublicSpaceSchema = EffectSchema.Struct({
   type: SpaceTypeSchema,
   name: EffectSchema.String,
   avatar: EffectSchema.optional(EffectSchema.String),
+  cover: EffectSchema.optional(EffectSchema.String),
   editorIds: EffectSchema.Array(EffectSchema.String),
   memberIds: EffectSchema.Array(EffectSchema.String),
 });
 
 export type PublicSpace = typeof PublicSpaceSchema.Type;
+
+type RelationEntry = {
+  toEntity?: {
+    valuesList?: {
+      propertyId: string;
+      text: string | null;
+    }[];
+  } | null;
+};
 
 type SpacesQueryResult = {
   spaces?: {
@@ -52,14 +74,8 @@ type SpacesQueryResult = {
     type: 'PERSONAL' | 'DAO';
     page: {
       name?: string | null;
-      relationsList?: {
-        toEntity?: {
-          valuesList?: {
-            propertyId: string;
-            text: string | null;
-          }[];
-        } | null;
-      }[];
+      avatarRelations?: RelationEntry[];
+      coverRelations?: RelationEntry[];
     } | null;
     editorsList?: {
       memberSpaceId: string;
@@ -74,14 +90,22 @@ type SpaceQueryEntry = NonNullable<SpacesQueryResult['spaces']>[number];
 
 const decodeSpace = EffectSchema.decodeUnknownEither(PublicSpaceSchema);
 
-const getAvatarFromSpace = (space: SpaceQueryEntry) => {
-  const firstRelation = space.page?.relationsList?.[0];
+const getImageFromRelations = (relations?: RelationEntry[]) => {
+  const firstRelation = relations?.[0];
   const firstValue = firstRelation?.toEntity?.valuesList?.[0];
-  const avatar = firstValue?.text;
-  if (typeof avatar === 'string') {
-    return avatar;
+  const url = firstValue?.text;
+  if (typeof url === 'string') {
+    return url;
   }
   return undefined;
+};
+
+const getAvatarFromSpace = (space: SpaceQueryEntry) => {
+  return getImageFromRelations(space.page?.avatarRelations);
+};
+
+const getCoverFromSpace = (space: SpaceQueryEntry) => {
+  return getImageFromRelations(space.page?.coverRelations);
 };
 
 const getEditorIdsFromSpace = (space: SpaceQueryEntry): string[] => {
@@ -103,6 +127,7 @@ export const parseSpacesQueryResult = (queryResult: SpacesQueryResult) => {
       type: space.type,
       name: space.page?.name ?? undefined,
       avatar: getAvatarFromSpace(space),
+      cover: getCoverFromSpace(space),
       editorIds: getEditorIdsFromSpace(space),
       memberIds: getMemberIdsFromSpace(space),
     };
