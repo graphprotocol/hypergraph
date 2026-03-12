@@ -1,5 +1,13 @@
 # connect
 
+## 0.4.7
+### Patch Changes
+
+- eeb4a38: bump geo-sdk version to 0.14.0 and remove useDeleteEntityPublic
+- Updated dependencies [eeb4a38]
+  - @graphprotocol/hypergraph-react@0.13.5
+  - @graphprotocol/hypergraph@0.13.5
+
 ## 0.4.6
 ### Patch Changes
 
