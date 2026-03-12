@@ -25,7 +25,6 @@ export { usePublicAccountInboxes } from './hooks/usePublicAccountInboxes.js';
 export { usePublicSpaces } from './hooks/usePublicSpaces.js';
 export { usePublishToPublicSpace } from './hooks/usePublishToSpace.js';
 export { generateDeleteOps as _generateDeleteOps } from './internal/generate-delete-ops.js';
-export { useDeleteEntityPublic as _useDeleteEntityPublic } from './internal/use-delete-entity-public.js';
 export { useEntitiesPrivate as _useEntitiesPrivate } from './internal/use-entities-private.js';
 export { useEntitiesPublic as _useEntitiesPublic } from './internal/use-entities-public.js';
 export { useEntityPublic as _useEntityPublic } from './internal/use-entity-public.js';
