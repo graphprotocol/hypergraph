@@ -4,5 +4,5 @@
 "connect": patch
 ---
 
-bump geo-sdk version to 0.14.0
+bump geo-sdk version to 0.14.0 and remove useDeleteEntityPublic
   
