@@ -189,6 +189,18 @@ describe('translateFilterToGraphql id filters', () => {
     });
   });
 
+  it('should translate id `in` filter correctly', () => {
+    const filter: TodoFilter = {
+      id: { in: ['entity-id-1', 'entity-id-2'] },
+    };
+
+    const result = translateFilterToGraphql(filter, Todo);
+
+    expect(result).toEqual({
+      id: { in: ['entity-id-1', 'entity-id-2'] },
+    });
+  });
+
   it('should combine id filter with other property filters', () => {
     const filter: TodoFilter = {
       id: { is: 'entity-id' },

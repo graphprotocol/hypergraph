@@ -53,9 +53,7 @@ type GraphqlFilterEntry =
       };
     }
   | {
-      id: {
-        is: string;
-      };
+      id: EntityIdGraphqlFilter;
     }
   | { [k: string]: never };
 
@@ -95,9 +93,13 @@ export function translateFilterToGraphql<S extends Schema.Schema.AnyNoContext>(
 
     if (fieldName === 'id') {
       const idFilter = fieldFilter as Entity.EntityIdFilter;
-      if (typeof idFilter.is === 'string') {
+      if ('is' in idFilter && typeof idFilter.is === 'string') {
         graphqlFilter.push({
           id: { is: idFilter.is },
+        });
+      } else if ('in' in idFilter && Array.isArray(idFilter.in)) {
+        graphqlFilter.push({
+          id: { in: idFilter.in },
         });
       }
       continue;

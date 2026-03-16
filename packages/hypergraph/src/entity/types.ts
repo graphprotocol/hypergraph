@@ -70,9 +70,15 @@ export type EntityStringFilter = {
   contains?: string;
 };
 
-export type EntityIdFilter = {
-  is?: string;
-};
+export type EntityIdFilter =
+  | {
+      is: string;
+      in?: never;
+    }
+  | {
+      in: readonly string[];
+      is?: never;
+    };
 
 export type RelationEntityIdFilter =
   | {
