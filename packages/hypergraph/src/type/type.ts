@@ -4,6 +4,7 @@ import * as SchemaAST from 'effect/SchemaAST';
 import {
   PropertyIdSymbol,
   PropertyTypeSymbol,
+  ProposalBacklinkSymbol,
   RelationBacklinkSymbol,
   RelationPropertiesSymbol,
   RelationSchemaSymbol,
@@ -23,6 +24,7 @@ type RelationPropertiesDefinition = Record<string, SchemaBuilder>;
 
 type RelationOptionsBase = {
   backlink?: boolean;
+  proposalBacklink?: boolean;
 };
 
 type RelationOptions<RP extends RelationPropertiesDefinition> = RelationOptionsBase & {
@@ -151,6 +153,22 @@ export const Point = (propertyId: string) =>
     encode: (points: readonly number[]) => points.join(','),
   }).pipe(Schema.annotations({ [PropertyIdSymbol]: propertyId, [PropertyTypeSymbol]: 'point' }));
 
+export const Proposal = Schema.Struct({
+  proposedBy: Schema.String,
+  executedAt: Schema.String,
+  spaceId: Schema.String,
+  votingMode: Schema.String,
+  startTime: Schema.String,
+  endTime: Schema.String,
+  quorum: Schema.String,
+  threshold: Schema.String,
+  name: Schema.String,
+  createdAt: Schema.String,
+  noCount: Schema.String,
+  yesCount: Schema.String,
+  createdAtBlock: Schema.String,
+});
+
 export function Relation<S extends Schema.Schema.AnyNoContext>(
   schema: S,
   options?: RelationOptionsBase,
@@ -220,6 +238,7 @@ export function Relation<
     >;
 
     const isBacklinkRelation = !!normalizedOptions?.backlink;
+    const isProposalBacklinkRelation = !!normalizedOptions?.proposalBacklink;
 
     const relationSchema = Schema.Array(schemaWithId).pipe(
       Schema.annotations({
@@ -228,6 +247,7 @@ export function Relation<
         [RelationSymbol]: true,
         [PropertyTypeSymbol]: 'relation',
         [RelationBacklinkSymbol]: isBacklinkRelation,
+        [ProposalBacklinkSymbol]: isProposalBacklinkRelation,
       }),
     );
 
@@ -250,6 +270,15 @@ export function Backlink<
     backlink: true,
   } as RP extends RelationPropertiesDefinition ? RelationOptions<RP> : RelationOptionsBase;
   return Relation(schema, normalizedOptions);
+}
+
+export function ProposalBacklink(options?: RelationOptionsBase) {
+  const normalizedOptions = {
+    ...(options ?? {}),
+    backlink: true,
+    proposalBacklink: true,
+  } as RelationOptionsBase;
+  return Relation(Proposal, normalizedOptions);
 }
 
 export const optional =
