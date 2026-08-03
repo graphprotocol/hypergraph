@@ -113,6 +113,7 @@ function SchemaBuilderComponent() {
       });
     },
   });
+
   const appTypes = useStore(createSchemaForm.store, (state) =>
     pipe(
       state.values.types,
@@ -427,6 +428,10 @@ function SchemaBuilderComponent() {
                         } satisfies Typesync.TypesyncHypergraphSchemaTypeProperty;
                       }),
                   });
+
+                  // Calculate the index where the new type will be added
+                  let newIndex = field.state.value.length;
+
                   // if schema is currently empty, set as first type
                   if (field.state.value.length === 1) {
                     const initialType = field.state.value[0];
@@ -439,6 +444,7 @@ function SchemaBuilderComponent() {
                       EffectArray.match(relationSchemaTypes, {
                         onEmpty() {
                           field.replaceValue(0, selectedMappedToType as never);
+                          newIndex = 0;
                         },
                         onNonEmpty(mappedRelationTypes) {
                           EffectArray.forEach(mappedRelationTypes, (mapped, idx) => {
@@ -448,12 +454,15 @@ function SchemaBuilderComponent() {
                                 knowledgeGraphId: mapped.knowledgeGraphId,
                                 properties: mapped.properties,
                               } as never);
+                              newIndex = 0;
                               return;
                             }
                             field.pushValue(mapped as never);
+                            newIndex = idx;
                           });
                           // push selected type
                           field.pushValue(selectedMappedToType as never);
+                          newIndex = field.state.value.length - 1;
                         },
                       });
                       return;
@@ -471,10 +480,23 @@ function SchemaBuilderComponent() {
                           knowledgeGraphId: mapped.knowledgeGraphId,
                           properties: mapped.properties,
                         } as never);
+                        newIndex = field.state.value.length - 1;
                       });
                       // push selected type
                       field.pushValue(selectedMappedToType as never);
+                      newIndex = field.state.value.length - 1;
                     },
+                  });
+                  setTimeout(() => {
+                    const element = document.getElementById(`type-entry-${newIndex}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }, 0);
+                  toastManager.add({
+                    title: 'Type added to schema',
+                    description: selected.name,
+                    type: 'success',
                   });
                   return;
                 }}
@@ -495,6 +517,7 @@ function SchemaBuilderComponent() {
                   return (
                     <div
                       key={typeEntryKey}
+                      id={`type-entry-${idx}`}
                       className="border-l-2 border-indigo-600 dark:border-indigo-400 pl-2 py-2 flex flex-col gap-y-4"
                     >
                       <div className="flex items-start justify-between gap-x-3">
@@ -860,12 +883,25 @@ function SchemaBuilderComponent() {
           <Toast.Root
             key={t.id}
             toast={t}
-            className="pointer-events-auto w-full max-w-md rounded-lg bg-white shadow-lg outline-1 outline-black/5 transition data-closed:opacity-0 data-enter:transform data-enter:duration-300 data-enter:ease-out data-closed:data-enter:translate-y-2 data-leave:duration-100 data-leave:ease-in data-closed:data-enter:sm:translate-x-2 data-closed:data-enter:sm:translate-y-0 dark:bg-gray-800 dark:-outline-offset-1 dark:outline-white/10 p-4"
+            className={classnames(
+              'pointer-events-auto w-full max-w-md rounded-lg shadow-lg outline-1 transition data-closed:opacity-0 data-enter:transform data-enter:duration-300 data-enter:ease-out data-closed:data-enter:translate-y-2 data-leave:duration-100 data-leave:ease-in data-closed:data-enter:sm:translate-x-2 data-closed:data-enter:sm:translate-y-0 p-4',
+              t.type === 'success'
+                ? 'bg-green-50 dark:bg-green-900 outline-green-500/20'
+                : t.type === 'error'
+                  ? 'bg-red-50 dark:bg-red-900 outline-red-500/20'
+                  : 'bg-white dark:bg-gray-800 outline-black/5 dark:outline-white/10',
+            )}
           >
             <div className="p-4">
               <div className="flex items-start">
                 <div className="shrink-0">
-                  <WarningIcon aria-hidden="true" className="size-6 text-red-400" />
+                  {t.type === 'success' ? (
+                    <CheckIcon aria-hidden="true" className="size-6 text-green-400" />
+                  ) : t.type === 'error' ? (
+                    <ExclamationMarkIcon aria-hidden="true" className="size-6 text-red-400" />
+                  ) : (
+                    <WarningIcon aria-hidden="true" className="size-6 text-yellow-400" />
+                  )}
                 </div>
                 <div className="ml-3 w-0 flex-1 pt-0.5">
                   <Toast.Title className="text-sm font-medium text-gray-900 dark:text-white" />
@@ -874,7 +910,14 @@ function SchemaBuilderComponent() {
                 <div className="ml-4 flex shrink-0">
                   <Toast.Close
                     aria-label="Close"
-                    className="inline-flex rounded-md text-gray-400 hover:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-red-600 dark:hover:text-white dark:focus:outline-red-500"
+                    className={classnames(
+                      'inline-flex rounded-md focus:outline-2 focus:outline-offset-2',
+                      t.type === 'success'
+                        ? 'text-green-400 hover:text-green-500 focus:outline-green-600 dark:focus:outline-green-500'
+                        : t.type === 'error'
+                          ? 'text-red-400 hover:text-red-500 focus:outline-red-600 dark:focus:outline-red-500'
+                          : 'text-gray-400 hover:text-gray-500 focus:outline-gray-600 dark:hover:text-white dark:focus:outline-gray-500',
+                    )}
                   >
                     <XIcon className="size-4" aria-hidden="true" />
                   </Toast.Close>
