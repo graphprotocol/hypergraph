@@ -90,16 +90,29 @@ export const convertRelations = <_S extends Schema.Schema.AnyNoContext>(
         continue;
       }
 
+      const relationMetadata = relationInfo.find(
+        (info) => info.typeId === result.value && info.propertyName === String(prop.name),
+      );
+
+      // ProposalBacklink relations are resolved via a second proposals query step.
+      // Skip regular relation decoding here and leave the initialized empty array.
+      if (relationMetadata?.resolutionStrategy === 'proposalBacklink') {
+        if (relationMetadata.includeTotalCount) {
+          const alias = getRelationAlias(result.value, relationMetadata.targetTypeIds);
+          const relationConnection = queryEntity[alias as keyof RecursiveQueryEntity] as
+            | RelationsListWithNodes
+            | undefined;
+          rawEntity[`${String(prop.name)}TotalCount`] = relationConnection?.totalCount ?? 0;
+        }
+        continue;
+      }
+
       const typeIds: string[] = SchemaAST.getAnnotation<string[]>(Constants.TypeIdsSymbol)(relationTransformation).pipe(
         Option.getOrElse(() => []),
       );
       if (typeIds.length === 0) {
         continue;
       }
-
-      const relationMetadata = relationInfo.find(
-        (info) => info.typeId === result.value && info.propertyName === String(prop.name),
-      );
 
       // Get relations from aliased field if we have relationInfo for this property, otherwise fallback to old behavior
       let allRelationsWithTheCorrectPropertyTypeId: RelationsListItem[] | undefined;

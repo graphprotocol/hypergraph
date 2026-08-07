@@ -12,8 +12,10 @@ const CHILD_TYPES = [Id('cd9a2ae2831c4fa2b714ad3aa254db7d')];
 const FRIEND_TYPES = [Id('35ac5c3e4f31466eb3da51fdfbb4b38e')];
 const PODCAST_TYPES = [Id('f347d2a2cc184d45aa9a0df3ba40f4ad')];
 const EPISODE_TYPES = [Id('b1fe2f9e1f6a4f07a0fb3f5d463f98f1')];
+const BOUNTY_TYPES = [Id('f5075753000049228b8ef2bc2a6e851d')];
 const NAME_PROPERTY_ID = Id('9f5e7ea451bb4c9f87397fa0aa695d02');
 const PODCAST_EPISODES_RELATION_PROPERTY_ID = Id('88f2461558b14d6ca45e81ab9582c282');
+const BOUNTY_PROPOSALS_RELATION_PROPERTY_ID = Id('3b4c516ff3ac41e0a939374119a27d6e');
 
 const stringifyTypeIds = (typeIds: readonly string[]) => `[${typeIds.map((id) => JSON.stringify(id)).join(', ')}]`;
 
@@ -79,6 +81,20 @@ const Podcast = Entity.Schema(
     properties: {
       title: NAME_PROPERTY_ID,
       episodes: PODCAST_EPISODES_RELATION_PROPERTY_ID,
+    },
+  },
+);
+
+const Bounty = Entity.Schema(
+  {
+    name: Type.String,
+    proposals: Type.ProposalBacklink(),
+  },
+  {
+    types: BOUNTY_TYPES,
+    properties: {
+      name: NAME_PROPERTY_ID,
+      proposals: BOUNTY_PROPOSALS_RELATION_PROPERTY_ID,
     },
   },
 );
@@ -167,5 +183,23 @@ describe('relation include config overrides', () => {
     const selection = buildRelationsSelection(relationInfo, 'single');
 
     expect(selection).toContain(`fromEntity: { typeIds: { in: ${stringifyTypeIds(EPISODE_TYPES)} } }`);
+  });
+
+  it('marks proposal backlinks with a dedicated resolution strategy', () => {
+    const include = {
+      proposals: {},
+    } satisfies Entity.EntityInclude<typeof Bounty>;
+
+    const relationInfo = getRelationTypeIds(Bounty, include);
+    const selection = buildRelationsSelection(relationInfo, 'single');
+
+    expect(relationInfo).toContainEqual(
+      expect.objectContaining({
+        propertyName: 'proposals',
+        listField: 'backlinks',
+        resolutionStrategy: 'proposalBacklink',
+      }),
+    );
+    expect(selection).not.toContain('fromEntity: { typeIds:');
   });
 });

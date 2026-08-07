@@ -8,6 +8,7 @@ import { request } from 'graphql-request';
 import type { RelationTypeIdInfo } from '../utils/get-relation-type-ids.js';
 import { buildRelationsSelection } from '../utils/relation-query-helpers.js';
 import type { EntityQueryResult as MultiEntityQueryResult } from './find-many-public.js';
+import { hydrateProposalBacklinks } from './internal/hydrate-proposal-backlinks.js';
 import { normalizeSpaceIds } from './internal/normalize-space-ids.js';
 
 type EntityQueryResult = {
@@ -176,6 +177,11 @@ export const findOnePublic = async <
     relationTypeIds,
     includeSpaceIdsParam === undefined ? undefined : { includeSpaceIds: includeSpaceIdsParam },
   );
+
+  if (result.entity && parsed.entity) {
+    await hydrateProposalBacklinks([result.entity], [parsed.entity], relationTypeIds);
+  }
+
   if (logInvalidResults) {
     if (parsed.invalidEntity) {
       console.warn('Entity decoding failed', parsed.invalidEntity);
